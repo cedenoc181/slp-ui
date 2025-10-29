@@ -1,70 +1,86 @@
-# Getting Started with Create React App
+# Sandlot Picks Analytics
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+## 🧠 Overview
 
-## Available Scripts
+**Sandlot Picks Analytics** is a data-driven baseball analytics platform powered by machine learning.  
+This web application provides an overview of the **Sandlot Picks API**, a predictive engine built to forecast baseball player performance metrics — specifically **batter** and **pitcher props**.
 
-In the project directory, you can run:
+By leveraging historical data, rolling metrics, and advanced ML algorithms, the system delivers insights to help identify edges in player matchups and betting markets.
 
-### `npm start`
+The frontend React application serves as a modern, responsive website introducing users to the Sandlot Picks Analytics product, its features, and use cases.
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+---
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+## ⚙️ Features
 
-### `npm test`
+### 🔹 Current Functionality
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+#### 🧢 Batter Props
+- **Total Bases** – Predicts the number of total bases a batter will record in a game.  
+- **RBIs (Runs Batted In)** – Estimates the number of RBIs expected for a batter.  
+- **Hits** – Forecasts the number of hits a batter will achieve.  
+- **Home Runs** – Calculates the likelihood of a batter hitting a home run.
 
-### `npm run build`
+#### ⚾ Pitcher Props
+- **Strikeouts** – Predicts the total strikeouts for a pitcher in a given game.  
+- **Earned Runs** – Estimates how many earned runs a pitcher is likely to allow.  
+- **Pitcher Outs** – Projects the number of outs a pitcher will record.  
+- **Opponent Stats Integration** – Incorporates advanced opponent data such as:
+  - WHIP (Walks + Hits per Inning Pitched)
+  - OPS (On-base Plus Slugging)
+  - Team batting average
+  - Opponent strikeout rate  
+  This multi-layered approach helps identify actionable predictive edges.
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+---
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+### 🧮 Feature Engineering
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+Sandlot Picks leverages engineered datasets to enhance model accuracy:
+- Rolling metrics (e.g., averages over the last 3 games)
+- Season-level statistics (e.g., batting average, slugging percentage)
+- Opponent-specific performance indicators (e.g., team pitching metrics, probable pitcher stats)
 
-### `npm run eject`
+---
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+### 🤖 Model Training
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+Machine learning models power the core prediction engine:
+- **Random Forest** and **XGBoost** models are trained on extensive historical datasets.
+- Model accuracy and reliability are measured using:
+  - **RMSE (Root Mean Squared Error)**
+  - **R² (Coefficient of Determination)**
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+---
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+### 📈 Prediction Engine
 
-## Learn More
+- Dynamically generates matchup-based features in real time.  
+- Produces accurate predictions for batter and pitcher prop outcomes.  
+- Supports modular scaling — easily adaptable for new prop types and additional sports in the future.
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+---
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+## 🧩 Tech Stack
 
-### Code Splitting
+### Frontend
+- **React.js** – Core UI framework  
+- **JavaScript (ES6)** – Logic and interactivity  
+- **CSS3 / Tailwind** – Styling and layout  
+- **Chart.js / Recharts** – Data visualization for analytics components
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
+---
 
-### Analyzing the Bundle Size
+## 🧑‍💻 Author
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
+**Christian Cedeno**  
+Founder & Developer – *Sandlot Picks Analytics*  
+📍 New York City  
+💼 Full Stack Developer | Machine Learning 
 
-### Making a Progressive Web App
+---
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
+## 📜 License
 
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+This project is proprietary and owned by **Sandlot Picks Analytics**.  
+Unauthorized reproduction or distribution is prohibited.

@@ -1,10 +1,12 @@
-import React from 'react';
-
 function Header() {
+  const handleLogoClick = () => {
+    window.location.href = window.location.origin;
+  };
+
   return (
     <header className="header">
       <div className="container">
-        <div className="logo">
+        <div className="logo" onClick={handleLogoClick} style={{ cursor: 'pointer' }}>
           <img src={require('../assets/images/spa-retro-logo-removebg.png')} alt="Sandlot Picks Analytics" />
         </div>
         <nav className="nav">
