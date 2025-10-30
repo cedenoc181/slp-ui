@@ -62,52 +62,12 @@ body {
   border-bottom-color: var(--accent-blue);
 }
 
-.header {
-  background: var(--primary);
-  padding: 1.5rem 0;
-  border-bottom: none;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-}
-
-.header .container {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.logo img {
-  height: 60px;
-  filter: none;
-}
-
-.nav {
-  display: flex;
-  gap: 2rem;
-}
-
-.nav a {
-  color: #E6EDF5;
-  text-decoration: none;
-  font-size: 1rem;
-  font-weight: 500;
-  transition: all 0.3s;
-  border-bottom: 2px solid transparent;
-  padding-bottom: 4px;
-}
-
-.nav a:hover {
-  border-bottom: 2px solid #C8102E;
-  color: #C8102E;
-}
-
 .hero {
   position: relative;
   background-color: var(--primary);
   padding: 6rem 0;
   text-align: center;
 }
-
-/* ...existing code... */
 
 .hero h1 {
   color: #FFFFFF;
