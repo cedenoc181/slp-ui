@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import '../styles/hero.css';
 
 function Hero() {
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
@@ -18,8 +19,9 @@ function Hero() {
 
   return (
     <section className="hero">
-      <div className="chalk-decorations">
-        <svg className="chalk-chart-left" width="350" height="320" style={{position: 'absolute', left: '5%', top: '55%', transform: 'translateY(-50%)', opacity: 0.35}}>
+      <div className="hero-decorations">
+        {/* Remove all inline styles - let CSS handle it */}
+        <svg className="hero-chart-left" width="350" height="320">
           <defs>
             <pattern id="diagonalStripes" patternUnits="userSpaceOnUse" width="8" height="8" patternTransform="rotate(45)">
               <line x1="0" y1="0" x2="0" y2="8" stroke="white" strokeWidth="3"/>
@@ -32,7 +34,8 @@ function Hero() {
           <rect x="200" y="180" width="45" height="120" fill="url(#diagonalStripes)" stroke="white" strokeWidth="4" opacity="0.8"/>
           <rect x="270" y="60" width="45" height="240" fill="url(#diagonalStripes)" stroke="white" strokeWidth="4" opacity="0.8"/>
         </svg>
-        <svg className="chalk-chart-right" width="350" height="320" style={{position: 'absolute', right: '5%', top: '45%', transform: 'translateY(-50%)', opacity: 0.35}}>
+        
+        <svg className="hero-chart-right" width="350" height="320">
           <line x1="20" y1="300" x2="20" y2="20" stroke="white" strokeWidth="5"/>
           <line x1="20" y1="300" x2="330" y2="300" stroke="white" strokeWidth="5"/>
           <polyline points="60,220 110,140 160,160 210,80 260,110 310,50" fill="none" stroke="white" strokeWidth="3" strokeDasharray="8,6"/>
@@ -44,8 +47,7 @@ function Hero() {
           <circle cx="310" cy="50" r="6" fill="white"/>
         </svg>
         
-        {/* Baseball SVG */}
-        <svg className="baseball-icon" width="80" height="80" viewBox="0 0 80 80" style={{position: 'absolute', top: '15%', left: '50%', transform: 'translateX(-50%)', opacity: 0.25}}>
+        <svg className="baseball-icon" width="80" height="80" viewBox="0 0 80 80">
           <circle cx="40" cy="40" r="35" fill="white" stroke="#E0E0E0" strokeWidth="1"/>
           <path d="M 20 15 Q 12 40 20 65" stroke="#C62828" strokeWidth="2.5" fill="none" strokeLinecap="round"/>
           <path d="M 15 20 L 20 22 L 25 20" stroke="#C62828" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round"/>
@@ -61,6 +63,7 @@ function Hero() {
           <path d="M 55 62 L 60 60 L 65 62" stroke="#C62828" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round"/>
         </svg>
       </div>
+      
       <div className="container">
         <h1 
           className="chalk-heading"
@@ -83,7 +86,7 @@ function Hero() {
           )}
           Sandlot Picks Analytics
         </h1>
-        <p className="chalk-subtitle">Smart analytics for smarter picks</p>
+        <p className="hero-subtitle">Smart analytics for smarter picks</p>
         <button className="cta-button" onClick={handleDiscordClick}>
           Join Discord
         </button>

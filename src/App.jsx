@@ -6,6 +6,7 @@ import Features from './components/Features';
 import Footer from './components/Footer';
 import './styles/chalkboard.css';
 import './styles/header.css';
+import './styles/hero.css';
 
 function App() {
   return (
