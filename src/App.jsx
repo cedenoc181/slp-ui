@@ -7,6 +7,9 @@ import Footer from './components/Footer';
 import './styles/chalkboard.css';
 import './styles/header.css';
 import './styles/hero.css';
+import './styles/about.css';
+import './styles/features.css';
+import './styles/footer.css';
 
 function App() {
   return (

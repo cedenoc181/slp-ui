@@ -26,7 +26,7 @@ function About() {
     },
     {
       icon: '🤖',
-      title: 'Machine Learning Engine',
+      title: 'ML Engine',
       items: [
         { label: 'Rolling Metrics', desc: '3-game averages and trends' },
         { label: 'Season Stats', desc: 'BA, SLG%, OPS, and more' },
