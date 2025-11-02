@@ -1,60 +1,61 @@
 :root {
-    --primary: #041E42;
-    --white-bg: #F7F7F9;
-    --card-white: #FFFFFF;
-    --text-dark: #1F2933;
-    --text-muted: #546A7B;
-    --accent-brown: #6B5344;
-    --accent-beige: #C9B8A8;
-    --accent-green: #1B5E20;
-    --accent-blue: #2A9DF4;
-    --cta-color: #00D9FF; /* Bright cyan */
-    --cta-hover: #33E0FF; /* Lighter cyan */
+  --primary: #041E42;
+  --white-bg: #F7F7F9;
+  --card-white: #FFFFFF;
+  --text-dark: #1F2933;
+  --text-muted: #546A7B;
+  --accent-brown: #6B5344;
+  --accent-beige: #C9B8A8;
+  --accent-green: #1B5E20;
+  --accent-blue: #2A9DF4;
+  --cta-color: #00D9FF; /* Bright cyan */
+  --cta-hover: #33E0FF; /* Lighter cyan */
 }
   
 .about-text {
-    color: var(--text-dark);
-    text-shadow: none;
-    font-family: inherit;
+  color: var(--text-dark);
+  text-shadow: none;
+  font-family: inherit;
 }
   
 .about {
-    padding: 5rem 0;
-    background-color: var(--white-bg);
+  padding: 5rem 0;
+  background-color: var(--white-bg);
 }
   
 .about h2 {
-    text-align: center;
-    color: var(--primary);
-    margin-bottom: 1rem;
+  text-align: center;
+  font-size: 2rem;
+  color: var(--primary);
+  margin-bottom: 1rem;
 }
   
 /* Carousel Styles */
 .carousel-container {
-    position: relative;
-    max-width: 800px;
-    margin: 0 auto;
-    padding: 0 60px;
+  position: relative;
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 0 60px;
 }
   
 .carousel-track {
-    position: relative;
-    overflow: hidden;
-    height: 450px !important;
+  position: relative;
+  overflow: hidden;
+  height: 450px !important;
 }
   
 .carousel-slide {
-    position: absolute;
-    width: 100%;
-    transition: all 0.5s ease-in-out;
+  position: absolute;
+  width: 100%;
+  transition: all 0.5s ease-in-out;
 }
   
 .carousel-content {
-    background-color: var(--card-white);
-    padding: 3rem 2.5rem;
-    border-radius: 16px;
-    border: 2px solid #E5E7EB;
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+  background-color: var(--card-white);
+  padding: 3rem 2.5rem;
+  border-radius: 16px;
+  border: 2px solid #E5E7EB;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
 }
   
 .carousel-title {
@@ -222,7 +223,7 @@
    ============================================ */
 @media screen and (max-width: 480px) {
 
-  .container{
+  .about-container{
     padding: 0 10px;
   }
   .about-heading {
