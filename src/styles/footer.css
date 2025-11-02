@@ -1,0 +1,29 @@
+.footer {
+  background: var(--primary);
+  padding: 3rem 0;
+  text-align: center;
+  border-top: none;
+  box-shadow: none;
+}
+  
+.footer p {
+  color: #E6EDF5;
+  font-size: 0.9rem;
+}
+  
+.social-links {
+  display: flex;
+  justify-content: center;
+  gap: 2rem;
+  margin-top: 1rem;
+}
+
+.social-links a {
+  color: #E6EDF5;
+  border-bottom-color: rgba(168, 197, 160, 0.3);
+}
+
+.social-links a:hover {
+  color: #C8102E;
+  border-bottom-color: #C8102E;
+}

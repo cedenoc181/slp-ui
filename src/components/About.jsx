@@ -65,8 +65,8 @@ function About() {
   return (
     <section id="about" className="about">
       <div className="container">
-        <h2 className="chalk-heading">What is Sandlot Picks Analytics?</h2>
-        <p className="chalk-text" style={{fontSize: '1.15rem', marginBottom: '2rem', textAlign: 'center', maxWidth: '800px', margin: '0 auto 3rem'}}>
+        <h2 className="about-heading">What is Sandlot Picks Analytics?</h2>
+        <p className="about-text" style={{fontSize: '1.15rem', marginBottom: '2rem', textAlign: 'center', maxWidth: '800px', margin: '0 auto 3rem'}}>
           Sandlot Picks Analytics is a machine learning-powered application designed to predict 
           baseball player performance metrics. By leveraging historical data, rolling metrics, 
           and advanced ML models, we provide data-driven insights for player props and matchups.
