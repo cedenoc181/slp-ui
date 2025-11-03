@@ -1,14 +1,14 @@
 {
   "files": {
-    "main.css": "/static/css/main.1c512ceb.css",
-    "main.js": "/static/js/main.4aa9fe2b.js",
+    "main.css": "/static/css/main.bd01273f.css",
+    "main.js": "/static/js/main.ccc51929.js",
     "static/media/spa-retro-logo-removebg.png": "/static/media/spa-retro-logo-removebg.328337a4fd7c56aeefbe.png",
     "index.html": "/index.html",
-    "main.1c512ceb.css.map": "/static/css/main.1c512ceb.css.map",
-    "main.4aa9fe2b.js.map": "/static/js/main.4aa9fe2b.js.map"
+    "main.bd01273f.css.map": "/static/css/main.bd01273f.css.map",
+    "main.ccc51929.js.map": "/static/js/main.ccc51929.js.map"
   },
   "entrypoints": [
-    "static/css/main.1c512ceb.css",
-    "static/js/main.4aa9fe2b.js"
+    "static/css/main.bd01273f.css",
+    "static/js/main.ccc51929.js"
   ]
 }
