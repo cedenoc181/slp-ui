@@ -228,11 +228,29 @@
     grid-column: span 1;
     padding: 0 15px;
   }
+  .discord-text {
+    display: none;
+  }
 }
 
 /* iPhone / Small Mobile (375px) */
 @media screen and (max-width: 375px) {
   .container {
     padding: 0 12px;
+  }
+}
+
+@media screen and (max-width: 335px) {
+  
+  .container {
+    justify-items: center;
+  }
+  .feature-card {
+   padding: 0.85rem;
+   max-width: 300px;
+
+  }
+  .features-grid {
+    justify-items: center;
   }
 }
