@@ -1,20 +1,17 @@
 /* ============================================
    HEADER SECTION
    ============================================ */
-:root {
-  --primary: #041E42;
-  --white-bg: #F7F7F9;
-  --card-white: #FFFFFF;
-  --text-dark: #1F2933;
-  --text-muted: #546A7B;
-  --accent-brown: #6B5344;
-  --accent-beige: #C9B8A8;
-  --accent-green: #1B5E20;
-  --accent-blue: #2A9DF4;
-  --cta-color: #00D9FF;
-  --cta-hover: #33E0FF;
-  --red-primary: #C8102E;
-}
+   :root {
+    --primary: #041E42;
+    --secondary: #0e2f5f;
+    --white-bg: #F7F7F9;
+    --card-white: #FFFFFF;
+    --text-dark: #1F2933;
+    --text-muted: #546A7B;
+    --cta-color: #C8102E; /* MLB red */
+    --cta-hover: #E31837; /* Lighter red */
+  }
+  
 
 .header {
   position: relative;
