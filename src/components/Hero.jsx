@@ -6,7 +6,7 @@ function Hero() {
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
   const [isHovering, setIsHovering] = useState(false);
 
-  const handleDiscordClick = () => 
+  const handleDiscordClick = () => {
    // Track Discord button click
    ReactGA.event({
      category: 'User Interaction',
@@ -15,7 +15,7 @@ function Hero() {
    });
 
     window.open('https://discord.com/invite/CQsrtNp4S7', '_blank', 'noopener,noreferrer');
-  ;
+  };
 
   const handleMouseMove = (e) => {
     const rect = e.currentTarget.getBoundingClientRect();

@@ -87,7 +87,9 @@
   transition: all 0.3s ease;
 }
 
-.nav a {
+.nav-button {
+  background: none;
+  border: none;
   color: #E6EDF5;
   text-decoration: none;
   font-size: 1rem;
@@ -95,11 +97,13 @@
   transition: all 0.3s;
   border-bottom: 2px solid transparent;
   padding-bottom: 4px;
+  cursor: pointer;
+  font-family: inherit;
 }
 
-.nav a:hover {
-  border-bottom: 2px solid var(--red-primary);
-  color: var(--red-primary);
+.nav-button:hover {
+  border-bottom: 2px solid var(--cta-color);
+  color: var(--cta-hover);
 }
 
 /* ============================================
