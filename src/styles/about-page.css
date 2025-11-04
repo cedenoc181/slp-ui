@@ -1,0 +1,206 @@
+.about-page {
+    min-height: 100vh;
+    padding: 8rem 0 4rem;
+    background: #F7F7F9;
+    color: #1F2933;
+  }
+
+.about-page .container {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 0 2rem;
+}
+
+.about-page .section-title {
+    font-size: 3rem;
+    color: #041E42;
+    margin-bottom: 2rem;
+    text-align: center;
+    font-weight: 700;
+    position: relative;
+    padding-bottom: 1rem;
+  }
+
+.about-page .section-title::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100px;
+  height: 4px;
+  background: var(--cta-color);
+  border-radius: 2px;
+}
+
+.about-description {
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(10px);
+  padding: 3rem;
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+}
+
+.about-description h3 {
+    font-size: 1.75rem;
+    color: #041E42;
+    margin-top: 2.5rem;
+    margin-bottom: 1rem;
+    font-weight: 600;
+    position: relative;
+    padding-left: 1rem;
+  }
+
+.about-description h3:first-child {
+  margin-top: 0;
+}
+
+.about-description h3::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 4px;
+  height: 70%;
+  background: var(--cta-color);
+  border-radius: 2px;
+}
+
+.about-description p {
+  font-size: 1.1rem;
+  line-height: 1.8;
+  color: #738296;
+  margin-bottom: 1.5rem;
+}
+
+.about-description ul {
+  list-style: none;
+  padding: 0;
+  margin: 1.5rem 0;
+}
+
+.about-description ul li {
+  font-size: 1.05rem;
+  line-height: 1.8;
+  color: #738296;
+  margin-bottom: 1rem;
+  padding-left: 2rem;
+  position: relative;
+}
+
+.about-description ul li::before {
+  content: '⚾';
+  position: absolute;
+  left: 0;
+  font-size: 1.2rem;
+}
+
+.about-description ul li strong {
+    color: #041E42;
+    font-weight: 600;
+  }
+
+/* Highlight boxes */
+.highlight-box {
+  background: linear-gradient(135deg, rgba(200, 16, 46, 0.1) 0%, rgba(227, 24, 55, 0.05) 100%);
+  border-left: 4px solid var(--cta-color);
+  padding: 1.5rem;
+  margin: 2rem 0;
+  border-radius: 8px;
+}
+
+.highlight-box h4 {
+  color: var(--cta-color);
+  font-size: 1.3rem;
+  margin-bottom: 0.75rem;
+  font-weight: 600;
+}
+
+.highlight-box p {
+  margin-bottom: 0;
+}
+
+/* Stats grid (if you want to add statistics) */
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 2rem;
+  margin: 3rem 0;
+}
+
+.stat-card {
+  background: rgba(255, 255, 255, 0.05);
+  padding: 2rem;
+  border-radius: 12px;
+  text-align: center;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.stat-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.4);
+}
+
+.stat-number {
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: var(--cta-color);
+  margin-bottom: 0.5rem;
+}
+
+.stat-label {
+  font-size: 1rem;
+  color: #738296;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .about-page {
+    padding: 6rem 0 3rem;
+  }
+
+  .about-page .section-title {
+    font-size: 2rem;
+  }
+
+  .about-description {
+    padding: 2rem 1.5rem;
+  }
+
+  .about-description h3 {
+    font-size: 1.5rem;
+  }
+
+  .about-description p,
+  .about-description ul li {
+    font-size: 1rem;
+  }
+
+  .stats-grid {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .about-page .container {
+    padding: 0 1rem;
+  }
+
+  .about-description {
+    padding: 1.5rem 1rem;
+  }
+
+  .about-description h3 {
+    font-size: 1.3rem;
+  }
+
+  .about-description ul li {
+    padding-left: 1.5rem;
+  }
+}

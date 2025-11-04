@@ -47,12 +47,21 @@
   align-items: flex-start;
 }
 
+.footer-logo-link {
+  display: inline-block;
+  transition: opacity 0.3s ease;
+}
+
 .footer-logo {
   width: 140px;
   height: 140px;
   object-fit: contain;
   padding-bottom: 2rem;
   padding-left: 2rem;
+}
+
+.footer-logo-link:hover {
+  opacity: 0.8;
 }
 
 .brand-text {

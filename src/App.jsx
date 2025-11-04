@@ -5,6 +5,8 @@ import Header from './components/Header';
 import Hero from './components/Hero';
 import About from './components/About';
 import Features from './components/Features';
+import AboutPage from './components/pages/AboutPage';
+import FeaturesPage from './components/pages/FeaturesPage';
 import Footer from './components/Footer';
 import TermsOfUse from './components/legal/termsofuse';
 import PrivacyPolicy from './components/legal/PrivacyPolicy';
@@ -12,6 +14,7 @@ import './styles/chalkboard.css';
 import './styles/header.css';
 import './styles/hero.css';
 import './styles/about.css';
+import './styles/about-page.css';
 import './styles/features.css';
 import './styles/footer.css';
 import './styles/legal.css';
@@ -49,6 +52,8 @@ function App() {
         <Header />
         <Routes>
           <Route path="/" element={<HomePage />} />
+          <Route path="/about" element={<AboutPage />} />
+          <Route path="/features" element={<FeaturesPage />} />
           <Route path="/terms-of-use" element={<TermsOfUse />} />
           <Route path="/privacy-policy" element={<PrivacyPolicy />} />
         </Routes>
