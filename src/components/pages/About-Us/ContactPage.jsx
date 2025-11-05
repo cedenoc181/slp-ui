@@ -1,11 +1,13 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import ReCAPTCHA from "react-google-recaptcha";
-import contactImage from '../../assets/images/spa-retro-logo-removebg.png';
-import '../../styles/contact-page.css';
+import contactImage from '../../../assets/images/spa-retro-logo-removebg.png';
+import '../../../styles/contact-page.css';
 
 function ContactPage() {
+
   const navigate = useNavigate();
+  
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -61,6 +63,10 @@ function ContactPage() {
       // Reset form
       setFormData({ name: '', email: '', issueType: '', message: '' });
       setCaptchaValue(null);
+
+    setTimeout(() => {
+      navigate('/contact');
+    }, 2000);
       
     } catch (error) {
       setSubmitStatus({ 
