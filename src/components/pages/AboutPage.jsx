@@ -9,7 +9,7 @@ function AboutPage() {
   return (
     <section className="about-page">
       <div className="container">
-        <h2 className="section-title">About Sandlot Picks Analytics</h2>
+        <h2 className="section-title">Sandlot Picks Analytics</h2>
         
         <div className="about-description">
           <h3>Our Mission</h3>

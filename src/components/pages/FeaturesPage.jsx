@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import '../../styles/features.css';
+import '../../styles/features-page.css';
 
 function FeaturesPage() {
   useEffect(() => {
@@ -9,7 +9,7 @@ function FeaturesPage() {
   return (
     <section className="features" style={{ paddingTop: '6rem', minHeight: '100vh' }}>
       <div className="container">
-        <h2 className="section-title">Our Features</h2>
+        <h2 className="section-title features-page-title">The Engine Behind Sandlot Picks</h2>
         
         <div className="features-grid">
           <div className="feature-card">
@@ -77,10 +77,10 @@ function FeaturesPage() {
               Learn the fundamentals of sports analytics and understand the methodology behind our predictions.
             </p>
             <ul>
-              <li>Data science tutorials</li>
               <li>Statistical concept explanations</li>
               <li>Model performance breakdowns</li>
               <li>Betting strategy guides</li>
+              <li>Bankoll management</li>
             </ul>
           </div>
 
@@ -139,30 +139,6 @@ function FeaturesPage() {
               <li>Fast loading times</li>
               <li>Cross-platform compatibility</li>
             </ul>
-          </div>
-        </div>
-
-        <div className="tech-stack-section" style={{ marginTop: '4rem' }}>
-          <h3 className="section-subtitle">Our Tech Stack</h3>
-          <div className="tech-grid">
-            <div className="tech-item">
-              <h4>Frontend</h4>
-              <ul>
-                <li>React.js – Core UI framework</li>
-                <li>JavaScript (ES6) – Logic and interactivity</li>
-                <li>CSS3 – Styling and layout</li>
-                <li>Chart.js / Recharts – Data visualization</li>
-              </ul>
-            </div>
-            <div className="tech-item">
-              <h4>Backend & ML</h4>
-              <ul>
-                <li>Python – Data processing and ML</li>
-                <li>Scikit-learn – Machine learning models</li>
-                <li>Pandas / NumPy – Data analysis</li>
-                <li>PostgreSQL – Data storage</li>
-              </ul>
-            </div>
           </div>
         </div>
       </div>

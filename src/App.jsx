@@ -15,6 +15,7 @@ import './styles/header.css';
 import './styles/hero.css';
 import './styles/about.css';
 import './styles/about-page.css';
+import './styles/features-page.css';
 import './styles/features.css';
 import './styles/footer.css';
 import './styles/legal.css';
