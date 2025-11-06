@@ -13,7 +13,7 @@ import FAQPage from './components/pages/Education/FAQPage';
 import Footer from './components/Footer';
 import TermsOfUse from './components/legal/termsofuse';
 import PrivacyPolicy from './components/legal/PrivacyPolicy';
-
+import HowToUsePage from './components/pages/Education/HowToUsePage';
 
 // styling imports
 import './styles/chalkboard.css';
@@ -28,6 +28,7 @@ import './styles/footer.css';
 import './styles/legal.css';
 import './styles/faq.css';
 import './styles/glossary.css';
+import './styles/howtouse.css';
 
 // Home page component
 function HomePage() {
@@ -67,6 +68,7 @@ function App() {
           <Route path="/contact" element={<ContactPage />} />
           <Route path="/glossary" element={<Glossary />} />
           <Route path="/faqs" element={<FAQPage />} />
+          <Route path="/how-to-use" element={<HowToUsePage />} />
           <Route path="/terms-of-use" element={<TermsOfUse />} />
           <Route path="/privacy-policy" element={<PrivacyPolicy />} />
         </Routes>
