@@ -9,6 +9,7 @@ import AboutPage from './components/pages/About-Us/AboutPage';
 import FeaturesPage from './components/pages/About-Us/FeaturesPage';
 import ContactPage from './components/pages/About-Us/ContactPage';
 import Glossary from './components/pages/Education/GlossaryPage';
+import FAQPage from './components/pages/Education/FAQPage';
 import Footer from './components/Footer';
 import TermsOfUse from './components/legal/termsofuse';
 import PrivacyPolicy from './components/legal/PrivacyPolicy';
@@ -25,6 +26,8 @@ import './styles/contact-page.css';
 import './styles/features.css';
 import './styles/footer.css';
 import './styles/legal.css';
+import './styles/faq.css';
+import './styles/glossary.css';
 
 // Home page component
 function HomePage() {
@@ -63,6 +66,7 @@ function App() {
           <Route path="/features" element={<FeaturesPage />} />
           <Route path="/contact" element={<ContactPage />} />
           <Route path="/glossary" element={<Glossary />} />
+          <Route path="/faqs" element={<FAQPage />} />
           <Route path="/terms-of-use" element={<TermsOfUse />} />
           <Route path="/privacy-policy" element={<PrivacyPolicy />} />
         </Routes>

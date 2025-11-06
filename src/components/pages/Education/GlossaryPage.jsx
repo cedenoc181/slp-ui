@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import glossaryData from '../../../data/glossary.json';
-import '../../../styles/glossary.css';
+
 
 function GlossaryPage() {
   const [searchTerm, setSearchTerm] = useState('');
