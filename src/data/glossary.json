@@ -1,0 +1,814 @@
+{
+    "version": "1.0",
+    "updatedAt": "2025-11-05",
+    "terms": [
+      {
+        "id": 1,
+        "term": "BABIP",
+        "fullName": "Batting Average on Balls In Play",
+        "category": "Batting",
+        "definition": "Measures how often a ball in play goes for a hit.",
+        "formula": "(H - HR) / (AB - K - HR + SF)",
+        "example": "A player with a .400 BABIP is likely experiencing good luck and may regress."
+      },
+      {
+        "id": 2,
+        "term": "ERA",
+        "fullName": "Earned Run Average",
+        "category": "Pitching",
+        "definition": "Average number of earned runs a pitcher allows per nine innings.",
+        "formula": "ER * 9 / IP",
+        "example": "An ERA under 3.00 is considered excellent."
+      },
+      {
+        "id": 3,
+        "term": "wOBA",
+        "fullName": "Weighted On-Base Average",
+        "category": "Batting",
+        "definition": "Combines offensive events using run-value weights to measure overall batting quality.",
+        "example": "League average wOBA is roughly .320."
+      },
+  
+      {
+        "id": 4,
+        "term": "AVG",
+        "fullName": "Batting Average",
+        "category": "Batting",
+        "definition": "Share of at-bats resulting in a hit.",
+        "formula": "H / AB",
+        "example": "A .300 AVG indicates 3 hits per 10 at-bats."
+      },
+      {
+        "id": 5,
+        "term": "OBP",
+        "fullName": "On-Base Percentage",
+        "category": "Batting",
+        "definition": "How often a batter reaches base.",
+        "formula": "(H + BB + HBP) / (AB + BB + HBP + SF)",
+        "example": ".360 OBP is above league average."
+      },
+      {
+        "id": 6,
+        "term": "SLG",
+        "fullName": "Slugging Percentage",
+        "category": "Batting",
+        "definition": "Average total bases per at-bat.",
+        "formula": "TB / AB",
+        "example": ".500 SLG suggests strong power."
+      },
+      {
+        "id": 7,
+        "term": "OPS",
+        "fullName": "On-Base Plus Slugging",
+        "category": "Batting",
+        "definition": "Simple combo of OBP and SLG to summarize production.",
+        "formula": "OBP + SLG",
+        "example": ".800 OPS is good; .900+ is elite."
+      },
+      {
+        "id": 8,
+        "term": "ISO",
+        "fullName": "Isolated Power",
+        "category": "Batting",
+        "definition": "Power-only measure, stripping out singles.",
+        "formula": "SLG - AVG",
+        "example": ".200 ISO indicates above-average power."
+      },
+      {
+        "id": 9,
+        "term": "wRC+",
+        "fullName": "Weighted Runs Created Plus",
+        "category": "Batting",
+        "definition": "Park- and league-adjusted run creation index (100 = league average).",
+        "example": "120 wRC+ means 20% better than league average."
+      },
+      {
+        "id": 10,
+        "term": "wRC",
+        "fullName": "Weighted Runs Created",
+        "category": "Batting",
+        "definition": "Estimated runs a hitter contributes based on wOBA and context.",
+        "example": "Higher wRC indicates more total offensive value."
+      },
+      {
+        "id": 11,
+        "term": "OPS+",
+        "fullName": "OPS Plus",
+        "category": "Batting",
+        "definition": "OPS adjusted for park and league (100 = average).",
+        "example": "An OPS+ of 140 is 40% better than league average."
+      },
+      {
+        "id": 12,
+        "term": "K%",
+        "fullName": "Strikeout Rate",
+        "category": "Batting",
+        "definition": "Percentage of plate appearances ending in strikeout.",
+        "formula": "SO / PA",
+        "example": "A 30% K% is high swing-and-miss."
+      },
+      {
+        "id": 13,
+        "term": "BB%",
+        "fullName": "Walk Rate",
+        "category": "Batting",
+        "definition": "Percentage of plate appearances ending in a walk.",
+        "formula": "BB / PA",
+        "example": "A 12% BB% indicates strong plate discipline."
+      },
+      {
+        "id": 14,
+        "term": "SwStr%",
+        "fullName": "Swinging Strike Percentage",
+        "category": "Batting",
+        "definition": "Share of pitches on which the batter swings and misses.",
+        "example": "Lower SwStr% correlates with better contact skills."
+      },
+      {
+        "id": 15,
+        "term": "HardHit%",
+        "fullName": "Hard-Hit Rate",
+        "category": "Batting",
+        "definition": "Percentage of batted balls hit 95+ mph.",
+        "example": "45% HardHit% suggests consistent quality contact."
+      },
+      {
+        "id": 16,
+        "term": "Barrel%",
+        "fullName": "Barrel Rate",
+        "category": "Batting",
+        "definition": "Share of batted balls with ideal exit velocity/launch angle for damage.",
+        "example": "10% Barrel% is very strong."
+      },
+      {
+        "id": 17,
+        "term": "EV",
+        "fullName": "Average Exit Velocity",
+        "category": "Batting",
+        "definition": "Average speed (mph) of a player's batted balls.",
+        "example": "92 mph EV implies above-average pop."
+      },
+      {
+        "id": 18,
+        "term": "LA",
+        "fullName": "Average Launch Angle",
+        "category": "Batting",
+        "definition": "Average vertical angle of batted balls.",
+        "example": "12–15° LA often yields more extra-base hits."
+      },
+      {
+        "id": 19,
+        "term": "GB%",
+        "fullName": "Ground Ball Percentage",
+        "category": "Batting",
+        "definition": "Share of batted balls hit on the ground.",
+        "example": "High GB% can suppress home runs."
+      },
+      {
+        "id": 20,
+        "term": "FB%",
+        "fullName": "Fly Ball Percentage",
+        "category": "Batting",
+        "definition": "Share of batted balls hit in the air (fly balls).",
+        "example": "Higher FB% can boost HR potential."
+      },
+      {
+        "id": 21,
+        "term": "LD%",
+        "fullName": "Line Drive Percentage",
+        "category": "Batting",
+        "definition": "Share of batted balls classified as line drives.",
+        "example": "Line drives have the highest hit probability."
+      },
+      {
+        "id": 22,
+        "term": "HR/FB",
+        "fullName": "Home Run per Fly Ball",
+        "category": "Batting",
+        "definition": "Percentage of fly balls that become home runs.",
+        "example": "Unusually high HR/FB can regress."
+      },
+      {
+        "id": 23,
+        "term": "Pull%",
+        "fullName": "Pull Percentage",
+        "category": "Batting",
+        "definition": "Share of batted balls hit to the pull side.",
+        "example": "Pull-heavy hitters may be shift-vulnerable (rules permitting)."
+      },
+      {
+        "id": 24,
+        "term": "Oppo%",
+        "fullName": "Opposite Field Percentage",
+        "category": "Batting",
+        "definition": "Share of batted balls hit to the opposite field.",
+        "example": "High Oppo% can indicate all-fields approach."
+      },
+      {
+        "id": 25,
+        "term": "WHIP",
+        "fullName": "Walks plus Hits per Inning Pitched",
+        "category": "Pitching",
+        "definition": "Base runners allowed per inning.",
+        "formula": "(BB + H) / IP",
+        "example": "1.10 WHIP is excellent."
+      },
+      {
+        "id": 26,
+        "term": "FIP",
+        "fullName": "Fielding Independent Pitching",
+        "category": "Pitching",
+        "definition": "Estimates pitcher performance using HR, BB, HBP, and K, independent of defense.",
+        "example": "FIP can better predict future ERA than past ERA alone."
+      },
+      {
+        "id": 27,
+        "term": "xFIP",
+        "fullName": "Expected Fielding Independent Pitching",
+        "category": "Pitching",
+        "definition": "Normalizes home run rate by using league-average HR/FB.",
+        "example": "If HR/FB was fluky, xFIP may differ from FIP."
+      },
+      {
+        "id": 28,
+        "term": "SIERA",
+        "fullName": "Skill-Interactive ERA",
+        "category": "Pitching",
+        "definition": "Advanced estimator of a pitcher's ERA using strikeouts, walks, and batted-ball mix.",
+        "example": "Often a strong predictor of future run prevention."
+      },
+      {
+        "id": 29,
+        "term": "K/9",
+        "fullName": "Strikeouts per Nine",
+        "category": "Pitching",
+        "definition": "Strikeouts scaled to nine innings.",
+        "formula": "SO * 9 / IP",
+        "example": "10.0 K/9 shows swing-and-miss stuff."
+      },
+      {
+        "id": 30,
+        "term": "BB/9",
+        "fullName": "Walks per Nine",
+        "category": "Pitching",
+        "definition": "Walks scaled to nine innings.",
+        "formula": "BB * 9 / IP",
+        "example": "Under 2.0 BB/9 indicates strong command."
+      },
+      {
+        "id": 31,
+        "term": "K-BB%",
+        "fullName": "Strikeout Minus Walk Percentage",
+        "category": "Pitching",
+        "definition": "Plate-discipline dominance metric.",
+        "formula": "K% - BB%",
+        "example": "15%+ is solid; 20%+ is excellent."
+      },
+      {
+        "id": 32,
+        "term": "CSW%",
+        "fullName": "Called Strikes + Whiffs Percentage",
+        "category": "Pitching",
+        "definition": "Share of pitches resulting in called strikes or swinging strikes.",
+        "example": "30%+ CSW% is strong."
+      },
+      {
+        "id": 33,
+        "term": "xERA",
+        "fullName": "Expected ERA",
+        "category": "Pitching",
+        "definition": "Model-based expected runs allowed using contact quality and strikeouts/walks.",
+        "example": "xERA below ERA can hint at positive regression."
+      },
+      {
+        "id": 34,
+        "term": "LOB%",
+        "fullName": "Left On Base Percentage",
+        "category": "Pitching",
+        "definition": "Share of base runners a pitcher strands.",
+        "example": "Extreme LOB% often regresses toward league norms."
+      },
+      {
+        "id": 35,
+        "term": "HR/9",
+        "fullName": "Home Runs per Nine",
+        "category": "Pitching",
+        "definition": "Home runs allowed scaled to nine innings.",
+        "formula": "HR * 9 / IP",
+        "example": "Keeping HR/9 low is critical in hitter-friendly parks."
+      },
+      {
+        "id": 36,
+        "term": "Stuff+",
+        "fullName": "Stuff Plus",
+        "category": "Pitching",
+        "definition": "Index of pitch quality using velocity, movement, and release; 100 = average.",
+        "example": "120 Stuff+ indicates well above-average raw stuff."
+      },
+      {
+        "id": 37,
+        "term": "Spin Rate",
+        "fullName": "Pitch Spin Rate",
+        "category": "Pitching",
+        "definition": "Revolutions per minute (rpm) of a pitch impacting movement and shape.",
+        "example": "High-spin four-seamers can play well up in the zone."
+      },
+      {
+        "id": 38,
+        "term": "First-Pitch Strike%",
+        "fullName": "First-Pitch Strike Percentage",
+        "category": "Pitching",
+        "definition": "How often a pitcher gets ahead 0–1.",
+        "example": "Higher first-pitch strike% often correlates with lower walks."
+      },
+      {
+        "id": 39,
+        "term": "Zone%",
+        "fullName": "Zone Percentage",
+        "category": "Pitching",
+        "definition": "Share of pitches thrown in the strike zone.",
+        "example": "Combining Zone% with chase rate (O-Swing%) informs command vs. deception."
+      },
+      {
+        "id": 40,
+        "term": "O-Swing%",
+        "fullName": "Chase Rate",
+        "category": "Pitching",
+        "definition": "Percentage of swings at pitches outside the zone.",
+        "example": "High O-Swing% shows a pitcher induces chase."
+      },
+  
+      {
+        "id": 41,
+        "term": "DRS",
+        "fullName": "Defensive Runs Saved",
+        "category": "Fielding",
+        "definition": "Runs saved above/below average on defense.",
+        "example": "+10 DRS indicates strong defensive value."
+      },
+      {
+        "id": 42,
+        "term": "UZR",
+        "fullName": "Ultimate Zone Rating",
+        "category": "Fielding",
+        "definition": "Runs saved using batted-ball location and difficulty.",
+        "example": "High UZR reflects range and sure-handedness."
+      },
+      {
+        "id": 43,
+        "term": "OAA",
+        "fullName": "Outs Above Average",
+        "category": "Fielding",
+        "definition": "Statcast-based estimate of outs saved above average.",
+        "example": "+8 OAA marks very good fielding."
+      },
+      {
+        "id": 44,
+        "term": "FRM",
+        "fullName": "Catcher Framing Runs",
+        "category": "Fielding",
+        "definition": "Runs a catcher adds via receiving and framing borderline pitches.",
+        "example": "Elite framers can add multiple runs over a season."
+      },
+      {
+        "id": 45,
+        "term": "ARM",
+        "fullName": "Outfield Arm Runs",
+        "category": "Fielding",
+        "definition": "Runs gained via throwing out runners or deterring advances.",
+        "example": "Strong arms increase ARM and reduce extra bases."
+      },
+      {
+        "id": 46,
+        "term": "SB%",
+        "fullName": "Stolen Base Percentage",
+        "category": "Baserunning",
+        "definition": "Success rate on steal attempts.",
+        "formula": "SB / (SB + CS)",
+        "example": "75%+ is generally break-even or better."
+      },
+      {
+        "id": 47,
+        "term": "BsR",
+        "fullName": "Base Running Runs",
+        "category": "Baserunning",
+        "definition": "Total baserunning value (steals, advancement, outs).",
+        "example": "+3 BsR means ~3 runs added on the bases."
+      },
+  
+      {
+        "id": 48,
+        "term": "WAR",
+        "fullName": "Wins Above Replacement",
+        "category": "Team",
+        "definition": "All-in-one value vs. a replacement player; scale varies by source.",
+        "example": "5+ WAR ≈ All-Star-level season."
+      },
+      {
+        "id": 49,
+        "term": "WPA",
+        "fullName": "Win Probability Added",
+        "category": "Team",
+        "definition": "Change in win probability credited to a player’s events.",
+        "example": "Clutch hits late can spike WPA."
+      },
+      {
+        "id": 50,
+        "term": "LI",
+        "fullName": "Leverage Index",
+        "category": "Team",
+        "definition": "Measures pressure of a game situation (1.0 = average).",
+        "example": "Closers often pitch in LI > 1.5 spots."
+      },
+      {
+        "id": 51,
+        "term": "Run Diff",
+        "fullName": "Run Differential",
+        "category": "Team",
+        "definition": "Runs scored minus runs allowed; proxy for team strength.",
+        "example": "+100 run differential typically correlates with strong records."
+      },
+      {
+        "id": 52,
+        "term": "Pythag",
+        "fullName": "Pythagorean Expectation",
+        "category": "Team",
+        "definition": "Expected winning percentage from runs scored/allowed.",
+        "formula": "RS^x / (RS^x + RA^x), x≈1.83",
+        "example": "Used to spot teams over/underperforming record."
+      },
+      {
+        "id": 53,
+        "term": "RE24",
+        "fullName": "Run Expectancy 24",
+        "category": "Team",
+        "definition": "Runs above/below average across the 24 base/out states.",
+        "example": "Captures value of sequencing and situational hitting."
+      },
+  
+      {
+        "id": 54,
+        "term": "Moneyline",
+        "fullName": "Moneyline",
+        "category": "Sports Betting",
+        "definition": "Bet on which team wins the game straight up.",
+        "example": "-150 favorite implies ~60% implied probability."
+      },
+      {
+        "id": 55,
+        "term": "Run Line",
+        "fullName": "Run Line (Spread)",
+        "category": "Sports Betting",
+        "definition": "Baseball’s spread, typically ±1.5 runs.",
+        "example": "+1.5 underdog must lose by ≤1 or win."
+      },
+      {
+        "id": 56,
+        "term": "Total",
+        "fullName": "Over/Under",
+        "category": "Sports Betting",
+        "definition": "Bet on combined runs scored by both teams.",
+        "example": "Over 8.5 cashes if 9+ total runs are scored."
+      },
+      {
+        "id": 57,
+        "term": "Vig",
+        "fullName": "Juice / Vigorish",
+        "category": "Sports Betting",
+        "definition": "Bookmaker’s commission embedded in odds.",
+        "example": "-110 sides imply ~4.5% hold if lines are balanced."
+      },
+      {
+        "id": 58,
+        "term": "Implied Prob",
+        "fullName": "Implied Probability",
+        "category": "Sports Betting",
+        "definition": "Probability implied by the odds.",
+        "formula": "For -A: A/(A+100); for +A: 100/(A+100)",
+        "example": "-150 ⇒ 60.0% implied; +150 ⇒ 40.0% implied."
+      },
+      {
+        "id": 59,
+        "term": "American Odds",
+        "fullName": "American Odds Format",
+        "category": "Sports Betting",
+        "definition": "Odds shown as +/- values vs. $100 baseline.",
+        "example": "+200 returns $200 profit on $100 stake."
+      },
+      {
+        "id": 60,
+        "term": "Decimal Odds",
+        "fullName": "Decimal Odds Format",
+        "category": "Sports Betting",
+        "definition": "Total return per $1 stake.",
+        "example": "1.80 returns $1.80 total on $1 stake."
+      },
+      {
+        "id": 61,
+        "term": "Fractional Odds",
+        "fullName": "Fractional Odds Format",
+        "category": "Sports Betting",
+        "definition": "Profit : Stake ratio.",
+        "example": "5/2 returns $5 profit per $2 stake."
+      },
+      {
+        "id": 62,
+        "term": "Parlay",
+        "fullName": "Parlay Bet",
+        "category": "Sports Betting",
+        "definition": "Combines multiple legs; all must win for payout.",
+        "example": "3-leg moneyline parlay increases payout and variance."
+      },
+      {
+        "id": 63,
+        "term": "Round Robin",
+        "fullName": "Round Robin Parlay",
+        "category": "Sports Betting",
+        "definition": "Creates multiple smaller parlays from a list of selections.",
+        "example": "A 3-team RR builds three 2-leg parlays."
+      },
+      {
+        "id": 64,
+        "term": "Props",
+        "fullName": "Proposition Bets",
+        "category": "Sports Betting",
+        "definition": "Wagers on player/team events (e.g., strikeouts, hits).",
+        "example": "Over 6.5 strikeouts for a starting pitcher."
+      },
+      {
+        "id": 65,
+        "term": "Futures",
+        "fullName": "Futures Market",
+        "category": "Sports Betting",
+        "definition": "Season-long outcomes (e.g., World Series winner).",
+        "example": "Team to win division at +350."
+      },
+      {
+        "id": 66,
+        "term": "Live Betting",
+        "fullName": "In-Game Betting",
+        "category": "Sports Betting",
+        "definition": "Wagering while the game is in progress.",
+        "example": "Take the over after a low-scoring first inning at a better number."
+      },
+      {
+        "id": 67,
+        "term": "CLV",
+        "fullName": "Closing Line Value",
+        "category": "Sports Betting",
+        "definition": "Difference between your bet’s odds and the market’s closing odds.",
+        "example": "Betting Over 8.0 that closes 8.5 shows positive CLV."
+      },
+      {
+        "id": 68,
+        "term": "EV",
+        "fullName": "Expected Value",
+        "category": "Sports Betting",
+        "definition": "Average profit/loss of a bet over many trials.",
+        "example": "A +EV edge exists when true probability exceeds implied probability."
+      },
+      {
+        "id": 69,
+        "term": "Kelly",
+        "fullName": "Kelly Criterion",
+        "category": "Sports Betting",
+        "definition": "Bankroll staking formula maximizing long-term growth.",
+        "example": "Bet fraction = (bp - q)/b for decimal odds b with win prob p."
+      },
+      {
+        "id": 70,
+        "term": "Bankroll",
+        "fullName": "Bankroll Management",
+        "category": "Sports Betting",
+        "definition": "Sizing bets to reduce risk of ruin.",
+        "example": "Flat 1–2% unit sizing is common."
+      },
+      {
+        "id": 71,
+        "term": "Middle",
+        "fullName": "Middling",
+        "category": "Sports Betting",
+        "definition": "Holding positions on both sides at different numbers to win both if final lands in between.",
+        "example": "Under 9.5 early and Over 8.0 late creates a middle at 9."
+      },
+      {
+        "id": 72,
+        "term": "Hedge",
+        "fullName": "Hedging",
+        "category": "Sports Betting",
+        "definition": "Taking an opposing bet to reduce variance or lock profits.",
+        "example": "Hedge a longshot future after team reaches the finals."
+      },
+  
+      {
+        "id": 73,
+        "term": "RandomForestRegressor",
+        "fullName": "Random Forest Regressor",
+        "category": "Machine Learning",
+        "definition": "Ensemble of decision trees averaging predictions to reduce variance.",
+        "example": "Used to predict runs scored using many correlated features."
+      },
+      {
+        "id": 74,
+        "term": "XGBoost",
+        "fullName": "Extreme Gradient Boosting",
+        "category": "Machine Learning",
+        "definition": "Gradient-boosted trees optimized for speed and regularization.",
+        "example": "Commonly outperforms single models on tabular sports data."
+      },
+      {
+        "id": 75,
+        "term": "Learning Rate",
+        "fullName": "Boosting Learning Rate",
+        "category": "Machine Learning",
+        "definition": "Step size for boosting updates; lower often needs more trees.",
+        "example": "eta = 0.05 with 2000 estimators."
+      },
+      {
+        "id": 76,
+        "term": "Max Depth",
+        "fullName": "Tree Maximum Depth",
+        "category": "Machine Learning",
+        "definition": "Controls interaction complexity and overfitting.",
+        "example": "Depth 6–8 is a common starting range."
+      },
+      {
+        "id": 77,
+        "term": "n_estimators",
+        "fullName": "Number of Trees",
+        "category": "Machine Learning",
+        "definition": "Total boosting iterations or forest trees.",
+        "example": "500 trees with early stopping on validation loss."
+      },
+      {
+        "id": 78,
+        "term": "CV",
+        "fullName": "Cross-Validation",
+        "category": "Machine Learning",
+        "definition": "Resampling method to estimate out-of-sample performance.",
+        "example": "K-fold CV with time-aware splits for season data."
+      },
+      {
+        "id": 79,
+        "term": "Train/Test Split",
+        "fullName": "Holdout Validation",
+        "category": "Machine Learning",
+        "definition": "Partition data to assess generalization.",
+        "example": "Train on past seasons, test on current season."
+      },
+      {
+        "id": 80,
+        "term": "TimeSeriesSplit",
+        "fullName": "Time Series Cross-Validation",
+        "category": "Machine Learning",
+        "definition": "Sequential folds that respect temporal ordering.",
+        "example": "Walk-forward validation for daily MLB games."
+      },
+      {
+        "id": 81,
+        "term": "MAE",
+        "fullName": "Mean Absolute Error",
+        "category": "Machine Learning",
+        "definition": "Average absolute difference between predictions and targets.",
+        "example": "MAE of 0.65 runs on total-runs prediction."
+      },
+      {
+        "id": 82,
+        "term": "MSE",
+        "fullName": "Mean Squared Error",
+        "category": "Machine Learning",
+        "definition": "Average squared error; penalizes large misses.",
+        "example": "Used for hyperparameter tuning alongside MAE."
+      },
+      {
+        "id": 83,
+        "term": "RMSE",
+        "fullName": "Root Mean Squared Error",
+        "category": "Machine Learning",
+        "definition": "Square root of MSE; error in original units.",
+        "example": "RMSE of 0.85 runs is easier to interpret than MSE."
+      },
+      {
+        "id": 84,
+        "term": "R²",
+        "fullName": "Coefficient of Determination",
+        "category": "Machine Learning",
+        "definition": "Share of variance explained by the model.",
+        "example": "R² of 0.25 is typical for noisy sports outcomes."
+      },
+      {
+        "id": 85,
+        "term": "Feature Engineering",
+        "fullName": "Feature Engineering",
+        "category": "Machine Learning",
+        "definition": "Creating informative predictors from raw data.",
+        "example": "Rolling 14-day wOBA or park-adjusted metrics."
+      },
+      {
+        "id": 86,
+        "term": "Leakage",
+        "fullName": "Target Leakage",
+        "category": "Machine Learning",
+        "definition": "Using future or label-derived info in training features.",
+        "example": "Including final score in a pregame model is leakage."
+      },
+      {
+        "id": 87,
+        "term": "Regularization",
+        "fullName": "L1/L2 Regularization",
+        "category": "Machine Learning",
+        "definition": "Penalties to reduce overfitting by shrinking weights.",
+        "example": "XGBoost’s lambda and alpha terms."
+      },
+      {
+        "id": 88,
+        "term": "Early Stopping",
+        "fullName": "Early Stopping",
+        "category": "Machine Learning",
+        "definition": "Stop training when validation metric stops improving.",
+        "example": "Patience of 100 rounds on eval_set."
+      },
+      {
+        "id": 89,
+        "term": "Grid Search",
+        "fullName": "Grid Search Hyperparameter Tuning",
+        "category": "Machine Learning",
+        "definition": "Exhaustive search over specified parameter grids.",
+        "example": "Try depths {4,6,8} × learning rates {0.03,0.1}."
+      },
+      {
+        "id": 90,
+        "term": "Random Search",
+        "fullName": "Randomized Hyperparameter Search",
+        "category": "Machine Learning",
+        "definition": "Sample parameter combinations randomly for efficiency.",
+        "example": "Use distributions for max_depth and min_child_weight."
+      },
+      {
+        "id": 91,
+        "term": "Feature Importance",
+        "fullName": "Model Feature Importance",
+        "category": "Machine Learning",
+        "definition": "Relative contribution of features to model predictions.",
+        "example": "Gain-based importances highlight impactful stats."
+      },
+      {
+        "id": 92,
+        "term": "SHAP",
+        "fullName": "SHapley Additive exPlanations",
+        "category": "Machine Learning",
+        "definition": "Game-theory method to attribute prediction contributions.",
+        "example": "Explains why a game total was projected high."
+      },
+      {
+        "id": 93,
+        "term": "Pipeline",
+        "fullName": "ML Pipeline",
+        "category": "Machine Learning",
+        "definition": "Chained steps for preprocessing and modeling.",
+        "example": "Scale → encode → model with cross-validation."
+      },
+      {
+        "id": 94,
+        "term": "Baseline",
+        "fullName": "Baseline Model",
+        "category": "Machine Learning",
+        "definition": "Simple benchmark to beat before complex models.",
+        "example": "Predict league-average runs adjusted for park."
+      },
+  
+      {
+        "id": 95,
+        "term": "ETL",
+        "fullName": "Extract, Transform, Load",
+        "category": "Data Engineering",
+        "definition": "Process of ingesting and preparing data for analytics.",
+        "example": "Pull from stats APIs, clean, and load to PostgreSQL."
+      },
+      {
+        "id": 96,
+        "term": "API",
+        "fullName": "Application Programming Interface",
+        "category": "Tech",
+        "definition": "Interface for programmatically requesting data or actions.",
+        "example": "statsapi.mlb.com endpoints for schedules and stats."
+      },
+      {
+        "id": 97,
+        "term": "Rate Limiting",
+        "fullName": "API Rate Limiting",
+        "category": "Tech",
+        "definition": "Restrictions on request frequency.",
+        "example": "Throttle calls to theoddsapi.com to avoid 429 errors."
+      },
+      {
+        "id": 98,
+        "term": "PostgreSQL",
+        "fullName": "PostgreSQL Database",
+        "category": "Data Engineering",
+        "definition": "Relational database used for storing structured data.",
+        "example": "Games, markets, and features stored in normalized tables."
+      }
+    ]
+  }
+  

@@ -1,0 +1,7 @@
+-make privacy and terms of use data into a Json file then loop through that 
+to make updates easier.
+
+-for content, make yesavage video with mcgreggor "Who the fuck is this guy"
+Then him proceeding to dominate the playoffs 
+
+-

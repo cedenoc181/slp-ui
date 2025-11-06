@@ -8,9 +8,13 @@ import Features from './components/Features';
 import AboutPage from './components/pages/About-Us/AboutPage';
 import FeaturesPage from './components/pages/About-Us/FeaturesPage';
 import ContactPage from './components/pages/About-Us/ContactPage';
+import Glossary from './components/pages/Education/GlossaryPage';
 import Footer from './components/Footer';
 import TermsOfUse from './components/legal/termsofuse';
 import PrivacyPolicy from './components/legal/PrivacyPolicy';
+
+
+// styling imports
 import './styles/chalkboard.css';
 import './styles/header.css';
 import './styles/hero.css';
@@ -58,6 +62,7 @@ function App() {
           <Route path="/about" element={<AboutPage />} />
           <Route path="/features" element={<FeaturesPage />} />
           <Route path="/contact" element={<ContactPage />} />
+          <Route path="/glossary" element={<Glossary />} />
           <Route path="/terms-of-use" element={<TermsOfUse />} />
           <Route path="/privacy-policy" element={<PrivacyPolicy />} />
         </Routes>
