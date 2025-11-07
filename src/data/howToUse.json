@@ -32,7 +32,7 @@
               "title": "Join Our Discord Community",
               "description": "Connect with fellow data-driven bettors and get real-time updates:",
               "items": [
-                "Daily predictions posted at 10:00 AM ET",
+                "Daily predictions posted during MLB season",
                 "Live discussions and insights",
                 "Direct support from our team",
                 "Community picks and strategies"
@@ -86,8 +86,8 @@
               "icon": "❓",
               "question": "When are betting predictions usually posted?",
               "subtitle": "Wondering what time you should check in for the latest picks?",
-              "answer": "Picks are usually posted around 10:00 AM Eastern Time. This gives you plenty of time to review before games start.",
-              "highlight": "10:00 AM Eastern Time"
+              "answer": "Picks are usually posted around 10:00 AM - 2:00 PM Eastern Time for the duration of MLB season. This gives you plenty of time to review before games start.",
+              "highlight": "10:00 AM - 2:00 PM Eastern Time"
             },
             {
               "id": 2,
@@ -158,22 +158,22 @@
         },
         {
           "type": "screenshots",
-          "title": "Discord Community Preview",
+          "title": "Discord Community Channels",
           "images": [
             {
-              "src": "discord-predictions.png",
+              "src": "pitcher_prop.png",
               "alt": "Discord Predictions Channel",
-              "caption": "Predictions Channel"
+              "caption": "Player Prop Predictions"
             },
             {
-              "src": "discord-channels.png",
-              "alt": "Discord Channel Structure",
-              "caption": "Channel Organization"
+              "src": "mlb_news.png",
+              "alt": "Discord MLB news Channel",
+              "caption": "MLB news and Updates"
             },
             {
-              "src": "discord-community.png",
-              "alt": "Discord Community Discussion",
-              "caption": "Community Discussions"
+              "src": "pick_analysis.png",
+              "alt": "Discord Analysis Channel",
+              "caption": "Prediction Analysis"
             }
           ]
         },

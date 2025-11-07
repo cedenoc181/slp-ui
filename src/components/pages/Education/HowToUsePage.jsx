@@ -88,11 +88,13 @@ function HowToUsePage() {
             <div className="screenshot-grid">
               {section.images.map((img, idx) => (
                 <div key={idx} className="screenshot-card">
-                  {/* <img
-                    src={require(`../../assets/images/${img.src}`)}
-                    alt={img.alt}
-                  /> */}
-                  {/* <p>{img.caption}</p> */}
+                  <div className="screenshot-wrapper">
+                    <img
+                      src={require(`../../../assets/images/${img.src}`)}
+                      alt={img.alt}
+                    />
+                  </div>
+                  <p>{img.caption}</p>
                 </div>
               ))}
             </div>
