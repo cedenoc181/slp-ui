@@ -1,0 +1,432 @@
+{
+    "schema_version": "1.0",
+    "site": "sandlotpicks.com",
+    "generated_at": "2025-11-08",
+    "blogs": [
+      {
+        "id": 1,
+        "title": "Manage Your Bankroll Like Wall Street Manages Theirs",
+        "slug": "bankroll-management",
+        "author": "Sandlot Picks Team",
+        "date": "2025-11-04",
+        "status": "Final",
+        "tags": ["bankroll", "betting strategy", "risk management", "units"],
+        "summary": "Proper bankroll management protects you from volatility, keeps emotions in check, and turns a small edge into long-term ROI.",
+        "read_time_minutes": 4,
+        "estimated_word_count": 869, 
+        "hero_image": {
+          "url": "/blog-heros/SPA-blog-1-bankroll-hero.png",
+          "alt": "Bag of cash and wallet with money"
+        },
+        "content": [
+            {
+              "type": "heading",
+              "text": "Manage Your Bankroll Like Wall Street Manages Theirs"
+            },
+            {
+              "type": "paragraph",
+              "text": "Most casual bettors treat their bankroll like pocket change—fun money to sprinkle across weekend games. But sharp bettors know better: your bankroll is your capital, and how you manage it can be the difference between a short-term heater and long-term profitability."
+            },
+            {
+              "type": "paragraph",
+              "text": "Want to think like a pro? Start managing your bankroll the way Wall Street manages money."
+            },
+            {
+              "type": "heading",
+              "text": "The Bankroll = Your Trading Capital"
+            },
+            {
+              "type": "paragraph",
+              "text": "On Wall Street, a hedge fund doesn’t throw its entire capital on one risky position. Every trade is sized carefully based on risk, expected return, and volatility. The same should apply to your bets."
+            },
+            {
+              "type": "paragraph",
+              "text": "Your bankroll isn’t just money—it’s your inventory of opportunity. If you run out, you’re out of the game. The goal isn’t to win every bet. The goal is to maximize returns while minimizing risk."
+            },
+            {
+              "type": "heading",
+              "text": "Bet Sizing = Risk Management"
+            },
+            {
+              "type": "paragraph",
+              "text": "Wall Street traders use concepts like “position sizing” and “risk per trade” to avoid overexposing themselves. Smart bettors do the same."
+            },
+            {
+              "type": "paragraph",
+              "text": "Example: Many sharp bettors risk 1-3% of their bankroll per bet, depending on confidence level and edge. That may sound conservative, but it protects you from ruin during inevitable downswings."
+            },
+            {
+              "type": "paragraph",
+              "text": "It’s called the Kelly Criterion in betting circles and portfolio risk management on Wall Street. Either way, it’s the same idea: never bet so much that one loss wipes you out."
+            },
+            {
+              "type": "heading",
+              "text": "Diversify Your Action"
+            },
+            {
+              "type": "paragraph",
+              "text": "Wall Street portfolios are diversified across industries and asset classes. The goal is to reduce volatility while capturing upside."
+            },
+            {
+              "type": "paragraph",
+              "text": "In betting? Don’t overload on parlays, emotional team picks, or one sport. Spread your bets across different markets—totals, props, sides, even different leagues. If you’re only betting NFL Sundays, you're leaving opportunity (and edge) on the table."
+            },
+            {
+              "type": "paragraph",
+              "text": "Think of each bet like a trade—some will lose, some will win, but diversification smooths out the ride."
+            },
+            {
+              "type": "heading",
+              "text": "Track Performance Like a P&L"
+            },
+            {
+              "type": "paragraph",
+              "text": "Would Wall Street investors make decisions without tracking their performance? Never."
+            },
+            {
+              "type": "paragraph",
+              "text": "You shouldn’t either."
+            },
+            {
+              "type": "paragraph",
+              "text": "Maintain a betting journal or use tracking tools to monitor:"
+            },
+            {
+              "type": "list",
+              "items": [
+                "ROI (Return on Investment)",
+                "CLV (Closing Line Value)",
+                "Win/Loss by bet type, sport, or market"
+              ]
+            },
+            {
+              "type": "paragraph",
+              "text": "This data helps you identify where your edge actually lies—just like a fund manager tracking which sectors are outperforming."
+            },
+            {
+              "type": "heading",
+              "text": "Emotional Discipline = Trader’s Mindset"
+            },
+            {
+              "type": "paragraph",
+              "text": "The best traders don’t chase losses. They stick to the plan, even when the market swings. The same applies to betting."
+            },
+            {
+              "type": "list",
+              "items": [
+                "Avoid tilt.",
+                "Don’t “double down” after a bad beat.",
+                "Trust the long-term strategy over short-term results."
+              ]
+            },
+            {
+              "type": "paragraph",
+              "text": "Bankroll management is about removing emotion from the equation. It’s easier to do when you treat your bets like positions, not personal vendettas."
+            },
+            {
+              "type": "heading",
+              "text": "Avoid Overleveraging"
+            },
+            {
+              "type": "paragraph",
+              "text": "In finance, using too much leverage (borrowed capital) can wipe out an entire fund. In betting, it’s the equivalent of chasing bets with money you can’t afford to lose or trying to “win it all back” in one big parlay."
+            },
+            {
+              "type": "list",
+              "items": [
+                "Rule 1: Never bet with borrowed money.",
+                "Rule 2: Never bet more than your system suggests—even when you “feel good” about a game."
+              ]
+            },
+            {
+              "type": "paragraph",
+              "text": "Upside is attractive, but preservation of capital is everything."
+            },
+            {
+              "type": "heading",
+              "text": "Stay Liquid"
+            },
+            {
+              "type": "paragraph",
+              "text": "Wall Street funds always keep some cash on hand—for emergencies, new opportunities, or to rebalance portfolios."
+            },
+            {
+              "type": "paragraph",
+              "text": "Apply this to your bankroll. If you blow 100% of your funds before the playoffs, you won’t be around when the real value shows up. Stay flexible. Stay liquid. Leave room to pounce when the odds swing in your favor."
+            },
+            {
+              "type": "heading",
+              "text": "Final Thoughts: Be the Fund Manager of Your Own Bankroll"
+            },
+            {
+              "type": "paragraph",
+              "text": "At the end of the day, smart betting isn't about wild picks or gut instincts—it’s about strategy, discipline, and risk management."
+            },
+            {
+              "type": "list",
+              "items": [
+                "The best bettors don’t just think like gamblers.",
+                "They think like portfolio managers.",
+                "They don’t chase wins—they build sustainable returns."
+              ]
+            }
+        ],
+        "seo": {
+          "title_tag": "Bankroll Management for Sports Betting | Sandlot Picks",
+          "meta_description": "Learn how to set unit size, control risk, and avoid tilt with proven bankroll management methods used by disciplined sports bettors.",
+          "keywords": [
+            "bankroll management",
+            "Wall Street",
+            "sports betting bankroll",
+            "unit size",
+            "kelly criterion",
+            "bet tracking"
+          ],
+          "canonical_url": "https://sandlotpicks.com/blog/bankroll-management", 
+          "og_image": "https://sandlotpicks.com/blog-heros/SPA-blog-1-bankroll-hero.png"
+        },
+        "related_posts": ["machine-learning-sports-betting", "baseball-analytics-vs-intuition"]
+      },
+      {
+        "id": 2,
+        "title": "Machine Learning and Sports Betting: The Future of Predictions",
+        "slug": "machine-learning-sports-betting",
+        "author": "Sandlot Picks Team",
+        "date": "2025-11-06",
+        "status": "Final",
+        "tags": ["machine learning", "sports analytics", "XGBoost", "Random Forest", "model evaluation"],
+        "summary": "A practical look at how ML models like Random Forests and XGBoost turn raw sports data into actionable betting edges.",
+        "read_time_minutes": 5,
+        "estimated_word_count": 849,
+        "hero_image": {
+          "url": "/blog-heros/SPA-blog-2-Ml-sports-betting-hero.png",
+          "alt": "Laptop screen with sports data charts and model outputs"  
+        },
+        "content": [
+            {
+              "type": "heading",
+              "text": "Machine Learning and Sports Betting: The Future of Predictions"
+            },
+            {
+              "type": "paragraph",
+              "text": "In the evolving world of sports betting, gut instinct is being replaced—or at least enhanced—by data. And at the center of this shift is machine learning (ML), a powerful tool that’s reshaping how predictions are made, odds are assessed, and value is found in the market."
+            },
+            {
+              "type": "paragraph",
+              "text": "Machine learning isn’t just a buzzword—it’s becoming one of the sharpest tools bettors can use to gain an edge."
+            },
+            {
+              "type": "heading",
+              "text": "Betting Smarter with Machine Learning"
+            },
+            {
+              "type": "paragraph",
+              "text": "At its core, machine learning involves training algorithms to learn from historical data and make predictions without being explicitly programmed for each situation. In sports betting, this means feeding models information about past games, player stats, injuries, weather, and even betting line movements to uncover patterns humans might miss."
+            },
+            {
+              "type": "paragraph",
+              "text": "Where traditional bettors rely on trends or intuition, ML models detect subtle correlations across massive datasets. They can estimate not just who will win, but how likely that outcome is—and whether the betting line offers value."
+            },
+            {
+              "type": "heading",
+              "text": "Why It Works"
+            },
+            {
+              "type": "list",
+              "items": [
+                "Scales With Data: The more data available, the smarter the model becomes—perfect for sports where every play, injury, or decision is logged.",
+                "Finds Hidden Patterns: ML can spot non-obvious connections between stats, like how weather affects player performance or how travel impacts outcomes.",
+                "Real-Time Updates: Some models can adjust on the fly, responding to new information like lineup changes or in-game events."
+              ]
+            },
+            {
+              "type": "paragraph",
+              "text": "Rather than replace human judgment, ML adds a layer of objective insight that can reduce bias and improve decision-making."
+            },
+            {
+              "type": "heading",
+              "text": "Popular Models in Sports Betting"
+            },
+            {
+              "type": "list",
+              "items": [
+                "Logistic Regression – Great for binary outcomes like win/loss or over/under.",
+                "Random Forests & XGBoost – Excellent at handling structured data and identifying complex interactions.",
+                "Neural Networks – More advanced, used when analyzing time series or video-based data."
+              ]
+            },
+            {
+              "type": "paragraph",
+              "text": "Many pros use ensemble models—combinations of different algorithms—to improve accuracy and reduce risk."
+            },
+            {
+              "type": "heading",
+              "text": "Real-World Use Cases"
+            },
+            {
+              "type": "list",
+              "items": [
+                "In-Game Betting: ML models adjust win probabilities as games progress, helping bettors act faster than sportsbooks in some cases.",
+                "Player Props: Predicting individual player performance using simulation-based models trained on past outcomes.",
+                "Market Inefficiencies: Identifying mispriced lines where public sentiment doesn’t match statistical reality."
+              ]
+            },
+            {
+              "type": "paragraph",
+              "text": "For example, if a sportsbook undervalues a player’s chances of hitting a home run based on recent cold streaks, but an ML model shows his contact quality and launch angle are improving, there may be betting value."
+            },
+            {
+              "type": "heading",
+              "text": "But It’s Not Magic"
+            },
+            {
+              "type": "paragraph",
+              "text": "Machine learning offers an edge—but not certainty. Sports are chaotic, and even the most accurate models can’t predict fluke injuries, referee decisions, or emotional swings."
+            },
+            {
+              "type": "paragraph",
+              "text": "Also, sportsbooks use machine learning too. They're constantly updating lines, detecting suspicious activity, and adjusting pricing to protect their margins. This means bettors must stay one step ahead, constantly refining their models and assumptions."
+            },
+            {
+              "type": "heading",
+              "text": "What’s Next?"
+            },
+            {
+              "type": "list",
+              "items": [
+                "More Personalization: Predictive tools tailored to individual betting styles or preferred markets.",
+                "Micro-Betting Expansion: ML enables faster calculations, opening up bets on every pitch, play, or possession.",
+                "Greater Transparency: As models get more complex, bettors will demand more clarity on how predictions are made."
+              ]
+            },
+            {
+              "type": "heading",
+              "text": "Final Thoughts"
+            },
+            {
+              "type": "paragraph",
+              "text": "Machine learning isn’t about replacing the thrill of betting—it’s about betting smarter. As data becomes more accessible and models more advanced, the advantage will go to those who combine analytics with experience, and algorithms with instinct."
+            },
+            {
+              "type": "paragraph",
+              "text": "Whether you’re a casual bettor or a data-driven sharp, one thing is clear: the future of sports betting belongs to those who can think like a computer—but bet like a human."
+            },
+            {
+              "type": "paragraph",
+              "text": "Want more insights or tools to sharpen your edge? Stay connected with Sandlot Picks for future breakdowns, tips, and tech-powered strategies."
+            }
+        ],
+        "seo": {
+          "title_tag": "Machine Learning in Sports Betting (XGBoost, RF) | Sandlot Picks",
+          "meta_description": "How Random Forest and XGBoost models forecast games, the features that matter, and how to validate results for real betting decisions.",
+          "keywords": [
+            "sports betting machine learning",
+            "XGBoost sports",
+            "random forest predictions",
+            "model validation MSE MAE",
+            "sports analytics features"
+          ],
+          "canonical_url": "https://sandlotpicks.com/blogs/machine-learning-sports-betting",
+          "og_image": "https://sandlotpicks.com/blog-heros/SPA-blog-2-Ml-sports-betting-hero.png"
+        },
+        "related_posts": ["bankroll-management", "baseball-analytics-vs-intuition"]
+      },
+      {
+        "id": 3,
+        "title": "Baseball: Is It a Game of Analytics or Intuition?",
+        "slug": "baseball-analytics-vs-intuition",
+        "author": "Sandlot Picks Team",
+        "date": "2025-11-08",
+        "status": "Final",
+        "tags": ["baseball", "MLB", "sabermetrics", "analytics", "betting strategy", "Michael Lewis", "moneyball", "money ball"],
+        "summary": "From Moneyball to modern sabermetrics, MLB is a proving ground for data-driven decisions—what that means for bettors.",
+        "read_time_minutes": 5,
+        "estimated_word_count": 872,
+        "hero_image": {
+          "url": "/blog-heros/SPA-blog-3-hero.png",
+          "alt": "Baseball scorecard with plotted spray charts and stats sheets"
+        },
+        "content": [
+            {
+              "type": "heading",
+              "text": "Baseball: Is It a Game of Analytics or Intuition?"
+            },
+            {
+              "type": "paragraph",
+              "text": "Baseball has long been described as a game of feel—pitchers relying on their gut to choose the right pitch, hitters trusting their instincts in the batter’s box, and managers making calls based on experience and momentum. But in the modern era, the soul of the game is increasingly being measured in data points and spreadsheets. This raises an important question: is baseball still a game of intuition, or has it fully transformed into a realm ruled by analytics?"
+            },
+            {
+              "type": "paragraph",
+              "text": "While the romantic version of the game still holds a place in fans' hearts, there's no denying the shift. Teams now make decisions based not only on scouting reports and player chemistry, but also on sophisticated algorithms and performance models. The spark of intuition hasn't disappeared—but it’s now checked against the data before decisions are made."
+            },
+            {
+              "type": "heading",
+              "text": "How Moneyball Changed MLB Front Offices"
+            },
+            {
+              "type": "paragraph",
+              "text": "This shift didn’t happen overnight. The turning point came in the early 2000s with the Oakland Athletics and their pioneering use of analytics—popularized in Michael Lewis’ Moneyball. Faced with one of the smallest payrolls in the league, the A’s front office, led by GM Billy Beane, used advanced metrics to identify undervalued players who could contribute in big ways."
+            },
+            {
+              "type": "paragraph",
+              "text": "Instead of chasing traditional stats like batting average or RBIs, Beane’s front office focused on on-base percentage and slugging—numbers that more accurately reflected a player’s true value. The result? A team that consistently outperformed its payroll and made playoff runs despite financial limitations."
+            },
+            {
+              "type": "paragraph",
+              "text": "The Moneyball approach didn’t just help the A’s—it rippled through Major League Baseball. Front offices began hiring data scientists, building analytics departments, and prioritizing evidence-based strategies. Today, every MLB team incorporates some form of analytics into its decision-making process."
+            },
+            {
+              "type": "heading",
+              "text": "Key Metrics That Define Today’s Game"
+            },
+            {
+              "type": "paragraph",
+              "text": "The data revolution has given rise to a whole new set of metrics that help front offices evaluate players more precisely than ever before. Among the most impactful:"
+            },
+            {
+              "type": "list",
+              "items": [
+                "wOBA (Weighted On-Base Average): Goes beyond OBP by assigning value to each type of hit, offering a more complete view of offensive performance.",
+                "xwOBA (Expected wOBA): Combines quality of contact, strikeouts, and walks to estimate what a player’s wOBA should be, based on underlying skills.",
+                "FIP (Fielding Independent Pitching): Measures a pitcher’s effectiveness based on outcomes they can control—strikeouts, walks, hit-by-pitches, and home runs—removing defense from the equation.",
+                "WAR (Wins Above Replacement): A catch-all stat that estimates a player’s overall contribution to their team, both offensively and defensively.",
+                "Stuff+: Quantifies the quality of a pitcher’s raw stuff—velocity, movement, release point—relative to league average.",
+                "Park Factors: Adjusts stats based on how hitter- or pitcher-friendly a stadium is, giving more context to raw performance numbers."
+              ]
+            },
+            {
+              "type": "paragraph",
+              "text": "These metrics have become critical tools for scouting, player development, roster construction, and even in-game strategy. In many cases, they are now trusted over a scout’s gut feeling or a manager’s hunch. A pitcher might be passed over despite a “good look” if his underlying FIP and Stuff+ don’t back it up. A hitter may get the call-up because his xwOBA suggests he’s due for a breakout."
+            },
+            {
+              "type": "heading",
+              "text": "The New Balance Between Data and Feel"
+            },
+            {
+              "type": "paragraph",
+              "text": "So, has intuition been replaced? Not entirely. The best teams blend data with human insight. They use analytics to inform decisions but still value the eyes and experience of scouts, coaches, and players. It’s no longer a debate of analytics vs. intuition—it’s a matter of integration."
+            },
+            {
+              "type": "paragraph",
+              "text": "The game is evolving, and the front office is no longer just a place for baseball lifers—it’s now filled with analysts, coders, and data scientists working alongside former players. The future of baseball may be built on data, but it still thrives on the rhythm, strategy, and unpredictability that make the game so beloved."
+            }
+          ],
+        "seo": {
+          "title_tag": "Baseball Analytics vs. Intuition in Betting | Sandlot Picks",
+          "meta_description": "Explore sabermetrics like wOBA and FIP, how they inform MLB betting models, and when intuition still plays a role.",
+          "keywords": [
+            "baseball analytics",
+            "MLB betting models",
+            "sabermetrics wOBA FIP",
+            "Moneyball",
+            "Michael Lewis",
+            "sports betting strategy"
+          ],
+          "canonical_url": "https://sandlotpicks.com/blogs/baseball-analytics-vs-intuition",
+          "og_image": "https://sandlotpicks.com/blog-heros/SPA-blog-3-hero.png"  
+        },
+        "related_posts": ["machine-learning-sports-betting", "bankroll-management"]
+      }
+    ]
+  }
+  

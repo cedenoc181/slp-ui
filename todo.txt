@@ -5,3 +5,49 @@ to make updates easier.
 Then him proceeding to dominate the playoffs 
 
 -
+
+
+useEffect(() => {
+  if (post?.seo?.canonical_url) {
+    // Set canonical URL
+    const canonicalLink = document.querySelector('link[rel="canonical"]') || document.createElement('link');
+    canonicalLink.setAttribute('rel', 'canonical');
+    canonicalLink.setAttribute('href', post.seo.canonical_url);
+    if (!document.querySelector('link[rel="canonical"]')) {
+      document.head.appendChild(canonicalLink);
+    }
+
+    // Set page title
+    document.title = post.seo.title_tag;
+
+    // Set meta description
+    const metaDescription = document.querySelector('meta[name="description"]') || document.createElement('meta');
+    metaDescription.setAttribute('name', 'description');
+    metaDescription.setAttribute('content', post.seo.meta_description);
+    if (!document.querySelector('meta[name="description"]')) {
+      document.head.appendChild(metaDescription);
+    }
+
+    // Set Open Graph tags for social sharing
+    const ogTitle = document.querySelector('meta[property="og:title"]') || document.createElement('meta');
+    ogTitle.setAttribute('property', 'og:title');
+    ogTitle.setAttribute('content', post.seo.title_tag);
+    if (!document.querySelector('meta[property="og:title"]')) {
+      document.head.appendChild(ogTitle);
+    }
+
+    const ogImage = document.querySelector('meta[property="og:image"]') || document.createElement('meta');
+    ogImage.setAttribute('property', 'og:image');
+    ogImage.setAttribute('content', post.seo.og_image);
+    if (!document.querySelector('meta[property="og:image"]')) {
+      document.head.appendChild(ogImage);
+    }
+
+    const ogUrl = document.querySelector('meta[property="og:url"]') || document.createElement('meta');
+    ogUrl.setAttribute('property', 'og:url');
+    ogUrl.setAttribute('content', post.seo.canonical_url);
+    if (!document.querySelector('meta[property="og:url"]')) {
+      document.head.appendChild(ogUrl);
+    }
+  }
+}, [post]);
