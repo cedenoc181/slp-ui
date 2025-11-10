@@ -4,7 +4,7 @@ to make updates easier.
 -for content, make yesavage video with mcgreggor "Who the fuck is this guy"
 Then him proceeding to dominate the playoffs 
 
--
+-look to add pikkit, player profit and other affiliates to a page, add it to the Article page too
 
 
 useEffect(() => {

@@ -1,0 +1,113 @@
+{
+    "schema_version": "1.0",
+    "page_title": "Data Science Meets Baseball",
+    "page_subtitle": "Understanding how advanced analytics and machine learning transform baseball predictions",
+    "sections": [
+      {
+        "id": "intro",
+        "type": "hero",
+        "title": "Where Statistics Meet Strategy",
+        "content": "Baseball generates more measurable data per game than any other sport. Every pitch, swing, and defensive play creates events we can analyze and predict. Learn how we turn millions of data points into winning predictions."
+      },
+      {
+        "id": "evolution",
+        "type": "timeline",
+        "title": "The Analytics Revolution",
+        "subtitle": "From gut feelings to data-driven decisions",
+        "events": [
+          {
+            "year": "1970s-80s",
+            "title": "Birth of Sabermetrics",
+            "description": "Bill James pioneers statistical analysis, challenging traditional baseball wisdom with data.",
+            "icon": "📊"
+          },
+          {
+            "year": "2003",
+            "title": "Moneyball Era",
+            "description": "Oakland A's prove small-market teams can compete using analytics. On-base percentage becomes king.",
+            "icon": "💰"
+          },
+          {
+            "year": "2015",
+            "title": "StatCast Revolution",
+            "description": "MLB introduces tracking technology measuring exit velocity, launch angle, and sprint speed in real-time.",
+            "icon": "🎯"
+          },
+          {
+            "year": "2020s",
+            "title": "AI & Machine Learning",
+            "description": "Neural networks process millions of data points, predicting outcomes with unprecedented accuracy.",
+            "icon": "🤖"
+          }
+        ]
+      },
+      {
+        "id": "limitations",
+        "type": "transparency",
+        "title": "What Our Models CAN'T Predict",
+        "subtitle": "Honesty builds trust - here's what we admit we don't know",
+        "intro": "We don't predict magic. We find mathematical edges that work over thousands of bets. Here's what remains unpredictable:",
+        "limitations": [
+          {
+            "category": "In-Game Injuries",
+            "icon": "🏥",
+            "description": "A pitcher tears his hamstring in the 3rd inning",
+            "impact": "Completely changes game outcome mid-contest",
+            "our_approach": "Live betting models adjust, but can't predict freak injuries"
+          },
+          {
+            "category": "Manager Decisions",
+            "icon": "👔",
+            "description": "Surprise lineup changes, early hooks, bullpen management",
+            "impact": "Analytics say leave pitcher in, manager panics and pulls him",
+            "our_approach": "Track tendencies, but humans are unpredictable"
+          },
+          {
+            "category": "Player Personal Issues",
+            "icon": "😔",
+            "description": "Family emergencies, off-field distractions, contract disputes",
+            "impact": "Mental state affects performance in unmeasurable ways",
+            "our_approach": "Can't quantify head not in the game"
+          },
+          {
+            "category": "Umpire Randomness",
+            "icon": "👨‍⚖️",
+            "description": "Some umps have bad days, miss obvious calls",
+            "impact": "Strikeout becomes a walk, changes entire inning",
+            "our_approach": "Track tendencies, but can't predict blown calls"
+          },
+          {
+            "category": "The Clutch Gene",
+            "icon": "🔥",
+            "description": "Some believe certain players perform better in big moments",
+            "impact": "Data shows clutch is mostly luck plus small sample noise",
+            "our_approach": "Doesn't exist statistically - we ignore it"
+          },
+          {
+            "category": "Momentum & Vibes",
+            "icon": "⚡",
+            "description": "Team has momentum or clubhouse chemistry",
+            "impact": "Narratives humans love, but data doesn't support",
+            "our_approach": "Winning streaks don't predict future performance better than talent"
+          }
+        ],
+        "philosophy": "We embrace uncertainty. Our edge comes from being right 55-60% of the time, not 100%. Bet value, not outcomes."
+      }
+    ],
+    "cta": {
+      "title": "Join Our 2026 MLB Season Beta",
+      "description": "Get early access to our advanced analytics platform and be part of shaping the future of data-driven baseball betting",
+      "buttons": [
+        {
+          "text": "Join Discord Beta",
+          "link": "https://discord.gg/sandlotpicks",
+          "style": "primary"
+        },
+        {
+          "text": "Learn More About Beta",
+          "link": "/features",
+          "style": "secondary"
+        }
+      ]
+    }
+  }
