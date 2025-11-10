@@ -16,7 +16,7 @@ import FAQPage from './components/pages/Education/FAQPage';
 import HowToUsePage from './components/pages/Education/HowToUsePage';
 import Blogs from './components/pages/Research/blog';
 import BlogPost from './components/pages/Research/blog-post';
-// import Articles from './components/pages/Research/articles';
+import Articles from './components/pages/Research/articles';
 import DS_Baseball from './components/pages/Research/ds_baseball';
 import TermsOfUse from './components/legal/termsofuse';
 import PrivacyPolicy from './components/legal/PrivacyPolicy';
@@ -81,7 +81,7 @@ function App() {
           <Route path="/how-to-use" element={<HowToUsePage />} />
           <Route path="/blogs" element={<Blogs />} />
           <Route path="/blogs/:slug" element={<BlogPost />} />
-          {/* <Route path="/articles" element={<Articles />} /> */}
+          <Route path="/articles" element={<Articles />} />
           <Route path="/data-science" element={<DS_Baseball />} />
           <Route path="/terms-of-use" element={<TermsOfUse />} />
           <Route path="/privacy-policy" element={<PrivacyPolicy />} />

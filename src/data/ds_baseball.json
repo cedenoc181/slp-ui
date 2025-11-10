@@ -99,13 +99,13 @@
       "description": "Get early access to our advanced analytics platform and be part of shaping the future of data-driven baseball betting",
       "buttons": [
         {
-          "text": "Join Discord Beta",
+          "text": "Join Discord",
           "link": "https://discord.gg/sandlotpicks",
           "style": "primary"
         },
         {
           "text": "Learn More About Beta",
-          "link": "/features",
+          "link": "/how-to-use",
           "style": "secondary"
         }
       ]
