@@ -1,0 +1,11 @@
+{
+  "schema_version": "1.0",
+  "site": "sandlotpicks.com",
+  "generated_at": "2025-11-1",
+   "pagination": {
+      "starts_at_page": 2,
+      "articles_per_page": 5,
+      "total_pages": 1
+    },
+  "articles": []
+}

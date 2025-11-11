@@ -29,16 +29,17 @@ function Footer() {
             
             <div className="footer-section">
               <h3 className="footer-heading">Education</h3>
-              <a href="/how-to-use" className="footer-link">How To Use</a>
-              <a href="/glossary" className="footer-link">Glossary</a>
               <a href="/faqs" className="footer-link">FAQs</a>
+              <a href="/glossary" className="footer-link">Glossary</a>
+              <a href="/how-to-use" className="footer-link">How To Use</a>
+              <a href="/responsible-gaming" className="footer-link">Responsible Gaming</a> 
             </div>
             
             <div className="footer-section">
               <h3 className="footer-heading">About Us</h3>
-              <Link to="/about" className="footer-link">About Sandlot Picks</Link>
               <Link to="/features" className="footer-link">Features</Link>
               <a href="/contact" className="footer-link">Contact Us</a>
+              <Link to="/about" className="footer-link">About Sandlot Picks</Link>
             </div>
             
             <div className="footer-section">
@@ -46,7 +47,6 @@ function Footer() {
               <a href="/blogs" className="footer-link">Blog</a>
               <a href="/sandlot-insider" className="footer-link">Sandlot Insider</a>
               <a href="/data-science" className="footer-link">Data Science & Baseball</a>
-              <a href="/model-insights" className="footer-link">Model Insights</a>
             </div>
           </div>
           

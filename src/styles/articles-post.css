@@ -209,9 +209,45 @@
   margin: 3rem 0;
   padding: 2.5rem;
   background: linear-gradient(135deg, #041E42 0%, #0A2540 100%);
-  border-radius: 16px;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  border-radius: 56px;
   box-shadow: 0 8px 24px rgba(4, 30, 66, 0.25);
-  border: 2px solid rgba(200, 16, 46, 0.3);
+  position: relative;
+  overflow: hidden;
+  height: 250px;
+   transition: all 0.3s ease; /* Add smooth transition */
+}
+
+.affiliate-cta::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, rgba(95, 115, 144, 0.85) 0%, rgba(10, 37, 64, 0.85) 100%);
+  z-index: 1;
+  opacity: 1; /* Start visible */
+  transition: opacity 0.3s ease; /* Smooth fade transition */
+}
+
+/* Remove overlay and scale up on hover */
+.affiliate-cta:hover {
+  transform: scale(1.02); /* Scale up by 2% */
+  box-shadow: 0 12px 32px rgba(4, 30, 66, 0.35); /* Enhanced shadow */
+}
+
+/* Remove overlay on hover */
+.affiliate-cta:hover::before {
+  opacity: 0.6; /* Fade out the overlay */
+
+}
+
+.affiliate-cta-content {
+  position: relative;
+  z-index: 2;
 }
 
 .affiliate-cta-content h3 {
@@ -233,6 +269,12 @@
   color: rgba(255, 255, 255, 0.9);
   margin-bottom: 1.5rem;
   line-height: 1.6;
+}
+
+/* Hide context on hover */
+.affiliate-cta:hover .affiliate-context {
+  opacity: 0;
+  pointer-events: none; /* Prevent interaction when hidden */
 }
 
 .affiliate-btn {
@@ -505,6 +547,14 @@
     font-size: 1.1rem;
   }
 
+    .affiliate-context {
+    font-size: 1rem;
+  }
+  
+  .affiliate-btn {
+    width: 100%;
+  }
+
   .share-buttons {
     gap: 0.75rem;
   }
@@ -545,7 +595,11 @@
   .affiliate-cta {
     padding: 1.5rem;
   }
-
+  
+  .affiliate-cta-content h3 {
+    font-size: 1.25rem;
+  }
+  
   .related-posts-section {
     padding: 1.25rem;
   }

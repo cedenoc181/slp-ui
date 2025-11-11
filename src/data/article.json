@@ -2,6 +2,12 @@
     "schema_version": "1.0",
     "site": "sandlotpicks.com",
     "generated_at": "2025-11-10",
+    "pagination": {
+        "current_page": 1,
+        "articles_per_page": 5,
+        "total_pages": 1,
+        "has_more": false
+      },
     "articles": [
         {
           "id": 1,
@@ -139,11 +145,23 @@
               "MLB analytics",
               "sports betting MLB",
               "World Series",
-              "2025 World Series"
+              "2025 World Series",
+              "Pikkit", 
+              "Fanduel",
+              "DraftKings"
             ],
             "canonical_url": "https://sandlotpicks.com/sandlot-insider/blue-jays-2025-turnaround-from-basement-to-brink",
             "og_image": "https://sandlotpicks.com/article-heros/bluejays-article-hero.png"
           },
+          "affiliate_cta": {
+            "enabled": true,
+            "platform": "Pikkit",
+            "context": "Effortlessly track all your sports bets in one convenient place — focus on what you do best: make winning picks.",
+            "link": "https://links.pikkit.com/invite/bullseye52540",
+            "hero-banner": "/article-heros/pikkit-promo-img.png",
+            "promo_code": "BULLSEYE52540"
+          },
+          "affiliate_disclaimer": "We may earn a commission if you sign up through our Pikkit link. Using our code BULLSEYE52540 supports our content and helps us keep delivering daily insights.",
           "related_posts": [
             "machine-learning-sports-betting",
             "mlb-offseason-trade-predictions",
@@ -294,11 +312,23 @@
               "World Baseball Classic 2026",
               "MLB postseason",
               "Dodgers pitching",
-              "Sports betting MLB"
+              "Sports betting MLB",
+              "Pikkit", 
+              "Fanduel",
+              "DraftKings"
             ],
             "canonical_url": "https://sandlotpicks.com/sandlot-insider/dodgers-japanese-trio-2025-world-series-dynasty",
             "og_image": "https://sandlotpicks.com/article-heros/dodgers-japan-article-hero.png"
           },
+          "affiliate_cta": {
+            "enabled": true,
+            "platform": "Pikkit",
+            "context": "Effortlessly track all your sports bets in one convenient place — focus on what you do best: make winning picks.",
+            "link": "https://links.pikkit.com/invite/bullseye52540",
+            "hero-banner": "/article-heros/pikkit-promo-img.png",
+            "promo_code": "BULLSEYE52540"
+          },
+          "affiliate_disclaimer": "We may earn a commission if you sign up through our Pikkit link. Using our code BULLSEYE52540 supports our content and helps us keep delivering daily insights.",
           "related_posts": [
             "mlb-postseason-betting-trends",
             "ohtani-two-way-dominance",

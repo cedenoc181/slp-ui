@@ -444,6 +444,8 @@
   }
 }
 
+/* ...existing code until line 421... */
+
 @media (max-width: 480px) {
   .articles-page .container {
     padding: 0 1rem;
@@ -484,5 +486,123 @@
 
   .article-summary {
     font-size: 0.9rem;
+  }
+}
+
+/* ============================================
+   PAGINATION STYLES - ADD BELOW THIS LINE
+   ============================================ */
+
+/* Results Info */
+.results-info {
+  text-align: center;
+  margin: 1rem 0 2rem;
+  color: #546A7B;
+  font-size: 0.95rem;
+}
+
+/* Pagination */
+.pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 1rem;
+  margin-top: 3rem;
+  padding: 2rem 0;
+}
+
+.pagination-btn {
+  padding: 0.75rem 1.5rem;
+  background: #041E42;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s;
+  font-size: 0.95rem;
+}
+
+.pagination-btn:hover:not(:disabled) {
+  background: var(--cta-color);
+  transform: translateY(-2px);
+}
+
+.pagination-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.pagination-numbers {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.pagination-number {
+  min-width: 40px;
+  height: 40px;
+  padding: 0 0.75rem;
+  background: white;
+  border: 2px solid #041E42;
+  color: #041E42;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.pagination-number:hover {
+  background: #041E42;
+  color: white;
+  transform: translateY(-2px);
+}
+
+.pagination-number.active {
+  background: var(--cta-color);
+  border-color: var(--cta-color);
+  color: white;
+}
+
+.pagination-ellipsis {
+  color: #738296;
+  padding: 0 0.5rem;
+  font-weight: 600;
+}
+
+/* Responsive Pagination */
+@media screen and (max-width: 768px) {
+  .pagination {
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+
+  .pagination-numbers {
+    order: -1;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .pagination-btn {
+    width: 100%;
+    max-width: 200px;
+  }
+}
+
+@media screen and (max-width: 480px) {
+  .pagination-number {
+    min-width: 36px;
+    height: 36px;
+    font-size: 0.9rem;
+  }
+
+  .pagination-btn {
+    font-size: 0.9rem;
+    padding: 0.65rem 1.25rem;
+  }
+
+  .results-info {
+    font-size: 0.85rem;
   }
 }
