@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import blogsData from '../../../data/blogs.json';
-import '../../../styles/blog-page.css';
 
 function BlogPage() {
   const [searchTerm, setSearchTerm] = useState('');

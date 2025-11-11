@@ -17,7 +17,8 @@ import HowToUsePage from './components/pages/Education/HowToUsePage';
 import Blogs from './components/pages/Research/blog';
 import BlogPost from './components/pages/Research/blog-post';
 import Articles from './components/pages/Research/articles';
-import DS_Baseball from './components/pages/Research/ds_baseball';
+import ArticlesPost from './components/pages/Research/ArticlesPost';
+import DsBaseball from './components/pages/Research/ds_baseball';
 import TermsOfUse from './components/legal/termsofuse';
 import PrivacyPolicy from './components/legal/PrivacyPolicy';
 
@@ -31,7 +32,7 @@ import './styles/about-page.css';
 import './styles/features-page.css';
 import './styles/contact-page.css';
 import './styles/blog-page.css';
-import './styles/articles-page.css';
+import './styles/articles.css';
 import './styles/ds_baseball-page.css';
 import './styles/features.css';
 import './styles/footer.css';
@@ -81,8 +82,9 @@ function App() {
           <Route path="/how-to-use" element={<HowToUsePage />} />
           <Route path="/blogs" element={<Blogs />} />
           <Route path="/blogs/:slug" element={<BlogPost />} />
-          <Route path="/articles" element={<Articles />} />
-          <Route path="/data-science" element={<DS_Baseball />} />
+          <Route path="/sandlot-insider" element={<Articles />} />
+          <Route path="/sandlot-insider/:slug" element={<ArticlesPost />} />
+          <Route path="/data-science" element={<DsBaseball />} />
           <Route path="/terms-of-use" element={<TermsOfUse />} />
           <Route path="/privacy-policy" element={<PrivacyPolicy />} />
         </Routes>

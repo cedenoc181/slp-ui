@@ -1,0 +1,158 @@
+import { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
+import articlesData from '../../../data/article.json';
+
+
+function Article() {
+  const [searchTerm, setSearchTerm] = useState('');
+  const [selectedTag, setSelectedTag] = useState('all');
+
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
+
+  // Check if data exists
+  if (!articlesData || !articlesData.articles) {
+    return (
+      <section className="articles-page">
+        <div className="container">
+          <h1>Error Loading Articles</h1>
+          <p>Articles data not found. Check console for errors.</p>
+        </div>
+      </section>
+    );
+  }
+
+// Get all unique tags from articles and count occurrences
+const tagCounts = {};
+const allUniqueTags = new Set(); // Track ALL tags for filtering
+
+articlesData.articles.forEach(article => {
+  article.tags.forEach(tag => {
+    tagCounts[tag] = (tagCounts[tag] || 0) + 1;
+    allUniqueTags.add(tag); // Store every unique tag
+  });
+});
+
+// Sort by frequency and take top 10 for DISPLAY (plus 'all')
+const displayTags = ['all', ...Object.entries(tagCounts)
+  .sort((a, b) => b[1] - a[1])
+  .slice(0, 10)
+  .map(([tag]) => tag)
+];
+  // Filter articles by search and tag
+  const filteredArticles = articlesData.articles.filter(article => {
+    const matchesSearch = article.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         article.summary.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesTag = selectedTag === 'all' || article.tags.includes(selectedTag);
+    return matchesSearch && matchesTag;
+  });
+
+// ...existing code...
+
+  return (
+    <section className="articles-page">
+      <div className="container">
+        {/* Hero Section */}
+        <div className="articles-hero">
+          <h1 className="page-title">Sandlot Insider</h1>
+          <p className="page-subtitle">
+             MLB news, stories, player projections, and sports betting insights — all powered by Sandlot Picks.          </p>
+        </div>
+
+        {/* Search Box */}
+        <div className="search-box">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <circle cx="11" cy="11" r="8"/>
+            <path d="m21 21-4.35-4.35"/>
+          </svg>
+          <input
+            type="text"
+            placeholder="Search articles..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+          />
+        </div>
+
+        {/* Tag Pills */}
+        <div className="category-nav">
+          {displayTags.map(tag => (
+            <button
+              key={tag}
+              className={`category-pill ${selectedTag === tag ? 'active' : ''}`}
+              onClick={() => setSelectedTag(tag)}
+            >
+              {tag === 'all' ? '🏠 All Articles' : tag}
+            </button>
+          ))}
+        </div>
+
+        {/* Articles Grid */}
+        <div className="articles-grid">
+          {filteredArticles.length > 0 ? (
+            filteredArticles.map(article => (
+              <Link to={`/sandlot-insider/${article.slug}`} key={article.id} className="article-card">
+                <div className="article-image">
+                  <img src={article.hero_image.url} alt={article.hero_image.alt} />
+                  {/* REMOVED: Status badge */}
+                  <div className="article-overlay">
+                    <span className="read-more">Read Article →</span>
+                  </div>
+                </div>
+                <div className="article-content">
+                  <div className="article-meta">
+                    <span className="article-date">
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                        <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+                        <line x1="16" y1="2" x2="16" y2="6"/>
+                        <line x1="8" y1="2" x2="8" y2="6"/>
+                        <line x1="3" y1="10" x2="21" y2="10"/>
+                      </svg>
+                      {new Date(article.date).toLocaleDateString('en-US', { 
+                        month: 'short', 
+                        day: 'numeric', 
+                        year: 'numeric' 
+                      })}
+                    </span>
+                    <span className="article-read-time">
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                        <circle cx="12" cy="12" r="10"/>
+                        <polyline points="12 6 12 12 16 14"/>
+                      </svg>
+                      {article.read_time_minutes} min read
+                    </span>
+                  </div>
+
+                  <h2 className="article-title">{article.title}</h2>
+                  <p className="article-summary">{article.summary}</p>
+
+                  <div className="article-tags">
+                    {article.tags.slice(0, 3).map((tag, idx) => (
+                      <span key={idx} className="tag">{tag}</span>
+                    ))}
+                  </div>
+
+                  <div className="article-footer">
+                    <span className="article-author">By {article.author}</span>
+                    <span className="read-arrow">→</span>
+                  </div>
+                </div>
+              </Link>
+            ))
+          ) : (
+            <div className="no-results">
+              <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                <circle cx="11" cy="11" r="8"/>
+                <path d="m21 21-4.35-4.35"/>
+              </svg>
+              <h3>No articles found</h3>
+              <p>Try adjusting your search or tag filter</p>
+            </div>
+          )}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+export default Article;
