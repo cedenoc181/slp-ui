@@ -22,7 +22,7 @@ function Footer() {
                 </Link>
                 <div className="brand-text">
                   <h3 className="footer-heading">Sandlot Picks</h3>
-                  <p className="footer-tagline">Smart analytics for smarter picks. Beat the books at their own game.</p>
+                  <p className="footer-tagline">Smart analytics for smarter picks. The smartest way to win.</p>
                 </div>
               </div>
             </div>

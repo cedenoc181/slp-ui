@@ -1,0 +1,26 @@
+{
+    "advertisements-slots":[
+        {
+            "id": 1,
+            "affiliate_cta": {
+            "enabled": true,
+            "platform": "Pikkit",
+            "context": "Effortlessly track all your sports bets in one convenient place — focus on what you do best: make winning picks.",
+            "link": "https://links.pikkit.com/invite/bullseye52540",
+            "hero-banner": "/article-heros/pikkit-promo-img.png"
+          },
+          "affiliate_disclaimer": "We may earn a commission if you sign up through our Pikkit link. Using our code BULLSEYE52540 supports our content and helps us keep delivering daily insights."
+        },
+        {
+            "id": 2,
+            "affiliate_cta": {
+            "enabled": true,
+            "platform": "DraftKings",
+            "context": "Effortlessly track all your sports bets in one convenient place — focus on what you do best: make winning picks.",
+            "link": "https://sportsbook.draftkings.com/r/sb/cedenoc181/US-NY-SB/US-NY",
+            "hero-banner": "/article-heros/draftkings-promo-hero.jpg"
+          },
+          "affiliate_disclaimer": "We may earn a commission if you sign up through our DraftKings link. Using our code BULLSEYE52540 supports our content and helps us keep delivering daily insights."
+        }
+    ]
+}
