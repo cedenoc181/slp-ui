@@ -266,36 +266,51 @@ function ArticlePost() {
               </div>
             </div>
 
-            {/* Related posts section - only if they exist and have valid articles */}
-            {article.related_posts && article.related_posts.length > 0 ? (
-              (() => {
-                const validRelatedArticles = article.related_posts
-                  .map(relatedSlug => articlesData.articles.find(a => a.slug === relatedSlug))
-                  .filter(Boolean); // Remove null/undefined entries
-            
-                return validRelatedArticles.length > 0 ? (
-                  <div className="related-posts-section">
-                    <h3>Related Articles</h3>
-                    <div className="related-posts-list">
-                      {validRelatedArticles.map((relatedArticle, idx) => (
-                        <Link 
-                          key={idx} 
-                          to={`/sandlot-insider/${relatedArticle.slug}`} 
-                          className="related-post-link"
-                        >
-                          {relatedArticle.title}
-                        </Link>
-                      ))}
-                    </div>
-                  </div>
-                ) : null;
-              })()
-            ) : null}
-
-            <Link to="/sandlot-insider" className="back-to-articles">
-              ← Back to All Articles
-            </Link>
+            {/* Back to Articles Button */}
+            <div style={{ textAlign: 'center', marginBottom: '3rem' }}>
+              <Link to="/sandlot-insider" className="back-to-articles">
+                ← Back to All Articles
+              </Link>
+            </div>
           </footer>
+
+        {/* Related Posts Section - OUTSIDE footer, full width at bottom */}
+        {article.related_posts && article.related_posts.length > 0 && (
+          <div className="related-posts-section">
+            <h3>📚 Related Articles</h3>
+            <div className="related-posts-grid">
+              {article.related_posts.map((relatedSlug, idx) => {
+                const relatedArticle = articlesData.articles.find(a => a.slug === relatedSlug);
+                return relatedArticle ? (
+                  <Link 
+                    key={idx}
+                    to={`/sandlot-insider/${relatedArticle.slug}`}
+                    className="related-post-card"
+                  >
+                    <div className="related-post-image">
+                      <img 
+                        src={relatedArticle.hero_image.url} 
+                        alt={relatedArticle.hero_image.alt}
+                      />
+                    </div>
+                    <div className="related-post-content">
+                      <h4>{relatedArticle.title}</h4>
+                      <p className="related-post-meta">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                          <circle cx="12" cy="12" r="10"/>
+                          <polyline points="12 6 12 12 16 14"/>
+                        </svg>
+                        {relatedArticle.read_time_minutes} min read
+                      </p>
+                      <span className="read-more-arrow">Read More →</span>
+                    </div>
+                  </Link>
+                ) : null;
+              })}
+            </div>
+          </div>
+        )}
+
         </article>
       </div>
     </section>
