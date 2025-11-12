@@ -14,6 +14,7 @@ import ContactPage from './components/pages/About-Us/ContactPage';
 import Glossary from './components/pages/Education/GlossaryPage';
 import FAQPage from './components/pages/Education/FAQPage';
 import HowToUsePage from './components/pages/Education/HowToUsePage';
+import ResponsibleGaming from './components/pages/Education/responsibleGaming';
 import Blogs from './components/pages/Research/blog';
 import BlogPost from './components/pages/Research/blog-post';
 import Articles from './components/pages/Research/articles';
@@ -40,6 +41,7 @@ import './styles/legal.css';
 import './styles/faq.css';
 import './styles/glossary.css';
 import './styles/howtouse.css';
+import './styles/responsibleGaming-page.css';
 
 // Home page component
 function HomePage() {
@@ -80,6 +82,7 @@ function App() {
           <Route path="/glossary" element={<Glossary />} />
           <Route path="/faqs" element={<FAQPage />} />
           <Route path="/how-to-use" element={<HowToUsePage />} />
+          <Route path="/responsible-gaming" element={<ResponsibleGaming />} />
           <Route path="/blogs" element={<Blogs />} />
           <Route path="/blogs/:slug" element={<BlogPost />} />
           <Route path="/sandlot-insider" element={<Articles />} />
