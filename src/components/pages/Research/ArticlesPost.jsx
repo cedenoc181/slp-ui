@@ -193,32 +193,38 @@ function ArticlePost() {
             ))}
           </div>
 
-{/* Affiliate CTA - only if it exists in JSON */}
-{article.affiliate_cta?.enabled && (
-  <div 
-    className="affiliate-cta"
-    style={{
-      backgroundImage: article.affiliate_cta['hero-banner'] 
-        ? `url(${article.affiliate_cta['hero-banner']})` 
-        : 'none'
-    }}
-  >
-    <div className="affiliate-cta-content">
-      <h3>{article.affiliate_cta.platform}</h3>
-      <p className="affiliate-offer">{article.affiliate_cta.offer}</p>
-      <p className="affiliate-context">{article.affiliate_cta.context}</p>
+        {/* Affiliate CTA - only if it exists in JSON */}
+        {article.affiliate_cta?.enabled && (
+            <>
+            <div className="affiliate-disclaimer-header">
+              <p>Advertisement</p>
+            </div>       
+             <div 
+               className="affiliate-cta"
+               style={{
+                 backgroundImage: article.affiliate_cta['hero-banner'] 
+                   ? `url(${article.affiliate_cta['hero-banner']})` 
+                   : 'none'
+               }}
+             >
             
-      <a 
-        href={article.affiliate_cta.link} 
-        target="_blank" 
-        rel="noopener noreferrer sponsored"
-        className="affiliate-btn"
-      >
-        Get Started with {article.affiliate_cta.platform} →
-      </a>
-    </div>
-  </div>
-)}
+              <div className="affiliate-cta-content">
+                <h3>{article.affiliate_cta.platform}</h3>
+                <p className="affiliate-offer">{article.affiliate_cta.offer}</p>
+                <p className="affiliate-context">{article.affiliate_cta.context}</p>
+
+                <a 
+                  href={article.affiliate_cta.link} 
+                  target="_blank" 
+                  rel="noopener noreferrer sponsored"
+                  className="affiliate-btn"
+                >
+                  Get Started with {article.affiliate_cta.platform} →
+                </a>
+              </div>
+            </div>
+          </>
+        )}
 
           <footer className="article-footer">
             <div className="share-section">

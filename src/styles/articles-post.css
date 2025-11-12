@@ -204,9 +204,28 @@
   color: var(--cta-hover);
 }
 
+/* Affiliate Disclaimer Header */
+.affiliate-disclaimer-header {
+  margin: 3rem 0 0 0;
+  padding-bottom: 0.5rem;
+  border-bottom: 2px solid #E1E8ED;
+}
+
+.affiliate-disclaimer-header p {
+  font-size: 0.85rem;
+  color: #738296;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
 /* Affiliate CTA Box */
 .affiliate-cta {
-  margin: 3rem 0;
+  margin: 1rem 0 3rem 0;
   padding: 2.5rem;
   background: linear-gradient(135deg, #041E42 0%, #0A2540 100%);
   background-size: cover;

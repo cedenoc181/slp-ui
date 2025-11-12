@@ -185,7 +185,12 @@
 
 .article-card:first-child .article-summary {
   font-size: 1.1rem;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
   -webkit-line-clamp: 4;
+  line-clamp: 4;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .article-card {
