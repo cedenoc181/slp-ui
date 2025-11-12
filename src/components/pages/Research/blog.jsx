@@ -10,11 +10,14 @@ function BlogPage() {
     window.scrollTo(0, 0);
   }, []);
 
+  // Sort blogs by ID in descending order (highest/newest first)
+  const sortedBlogs = [...blogsData.blogs].sort((a, b) => b.id - a.id);
+
   // Get all unique tags
-  const allTags = ['all', ...new Set(blogsData.blogs.flatMap(blog => blog.tags))];
+  const allTags = ['all', ...new Set(sortedBlogs.flatMap(blog => blog.tags))];
 
   // Filter blogs
-  const filteredBlogs = blogsData.blogs.filter(blog => {
+  const filteredBlogs = sortedBlogs.filter(blog => {
     const matchesSearch = blog.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          blog.summary.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesTag = selectedTag === 'all' || blog.tags.includes(selectedTag);
