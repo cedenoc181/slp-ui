@@ -9,11 +9,12 @@ function Article() {
   const [currentPage, setCurrentPage] = useState(1);
   const articlesPerPage = 5;
 
-  // Combine all articles from both JSON files
+  // Combine all articles from both JSON files and sort by ID descending
   const allArticles = [
     ...(articlesData?.articles || []),
     ...(moreArticlesData?.articles || [])
-  ];
+  ].sort((a, b) => b.id - a.id); // Sort highest ID first (newest first)
+
 
   // Scroll to top when page changes
   useEffect(() => {
