@@ -78,9 +78,119 @@ function ArticlePost() {
       }
       metaTag.setAttribute('content', content);
     });
+    
+    // Create JSON-LD structured data
+    const structuredData = {
+      "@context": "https://schema.org",
+      "@type": "NewsArticle",
+      "headline": article.title,
+      "image": {
+        "@type": "ImageObject",
+        "url": article.hero_image.url,
+        "width": 1200,
+        "height": 630
+      },
+      "datePublished": article.date,
+      "dateModified": article.date,
+      "author": {
+        "@type": "Organization",
+        "name": article.author,
+        "url": "https://sandlotpicks.com"
+      },
+      "publisher": {
+        "@type": "Organization",
+        "name": "Sandlot Picks",
+        "logo": {
+          "@type": "ImageObject",
+          "url": "https://sandlotpicks.com/logo.png",
+          "width": 600,
+          "height": 60
+        }
+      },
+      "description": article.seo.meta_description,
+      "mainEntityOfPage": {
+        "@type": "WebPage",
+        "@id": article.seo.canonical_url
+      },
+      "keywords": article.seo.keywords.join(', '),
+      "articleSection": article.tags[0] || "Baseball",
+      "wordCount": article.content.reduce((count, item) => {
+        if (item.type === 'paragraph') {
+          return count + item.text.split(' ').length;
+        }
+        return count;
+      }, 0),
+      "timeRequired": `PT${article.read_time_minutes}M`
+      };
 
+      // Insert or update the script tag
+      let scriptTag = document.querySelector('script[type="application/ld+json"]');
+      if (!scriptTag) {
+        scriptTag = document.createElement('script');
+        scriptTag.type = 'application/ld+json';
+        document.head.appendChild(scriptTag);
+      }
+      scriptTag.textContent = JSON.stringify(structuredData);
+  
     return () => {
       document.title = 'Sandlot Picks Analytics';
+
+      // Reset or remove description
+      const metaDescription = document.querySelector('meta[name="description"]');
+      if (metaDescription) {
+        metaDescription.setAttribute('content', 'Expert baseball analytics, betting insights, and data-driven picks. Your trusted source for MLB betting strategy and analysis.');
+      }
+
+      // Remove article-specific canonical link
+      const canonical = document.querySelector('link[rel="canonical"]');
+      if (canonical) {
+        canonical.remove();
+      }
+
+      // Remove keywords meta tag (optional - usually not needed on other pages)
+      const keywords = document.querySelector('meta[name="keywords"]');
+      if (keywords) {
+        keywords.remove();
+      }
+
+      // Remove Open Graph tags (optional - prevents sharing wrong content)
+      const ogProperties = [
+        'og:title',
+        'og:description', 
+        'og:image',
+        'og:url',
+        'og:type',
+        'article:published_time',
+        'article:author'
+      ];
+
+      ogProperties.forEach(property => {
+        const metaTag = document.querySelector(`meta[property="${property}"]`);
+        if (metaTag) {
+          metaTag.remove();
+        }
+      });
+    
+        // Remove Twitter Card tags (optional)
+      const twitterNames = [
+        'twitter:card',
+        'twitter:title',
+        'twitter:description',
+        'twitter:image'
+      ];
+
+      twitterNames.forEach(name => {
+        const metaTag = document.querySelector(`meta[name="${name}"]`);
+        if (metaTag) {
+          metaTag.remove();
+        }
+      });
+
+      // Remove structured data script
+      const structuredDataScript = document.querySelector('script[type="application/ld+json"]');
+      if (structuredDataScript) {
+        structuredDataScript.remove();
+      }
     };
   }, [article]);
 
@@ -98,38 +208,38 @@ function ArticlePost() {
     );
   }
 
-  const renderContent = (item) => {
-    switch (item.type) {
-      case 'heading':
-        return <h2 key={Math.random()}>{item.text}</h2>;
-      
-      case 'subheading':
-        return <h3 key={Math.random()}>{item.text}</h3>;
-      
-      case 'paragraph':
-        return <p key={Math.random()}>{item.text}</p>;
-      
-      case 'list':
-        return (
-          <ul key={Math.random()}>
-            {item.items.map((listItem, idx) => (
-              <li key={idx}>{listItem}</li>
-            ))}
-          </ul>
-        );
-      
-      case 'quote':
-        return (
-          <blockquote key={Math.random()}>
-            <p>{item.text}</p>
-            {item.author && <cite>— {item.author}</cite>}
-          </blockquote>
-        );
-      
-      default:
-        return null;
-    }
-  };
+    const renderContent = (item, index) => {
+      switch (item.type) {
+        case 'heading':
+          return <h2 key={`heading-${index}`}>{item.text}</h2>;
+        
+        case 'subheading':
+          return <h3 key={`subheading-${index}`}>{item.text}</h3>;
+        
+        case 'paragraph':
+          return <p key={`paragraph-${index}`}>{item.text}</p>;
+        
+        case 'list':
+          return (
+            <ul key={`list-${index}`}>
+              {item.items.map((listItem, idx) => (
+                <li key={`list-${index}-${idx}`}>{listItem}</li>
+              ))}
+            </ul>
+          );
+        
+        case 'quote':
+          return (
+            <blockquote key={`quote-${index}`}>
+              <p>{item.text}</p>
+              {item.author && <cite>— {item.author}</cite>}
+            </blockquote>
+          );
+        
+        default:
+          return null;
+      }
+    };
 
   return (
     <section className="article-post-page">

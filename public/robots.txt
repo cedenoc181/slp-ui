@@ -1,3 +1,5 @@
-# https://www.robotstxt.org/robotstxt.html
+<!-- filepath: /Users/christiancedeno/sandlot-picks-ui/sandlot-picks-analytics/public/robots.txt -->
 User-agent: *
-Disallow:
+Allow: /
+
+Sitemap: https://sandlotpicks.com/sitemap.xml
