@@ -1,25 +1,26 @@
 {
-  "short_name": "React App",
-  "name": "Create React App Sample",
+  "short_name": "Sandlot Picks",
+  "name": "Sandlot Picks - Baseball Analytics & Betting Insights",
   "icons": [
     {
-      "src": "favicon.ico",
+      "src": "spa-retro-logo.png",
       "sizes": "64x64 32x32 24x24 16x16",
-      "type": "image/x-icon"
+      "type": "image/png"
     },
     {
-      "src": "logo192.png",
+      "src": "spa-retro-logo-192x.png",
       "type": "image/png",
       "sizes": "192x192"
     },
     {
-      "src": "logo512.png",
+      "src": "spa-retro-logo-512x.png",
       "type": "image/png",
       "sizes": "512x512"
     }
   ],
   "start_url": ".",
   "display": "standalone",
-  "theme_color": "#000000",
-  "background_color": "#ffffff"
+  "theme_color": "#1a1a1a",
+  "background_color": "#ffffff",
+  "description": "Expert baseball analytics, betting insights, and data-driven picks for MLB fans and bettors."
 }
