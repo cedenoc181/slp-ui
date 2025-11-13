@@ -1,7 +1,6 @@
 {
     "advertisements-slots":[
         {
-            "id": 1,
             "affiliate_cta": {
             "enabled": true,
             "platform": "Pikkit",
@@ -12,7 +11,6 @@
           "affiliate_disclaimer": "We may earn a commission if you sign up through our Pikkit link. Using our code BULLSEYE52540 supports our content and helps us keep delivering daily insights."
         },
         {
-            "id": 2,
             "affiliate_cta": {
             "enabled": true,
             "platform": "DraftKings",
@@ -20,7 +18,7 @@
             "link": "https://sportsbook.draftkings.com/r/sb/cedenoc181/US-NY-SB/US-NY",
             "hero-banner": "/article-heros/draftkings-promo-hero.jpg"
           },
-          "affiliate_disclaimer": "We may earn a commission if you sign up through our DraftKings link. Using our code BULLSEYE52540 supports our content and helps us keep delivering daily insights."
+          "affiliate_disclaimer": "We may earn a commission if you sign up through our DraftKings link. This supports our content and helps us keep delivering daily insights."
         }
     ]
 }
