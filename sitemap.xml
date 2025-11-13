@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <!-- Homepage -->
+  <url>
+    <loc>https://sandlotpicks.com/</loc>
+    <lastmod>2025-11-13</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>1.0</priority>
+  </url>
+  
+  <!-- Articles Page -->
+  <url>
+    <loc>https://sandlotpicks.com/sandlot-insider</loc>
+    <lastmod>2025-11-13</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.9</priority>
+  </url>
+  
+  <!-- Individual Articles -->
+  <url>
+    <loc>https://www.sandlotpicks.com/sandlot-insider/paul-skenes-cy-young-legend-in-the-making-2025</loc>
+    <lastmod>2025-11-12</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  
+  <url>
+    <loc>https://www.sandlotpicks.com/sandlot-insider/john-schneider-robbed-al-manager-of-the-year-2025</loc>
+    <lastmod>2025-11-11</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://www.sandlotpicks.com/sandlot-insider/dodgers-japanese-trio-2025-world-series-dynasty</loc>
+    <lastmod>2025-11-10</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <!-- Add all your article URLs here -->
+  
+  <!-- Blog Page -->
+  <url>
+    <loc>https://sandlotpicks.com/blogs</loc>
+    <lastmod>2025-11-07</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  
+  <!-- Responsible Gaming -->
+  <url>
+    <loc>https://sandlotpicks.com/responsible-gaming</loc>
+    <lastmod>2025-11-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+</urlset>
