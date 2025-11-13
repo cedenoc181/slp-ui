@@ -35,10 +35,9 @@
     <loc>https://www.sandlotpicks.com/sandlot-insider/dodgers-japanese-trio-2025-world-series-dynasty</loc>
     <lastmod>2025-11-10</lastmod>
     <changefreq>weekly</changefreq>
-    <priority>0.7</priority>
+    <priority>0.8</priority>
   </url>
-  <!-- Add all your article URLs here -->
-  
+
   <!-- Blog Page -->
   <url>
     <loc>https://sandlotpicks.com/blogs</loc>
