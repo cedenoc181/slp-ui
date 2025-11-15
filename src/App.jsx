@@ -6,6 +6,7 @@ import Hero from './components/Hero';
 import About from './components/About';
 import Features from './components/Features';
 import Footer from './components/Footer';
+import NotFound from './components/NotFound';
 
 // footer route components
 import AboutPage from './components/pages/About-Us/AboutPage';
@@ -90,6 +91,8 @@ function App() {
           <Route path="/data-science" element={<DsBaseball />} />
           <Route path="/terms-of-use" element={<TermsOfUse />} />
           <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+          {/* 404 Catch-all route - must be last */}
+          <Route path="*" element={<NotFound />} />
         </Routes>
         <Footer />
       </div>
