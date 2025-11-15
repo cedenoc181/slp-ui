@@ -27,3 +27,10 @@ yarn-error.log*
 .env
 .env.local
 .env.production
+
+# Data folder - ignore temp and reuseable data only
+/src/data/draftArticles.json
+/src/data/advertisements.json
+
+# todo list 
+/todo.txt
