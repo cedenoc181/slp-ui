@@ -1,11 +1,335 @@
 {
   "schema_version": "1.0",
   "site": "sandlotpicks.com",
-  "generated_at": "2025-11-1",
-   "pagination": {
-      "starts_at_page": 2,
-      "articles_per_page": 5,
-      "total_pages": 1
+  "generated_at": "2025-11-15",
+  "pagination": {
+    "starts_at_page": 2,
+    "articles_per_page": 4
+  },
+  "articles": [
+    {
+      "id": 2,
+      "title": "The Rising Sun in Dodger Blue: How Ohtani, Yamamoto, and Sasaki Defined a Dynasty and Set the Stage for Japan’s Next Great Moment",
+      "slug": "dodgers-japanese-trio-2025-world-series-dynasty",
+      "author": "Sandlot Picks Team",
+      "date": "2025-11-11",
+      "status": "Final",
+      "tags": [
+        "MLB",
+        "Los Angeles Dodgers",
+        "Shohei Ohtani",
+        "Yoshinobu Yamamoto",
+        "Roki Sasaki",
+        "World Series",
+        "Japan Baseball",
+        "2025 Postseason",
+        "World Baseball Classic",
+        "Sports Betting"
+      ],
+      "summary": "Yoshinobu Yamamoto, Shohei Ohtani, and Roki Sasaki didn’t just lead the Dodgers to a World Series title—they redefined global baseball dominance. With Yamamoto’s MVP performance, Ohtani’s two-way heroics, and Sasaki’s quiet efficiency, Japan’s finest may soon reunite for another historic run at the 2026 World Baseball Classic.",
+      "read_time_minutes": 4,
+      "estimated_word_count": 882,
+      "hero_image": {
+        "url": "/article-heros/dodgers-japan-article-hero.png",
+        "alt": "Yamamoto, Ohtani, and Sasaki celebrating Dodgers World Series win AI-generated image"
+      },
+      "content": [
+        {
+          "type": "heading",
+          "text": "The Rising Sun in Dodger Blue: How Ohtani, Yamamoto, and Sasaki Defined a Dynasty and Set the Stage for Japan’s Next Great Moment"
+        },
+        {
+          "type": "paragraph",
+          "text": "In a postseason that felt more like a Hollywood script than a baseball tournament, the Los Angeles Dodgers’ trio of Japanese stars — Shohei Ohtani, Yoshinobu Yamamoto, and Roki Sasaki — didn’t just help the franchise reclaim its World Series crown; they reshaped how the baseball world views the influence of Japanese talent on the global stage."
+        },
+        {
+          "type": "heading",
+          "text": "Yamamoto: The Ace Who Willed a Championship"
+        },
+        {
+          "type": "paragraph",
+          "text": "Every October hero needs a defining moment, and for Yoshinobu Yamamoto, this postseason became a masterclass in dominance and durability. The 25-year-old right-hander didn’t just meet expectations in his first MLB postseason — he shattered them."
+        },
+        {
+          "type": "paragraph",
+          "text": "Named World Series MVP, Yamamoto’s performances were the stuff of legend. He won Games 2, 6, and 7, making him the first pitcher in history to record three road victories in a single World Series. His complete game win in Game 2 not only evened the series but set the tone for the Dodgers’ eventual triumph. Then, with the season on the line in Game 7, on zero days’ rest, Yamamoto emerged from the bullpen to deliver a series-clinching save in the 11th inning, etching his name alongside postseason immortals."
+        },
+        {
+          "type": "paragraph",
+          "text": "It wasn’t just dominance — it was endurance, adaptability, and heart. As one Dodgers coach reportedly said, “He’s the calm in chaos. You could feel the stadium’s heartbeat match his.”"
+        },
+        {
+          "type": "heading",
+          "text": "Ohtani: The Two-Way Titan Who Redefined October Greatness"
+        },
+        {
+          "type": "paragraph",
+          "text": "If Yamamoto was the Dodgers’ anchor, Shohei Ohtani was their explosion — the unstoppable force who made every at-bat feel like a seismic event."
+        },
+        {
+          "type": "paragraph",
+          "text": "Ohtani’s postseason was one of the most complete in modern memory. Despite a brief mid-series slump, his 1.278 OPS in the World Series spoke volumes about his consistency and power. He was the Dodgers’ most productive hitter from start to finish, blending thunderous swings with plate discipline that left pitchers guessing."
+        },
+        {
+          "type": "paragraph",
+          "text": "But it wasn’t just the offense. Ohtani reminded everyone why he’s one of one — making clutch relief appearances in high-pressure moments and proving, once again, that he’s baseball’s most unique and transcendent player."
+        },
+        {
+          "type": "paragraph",
+          "text": "His NLCS performance might go down as the stuff of legend. In one of the most dominant postseason games ever recorded, Ohtani hit three home runs and struck out 10 batters — a statistical anomaly that only he could produce."
+        },
+        {
+          "type": "paragraph",
+          "text": "Even in the postseason’s toughest stretches, Ohtani’s presence alone reshaped the way opposing teams pitched, managed, and approached every inning. As one opposing scout put it, “You don’t game-plan for Ohtani — you survive him.”"
+        },
+        {
+          "type": "heading",
+          "text": "Sasaki: The Silent Samurai Who Steadied the Storm"
+        },
+        {
+          "type": "paragraph",
+          "text": "While Ohtani and Yamamoto grabbed headlines, Roki Sasaki was the quiet constant — the unsung hero whose calm efficiency anchored the Dodgers’ pitching staff in pivotal moments."
+        },
+        {
+          "type": "paragraph",
+          "text": "In just his first postseason campaign, Sasaki showcased why he’s considered Japan’s next great ace. Across 10.2 postseason innings, he posted a 3.70 FIP, but that number only scratches the surface of his impact. He kept games close, bridged crucial middle innings, and gave the Dodgers’ bullpen the rest it needed to stay sharp late in the series."
+        },
+        {
+          "type": "paragraph",
+          "text": "According to Yahoo Sports, Sasaki’s overall postseason numbers — allowing just one earned run on two hits with six strikeouts and two walks in seven innings — tell the story of a young pitcher who didn’t just belong on the biggest stage; he commanded it."
+        },
+        {
+          "type": "paragraph",
+          "text": "One Dodgers insider reportedly said, “He’s the future — you can already see it. He pitches like he’s been here for ten years.”"
+        },
+        {
+          "type": "heading",
+          "text": "A Shared Legacy — and a Future Reunion"
+        },
+        {
+          "type": "paragraph",
+          "text": "The brilliance of Yamamoto, Ohtani, and Sasaki in Dodger blue wasn’t just a triumph for Los Angeles — it was a defining chapter for Japanese baseball. Each of them, in their own way, carried the spirit of their homeland onto a global stage, representing a baseball culture built on precision, preparation, and pride."
+        },
+        {
+          "type": "paragraph",
+          "text": "Their combined dominance also sparked a tantalizing thought among fans and analysts alike: could these three reunite under the same banner again, not as Dodgers, but as Team Japan in the 2026 World Baseball Classic?"
+        },
+        {
+          "type": "paragraph",
+          "text": "The idea is as thrilling as it is plausible. Ohtani, already the face of Japan’s 2023 WBC victory, could once again lead the lineup, this time alongside Yamamoto and Sasaki — two of the most electric arms in the sport. The trio’s chemistry, forged in the fires of an MLB championship run, could make Japan an overwhelming favorite to defend their title."
+        },
+        {
+          "type": "paragraph",
+          "text": "Imagine Yamamoto starting a semifinal game, Sasaki following in relief with 100 mph fastballs, and Ohtani closing it out — both on the mound and at the plate. For Japanese baseball fans, it would be more than a dream; it would be destiny realized."
+        },
+        {
+          "type": "heading",
+          "text": "From Tokyo to Los Angeles — and Back Again"
+        },
+        {
+          "type": "paragraph",
+          "text": "The Dodgers’ World Series win will be remembered for many reasons — the star power, the resilience, the dramatic finishes — but above all, it will be remembered as the year when Japan’s finest players took over October."
+        },
+        {
+          "type": "paragraph",
+          "text": "Yamamoto’s precision, Ohtani’s ferocity, and Sasaki’s calm formed a perfect trinity of baseball excellence. Together, they didn’t just win a championship; they elevated the game itself, proving that the bridge between Nippon Professional Baseball and MLB has never been stronger."
+        },
+        {
+          "type": "paragraph",
+          "text": "As March 2026 approaches and whispers of their reunion grow louder, one truth remains undeniable: the world is witnessing a golden age of Japanese baseball. And at its center stand three men in Dodger blue — Yamamoto, Ohtani, and Sasaki — warriors of the rising sun, champions of the world, and possibly, future kings of the next great global stage."
+        }
+      ],
+      "seo": {
+        "title_tag": "Dodgers’ Japanese Trio Redefines Greatness: Ohtani, Yamamoto, and Sasaki | Sandlot Picks",
+        "meta_description": "How Shohei Ohtani, Yoshinobu Yamamoto, and Roki Sasaki powered the Dodgers to a World Series and may reunite for Japan’s 2026 WBC run.",
+        "keywords": [
+          "Shohei Ohtani",
+          "Yoshinobu Yamamoto",
+          "Roki Sasaki",
+          "Dodgers World Series 2025",
+          "Japan Baseball",
+          "World Baseball Classic 2026",
+          "MLB postseason",
+          "Dodgers pitching",
+          "Sports betting MLB",
+          "Pikkit",
+          "Fanduel",
+          "DraftKings"
+        ],
+        "canonical_url": "https://sandlotpicks.com/sandlot-insider/dodgers-japanese-trio-2025-world-series-dynasty",
+        "og_image": "https://sandlotpicks.com/article-heros/dodgers-japan-article-hero.png"
+      },
+      "affiliate_cta": {
+        "enabled": true,
+        "platform": "Pikkit",
+        "context": "Effortlessly track all your sports bets in one convenient place — focus on what you do best: make winning picks.",
+        "link": "https://links.pikkit.com/invite/bullseye52540",
+        "hero-banner": "/article-heros/pikkit-promo-img.png",
+        "promo_code": "BULLSEYE52540"
+      },
+      "affiliate_disclaimer": "We may earn a commission if you sign up through our Pikkit link. Using our code BULLSEYE52540 supports our content and helps us keep delivering daily insights.",
+      "related_posts": [
+        "paul-skenes-cy-young-legend-in-the-making-2025",
+        "john-schneider-robbed-al-manager-of-the-year-2025"
+      ]
     },
-  "articles": []
+    {
+      "id": 1,
+      "title": "From Basement to Brink: How the Blue Jays Flipped the Script in 2025",
+      "slug": "blue-jays-2025-turnaround-from-basement-to-brink",
+      "author": "Sandlot Picks Team",
+      "date": "2025-11-10",
+      "status": "Final",
+      "tags": [
+        "MLB",
+        "Toronto Blue Jays",
+        "Postseason",
+        "2025 Season",
+        "Offseason",
+        "Free Agency",
+        "Analytics",
+        "Sports Betting"
+      ],
+      "summary": "The Blue Jays reinvented their offense, leaned on elite defense, stabilized their pitching, and rode clutch performances from Ernie Clement and Andrés Giménez to come within one win of a championship. But with key free agents like Bo Bichette and Chris Bassitt, can they sustain it?",
+      "read_time_minutes": 4,
+      "estimated_word_count": 1150,
+      "hero_image": {
+        "url": "/article-heros/bluejays-article-hero.png",
+        "alt": "Toronto Blue Jays player Ernie clement AI-generated image"
+      },
+      "content": [
+        {
+          "type": "heading",
+          "text": "From Basement to Brink: How the Blue Jays Flipped the Script in 2025"
+        },
+        {
+          "type": "paragraph",
+          "text": "The Toronto Blue Jays’ 2025 season was one of baseball’s biggest turnarounds—a reminder that a down year doesn’t always signal decline. After finishing 74–88 in 2024 and missing the postseason entirely, the Jays rebounded to 94–68, capturing the AL East and coming just one win shy of a World Series title."
+        },
+        {
+          "type": "paragraph",
+          "text": "So how did they go from underperforming pretenders to legitimate contenders in just one year?"
+        },
+        {
+          "type": "heading",
+          "text": "1. A Shift in Offensive Philosophy"
+        },
+        {
+          "type": "paragraph",
+          "text": "In 2024, Toronto leaned too heavily on the long ball, often struggling when the power bats went cold. The 2025 team flipped that narrative. The Blue Jays focused on contact and situational hitting, prioritizing putting the ball in play over swinging for the fences. Their new approach paid off—they recorded one of the lowest strikeout rates among playoff teams and led the league in batting average with runners in scoring position (.292)."
+        },
+        {
+          "type": "paragraph",
+          "text": "This balanced style didn’t mean the power disappeared. Stars like Vladimir Guerrero Jr. and Addison Barger still provided plenty of pop, but the lineup became more adaptable and difficult to pitch against—especially in late-game situations."
+        },
+        {
+          "type": "heading",
+          "text": "2. Elite Defense as the Backbone"
+        },
+        {
+          "type": "paragraph",
+          "text": "Toronto’s defensive efficiency became a defining strength. Whether it was outfield range, infield stability, or minimizing errors in high-leverage innings, the Jays consistently prevented runs. Their defense gave the pitching staff room to attack the zone more aggressively and helped neutralize opposing power threats throughout the postseason."
+        },
+        {
+          "type": "heading",
+          "text": "3. Stability and Surprises on the Mound"
+        },
+        {
+          "type": "paragraph",
+          "text": "Consistency was the name of the game for the rotation. Chris Bassitt anchored the staff with veteran reliability, eating innings and posting one of the lowest walk rates of his career. Behind him, the Jays found unexpected heroes—most notably Addison Barger, who translated his elite exit velocities into real production—and a bullpen that ranked among the AL’s best in save conversion and inherited runners stranded."
+        },
+        {
+          "type": "paragraph",
+          "text": "Toronto’s relievers—long a point of frustration for fans—became a weapon. Key midseason tweaks and strong internal development turned the bullpen into one of baseball’s most dependable groups."
+        },
+        {
+          "type": "heading",
+          "text": "4. Depth and “Next Man Up” Mentality"
+        },
+        {
+          "type": "paragraph",
+          "text": "Championship-caliber teams always need unsung contributors, and Toronto had plenty."
+        },
+        {
+          "type": "subheading",
+          "text": "Ernie Clement: The Postseason Hit Machine"
+        },
+        {
+          "type": "paragraph",
+          "text": "Ernie Clement became a postseason hit machine, spraying line drives to all fields and delivering in multiple elimination games when the offense needed a spark."
+        },
+        {
+          "type": "subheading",
+          "text": "Andrés Giménez: Automatic with RISP"
+        },
+        {
+          "type": "paragraph",
+          "text": "Andrés Giménez emerged as one of the Jays’ most clutch hitters. During the 2025 postseason, Giménez was nearly automatic with runners in scoring position, hitting .500 with 11 RBIs in 14 at-bats compared to his .301 average in non-RISP situations. His ability to deliver timely contact turned close games into wins and helped power Toronto’s deep October run."
+        },
+        {
+          "type": "paragraph",
+          "text": "Those under-the-radar performances from Clement and Giménez didn’t just fill gaps—they defined the Blue Jays’ identity: resilient, balanced, and dangerous from top to bottom."
+        },
+        {
+          "type": "heading",
+          "text": "5. A Lesson for Analysts and Bettors"
+        },
+        {
+          "type": "paragraph",
+          "text": "Toronto’s 20-win jump from 2024 to 2025 underscores how quickly fortunes can change when an organization aligns talent, health, and philosophy. From a predictive modeling or betting perspective, it’s a case study in not overreacting to a single down year. The underlying data—exit velocities, defensive metrics, and bullpen FIP—all hinted that the Blue Jays were better than their 2024 record suggested. By tweaking their offensive approach and tightening up defensively, they unlocked the potential that analytics already saw under the surface."
+        },
+        {
+          "type": "heading",
+          "text": "The Takeaway"
+        },
+        {
+          "type": "paragraph",
+          "text": "The 2025 Blue Jays proved that a turnaround isn’t magic—it’s execution. By emphasizing contact, defense, and pitching stability, they went from a 5th-place finish to within one game of a championship."
+        },
+        {
+          "type": "paragraph",
+          "text": "However, maintaining that momentum could be the real challenge. The team faces a pivotal offseason with several key contributors hitting free agency. Among them are SS Bo Bichette, SP Chris Bassitt, and RP Max Scherzer—all integral pieces of Toronto’s 2025 success. Additional names like INF Ty France, RHP Seranthony Domínguez, and INF Isiah Kiner-Falefa also hit the market, raising questions about how much of this core the Jays can realistically retain."
+        },
+        {
+          "type": "paragraph",
+          "text": "Their ability to re-sign or replace that talent will determine whether 2025 was the start of a sustained championship window—or a fleeting brush with greatness."
+        }
+      ],
+      "seo": {
+        "title_tag": "Blue Jays 2025 Turnaround: From Basement to Brink | Sandlot Picks",
+        "meta_description": "Inside the Toronto Blue Jays’ stunning 2025 turnaround — from 74–88 in 2024 to within one win of a World Series. How contact hitting, elite defense, and breakout performances fueled the rise.",
+        "keywords": [
+          "Toronto Blue Jays 2025",
+          "MLB postseason",
+          "Blue Jays free agents",
+          "Ernie Clement",
+          "Andrés Giménez",
+          "Bo Bichette",
+          "Chris Bassitt",
+          "MLB analytics",
+          "sports betting MLB",
+          "World Series",
+          "2025 World Series",
+          "Pikkit",
+          "Fanduel",
+          "DraftKings"
+        ],
+        "canonical_url": "https://sandlotpicks.com/sandlot-insider/blue-jays-2025-turnaround-from-basement-to-brink",
+        "og_image": "https://sandlotpicks.com/article-heros/bluejays-article-hero.png"
+      },
+      "affiliate_cta": {
+        "enabled": true,
+        "platform": "Pikkit",
+        "context": "Effortlessly track all your sports bets in one convenient place — focus on what you do best: make winning picks.",
+        "link": "https://links.pikkit.com/invite/bullseye52540",
+        "hero-banner": "/article-heros/pikkit-promo-img.png",
+        "promo_code": "BULLSEYE52540"
+      },
+      "affiliate_disclaimer": "We may earn a commission if you sign up through our Pikkit link. Using our code BULLSEYE52540 supports our content and helps us keep delivering daily insights.",
+      "related_posts": [
+        "john-schneider-robbed-al-manager-of-the-year-2025"
+      ]
+    }
+  ],
+  "total_articles": 2
 }

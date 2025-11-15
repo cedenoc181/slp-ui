@@ -3,7 +3,7 @@ const path = require('path');
 
 const MAIN_FILE = path.join(__dirname, '../src/data/article.json');
 const MORE_FILE = path.join(__dirname, '../src/data/moreArticles.json');
-const ARTICLES_PER_PAGE = 5;
+const ARTICLES_PER_PAGE = 4;
 
 function organizeArticles() {
   console.log('🔄 Starting article organization...\n');

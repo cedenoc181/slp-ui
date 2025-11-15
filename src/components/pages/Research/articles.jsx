@@ -7,7 +7,7 @@ function Article() {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedTag, setSelectedTag] = useState('all');
   const [currentPage, setCurrentPage] = useState(1);
-  const articlesPerPage = 5;
+  const articlesPerPage = 4;
 
   // Combine all articles from both JSON files and sort by ID descending
   const allArticles = [

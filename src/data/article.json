@@ -1,770 +1,15 @@
 {
-    "schema_version": "1.0",
-    "site": "sandlotpicks.com",
-    "generated_at": "2025-11-10",
-    "pagination": {
-        "current_page": 1,
-        "articles_per_page": 5,
-        "total_pages": 1,
-        "has_more": false
-      },
-    "articles": [
-        {
-          "id": 1,
-          "title": "From Basement to Brink: How the Blue Jays Flipped the Script in 2025",
-          "slug": "blue-jays-2025-turnaround-from-basement-to-brink",
-          "author": "Sandlot Picks Team",
-          "date": "2025-11-10",
-          "status": "Final",
-          "tags": [
-            "MLB",
-            "Toronto Blue Jays",
-            "Postseason",
-            "2025 Season",
-            "Offseason",
-            "Free Agency",
-            "Analytics",
-            "Sports Betting"
-          ],
-          "summary": "The Blue Jays reinvented their offense, leaned on elite defense, stabilized their pitching, and rode clutch performances from Ernie Clement and Andrés Giménez to come within one win of a championship. But with key free agents like Bo Bichette and Chris Bassitt, can they sustain it?",
-          "read_time_minutes": 4,
-          "estimated_word_count": 1150,
-          "hero_image": {
-            "url": "/article-heros/bluejays-article-hero.png",
-            "alt": "Toronto Blue Jays player Ernie clement AI-generated image"
-          },
-          "content": [
-            {
-              "type": "heading",
-              "text": "From Basement to Brink: How the Blue Jays Flipped the Script in 2025"
-            },
-            {
-              "type": "paragraph",
-              "text": "The Toronto Blue Jays’ 2025 season was one of baseball’s biggest turnarounds—a reminder that a down year doesn’t always signal decline. After finishing 74–88 in 2024 and missing the postseason entirely, the Jays rebounded to 94–68, capturing the AL East and coming just one win shy of a World Series title."
-            },
-            {
-              "type": "paragraph",
-              "text": "So how did they go from underperforming pretenders to legitimate contenders in just one year?"
-            },
-            {
-              "type": "heading",
-              "text": "1. A Shift in Offensive Philosophy"
-            },
-            {
-              "type": "paragraph",
-              "text": "In 2024, Toronto leaned too heavily on the long ball, often struggling when the power bats went cold. The 2025 team flipped that narrative. The Blue Jays focused on contact and situational hitting, prioritizing putting the ball in play over swinging for the fences. Their new approach paid off—they recorded one of the lowest strikeout rates among playoff teams and led the league in batting average with runners in scoring position (.292)."
-            },
-            {
-              "type": "paragraph",
-              "text": "This balanced style didn’t mean the power disappeared. Stars like Vladimir Guerrero Jr. and Addison Barger still provided plenty of pop, but the lineup became more adaptable and difficult to pitch against—especially in late-game situations."
-            },
-            {
-              "type": "heading",
-              "text": "2. Elite Defense as the Backbone"
-            },
-            {
-              "type": "paragraph",
-              "text": "Toronto’s defensive efficiency became a defining strength. Whether it was outfield range, infield stability, or minimizing errors in high-leverage innings, the Jays consistently prevented runs. Their defense gave the pitching staff room to attack the zone more aggressively and helped neutralize opposing power threats throughout the postseason."
-            },
-            {
-              "type": "heading",
-              "text": "3. Stability and Surprises on the Mound"
-            },
-            {
-              "type": "paragraph",
-              "text": "Consistency was the name of the game for the rotation. Chris Bassitt anchored the staff with veteran reliability, eating innings and posting one of the lowest walk rates of his career. Behind him, the Jays found unexpected heroes—most notably Addison Barger, who translated his elite exit velocities into real production—and a bullpen that ranked among the AL’s best in save conversion and inherited runners stranded."
-            },
-            {
-              "type": "paragraph",
-              "text": "Toronto’s relievers—long a point of frustration for fans—became a weapon. Key midseason tweaks and strong internal development turned the bullpen into one of baseball’s most dependable groups."
-            },
-            {
-              "type": "heading",
-              "text": "4. Depth and “Next Man Up” Mentality"
-            },
-            {
-              "type": "paragraph",
-              "text": "Championship-caliber teams always need unsung contributors, and Toronto had plenty."
-            },
-            {
-              "type": "subheading",
-              "text": "Ernie Clement: The Postseason Hit Machine"
-            },
-            {
-              "type": "paragraph",
-              "text": "Ernie Clement became a postseason hit machine, spraying line drives to all fields and delivering in multiple elimination games when the offense needed a spark."
-            },
-            {
-              "type": "subheading",
-              "text": "Andrés Giménez: Automatic with RISP"
-            },
-            {
-              "type": "paragraph",
-              "text": "Andrés Giménez emerged as one of the Jays’ most clutch hitters. During the 2025 postseason, Giménez was nearly automatic with runners in scoring position, hitting .500 with 11 RBIs in 14 at-bats compared to his .301 average in non-RISP situations. His ability to deliver timely contact turned close games into wins and helped power Toronto’s deep October run."
-            },
-            {
-              "type": "paragraph",
-              "text": "Those under-the-radar performances from Clement and Giménez didn’t just fill gaps—they defined the Blue Jays’ identity: resilient, balanced, and dangerous from top to bottom."
-            },
-            {
-              "type": "heading",
-              "text": "5. A Lesson for Analysts and Bettors"
-            },
-            {
-              "type": "paragraph",
-              "text": "Toronto’s 20-win jump from 2024 to 2025 underscores how quickly fortunes can change when an organization aligns talent, health, and philosophy. From a predictive modeling or betting perspective, it’s a case study in not overreacting to a single down year. The underlying data—exit velocities, defensive metrics, and bullpen FIP—all hinted that the Blue Jays were better than their 2024 record suggested. By tweaking their offensive approach and tightening up defensively, they unlocked the potential that analytics already saw under the surface."
-            },
-            {
-              "type": "heading",
-              "text": "The Takeaway"
-            },
-            {
-              "type": "paragraph",
-              "text": "The 2025 Blue Jays proved that a turnaround isn’t magic—it’s execution. By emphasizing contact, defense, and pitching stability, they went from a 5th-place finish to within one game of a championship."
-            },
-            {
-              "type": "paragraph",
-              "text": "However, maintaining that momentum could be the real challenge. The team faces a pivotal offseason with several key contributors hitting free agency. Among them are SS Bo Bichette, SP Chris Bassitt, and RP Max Scherzer—all integral pieces of Toronto’s 2025 success. Additional names like INF Ty France, RHP Seranthony Domínguez, and INF Isiah Kiner-Falefa also hit the market, raising questions about how much of this core the Jays can realistically retain."
-            },
-            {
-              "type": "paragraph",
-              "text": "Their ability to re-sign or replace that talent will determine whether 2025 was the start of a sustained championship window—or a fleeting brush with greatness."
-            }
-          ],
-          "seo": {
-            "title_tag": "Blue Jays 2025 Turnaround: From Basement to Brink | Sandlot Picks",
-            "meta_description": "Inside the Toronto Blue Jays’ stunning 2025 turnaround — from 74–88 in 2024 to within one win of a World Series. How contact hitting, elite defense, and breakout performances fueled the rise.",
-            "keywords": [
-              "Toronto Blue Jays 2025",
-              "MLB postseason",
-              "Blue Jays free agents",
-              "Ernie Clement",
-              "Andrés Giménez",
-              "Bo Bichette",
-              "Chris Bassitt",
-              "MLB analytics",
-              "sports betting MLB",
-              "World Series",
-              "2025 World Series",
-              "Pikkit", 
-              "Fanduel",
-              "DraftKings"
-            ],
-            "canonical_url": "https://sandlotpicks.com/sandlot-insider/blue-jays-2025-turnaround-from-basement-to-brink",
-            "og_image": "https://sandlotpicks.com/article-heros/bluejays-article-hero.png"
-          },
-          "affiliate_cta": {
-            "enabled": true,
-            "platform": "Pikkit",
-            "context": "Effortlessly track all your sports bets in one convenient place — focus on what you do best: make winning picks.",
-            "link": "https://links.pikkit.com/invite/bullseye52540",
-            "hero-banner": "/article-heros/pikkit-promo-img.png",
-            "promo_code": "BULLSEYE52540"
-          },
-          "affiliate_disclaimer": "We may earn a commission if you sign up through our Pikkit link. Using our code BULLSEYE52540 supports our content and helps us keep delivering daily insights.",
-          "related_posts": [
-            "john-schneider-robbed-al-manager-of-the-year-2025"
-          ]
-        },
-        {
-          "id": 2,
-          "title": "The Rising Sun in Dodger Blue: How Ohtani, Yamamoto, and Sasaki Defined a Dynasty and Set the Stage for Japan’s Next Great Moment",
-          "slug": "dodgers-japanese-trio-2025-world-series-dynasty",
-          "author": "Sandlot Picks Team",
-          "date": "2025-11-11",
-          "status": "Final",
-          "tags": [
-            "MLB",
-            "Los Angeles Dodgers",
-            "Shohei Ohtani",
-            "Yoshinobu Yamamoto",
-            "Roki Sasaki",
-            "World Series",
-            "Japan Baseball",
-            "2025 Postseason",
-            "World Baseball Classic",
-            "Sports Betting"
-          ],
-          "summary": "Yoshinobu Yamamoto, Shohei Ohtani, and Roki Sasaki didn’t just lead the Dodgers to a World Series title—they redefined global baseball dominance. With Yamamoto’s MVP performance, Ohtani’s two-way heroics, and Sasaki’s quiet efficiency, Japan’s finest may soon reunite for another historic run at the 2026 World Baseball Classic.",
-          "read_time_minutes": 4,
-          "estimated_word_count": 882,
-          "hero_image": {
-            "url": "/article-heros/dodgers-japan-article-hero.png",
-            "alt": "Yamamoto, Ohtani, and Sasaki celebrating Dodgers World Series win AI-generated image"
-          },
-          "content": [
-            {
-              "type": "heading",
-              "text": "The Rising Sun in Dodger Blue: How Ohtani, Yamamoto, and Sasaki Defined a Dynasty and Set the Stage for Japan’s Next Great Moment"
-            },
-            {
-              "type": "paragraph",
-              "text": "In a postseason that felt more like a Hollywood script than a baseball tournament, the Los Angeles Dodgers’ trio of Japanese stars — Shohei Ohtani, Yoshinobu Yamamoto, and Roki Sasaki — didn’t just help the franchise reclaim its World Series crown; they reshaped how the baseball world views the influence of Japanese talent on the global stage."
-            },
-            {
-              "type": "heading",
-              "text": "Yamamoto: The Ace Who Willed a Championship"
-            },
-            {
-              "type": "paragraph",
-              "text": "Every October hero needs a defining moment, and for Yoshinobu Yamamoto, this postseason became a masterclass in dominance and durability. The 25-year-old right-hander didn’t just meet expectations in his first MLB postseason — he shattered them."
-            },
-            {
-              "type": "paragraph",
-              "text": "Named World Series MVP, Yamamoto’s performances were the stuff of legend. He won Games 2, 6, and 7, making him the first pitcher in history to record three road victories in a single World Series. His complete game win in Game 2 not only evened the series but set the tone for the Dodgers’ eventual triumph. Then, with the season on the line in Game 7, on zero days’ rest, Yamamoto emerged from the bullpen to deliver a series-clinching save in the 11th inning, etching his name alongside postseason immortals."
-            },
-            {
-              "type": "paragraph",
-              "text": "It wasn’t just dominance — it was endurance, adaptability, and heart. As one Dodgers coach reportedly said, “He’s the calm in chaos. You could feel the stadium’s heartbeat match his.”"
-            },
-            {
-              "type": "heading",
-              "text": "Ohtani: The Two-Way Titan Who Redefined October Greatness"
-            },
-            {
-              "type": "paragraph",
-              "text": "If Yamamoto was the Dodgers’ anchor, Shohei Ohtani was their explosion — the unstoppable force who made every at-bat feel like a seismic event."
-            },
-            {
-              "type": "paragraph",
-              "text": "Ohtani’s postseason was one of the most complete in modern memory. Despite a brief mid-series slump, his 1.278 OPS in the World Series spoke volumes about his consistency and power. He was the Dodgers’ most productive hitter from start to finish, blending thunderous swings with plate discipline that left pitchers guessing."
-            },
-            {
-              "type": "paragraph",
-              "text": "But it wasn’t just the offense. Ohtani reminded everyone why he’s one of one — making clutch relief appearances in high-pressure moments and proving, once again, that he’s baseball’s most unique and transcendent player."
-            },
-            {
-              "type": "paragraph",
-              "text": "His NLCS performance might go down as the stuff of legend. In one of the most dominant postseason games ever recorded, Ohtani hit three home runs and struck out 10 batters — a statistical anomaly that only he could produce."
-            },
-            {
-              "type": "paragraph",
-              "text": "Even in the postseason’s toughest stretches, Ohtani’s presence alone reshaped the way opposing teams pitched, managed, and approached every inning. As one opposing scout put it, “You don’t game-plan for Ohtani — you survive him.”"
-            },
-            {
-              "type": "heading",
-              "text": "Sasaki: The Silent Samurai Who Steadied the Storm"
-            },
-            {
-              "type": "paragraph",
-              "text": "While Ohtani and Yamamoto grabbed headlines, Roki Sasaki was the quiet constant — the unsung hero whose calm efficiency anchored the Dodgers’ pitching staff in pivotal moments."
-            },
-            {
-              "type": "paragraph",
-              "text": "In just his first postseason campaign, Sasaki showcased why he’s considered Japan’s next great ace. Across 10.2 postseason innings, he posted a 3.70 FIP, but that number only scratches the surface of his impact. He kept games close, bridged crucial middle innings, and gave the Dodgers’ bullpen the rest it needed to stay sharp late in the series."
-            },
-            {
-              "type": "paragraph",
-              "text": "According to Yahoo Sports, Sasaki’s overall postseason numbers — allowing just one earned run on two hits with six strikeouts and two walks in seven innings — tell the story of a young pitcher who didn’t just belong on the biggest stage; he commanded it."
-            },
-            {
-              "type": "paragraph",
-              "text": "One Dodgers insider reportedly said, “He’s the future — you can already see it. He pitches like he’s been here for ten years.”"
-            },
-            {
-              "type": "heading",
-              "text": "A Shared Legacy — and a Future Reunion"
-            },
-            {
-              "type": "paragraph",
-              "text": "The brilliance of Yamamoto, Ohtani, and Sasaki in Dodger blue wasn’t just a triumph for Los Angeles — it was a defining chapter for Japanese baseball. Each of them, in their own way, carried the spirit of their homeland onto a global stage, representing a baseball culture built on precision, preparation, and pride."
-            },
-            {
-              "type": "paragraph",
-              "text": "Their combined dominance also sparked a tantalizing thought among fans and analysts alike: could these three reunite under the same banner again, not as Dodgers, but as Team Japan in the 2026 World Baseball Classic?"
-            },
-            {
-              "type": "paragraph",
-              "text": "The idea is as thrilling as it is plausible. Ohtani, already the face of Japan’s 2023 WBC victory, could once again lead the lineup, this time alongside Yamamoto and Sasaki — two of the most electric arms in the sport. The trio’s chemistry, forged in the fires of an MLB championship run, could make Japan an overwhelming favorite to defend their title."
-            },
-            {
-              "type": "paragraph",
-              "text": "Imagine Yamamoto starting a semifinal game, Sasaki following in relief with 100 mph fastballs, and Ohtani closing it out — both on the mound and at the plate. For Japanese baseball fans, it would be more than a dream; it would be destiny realized."
-            },
-            {
-              "type": "heading",
-              "text": "From Tokyo to Los Angeles — and Back Again"
-            },
-            {
-              "type": "paragraph",
-              "text": "The Dodgers’ World Series win will be remembered for many reasons — the star power, the resilience, the dramatic finishes — but above all, it will be remembered as the year when Japan’s finest players took over October."
-            },
-            {
-              "type": "paragraph",
-              "text": "Yamamoto’s precision, Ohtani’s ferocity, and Sasaki’s calm formed a perfect trinity of baseball excellence. Together, they didn’t just win a championship; they elevated the game itself, proving that the bridge between Nippon Professional Baseball and MLB has never been stronger."
-            },
-            {
-              "type": "paragraph",
-              "text": "As March 2026 approaches and whispers of their reunion grow louder, one truth remains undeniable: the world is witnessing a golden age of Japanese baseball. And at its center stand three men in Dodger blue — Yamamoto, Ohtani, and Sasaki — warriors of the rising sun, champions of the world, and possibly, future kings of the next great global stage."
-            }
-          ],
-          "seo": {
-            "title_tag": "Dodgers’ Japanese Trio Redefines Greatness: Ohtani, Yamamoto, and Sasaki | Sandlot Picks",
-            "meta_description": "How Shohei Ohtani, Yoshinobu Yamamoto, and Roki Sasaki powered the Dodgers to a World Series and may reunite for Japan’s 2026 WBC run.",
-            "keywords": [
-              "Shohei Ohtani",
-              "Yoshinobu Yamamoto",
-              "Roki Sasaki",
-              "Dodgers World Series 2025",
-              "Japan Baseball",
-              "World Baseball Classic 2026",
-              "MLB postseason",
-              "Dodgers pitching",
-              "Sports betting MLB",
-              "Pikkit", 
-              "Fanduel",
-              "DraftKings"
-            ],
-            "canonical_url": "https://sandlotpicks.com/sandlot-insider/dodgers-japanese-trio-2025-world-series-dynasty",
-            "og_image": "https://sandlotpicks.com/article-heros/dodgers-japan-article-hero.png"
-          },
-          "affiliate_cta": {
-            "enabled": true,
-            "platform": "Pikkit",
-            "context": "Effortlessly track all your sports bets in one convenient place — focus on what you do best: make winning picks.",
-            "link": "https://links.pikkit.com/invite/bullseye52540",
-            "hero-banner": "/article-heros/pikkit-promo-img.png",
-            "promo_code": "BULLSEYE52540"
-          },
-          "affiliate_disclaimer": "We may earn a commission if you sign up through our Pikkit link. Using our code BULLSEYE52540 supports our content and helps us keep delivering daily insights.",
-          "related_posts": [
-            "paul-skenes-cy-young-legend-in-the-making-2025",
-            "john-schneider-robbed-al-manager-of-the-year-2025"
-          ]
-        },
-        {
-        "id": 3,
-        "title": "Robbed on the Bench: How John Schneider Was the Real AL Manager of the Year",
-        "slug": "john-schneider-robbed-al-manager-of-the-year-2025",
-        "author": "Sandlot Picks Team",
-        "date": "2025-11-12",
-        "status": "Final",
-        "tags": [
-          "MLB",
-          "Toronto Blue Jays",
-          "Awards",
-          "Manager of the Year",
-          "Postseason",
-          "Sports Betting"
-        ],
-        "summary": "Stephen Vogt’s record-setting AL Central comeback was remarkable, but John Schneider guided the Blue Jays from a 2024 basement finish to an AL East title on Game 162 and a Game 7 World Series run. In the sport’s toughest division, Schneider’s full-season transformation made him the true Manager of the Year.",
-        "read_time_minutes": 5,
-        "estimated_word_count": 950,
-        "hero_image": {
-          "url": "/article-heros/moty-hero.png",
-          "alt": "Managers face off AI-generated image"
-        },
-        "content": [
-          {
-            "type": "heading",
-            "text": "Robbed on the Bench: How John Schneider Was the Real AL Manager of the Year"
-          },
-          {
-            "type": "paragraph",
-            "text": "When the dust settled on a magical 2025 baseball season, the Baseball Writers’ Association of America (BBWAA) voted Guardians manager Stephen Vogt as the American League Manager of the Year — for the second consecutive time. It’s hard to argue against Vogt’s résumé: overcoming a 15.5-game deficit, losing several key players, surviving the chaos of losing his All-Star closer to a gambling scandal, and still storming back with a 10-game winning streak to claim the AL Central crown. It was a remarkable story — one of perseverance, culture, and grit."
-          },
-          {
-            "type": "paragraph",
-            "text": "But when you take a closer look at what John Schneider accomplished in Toronto, it’s hard not to feel that baseball’s writers missed the bigger picture. Because while Vogt’s Guardians delivered one of the great comebacks in recent memory, Schneider’s Blue Jays orchestrated one of the most improbable full-season transformations in modern baseball."
-          },
-          {
-            "type": "heading",
-            "text": "From Basement to Brilliance"
-          },
-          {
-            "type": "paragraph",
-            "text": "Just one year ago, John Schneider’s Blue Jays finished near the bottom of the American League standings. The offense sputtered, the rotation was inconsistent, and fans were restless. Many expected 2025 to be a reset year — or worse, Schneider’s final one in Toronto."
-          },
-          {
-            "type": "paragraph",
-            "text": "Then the script flipped."
-          },
-          {
-            "type": "paragraph",
-            "text": "The Blue Jays stormed back to win the AL East, one of the toughest divisions in baseball. The Yankees, Red Sox, and Rays all stayed competitive deep into September. It took every ounce of Schneider’s tactical flexibility and clubhouse leadership to keep Toronto above water — and they did it, clinching the division on Game 162 with the Yankees breathing down their necks."
-          },
-          {
-            "type": "paragraph",
-            "text": "It wasn’t just a turnaround — it was a statement. The Jays improved by 20 wins, rediscovered their offensive identity, and turned a once-shaky bullpen into one of the AL’s most consistent units."
-          },
-          {
-            "type": "heading",
-            "text": "The Toughest Division in Baseball"
-          },
-          {
-            "type": "paragraph",
-            "text": "That’s where the argument for Schneider really shines. Winning the AL Central — even in dramatic fashion — is one thing. But surviving the AL East, year after year, is something entirely different."
-          },
-          {
-            "type": "paragraph",
-            "text": "The 2025 East was a battlefield: the Yankees spent aggressively and paired youth with veteran bats; the Red Sox rebuilt a contact-first offense that refused to strike out; Tampa Bay remained analytically sharp and relentlessly efficient; and even a retooling Baltimore team still packed dangerous young talent. Against all that, Schneider’s Jays stayed composed, consistent, and ultimately victorious. Every series felt like a playoff preview, every lineup card a puzzle. And while Vogt’s Guardians surged late, Toronto led a marathon — not a sprint."
-          },
-          {
-            "type": "heading",
-            "text": "Postseason Proof"
-          },
-          {
-            "type": "paragraph",
-            "text": "Schneider’s case didn’t end with the regular season. The Blue Jays carried that fire straight into October, tearing through the postseason before finally coming up short in Game 7 of the World Series."
-          },
-          {
-            "type": "paragraph",
-            "text": "That deep run validated Schneider’s approach. His bullpen management — once criticized — became a strength. His faith in hitters like Addison Barger and Ernie Clement paid off in clutch moments. His use of platoons, matchups, and analytics reflected a manager who had truly evolved."
-          },
-          {
-            "type": "paragraph",
-            "text": "In a sport that loves redemption arcs, Schneider wrote a masterpiece — but somehow, didn’t get the final chapter he deserved."
-          },
-          {
-            "type": "heading",
-            "text": "Why Vogt Deserved Recognition — But Schneider Deserved the Crown"
-          },
-          {
-            "type": "paragraph",
-            "text": "Let’s be clear: Stephen Vogt’s achievement was extraordinary. Turning a season around after being left for dead in June, rallying a fractured clubhouse, and setting a record for the largest division comeback in MLB history is something no manager can take lightly."
-          },
-          {
-            "type": "paragraph",
-            "text": "But the Manager of the Year award isn’t just about a month of magic — it’s about the journey, the scope, and the obstacles overcome. Schneider’s challenge was greater, his consistency unmatched."
-          },
-          {
-            "type": "paragraph",
-            "text": "Vogt overcame a bad start; Schneider overcame an entire year of doubt."
-          },
-          {
-            "type": "paragraph",
-            "text": "One had a second-half miracle. The other built a full-season machine."
-          },
-          {
-            "type": "heading",
-            "text": "The Case for the True Winner"
-          },
-          {
-            "type": "paragraph",
-            "text": "BBWAA voters often gravitate toward narrative — the flashiest turnaround, the feel-good surprise. But leadership in baseball isn’t always loud. Sometimes it’s steady."
-          },
-          {
-            "type": "paragraph",
-            "text": "John Schneider’s Jays weren’t supposed to be there. Not atop the AL East. Not battling toe-to-toe with the Yankees and Red Sox. And certainly not a pitch away from a championship parade."
-          },
-          {
-            "type": "paragraph",
-            "text": "He turned a fractured roster into believers. He took a city’s skepticism and turned it into faith. And in doing so, he reminded baseball what real managerial excellence looks like — not just in the standings, but in the clubhouse, the dugout, and the hearts of the players who followed him there."
-          },
-          {
-            "type": "heading",
-            "text": "Final Thoughts"
-          },
-          {
-            "type": "paragraph",
-            "text": "Vogt may have the trophy. But if baseball had an award for resilience, leadership, and transformation, John Schneider’s name would already be engraved on it."
-          },
-          {
-            "type": "paragraph",
-            "text": "In the end, the Blue Jays’ 2025 season wasn’t just about winning games — it was about rewriting expectations. And if the BBWAA missed that story, that’s on them."
-          },
-          {
-            "type": "paragraph",
-            "text": "Because sometimes, the real Manager of the Year doesn’t need a plaque to prove it. He just needs a clubhouse full of believers — and a city that knows what really happened."
-          }
-        ],
-        "seo": {
-          "title_tag": "John Schneider Was the Real AL Manager of the Year | Sandlot Insider",
-          "meta_description": "Stephen Vogt’s comeback was historic, but John Schneider guided the Blue Jays from a 2024 basement finish to an AL East title and a Game 7 World Series run. Here’s why he was the true Manager of the Year.",
-          "keywords": [
-            "John Schneider Manager of the Year",
-            "Blue Jays 2025",
-            "Stephen Vogt",
-            "BBWAA awards",
-            "AL East 2025",
-            "MLB postseason 2025",
-            "Toronto Blue Jays"
-          ],
-          "canonical_url": "https://sandlotpicks.com/articles/john-schneider-robbed-al-manager-of-the-year-2025",
-          "og_image": "https://sandlotpicks.com/article-heros/moty-hero.png"
-        },
-           "affiliate_cta": {
-           "enabled": true,
-           "platform": "DraftKings",
-           "context": "Join DraftKings today to place bets and cash in on exclusive promotions — all in one seamless app.",
-           "link": "https://sportsbook.draftkings.com/r/sb/cedenoc181/US-NY-SB/US-NY",
-           "hero-banner": "/article-heros/draftkings-promo-hero.jpg"
-         },
-         "affiliate_disclaimer": "We may earn a commission if you sign up through our DraftKings link. This supports our content and helps us keep delivering daily insights.",
-         "related_posts": [
-          "blue-jays-2025-turnaround-from-basement-to-brink",
-          "paul-skenes-cy-young-legend-in-the-making-2025",
-          "tarik-skubal-two-time-al-cy-young-journey-2025"
-        ]
-      },
-      {
-        "id": 4,
-        "title": "Paul Skenes and the Making of a Legend: Is MLB’s Newest Cy Young Winner Already an All-Time Great?",
-        "slug": "paul-skenes-cy-young-legend-in-the-making-2025",
-        "author": "Sandlot Picks Team",
-        "date": "2025-11-13",
-        "status": "Final",
-        "tags": [
-          "MLB",
-          "Pittsburgh Pirates",
-          "Paul Skenes",
-          "Cy Young",
-          "Pitching",
-          "Awards",
-          "NL Awards",
-          "Rookie Phenoms",
-          "Sports Betting"
-        ],
-        "summary": "From LSU national champion in 2023 to Rookie of the Year in 2024 to NL Cy Young winner in 2025, Paul Skenes has risen faster than any pitcher in recent memory. With a résumé stacked in just three seasons, is he already on track to become one of the greatest pitchers the game has ever seen?",
-        "read_time_minutes": 4,
-        "estimated_word_count": 867,
-        "hero_image": {
-          "url": "/article-heros/paul-skenes-evolution.png",
-          "alt": "Paul Skenes delivering a pitch in a dominant Cy Young season"
-        },
-        "content": [
-          {
-            "type": "heading",
-            "text": "Paul Skenes and the Making of a Legend: Is MLB’s Newest Cy Young Winner Already an All-Time Great?"
-          },
-          {
-            "type": "paragraph",
-            "text": "Some players arrive in Major League Baseball. Others erupt into it. And then there’s Paul Skenes — the pitcher who didn’t just burst onto the scene but detonated, reshaping expectations for what a modern ace can be. In the span of just three years, Skenes has built a résumé that other pitchers spend a decade chasing: a national championship at LSU in 2023, the No. 1 overall draft pick that same year, the 2024 National League Rookie of the Year, a third-place finish in the Cy Young race as a rookie, and now, in 2025, the title of NL Cy Young Award winner. All before turning 24."
-          },
-          {
-            "type": "paragraph",
-            "text": "The word “generational” gets thrown around far too often in sports. But with Skenes? It’s starting to feel inadequate. What he’s accomplished in this condensed window isn’t just special — it’s unprecedented."
-          },
-          {
-            "type": "heading",
-            "text": "A Meteoric Rise: Faster Than Any Pitcher Before Him"
-          },
-          {
-            "type": "paragraph",
-            "text": "The scouting report on Skenes coming out of LSU already bordered on mythic. A 6’6”, 250-pound monster of a right-hander who threw 100 mph like it was a warmup toss, commanded a wipeout slider, and paired it with a parachuting changeup. He wasn’t supposed to be polished this early — yet he was. He wasn’t supposed to dominate this quickly — yet he did. From the moment the Pirates selected him first overall, Skenes began a race against history. And he’s winning."
-          },
-          {
-            "type": "paragraph",
-            "text": "In 2024, his first MLB season, he didn’t merely survive — he immediately became one of the best pitchers in the sport. He posted elite command, generated whiffs at a historic rate for a debut season, and finished *third* in the Cy Young vote. That alone would have been enough to cement him as a future franchise cornerstone."
-          },
-          {
-            "type": "paragraph",
-            "text": "But 2025 took everything to another level. Skenes didn’t just compete with elite arms — he surpassed them all. The youngest Cy Young winner since Doc Gooden? One of the most dominant sophomore leaps in MLB history? Check and check."
-          },
-          {
-            "type": "heading",
-            "text": "A 2025 Cy Young Season for the Ages"
-          },
-          {
-            "type": "paragraph",
-            "text": "What Skenes did in 2025 wasn’t normal. It wasn’t even great. It was historic. His ERA sat among the league’s best, his strikeout totals were staggering, and his command — the one thing scouts said might take time — arrived instantly. He faced MVP-level bats and carved them up like a surgeon. He pitched like someone who had already mastered the league, already adapted, already figured out hitters long before they could figure out him."
-          },
-          {
-            "type": "paragraph",
-            "text": "Every outing felt like an event. Every fifth day, the Pirates knew exactly what they were getting: length, dominance, electricity, and a chance to win. For a franchise starving for an identity — Skenes became one. He didn’t just win games; he gave Pittsburgh swagger again."
-          },
-          {
-            "type": "heading",
-            "text": "A Résumé Unlike Anything the Game Has Seen"
-          },
-          {
-            "type": "paragraph",
-            "text": "Let’s list it out plainly: national champion, first overall pick, Rookie of the Year, third in Cy Young voting, Cy Young winner. Not over eight seasons. Not over five. Over *two*. It's absurd. It shouldn’t be possible. Yet here we are, witnessing a pitcher who is accomplishing at warp speed what Hall of Famers built over lifetimes."
-          },
-          {
-            "type": "paragraph",
-            "text": "The remarkable part? He hasn’t even reached his final form. Most pitchers don’t fully develop their command or pitch mix until 26–28. Skenes is ahead of the curve in every way. The fastball velocity hasn’t faded. The slider keeps improving. The changeup is gaining depth. His mound presence looks like that of a 10-year veteran. If this is his foundation, the peak could redefine the sport."
-          },
-          {
-            "type": "heading",
-            "text": "Is Paul Skenes the Greatest Arm Baseball Has Ever Seen?"
-          },
-          {
-            "type": "paragraph",
-            "text": "It’s the question nobody wants to ask this early — but everyone is thinking: is Paul Skenes on track to be the greatest pitcher ever? The tools say yes. The early résumé says yes. The environment says yes — pitchers have more data, more training, more recovery resources than ever before. And Skenes maximizes all of it."
-          },
-          {
-            "type": "paragraph",
-            "text": "He throws harder than peak Verlander. He commands better than young Gerrit Cole. His presence mirrors prime Max Scherzer. And his early-career dominance looks eerily like the rise of Dwight Gooden — except Skenes is bigger, stronger, and more refined mechanically."
-          },
-          {
-            "type": "paragraph",
-            "text": "No pitcher in the modern era has combined elite stuff, maturity, durability, and instant historic results the way Skenes has. If he stays healthy — a big 'if' for any pitcher — the ceiling isn’t just Cooperstown. It’s baseball immortality."
-          },
-          {
-            "type": "heading",
-            "text": "Final Thoughts: A Superstar Still in Chapter One"
-          },
-          {
-            "type": "paragraph",
-            "text": "Paul Skenes has already accomplished enough to fill a mid-career highlight reel. But what makes him remarkable isn’t just what he’s done — it’s how quickly he’s done it. His career has unfolded like a movie montage: championship, No. 1 pick, instant ace, Rookie of the Year, Cy Young winner. And he’s barely begun."
-          },
-          {
-            "type": "paragraph",
-            "text": "Is he the greatest pitcher to ever grace the game? It’s too early to say definitively. But if you’re betting on anyone to redefine pitching in the next decade — someone who could blend talent, dominance, and legacy into something unprecedented — Paul Skenes is the safest, smartest bet in baseball."
-          }
-        ],
-        "seo": {
-          "title_tag": "Paul Skenes: Cy Young Winner and MLB’s Next Legendary Ace | Sandlot Insider",
-          "meta_description": "Paul Skenes went from LSU champion to No. 1 overall pick to Rookie of the Year to Cy Young winner in just three seasons. Is he already on track to become one of the greatest pitchers in baseball history?",
-          "keywords": [
-            "Paul Skenes 2025",
-            "NL Cy Young winner",
-            "Pittsburgh Pirates ace",
-            "MLB phenoms",
-            "LSU baseball",
-            "No. 1 overall pick",
-            "Rookie of the Year",
-            "Paul Skenes scouting"
-          ],
-          "canonical_url": "https://sandlotpicks.com/articles/paul-skenes-cy-young-legend-in-the-making-2025",
-          "og_image": "https://sandlotpicks.com/article-heros/paul-skenes-evolution.png"
-        },            
-          "affiliate_cta": {
-          "enabled": true,
-          "platform": "DraftKings",
-          "context": "Effortlessly track all your sports bets in one convenient place — focus on what you do best: make winning picks.",
-          "link": "https://sportsbook.draftkings.com/r/sb/cedenoc181/US-NY-SB/US-NY",
-          "hero-banner": "/article-heros/draftkings-promo-hero.jpg"
-          },
-          "affiliate_disclaimer": "We may earn a commission if you sign up through our DraftKings link. This supports our content and helps us keep delivering daily insights.",
-          "related_posts": [
-            "tarik-skubal-two-time-al-cy-young-journey-2025",
-            "john-schneider-robbed-al-manager-of-the-year-2025"
-          ]
-      },
-      {
-        "id": 5,
-        "title": "Tarik Skubal: From 9th-Round Longshot to Two-Time AL Cy Young Ace",
-        "slug": "tarik-skubal-two-time-al-cy-young-journey-2025",
-        "author": "Sandlot Picks Team",
-        "date": "2025-11-14",
-        "status": "Final",
-        "tags": [
-          "MLB",
-          "Detroit Tigers",
-          "Tarik Skubal",
-          "Cy Young",
-          "AL Awards",
-          "Pitching",
-          "Underdog Stories",
-          "Sports Betting"
-        ],
-        "summary": "Tarik Skubal’s rise from 9th-round pick to back-to-back AL Cy Young winner is one of baseball’s greatest underdog stories. Through resilience, reinvention, and dominance, he’s become the AL’s most feared left-handed ace.",
-        "read_time_minutes": 4,
-        "estimated_word_count": 744,
-        "hero_image": {
-          "url": "/article-heros/tarik-skubal-cy-young-hero.png",
-          "alt": "Tarik Skubal, earning his second AL Cy Young award"
-        },
-        "content": [
-          {
-            "type": "heading",
-            "text": "Tarik Skubal: From 9th-Round Longshot to Two-Time AL Cy Young Ace"
-          },
-          {
-            "type": "paragraph",
-            "text": "In baseball, greatness comes in many forms. Some players rocket to superstardom with generational hype and instant dominance. Others forge their legacy the hard way, carving out excellence through resilience, reinvention, and sheer competitive fire. That’s the Tarik Skubal story."
-          },
-          {
-            "type": "paragraph",
-            "text": "Skubal’s rise isn’t lightning-strike quick or preordained. It’s built on sweat, setbacks, surgeries, and self-belief. The 255th pick of the 2018 MLB Draft — a 9th-rounder — was never meant to become the American League’s most feared arm. And yet, here he stands: a two-time AL Cy Young winner, the league’s most consistent left-handed ace, and the living definition of a pitcher who beat the odds."
-          },
-          {
-            "type": "heading",
-            "text": "From Overlooked to Untouchable"
-          },
-          {
-            "type": "paragraph",
-            "text": "When Skubal was drafted out of Seattle University, he wasn’t even a household name among college baseball fans. Tommy John surgery had nearly derailed his career before it began. Scouts doubted whether his velocity would ever return. Some teams removed him from their boards entirely."
-          },
-          {
-            "type": "paragraph",
-            "text": "But Detroit took a chance with pick No. 255 — and Skubal repaid that faith with one of the most unlikely ace trajectories baseball has witnessed in decades."
-          },
-          {
-            "type": "paragraph",
-            "text": "He didn’t arrive polished. He didn’t arrive with a perfect delivery. He didn’t arrive with blue-chip hype. What he did arrive with was an elite work ethic, a burning drive to prove people wrong, and a fastball that kept getting better."
-          },
-          {
-            "type": "heading",
-            "text": "The First Cy Young: A Warning Shot"
-          },
-          {
-            "type": "paragraph",
-            "text": "Skubal’s first Cy Young season put the league on notice. In 2024, he went 18–4 with a 2.39 ERA, 0.99 WHIP, and 228 strikeouts over 192 innings. Opponents hit just .201 against him as he shredded lineups with a riding fastball and a slider that finally developed into a true swing-and-miss weapon. The Tigers had found their ace — one who combined power, discipline, and relentless competitiveness."
-          },
-          {
-            "type": "paragraph",
-            "text": "It wasn’t just dominance; it was transformation. Skubal tightened his mechanics, trusted his stuff in the zone, and stopped pitching like a guy trying to stay in the league — he started pitching like someone who knew he belonged among the elite."
-          },
-          {
-            "type": "heading",
-            "text": "The Second Cy Young: Greatness Confirmed"
-          },
-          {
-            "type": "paragraph",
-            "text": "Winning one Cy Young can be lightning in a bottle. Winning two? That’s legacy. In 2025, Skubal doubled down on his dominance, posting a 13–6 record with a 2.21 ERA, 0.95 WHIP, and 241 strikeouts in 195 innings. Opponents hit just .200 against him, and even when teams saw him multiple times, they still couldn’t square him up consistently."
-          },
-          {
-            "type": "paragraph",
-            "text": "While the Tigers battled inconsistency around him, Skubal became the constant — the stop-every-losing-streak ace, the tone-setter, the one man who ensured Detroit stayed in every game he touched. He pitched like a veteran, dominated like a superstar, and carried himself like someone who knew exactly how far he’d climbed to get here."
-          },
-          {
-            "type": "heading",
-            "text": "A Pitcher Who Mastered the Long Road"
-          },
-          {
-            "type": "paragraph",
-            "text": "Skubal doesn’t overpower hitters with hype — he overpowers them with mastery. He learned the hard way. He tightened his mechanics through repetition, not revelation. He built his durability through discipline, not luck. He sharpened his command through failure, not entitlement."
-          },
-          {
-            "type": "paragraph",
-            "text": "And that’s what makes him special: his greatness came from the grind. Every pitch is a testament to the road he traveled — a road most pitchers never escape."
-          },
-          {
-            "type": "heading",
-            "text": "Final Thoughts: Respect the Road, Respect the Ace"
-          },
-          {
-            "type": "paragraph",
-            "text": "The baseball world loves phenoms — but the game also needs reminders like Tarik Skubal: that legends can rise from anywhere, that today’s overlooked prospect can become tomorrow’s most dominant force, and that greatness often grows from the cracks where nobody bothers to look."
-          },
-          {
-            "type": "paragraph",
-            "text": "Two-time Cy Young winner. Former 9th-round pick. The heart of Detroit’s pitching identity. The ace who earned every ounce of his success. Tarik Skubal isn’t just a great pitcher — he’s a symbol of what’s still possible in baseball’s most unforgiving craft."
-          }
-        ],
-        "seo": {
-          "title_tag": "Tarik Skubal: Two-Time AL Cy Young Winner and MLB’s Ultimate Underdog Ace | Sandlot Insider",
-          "meta_description": "Tarik Skubal went from 9th-round pick to back-to-back AL Cy Young winner. Here’s how he became one of baseball’s most dominant and inspiring aces.",
-          "keywords": [
-            "Tarik Skubal",
-            "AL Cy Young 2024",
-            "AL Cy Young 2025",
-            "Detroit Tigers ace",
-            "MLB pitching",
-            "underdog stories",
-            "two-time Cy Young winner"
-          ],
-          "canonical_url": "https://sandlotpicks.com/articles/tarik-skubal-two-time-al-cy-young-journey-2025",
-          "og_image": "https://sandlotpicks.com/article-heros/tarik-skubal-cy-young-hero.png"
-        },
-          "affiliate_cta": {
-          "enabled": true,
-          "platform": "Pikkit",
-          "context": "Effortlessly track all your sports bets in one convenient place — focus on what you do best: make winning picks.",
-          "link": "https://links.pikkit.com/invite/bullseye52540",
-          "hero-banner": "/article-heros/pikkit-promo-img.png",
-          "promo_code": "BULLSEYE52540"
-          },
-          "affiliate_disclaimer": "We may earn a commission if you sign up through our Pikkit link. Using our code BULLSEYE52540 supports our content and helps us keep delivering daily insights.",
-          "related_posts": [
-          "paul-skenes-cy-young-legend-in-the-making-2025",
-          "john-schneider-robbed-al-manager-of-the-year-2025"
-        ]
-      },
-          {
+  "schema_version": "1.0",
+  "site": "sandlotpicks.com",
+  "generated_at": "2025-11-15",
+  "pagination": {
+    "current_page": 1,
+    "articles_per_page": 4,
+    "total_pages": 2,
+    "has_more": true
+  },
+  "articles": [
+    {
       "id": 6,
       "title": "Shohei Ohtani: The Greatest Sho-Man of His Era — And Maybe of All Time",
       "slug": "shohei-ohtani-greatest-sho-man-of-all-time-4-mvp-seasons",
@@ -919,20 +164,451 @@
         "canonical_url": "https://sandlotpicks.com/articles/shohei-ohtani-greatest-sho-man-of-all-time-4-mvp-seasons",
         "og_image": "https://sandlotpicks.com/article-heros/ohtani-4x-mvp-hero.png"
       },
-           "affiliate_cta": {
-           "enabled": true,
-           "platform": "DraftKings",
-           "context": "Join DraftKings today to place bets and cash in on exclusive promotions — all in one seamless app.",
-           "link": "https://sportsbook.draftkings.com/r/sb/cedenoc181/US-NY-SB/US-NY",
-           "hero-banner": "/article-heros/draftkings-promo-hero.jpg"
-         },
-         "affiliate_disclaimer": "We may earn a commission if you sign up through our DraftKings link. This supports our content and helps us keep delivering daily insights.",
-         "related_posts": [
+      "affiliate_cta": {
+        "enabled": true,
+        "platform": "DraftKings",
+        "context": "Join DraftKings today to place bets and cash in on exclusive promotions — all in one seamless app.",
+        "link": "https://sportsbook.draftkings.com/r/sb/cedenoc181/US-NY-SB/US-NY",
+        "hero-banner": "/article-heros/draftkings-promo-hero.jpg"
+      },
+      "affiliate_disclaimer": "We may earn a commission if you sign up through our DraftKings link. This supports our content and helps us keep delivering daily insights.",
+      "related_posts": [
         "paul-skenes-cy-young-legend-in-the-making-2025",
         "tarik-skubal-two-time-al-cy-young-journey-2025",
         "aaron-judge-vs-cal-raleigh-2025-al-mvp-debate"
       ]
+    },
+    {
+      "id": 5,
+      "title": "Tarik Skubal: From 9th-Round Longshot to Two-Time AL Cy Young Ace",
+      "slug": "tarik-skubal-two-time-al-cy-young-journey-2025",
+      "author": "Sandlot Picks Team",
+      "date": "2025-11-14",
+      "status": "Final",
+      "tags": [
+        "MLB",
+        "Detroit Tigers",
+        "Tarik Skubal",
+        "Cy Young",
+        "AL Awards",
+        "Pitching",
+        "Underdog Stories",
+        "Sports Betting"
+      ],
+      "summary": "Tarik Skubal’s rise from 9th-round pick to back-to-back AL Cy Young winner is one of baseball’s greatest underdog stories. Through resilience, reinvention, and dominance, he’s become the AL’s most feared left-handed ace.",
+      "read_time_minutes": 4,
+      "estimated_word_count": 744,
+      "hero_image": {
+        "url": "/article-heros/tarik-skubal-cy-young-hero.png",
+        "alt": "Tarik Skubal, earning his second AL Cy Young award"
+      },
+      "content": [
+        {
+          "type": "heading",
+          "text": "Tarik Skubal: From 9th-Round Longshot to Two-Time AL Cy Young Ace"
+        },
+        {
+          "type": "paragraph",
+          "text": "In baseball, greatness comes in many forms. Some players rocket to superstardom with generational hype and instant dominance. Others forge their legacy the hard way, carving out excellence through resilience, reinvention, and sheer competitive fire. That’s the Tarik Skubal story."
+        },
+        {
+          "type": "paragraph",
+          "text": "Skubal’s rise isn’t lightning-strike quick or preordained. It’s built on sweat, setbacks, surgeries, and self-belief. The 255th pick of the 2018 MLB Draft — a 9th-rounder — was never meant to become the American League’s most feared arm. And yet, here he stands: a two-time AL Cy Young winner, the league’s most consistent left-handed ace, and the living definition of a pitcher who beat the odds."
+        },
+        {
+          "type": "heading",
+          "text": "From Overlooked to Untouchable"
+        },
+        {
+          "type": "paragraph",
+          "text": "When Skubal was drafted out of Seattle University, he wasn’t even a household name among college baseball fans. Tommy John surgery had nearly derailed his career before it began. Scouts doubted whether his velocity would ever return. Some teams removed him from their boards entirely."
+        },
+        {
+          "type": "paragraph",
+          "text": "But Detroit took a chance with pick No. 255 — and Skubal repaid that faith with one of the most unlikely ace trajectories baseball has witnessed in decades."
+        },
+        {
+          "type": "paragraph",
+          "text": "He didn’t arrive polished. He didn’t arrive with a perfect delivery. He didn’t arrive with blue-chip hype. What he did arrive with was an elite work ethic, a burning drive to prove people wrong, and a fastball that kept getting better."
+        },
+        {
+          "type": "heading",
+          "text": "The First Cy Young: A Warning Shot"
+        },
+        {
+          "type": "paragraph",
+          "text": "Skubal’s first Cy Young season put the league on notice. In 2024, he went 18–4 with a 2.39 ERA, 0.99 WHIP, and 228 strikeouts over 192 innings. Opponents hit just .201 against him as he shredded lineups with a riding fastball and a slider that finally developed into a true swing-and-miss weapon. The Tigers had found their ace — one who combined power, discipline, and relentless competitiveness."
+        },
+        {
+          "type": "paragraph",
+          "text": "It wasn’t just dominance; it was transformation. Skubal tightened his mechanics, trusted his stuff in the zone, and stopped pitching like a guy trying to stay in the league — he started pitching like someone who knew he belonged among the elite."
+        },
+        {
+          "type": "heading",
+          "text": "The Second Cy Young: Greatness Confirmed"
+        },
+        {
+          "type": "paragraph",
+          "text": "Winning one Cy Young can be lightning in a bottle. Winning two? That’s legacy. In 2025, Skubal doubled down on his dominance, posting a 13–6 record with a 2.21 ERA, 0.95 WHIP, and 241 strikeouts in 195 innings. Opponents hit just .200 against him, and even when teams saw him multiple times, they still couldn’t square him up consistently."
+        },
+        {
+          "type": "paragraph",
+          "text": "While the Tigers battled inconsistency around him, Skubal became the constant — the stop-every-losing-streak ace, the tone-setter, the one man who ensured Detroit stayed in every game he touched. He pitched like a veteran, dominated like a superstar, and carried himself like someone who knew exactly how far he’d climbed to get here."
+        },
+        {
+          "type": "heading",
+          "text": "A Pitcher Who Mastered the Long Road"
+        },
+        {
+          "type": "paragraph",
+          "text": "Skubal doesn’t overpower hitters with hype — he overpowers them with mastery. He learned the hard way. He tightened his mechanics through repetition, not revelation. He built his durability through discipline, not luck. He sharpened his command through failure, not entitlement."
+        },
+        {
+          "type": "paragraph",
+          "text": "And that’s what makes him special: his greatness came from the grind. Every pitch is a testament to the road he traveled — a road most pitchers never escape."
+        },
+        {
+          "type": "heading",
+          "text": "Final Thoughts: Respect the Road, Respect the Ace"
+        },
+        {
+          "type": "paragraph",
+          "text": "The baseball world loves phenoms — but the game also needs reminders like Tarik Skubal: that legends can rise from anywhere, that today’s overlooked prospect can become tomorrow’s most dominant force, and that greatness often grows from the cracks where nobody bothers to look."
+        },
+        {
+          "type": "paragraph",
+          "text": "Two-time Cy Young winner. Former 9th-round pick. The heart of Detroit’s pitching identity. The ace who earned every ounce of his success. Tarik Skubal isn’t just a great pitcher — he’s a symbol of what’s still possible in baseball’s most unforgiving craft."
+        }
+      ],
+      "seo": {
+        "title_tag": "Tarik Skubal: Two-Time AL Cy Young Winner and MLB’s Ultimate Underdog Ace | Sandlot Insider",
+        "meta_description": "Tarik Skubal went from 9th-round pick to back-to-back AL Cy Young winner. Here’s how he became one of baseball’s most dominant and inspiring aces.",
+        "keywords": [
+          "Tarik Skubal",
+          "AL Cy Young 2024",
+          "AL Cy Young 2025",
+          "Detroit Tigers ace",
+          "MLB pitching",
+          "underdog stories",
+          "two-time Cy Young winner"
+        ],
+        "canonical_url": "https://sandlotpicks.com/articles/tarik-skubal-two-time-al-cy-young-journey-2025",
+        "og_image": "https://sandlotpicks.com/article-heros/tarik-skubal-cy-young-hero.png"
+      },
+      "affiliate_cta": {
+        "enabled": true,
+        "platform": "Pikkit",
+        "context": "Effortlessly track all your sports bets in one convenient place — focus on what you do best: make winning picks.",
+        "link": "https://links.pikkit.com/invite/bullseye52540",
+        "hero-banner": "/article-heros/pikkit-promo-img.png",
+        "promo_code": "BULLSEYE52540"
+      },
+      "affiliate_disclaimer": "We may earn a commission if you sign up through our Pikkit link. Using our code BULLSEYE52540 supports our content and helps us keep delivering daily insights.",
+      "related_posts": [
+        "paul-skenes-cy-young-legend-in-the-making-2025",
+        "john-schneider-robbed-al-manager-of-the-year-2025"
+      ]
+    },
+    {
+      "id": 4,
+      "title": "Paul Skenes and the Making of a Legend: Is MLB’s Newest Cy Young Winner Already an All-Time Great?",
+      "slug": "paul-skenes-cy-young-legend-in-the-making-2025",
+      "author": "Sandlot Picks Team",
+      "date": "2025-11-13",
+      "status": "Final",
+      "tags": [
+        "MLB",
+        "Pittsburgh Pirates",
+        "Paul Skenes",
+        "Cy Young",
+        "Pitching",
+        "Awards",
+        "NL Awards",
+        "Rookie Phenoms",
+        "Sports Betting"
+      ],
+      "summary": "From LSU national champion in 2023 to Rookie of the Year in 2024 to NL Cy Young winner in 2025, Paul Skenes has risen faster than any pitcher in recent memory. With a résumé stacked in just three seasons, is he already on track to become one of the greatest pitchers the game has ever seen?",
+      "read_time_minutes": 4,
+      "estimated_word_count": 867,
+      "hero_image": {
+        "url": "/article-heros/paul-skenes-evolution.png",
+        "alt": "Paul Skenes delivering a pitch in a dominant Cy Young season"
+      },
+      "content": [
+        {
+          "type": "heading",
+          "text": "Paul Skenes and the Making of a Legend: Is MLB’s Newest Cy Young Winner Already an All-Time Great?"
+        },
+        {
+          "type": "paragraph",
+          "text": "Some players arrive in Major League Baseball. Others erupt into it. And then there’s Paul Skenes — the pitcher who didn’t just burst onto the scene but detonated, reshaping expectations for what a modern ace can be. In the span of just three years, Skenes has built a résumé that other pitchers spend a decade chasing: a national championship at LSU in 2023, the No. 1 overall draft pick that same year, the 2024 National League Rookie of the Year, a third-place finish in the Cy Young race as a rookie, and now, in 2025, the title of NL Cy Young Award winner. All before turning 24."
+        },
+        {
+          "type": "paragraph",
+          "text": "The word “generational” gets thrown around far too often in sports. But with Skenes? It’s starting to feel inadequate. What he’s accomplished in this condensed window isn’t just special — it’s unprecedented."
+        },
+        {
+          "type": "heading",
+          "text": "A Meteoric Rise: Faster Than Any Pitcher Before Him"
+        },
+        {
+          "type": "paragraph",
+          "text": "The scouting report on Skenes coming out of LSU already bordered on mythic. A 6’6”, 250-pound monster of a right-hander who threw 100 mph like it was a warmup toss, commanded a wipeout slider, and paired it with a parachuting changeup. He wasn’t supposed to be polished this early — yet he was. He wasn’t supposed to dominate this quickly — yet he did. From the moment the Pirates selected him first overall, Skenes began a race against history. And he’s winning."
+        },
+        {
+          "type": "paragraph",
+          "text": "In 2024, his first MLB season, he didn’t merely survive — he immediately became one of the best pitchers in the sport. He posted elite command, generated whiffs at a historic rate for a debut season, and finished *third* in the Cy Young vote. That alone would have been enough to cement him as a future franchise cornerstone."
+        },
+        {
+          "type": "paragraph",
+          "text": "But 2025 took everything to another level. Skenes didn’t just compete with elite arms — he surpassed them all. The youngest Cy Young winner since Doc Gooden? One of the most dominant sophomore leaps in MLB history? Check and check."
+        },
+        {
+          "type": "heading",
+          "text": "A 2025 Cy Young Season for the Ages"
+        },
+        {
+          "type": "paragraph",
+          "text": "What Skenes did in 2025 wasn’t normal. It wasn’t even great. It was historic. His ERA sat among the league’s best, his strikeout totals were staggering, and his command — the one thing scouts said might take time — arrived instantly. He faced MVP-level bats and carved them up like a surgeon. He pitched like someone who had already mastered the league, already adapted, already figured out hitters long before they could figure out him."
+        },
+        {
+          "type": "paragraph",
+          "text": "Every outing felt like an event. Every fifth day, the Pirates knew exactly what they were getting: length, dominance, electricity, and a chance to win. For a franchise starving for an identity — Skenes became one. He didn’t just win games; he gave Pittsburgh swagger again."
+        },
+        {
+          "type": "heading",
+          "text": "A Résumé Unlike Anything the Game Has Seen"
+        },
+        {
+          "type": "paragraph",
+          "text": "Let’s list it out plainly: national champion, first overall pick, Rookie of the Year, third in Cy Young voting, Cy Young winner. Not over eight seasons. Not over five. Over *two*. It's absurd. It shouldn’t be possible. Yet here we are, witnessing a pitcher who is accomplishing at warp speed what Hall of Famers built over lifetimes."
+        },
+        {
+          "type": "paragraph",
+          "text": "The remarkable part? He hasn’t even reached his final form. Most pitchers don’t fully develop their command or pitch mix until 26–28. Skenes is ahead of the curve in every way. The fastball velocity hasn’t faded. The slider keeps improving. The changeup is gaining depth. His mound presence looks like that of a 10-year veteran. If this is his foundation, the peak could redefine the sport."
+        },
+        {
+          "type": "heading",
+          "text": "Is Paul Skenes the Greatest Arm Baseball Has Ever Seen?"
+        },
+        {
+          "type": "paragraph",
+          "text": "It’s the question nobody wants to ask this early — but everyone is thinking: is Paul Skenes on track to be the greatest pitcher ever? The tools say yes. The early résumé says yes. The environment says yes — pitchers have more data, more training, more recovery resources than ever before. And Skenes maximizes all of it."
+        },
+        {
+          "type": "paragraph",
+          "text": "He throws harder than peak Verlander. He commands better than young Gerrit Cole. His presence mirrors prime Max Scherzer. And his early-career dominance looks eerily like the rise of Dwight Gooden — except Skenes is bigger, stronger, and more refined mechanically."
+        },
+        {
+          "type": "paragraph",
+          "text": "No pitcher in the modern era has combined elite stuff, maturity, durability, and instant historic results the way Skenes has. If he stays healthy — a big 'if' for any pitcher — the ceiling isn’t just Cooperstown. It’s baseball immortality."
+        },
+        {
+          "type": "heading",
+          "text": "Final Thoughts: A Superstar Still in Chapter One"
+        },
+        {
+          "type": "paragraph",
+          "text": "Paul Skenes has already accomplished enough to fill a mid-career highlight reel. But what makes him remarkable isn’t just what he’s done — it’s how quickly he’s done it. His career has unfolded like a movie montage: championship, No. 1 pick, instant ace, Rookie of the Year, Cy Young winner. And he’s barely begun."
+        },
+        {
+          "type": "paragraph",
+          "text": "Is he the greatest pitcher to ever grace the game? It’s too early to say definitively. But if you’re betting on anyone to redefine pitching in the next decade — someone who could blend talent, dominance, and legacy into something unprecedented — Paul Skenes is the safest, smartest bet in baseball."
+        }
+      ],
+      "seo": {
+        "title_tag": "Paul Skenes: Cy Young Winner and MLB’s Next Legendary Ace | Sandlot Insider",
+        "meta_description": "Paul Skenes went from LSU champion to No. 1 overall pick to Rookie of the Year to Cy Young winner in just three seasons. Is he already on track to become one of the greatest pitchers in baseball history?",
+        "keywords": [
+          "Paul Skenes 2025",
+          "NL Cy Young winner",
+          "Pittsburgh Pirates ace",
+          "MLB phenoms",
+          "LSU baseball",
+          "No. 1 overall pick",
+          "Rookie of the Year",
+          "Paul Skenes scouting"
+        ],
+        "canonical_url": "https://sandlotpicks.com/articles/paul-skenes-cy-young-legend-in-the-making-2025",
+        "og_image": "https://sandlotpicks.com/article-heros/paul-skenes-evolution.png"
+      },
+      "affiliate_cta": {
+        "enabled": true,
+        "platform": "DraftKings",
+        "context": "Effortlessly track all your sports bets in one convenient place — focus on what you do best: make winning picks.",
+        "link": "https://sportsbook.draftkings.com/r/sb/cedenoc181/US-NY-SB/US-NY",
+        "hero-banner": "/article-heros/draftkings-promo-hero.jpg"
+      },
+      "affiliate_disclaimer": "We may earn a commission if you sign up through our DraftKings link. This supports our content and helps us keep delivering daily insights.",
+      "related_posts": [
+        "tarik-skubal-two-time-al-cy-young-journey-2025",
+        "john-schneider-robbed-al-manager-of-the-year-2025"
+      ]
+    },
+    {
+      "id": 3,
+      "title": "Robbed on the Bench: How John Schneider Was the Real AL Manager of the Year",
+      "slug": "john-schneider-robbed-al-manager-of-the-year-2025",
+      "author": "Sandlot Picks Team",
+      "date": "2025-11-12",
+      "status": "Final",
+      "tags": [
+        "MLB",
+        "Toronto Blue Jays",
+        "Awards",
+        "Manager of the Year",
+        "Postseason",
+        "Sports Betting"
+      ],
+      "summary": "Stephen Vogt’s record-setting AL Central comeback was remarkable, but John Schneider guided the Blue Jays from a 2024 basement finish to an AL East title on Game 162 and a Game 7 World Series run. In the sport’s toughest division, Schneider’s full-season transformation made him the true Manager of the Year.",
+      "read_time_minutes": 5,
+      "estimated_word_count": 950,
+      "hero_image": {
+        "url": "/article-heros/moty-hero.png",
+        "alt": "Managers face off AI-generated image"
+      },
+      "content": [
+        {
+          "type": "heading",
+          "text": "Robbed on the Bench: How John Schneider Was the Real AL Manager of the Year"
+        },
+        {
+          "type": "paragraph",
+          "text": "When the dust settled on a magical 2025 baseball season, the Baseball Writers’ Association of America (BBWAA) voted Guardians manager Stephen Vogt as the American League Manager of the Year — for the second consecutive time. It’s hard to argue against Vogt’s résumé: overcoming a 15.5-game deficit, losing several key players, surviving the chaos of losing his All-Star closer to a gambling scandal, and still storming back with a 10-game winning streak to claim the AL Central crown. It was a remarkable story — one of perseverance, culture, and grit."
+        },
+        {
+          "type": "paragraph",
+          "text": "But when you take a closer look at what John Schneider accomplished in Toronto, it’s hard not to feel that baseball’s writers missed the bigger picture. Because while Vogt’s Guardians delivered one of the great comebacks in recent memory, Schneider’s Blue Jays orchestrated one of the most improbable full-season transformations in modern baseball."
+        },
+        {
+          "type": "heading",
+          "text": "From Basement to Brilliance"
+        },
+        {
+          "type": "paragraph",
+          "text": "Just one year ago, John Schneider’s Blue Jays finished near the bottom of the American League standings. The offense sputtered, the rotation was inconsistent, and fans were restless. Many expected 2025 to be a reset year — or worse, Schneider’s final one in Toronto."
+        },
+        {
+          "type": "paragraph",
+          "text": "Then the script flipped."
+        },
+        {
+          "type": "paragraph",
+          "text": "The Blue Jays stormed back to win the AL East, one of the toughest divisions in baseball. The Yankees, Red Sox, and Rays all stayed competitive deep into September. It took every ounce of Schneider’s tactical flexibility and clubhouse leadership to keep Toronto above water — and they did it, clinching the division on Game 162 with the Yankees breathing down their necks."
+        },
+        {
+          "type": "paragraph",
+          "text": "It wasn’t just a turnaround — it was a statement. The Jays improved by 20 wins, rediscovered their offensive identity, and turned a once-shaky bullpen into one of the AL’s most consistent units."
+        },
+        {
+          "type": "heading",
+          "text": "The Toughest Division in Baseball"
+        },
+        {
+          "type": "paragraph",
+          "text": "That’s where the argument for Schneider really shines. Winning the AL Central — even in dramatic fashion — is one thing. But surviving the AL East, year after year, is something entirely different."
+        },
+        {
+          "type": "paragraph",
+          "text": "The 2025 East was a battlefield: the Yankees spent aggressively and paired youth with veteran bats; the Red Sox rebuilt a contact-first offense that refused to strike out; Tampa Bay remained analytically sharp and relentlessly efficient; and even a retooling Baltimore team still packed dangerous young talent. Against all that, Schneider’s Jays stayed composed, consistent, and ultimately victorious. Every series felt like a playoff preview, every lineup card a puzzle. And while Vogt’s Guardians surged late, Toronto led a marathon — not a sprint."
+        },
+        {
+          "type": "heading",
+          "text": "Postseason Proof"
+        },
+        {
+          "type": "paragraph",
+          "text": "Schneider’s case didn’t end with the regular season. The Blue Jays carried that fire straight into October, tearing through the postseason before finally coming up short in Game 7 of the World Series."
+        },
+        {
+          "type": "paragraph",
+          "text": "That deep run validated Schneider’s approach. His bullpen management — once criticized — became a strength. His faith in hitters like Addison Barger and Ernie Clement paid off in clutch moments. His use of platoons, matchups, and analytics reflected a manager who had truly evolved."
+        },
+        {
+          "type": "paragraph",
+          "text": "In a sport that loves redemption arcs, Schneider wrote a masterpiece — but somehow, didn’t get the final chapter he deserved."
+        },
+        {
+          "type": "heading",
+          "text": "Why Vogt Deserved Recognition — But Schneider Deserved the Crown"
+        },
+        {
+          "type": "paragraph",
+          "text": "Let’s be clear: Stephen Vogt’s achievement was extraordinary. Turning a season around after being left for dead in June, rallying a fractured clubhouse, and setting a record for the largest division comeback in MLB history is something no manager can take lightly."
+        },
+        {
+          "type": "paragraph",
+          "text": "But the Manager of the Year award isn’t just about a month of magic — it’s about the journey, the scope, and the obstacles overcome. Schneider’s challenge was greater, his consistency unmatched."
+        },
+        {
+          "type": "paragraph",
+          "text": "Vogt overcame a bad start; Schneider overcame an entire year of doubt."
+        },
+        {
+          "type": "paragraph",
+          "text": "One had a second-half miracle. The other built a full-season machine."
+        },
+        {
+          "type": "heading",
+          "text": "The Case for the True Winner"
+        },
+        {
+          "type": "paragraph",
+          "text": "BBWAA voters often gravitate toward narrative — the flashiest turnaround, the feel-good surprise. But leadership in baseball isn’t always loud. Sometimes it’s steady."
+        },
+        {
+          "type": "paragraph",
+          "text": "John Schneider’s Jays weren’t supposed to be there. Not atop the AL East. Not battling toe-to-toe with the Yankees and Red Sox. And certainly not a pitch away from a championship parade."
+        },
+        {
+          "type": "paragraph",
+          "text": "He turned a fractured roster into believers. He took a city’s skepticism and turned it into faith. And in doing so, he reminded baseball what real managerial excellence looks like — not just in the standings, but in the clubhouse, the dugout, and the hearts of the players who followed him there."
+        },
+        {
+          "type": "heading",
+          "text": "Final Thoughts"
+        },
+        {
+          "type": "paragraph",
+          "text": "Vogt may have the trophy. But if baseball had an award for resilience, leadership, and transformation, John Schneider’s name would already be engraved on it."
+        },
+        {
+          "type": "paragraph",
+          "text": "In the end, the Blue Jays’ 2025 season wasn’t just about winning games — it was about rewriting expectations. And if the BBWAA missed that story, that’s on them."
+        },
+        {
+          "type": "paragraph",
+          "text": "Because sometimes, the real Manager of the Year doesn’t need a plaque to prove it. He just needs a clubhouse full of believers — and a city that knows what really happened."
+        }
+      ],
+      "seo": {
+        "title_tag": "John Schneider Was the Real AL Manager of the Year | Sandlot Insider",
+        "meta_description": "Stephen Vogt’s comeback was historic, but John Schneider guided the Blue Jays from a 2024 basement finish to an AL East title and a Game 7 World Series run. Here’s why he was the true Manager of the Year.",
+        "keywords": [
+          "John Schneider Manager of the Year",
+          "Blue Jays 2025",
+          "Stephen Vogt",
+          "BBWAA awards",
+          "AL East 2025",
+          "MLB postseason 2025",
+          "Toronto Blue Jays"
+        ],
+        "canonical_url": "https://sandlotpicks.com/articles/john-schneider-robbed-al-manager-of-the-year-2025",
+        "og_image": "https://sandlotpicks.com/article-heros/moty-hero.png"
+      },
+      "affiliate_cta": {
+        "enabled": true,
+        "platform": "DraftKings",
+        "context": "Join DraftKings today to place bets and cash in on exclusive promotions — all in one seamless app.",
+        "link": "https://sportsbook.draftkings.com/r/sb/cedenoc181/US-NY-SB/US-NY",
+        "hero-banner": "/article-heros/draftkings-promo-hero.jpg"
+      },
+      "affiliate_disclaimer": "We may earn a commission if you sign up through our DraftKings link. This supports our content and helps us keep delivering daily insights.",
+      "related_posts": [
+        "blue-jays-2025-turnaround-from-basement-to-brink",
+        "paul-skenes-cy-young-legend-in-the-making-2025",
+        "tarik-skubal-two-time-al-cy-young-journey-2025"
+      ]
     }
-    ]
+  ]
 }
-  
