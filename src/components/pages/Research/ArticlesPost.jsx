@@ -1,12 +1,126 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import articlesData from '../../../data/article.json';
+import moreArticlesData from '../../../data/moreArticles.json';
 import '../../../styles/articles-post.css';
 
 function ArticlePost() {
   const { slug } = useParams();
-  const article = articlesData.articles.find(a => a.slug === slug);
+  
+  // Combine articles from both files
+  const allArticles = [
+    ...(articlesData?.articles || []),
+    ...(moreArticlesData?.articles || [])
+  ];
+  
+  const article = allArticles.find(a => a.slug === slug);
+  
+  // Text-to-Speech state
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [isPaused, setIsPaused] = useState(false);
+  const [speechSupported, setSpeechSupported] = useState(false);
 
+  // Check if browser supports speech synthesis
+  useEffect(() => {
+    if ('speechSynthesis' in window) {
+      setSpeechSupported(true);
+    }
+  }, []);
+
+  // Extract plain text from article content
+  const getArticleText = () => {
+    if (!article) return '';
+    
+    let text = `${article.title}. `;
+    
+    article.content.forEach(item => {
+      switch (item.type) {
+        case 'heading':
+        case 'subheading':
+        case 'paragraph':
+          text += `${item.text}. `;
+          break;
+        case 'list':
+          item.items.forEach(listItem => {
+            text += `${listItem}. `;
+          });
+          break;
+        case 'quote':
+          text += `Quote: ${item.text}. `;
+          if (item.author) {
+            text += `By ${item.author}. `;
+          }
+          break;
+        default:
+          break;
+      }
+    });
+    
+    return text;
+  };
+
+  // Play/Pause handlers
+  const handlePlay = () => {
+    const text = getArticleText();
+    
+    if (isPaused) {
+      // Resume
+      window.speechSynthesis.resume();
+      setIsPaused(false);
+      setIsPlaying(true);
+    } else {
+      // Start new
+      const utterance = new SpeechSynthesisUtterance(text);
+      
+      // Configure voice settings
+      utterance.rate = 1.0; // Speed (0.1 to 10)
+      utterance.pitch = 1.0; // Pitch (0 to 2)
+      utterance.volume = 1.0; // Volume (0 to 1)
+      
+      // Optional: Select a specific voice
+      const voices = window.speechSynthesis.getVoices();
+      const englishVoice = voices.find(voice => voice.lang.startsWith('en-'));
+      if (englishVoice) {
+        utterance.voice = englishVoice;
+      }
+      
+      // Event handlers
+      utterance.onend = () => {
+        setIsPlaying(false);
+        setIsPaused(false);
+      };
+      
+      utterance.onerror = (event) => {
+        console.error('Speech synthesis error:', event);
+        setIsPlaying(false);
+        setIsPaused(false);
+      };
+      
+      window.speechSynthesis.speak(utterance);
+      setIsPlaying(true);
+    }
+  };
+
+  const handlePause = () => {
+    window.speechSynthesis.pause();
+    setIsPaused(true);
+    setIsPlaying(false);
+  };
+
+  const handleStop = () => {
+    window.speechSynthesis.cancel();
+    setIsPlaying(false);
+    setIsPaused(false);
+  };
+
+  // Cleanup speech on unmount
+  useEffect(() => {
+    return () => {
+      window.speechSynthesis.cancel();
+    };
+  }, []);
+
+  // SEO useEffect (keeping all your existing SEO logic)
   useEffect(() => {
     if (!article) return;
 
@@ -121,76 +235,50 @@ function ArticlePost() {
         return count;
       }, 0),
       "timeRequired": `PT${article.read_time_minutes}M`
-      };
+    };
 
-      // Insert or update the script tag
-      let scriptTag = document.querySelector('script[type="application/ld+json"]');
-      if (!scriptTag) {
-        scriptTag = document.createElement('script');
-        scriptTag.type = 'application/ld+json';
-        document.head.appendChild(scriptTag);
-      }
-      scriptTag.textContent = JSON.stringify(structuredData);
+    // Insert or update the script tag
+    let scriptTag = document.querySelector('script[type="application/ld+json"]');
+    if (!scriptTag) {
+      scriptTag = document.createElement('script');
+      scriptTag.type = 'application/ld+json';
+      document.head.appendChild(scriptTag);
+    }
+    scriptTag.textContent = JSON.stringify(structuredData);
   
     return () => {
       document.title = 'Sandlot Picks Analytics';
 
-      // Reset or remove description
       const metaDescription = document.querySelector('meta[name="description"]');
       if (metaDescription) {
-        metaDescription.setAttribute('content', 'Expert baseball analytics, betting insights, and data-driven picks. Your trusted source for MLB betting strategy and analysis.');
+        metaDescription.setAttribute('content', 'Expert baseball analytics, betting insights, and data-driven picks.');
       }
 
-      // Remove article-specific canonical link
       const canonical = document.querySelector('link[rel="canonical"]');
-      if (canonical) {
-        canonical.remove();
-      }
+      if (canonical) canonical.remove();
 
-      // Remove keywords meta tag (optional - usually not needed on other pages)
       const keywords = document.querySelector('meta[name="keywords"]');
-      if (keywords) {
-        keywords.remove();
-      }
+      if (keywords) keywords.remove();
 
-      // Remove Open Graph tags (optional - prevents sharing wrong content)
       const ogProperties = [
-        'og:title',
-        'og:description', 
-        'og:image',
-        'og:url',
-        'og:type',
-        'article:published_time',
-        'article:author'
+        'og:title', 'og:description', 'og:image', 'og:url', 'og:type',
+        'article:published_time', 'article:author'
       ];
-
       ogProperties.forEach(property => {
         const metaTag = document.querySelector(`meta[property="${property}"]`);
-        if (metaTag) {
-          metaTag.remove();
-        }
+        if (metaTag) metaTag.remove();
       });
-    
-        // Remove Twitter Card tags (optional)
-      const twitterNames = [
-        'twitter:card',
-        'twitter:title',
-        'twitter:description',
-        'twitter:image'
-      ];
 
+      const twitterNames = [
+        'twitter:card', 'twitter:title', 'twitter:description', 'twitter:image'
+      ];
       twitterNames.forEach(name => {
         const metaTag = document.querySelector(`meta[name="${name}"]`);
-        if (metaTag) {
-          metaTag.remove();
-        }
+        if (metaTag) metaTag.remove();
       });
 
-      // Remove structured data script
       const structuredDataScript = document.querySelector('script[type="application/ld+json"]');
-      if (structuredDataScript) {
-        structuredDataScript.remove();
-      }
+      if (structuredDataScript) structuredDataScript.remove();
     };
   }, [article]);
 
@@ -208,38 +296,38 @@ function ArticlePost() {
     );
   }
 
-    const renderContent = (item, index) => {
-      switch (item.type) {
-        case 'heading':
-          return <h2 key={`heading-${index}`}>{item.text}</h2>;
-        
-        case 'subheading':
-          return <h3 key={`subheading-${index}`}>{item.text}</h3>;
-        
-        case 'paragraph':
-          return <p key={`paragraph-${index}`}>{item.text}</p>;
-        
-        case 'list':
-          return (
-            <ul key={`list-${index}`}>
-              {item.items.map((listItem, idx) => (
-                <li key={`list-${index}-${idx}`}>{listItem}</li>
-              ))}
-            </ul>
-          );
-        
-        case 'quote':
-          return (
-            <blockquote key={`quote-${index}`}>
-              <p>{item.text}</p>
-              {item.author && <cite>— {item.author}</cite>}
-            </blockquote>
-          );
-        
-        default:
-          return null;
-      }
-    };
+  const renderContent = (item, index) => {
+    switch (item.type) {
+      case 'heading':
+        return <h2 key={`heading-${index}`}>{item.text}</h2>;
+      
+      case 'subheading':
+        return <h3 key={`subheading-${index}`}>{item.text}</h3>;
+      
+      case 'paragraph':
+        return <p key={`paragraph-${index}`}>{item.text}</p>;
+      
+      case 'list':
+        return (
+          <ul key={`list-${index}`}>
+            {item.items.map((listItem, idx) => (
+              <li key={`list-${index}-${idx}`}>{listItem}</li>
+            ))}
+          </ul>
+        );
+      
+      case 'quote':
+        return (
+          <blockquote key={`quote-${index}`}>
+            <p>{item.text}</p>
+            {item.author && <cite>— {item.author}</cite>}
+          </blockquote>
+        );
+      
+      default:
+        return null;
+    }
+  };
 
   return (
     <section className="article-post-page">
@@ -290,7 +378,50 @@ function ArticlePost() {
                 </svg>
                 {article.read_time_minutes} min read
               </span>
-            </div>
+
+              {/* Audio Button */}
+              {speechSupported && (
+                <>
+                  {!isPlaying && !isPaused && (
+                    <button onClick={handlePlay} className="meta-item audio-meta-btn" aria-label="Listen to article">
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                        <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/>
+                        <path d="M15.54 8.46a5 5 0 0 1 0 7.07"/>
+                      </svg>
+                      Listen
+                    </button>
+                  )}
+
+                  {isPlaying && (
+                    <button onClick={handlePause} className="meta-item audio-meta-btn playing" aria-label="Pause">
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                        <rect x="6" y="4" width="4" height="16"/>
+                        <rect x="14" y="4" width="4" height="16"/>
+                      </svg>
+                      Pause
+                    </button>
+                  )}
+
+               {isPaused && (
+                 <button onClick={handlePlay} className="meta-item audio-meta-btn paused" aria-label="Resume">
+                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                     <polygon points="5 3 19 12 5 21 5 3"/>
+                   </svg>
+                   Resume
+                 </button>
+                )}
+
+               {(isPlaying || isPaused) && (
+                 <button onClick={handleStop} className="meta-item audio-meta-btn stop" aria-label="Stop">
+                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                     <rect x="6" y="6" width="12" height="12"/>
+                   </svg>
+                   Stop
+                 </button>
+               )}
+             </>
+           )}
+         </div>
 
             <div className="article-hero-image">
               <img src={article.hero_image.url} alt={article.hero_image.alt} />
@@ -299,42 +430,41 @@ function ArticlePost() {
 
           <div className="article-body">
             {article.content.map((item, index) => (
-              <div key={index}>{renderContent(item)}</div>
+              <div key={index}>{renderContent(item, index)}</div>
             ))}
           </div>
 
-        {/* Affiliate CTA - only if it exists in JSON */}
-        {article.affiliate_cta?.enabled && (
+          {/* Affiliate CTA - only if it exists in JSON */}
+          {article.affiliate_cta?.enabled && (
             <>
-            <div className="affiliate-disclaimer-header">
-              <p>Advertisement</p>
-            </div>       
-             <div 
-               className="affiliate-cta"
-               style={{
-                 backgroundImage: article.affiliate_cta['hero-banner'] 
-                   ? `url(${article.affiliate_cta['hero-banner']})` 
-                   : 'none'
-               }}
-             >
-            
-              <div className="affiliate-cta-content">
-                <h3>{article.affiliate_cta.platform}</h3>
-                <p className="affiliate-offer">{article.affiliate_cta.offer}</p>
-                <p className="affiliate-context">{article.affiliate_cta.context}</p>
+              <div className="affiliate-disclaimer-header">
+                <p>Advertisement</p>
+              </div>       
+              <div 
+                className="affiliate-cta"
+                style={{
+                  backgroundImage: article.affiliate_cta['hero-banner'] 
+                    ? `url(${article.affiliate_cta['hero-banner']})` 
+                    : 'none'
+                }}
+              >
+                <div className="affiliate-cta-content">
+                  <h3>{article.affiliate_cta.platform}</h3>
+                  <p className="affiliate-offer">{article.affiliate_cta.offer}</p>
+                  <p className="affiliate-context">{article.affiliate_cta.context}</p>
 
-                <a 
-                  href={article.affiliate_cta.link} 
-                  target="_blank" 
-                  rel="noopener noreferrer sponsored"
-                  className="affiliate-btn"
-                >
-                  Get Started with {article.affiliate_cta.platform} →
-                </a>
+                  <a 
+                    href={article.affiliate_cta.link} 
+                    target="_blank" 
+                    rel="noopener noreferrer sponsored"
+                    className="affiliate-btn"
+                  >
+                    Get Started with {article.affiliate_cta.platform} →
+                  </a>
+                </div>
               </div>
-            </div>
-          </>
-        )}
+            </>
+          )}
 
           <footer className="article-footer">
             <div className="share-section">
@@ -376,7 +506,6 @@ function ArticlePost() {
               </div>
             </div>
 
-            {/* Back to Articles Button */}
             <div style={{ textAlign: 'center', marginBottom: '3rem' }}>
               <Link to="/sandlot-insider" className="back-to-articles">
                 ← Back to All Articles
@@ -384,42 +513,42 @@ function ArticlePost() {
             </div>
           </footer>
 
-        {/* Related Posts Section - OUTSIDE footer, full width at bottom */}
-        {article.related_posts && article.related_posts.length > 0 && (
-          <div className="related-posts-section">
-            <h3>📚 Related Articles</h3>
-            <div className="related-posts-grid">
-              {article.related_posts.map((relatedSlug, idx) => {
-                const relatedArticle = articlesData.articles.find(a => a.slug === relatedSlug);
-                return relatedArticle ? (
-                  <Link 
-                    key={idx}
-                    to={`/sandlot-insider/${relatedArticle.slug}`}
-                    className="related-post-card"
-                  >
-                    <div className="related-post-image">
-                      <img 
-                        src={relatedArticle.hero_image.url} 
-                        alt={relatedArticle.hero_image.alt}
-                      />
-                    </div>
-                    <div className="related-post-content">
-                      <h4>{relatedArticle.title}</h4>
-                      <p className="related-post-meta">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                          <circle cx="12" cy="12" r="10"/>
-                          <polyline points="12 6 12 12 16 14"/>
-                        </svg>
-                        {relatedArticle.read_time_minutes} min read
-                      </p>
-                      <span className="read-more-arrow">Read More →</span>
-                    </div>
-                  </Link>
-                ) : null;
-              })}
+          {/* Related Posts Section */}
+          {article.related_posts && article.related_posts.length > 0 && (
+            <div className="related-posts-section">
+              <h3>📚 Related Articles</h3>
+              <div className="related-posts-grid">
+                {article.related_posts.map((relatedSlug, idx) => {
+                  const relatedArticle = allArticles.find(a => a.slug === relatedSlug);
+                  return relatedArticle ? (
+                    <Link 
+                      key={idx}
+                      to={`/sandlot-insider/${relatedArticle.slug}`}
+                      className="related-post-card"
+                    >
+                      <div className="related-post-image">
+                        <img 
+                          src={relatedArticle.hero_image.url} 
+                          alt={relatedArticle.hero_image.alt}
+                        />
+                      </div>
+                      <div className="related-post-content">
+                        <h4>{relatedArticle.title}</h4>
+                        <p className="related-post-meta">
+                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                            <circle cx="12" cy="12" r="10"/>
+                            <polyline points="12 6 12 12 16 14"/>
+                          </svg>
+                          {relatedArticle.read_time_minutes} min read
+                        </p>
+                        <span className="read-more-arrow">Read More →</span>
+                      </div>
+                    </Link>
+                  ) : null;
+                })}
+              </div>
             </div>
-          </div>
-        )}
+          )}
 
         </article>
       </div>

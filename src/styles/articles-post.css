@@ -621,6 +621,67 @@
   transform: translateY(-2px);
 }
 
+/* Audio Button in Meta Grid */
+
+.audio-meta-btn {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  transition: all 0.3s ease;
+  color: inherit;
+  font-family: inherit;
+  font-size: inherit;
+}
+
+.audio-meta-btn:hover {
+  color: #d32f2f;
+}
+
+.audio-meta-btn.playing {
+  color: #ff9800;
+}
+
+.audio-meta-btn.paused {
+  color: #2196f3;
+}
+
+.audio-meta-btn.stop {
+  color: #f44336;
+}
+
+.audio-meta-btn svg {
+  stroke-width: 2;
+}
+
+/* Optional: Add subtle animation to playing button */
+.audio-meta-btn.playing svg {
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.6;
+  }
+}
+
+/* Ensure meta items stay aligned */
+.article-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.5rem;
+  align-items: center;
+}
+
+.meta-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
 /* Responsive Design */
 @media (max-width: 768px) {
   .article-post-page {
@@ -645,7 +706,7 @@
 
   .article-meta {
     flex-direction: column;
-    gap: 0.75rem;
+    gap: 1rem;
   }
 
   .affiliate-cta {
