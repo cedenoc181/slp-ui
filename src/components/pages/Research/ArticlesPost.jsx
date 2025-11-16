@@ -320,38 +320,55 @@ function ArticlePost() {
     );
   }
 
-  const renderContent = (item, index) => {
-    switch (item.type) {
-      case 'heading':
-        return <h2 key={`heading-${index}`}>{item.text}</h2>;
-      
-      case 'subheading':
-        return <h3 key={`subheading-${index}`}>{item.text}</h3>;
-      
-      case 'paragraph':
-        return <p key={`paragraph-${index}`}>{item.text}</p>;
-      
-      case 'list':
-        return (
-          <ul key={`list-${index}`}>
-            {item.items.map((listItem, idx) => (
-              <li key={`list-${index}-${idx}`}>{listItem}</li>
-            ))}
-          </ul>
-        );
-      
-      case 'quote':
-        return (
-          <blockquote key={`quote-${index}`}>
-            <p>{item.text}</p>
-            {item.author && <cite>— {item.author}</cite>}
-          </blockquote>
-        );
-      
-      default:
-        return null;
-    }
+const renderContent = (item, index) => {
+  // Function to parse bold text
+  const parseBoldText = (text) => {
+    if (!text) return text;
+    
+    // Split by **text** patterns and wrap in <strong>
+    const parts = text.split(/(\*\*.*?\*\*)/g);
+    
+    return parts.map((part, i) => {
+      if (part.startsWith('**') && part.endsWith('**')) {
+        // Remove ** and wrap in <strong>
+        const boldText = part.slice(2, -2);
+        return <strong key={i}>{boldText}</strong>;
+      }
+      return part;
+    });
   };
+
+  switch (item.type) {
+    case 'heading':
+      return <h2 key={`heading-${index}`}>{parseBoldText(item.text)}</h2>;
+    
+    case 'subheading':
+      return <h3 key={`subheading-${index}`}>{parseBoldText(item.text)}</h3>;
+    
+    case 'paragraph':
+      return <p key={`paragraph-${index}`}>{parseBoldText(item.text)}</p>;
+    
+    case 'list':
+      return (
+        <ul key={`list-${index}`}>
+          {item.items.map((listItem, idx) => (
+            <li key={`list-${index}-${idx}`}>{parseBoldText(listItem)}</li>
+          ))}
+        </ul>
+      );
+    
+    case 'quote':
+      return (
+        <blockquote key={`quote-${index}`}>
+          <p>{parseBoldText(item.text)}</p>
+          {item.author && <cite>— {item.author}</cite>}
+        </blockquote>
+      );
+    
+    default:
+      return null;
+  }
+};
 
   return (
     <section className="article-post-page">
