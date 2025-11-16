@@ -43,7 +43,7 @@ function Footer() {
             </div>
             
             <div className="footer-section">
-              <h3 className="footer-heading">Research</h3>
+              <h3 className="footer-heading">Insights</h3>
               <a href="/blogs" className="footer-link">Blog</a>
               <a href="/sandlot-insider" className="footer-link">Sandlot Insider</a>
               <a href="/data-science" className="footer-link">Data Science & Baseball</a>
