@@ -19,11 +19,36 @@ function ArticlePost() {
   const [isPlaying, setIsPlaying] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
   const [speechSupported, setSpeechSupported] = useState(false);
+  const [selectedVoice, setSelectedVoice] = useState(null);
 
-  // Check if browser supports speech synthesis
+  // Load voices and set Alex as default
   useEffect(() => {
     if ('speechSynthesis' in window) {
       setSpeechSupported(true);
+      
+      const loadVoices = () => {
+        const availableVoices = window.speechSynthesis.getVoices();
+        
+        // Find Alex voice (or fallback to first English voice)
+        const alexVoice = availableVoices.find(voice => 
+          voice.name.toLowerCase().includes('alex')
+        );
+        
+        const fallbackVoice = availableVoices.find(voice => 
+          voice.lang.startsWith('en-')
+        );
+        
+        setSelectedVoice(alexVoice || fallbackVoice);
+        
+        console.log('Selected voice:', (alexVoice || fallbackVoice)?.name);
+      };
+      
+      loadVoices();
+      
+      // Chrome loads voices asynchronously
+      if (window.speechSynthesis.onvoiceschanged !== undefined) {
+        window.speechSynthesis.onvoiceschanged = loadVoices;
+      }
     }
   }, []);
 
@@ -77,11 +102,10 @@ function ArticlePost() {
       utterance.pitch = 1.0; // Pitch (0 to 2)
       utterance.volume = 1.0; // Volume (0 to 1)
       
-      // Optional: Select a specific voice
-      const voices = window.speechSynthesis.getVoices();
-      const englishVoice = voices.find(voice => voice.lang.startsWith('en-'));
-      if (englishVoice) {
-        utterance.voice = englishVoice;
+      // Use Alex voice
+      if (selectedVoice) {
+        utterance.voice = selectedVoice;
+        console.log('Using voice:', selectedVoice.name);
       }
       
       // Event handlers
