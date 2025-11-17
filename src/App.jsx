@@ -5,6 +5,7 @@ import Header from './components/Header';
 import Hero from './components/Hero';
 import About from './components/About';
 import Features from './components/Features';
+import FeaturedArticle from './components/FeaturedArticles';
 import Footer from './components/Footer';
 import NotFound from './components/NotFound';
 
@@ -27,6 +28,7 @@ import PrivacyPolicy from './components/legal/PrivacyPolicy';
 
 // styling imports
 import './styles/chalkboard.css';
+import './styles/featured-articles.css';
 import './styles/header.css';
 import './styles/hero.css';
 import './styles/about.css';
@@ -49,6 +51,7 @@ function HomePage() {
   return (
     <>
       <Hero />
+      <FeaturedArticle />
       <About />
       <Features />
     </>
