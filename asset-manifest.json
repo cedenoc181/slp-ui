@@ -1,6 +1,6 @@
 {
   "files": {
-    "main.css": "/static/css/main.ae451bc2.css",
+    "main.css": "/static/css/main.1ec81b4d.css",
     "main.js": "/static/js/main.fa889a40.js",
     "static/media/spa-chalkboard.png": "/static/media/spa-chalkboard.fca57b82f042a69c391c.png",
     "static/media/spa-sandlot.png": "/static/media/spa-sandlot.49b8778487835caf7c81.png",
@@ -18,11 +18,11 @@
     "static/media/SPA-BOT-mlb-ed-Icon.png": "/static/media/SPA-BOT-mlb-ed-Icon.5e76124c3d76601128ff.png",
     "static/media/pitcher_prop.png": "/static/media/pitcher_prop.cc2f6b8b5e51bf6374b7.png",
     "index.html": "/index.html",
-    "main.ae451bc2.css.map": "/static/css/main.ae451bc2.css.map",
+    "main.1ec81b4d.css.map": "/static/css/main.1ec81b4d.css.map",
     "main.fa889a40.js.map": "/static/js/main.fa889a40.js.map"
   },
   "entrypoints": [
-    "static/css/main.ae451bc2.css",
+    "static/css/main.1ec81b4d.css",
     "static/js/main.fa889a40.js"
   ]
 }
