@@ -5,6 +5,9 @@ import '../styles/header.css';
 function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
+  const [activeDropdown, setActiveDropdown] = useState(null);
+  const navigate = useNavigate();
+  const location = useLocation();
 
   // Detect scroll
   useEffect(() => {
@@ -20,11 +23,6 @@ function Header() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-
-
-  const navigate = useNavigate();
-  const location = useLocation();
-
   const handleLogoClick = (e) => {
     e.preventDefault();
     e.stopPropagation();
@@ -38,44 +36,17 @@ function Header() {
 
   const closeMenu = () => {
     setIsMenuOpen(false);
+    setActiveDropdown(null);
   };
 
-  const handleNavClick = (e, sectionId) => {
-    e.preventDefault();
-    e.stopPropagation();
+  const handleNavClick = (path) => {
     closeMenu();
-    
-    // If not on home page, navigate to home first
-    if (location.pathname !== '/') {
-      navigate('/', { replace: true });
-      // Wait for navigation and DOM update, then scroll
-      setTimeout(() => {
-        const element = document.getElementById(sectionId);
-        if (element) {
-          const headerOffset = 80; // Adjust based on your header height
-          const elementPosition = element.getBoundingClientRect().top;
-          const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
+    navigate(path);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
 
-          window.scrollTo({
-            top: offsetPosition,
-            behavior: 'smooth'
-          });
-        }
-      }, 300);
-    } else {
-      // Already on home page, just scroll
-      const element = document.getElementById(sectionId);
-      if (element) {
-        const headerOffset = 80;
-        const elementPosition = element.getBoundingClientRect().top;
-        const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
-
-        window.scrollTo({
-          top: offsetPosition,
-          behavior: 'smooth'
-        });
-      }
-    }
+  const toggleDropdown = (dropdown) => {
+    setActiveDropdown(activeDropdown === dropdown ? null : dropdown);
   };
 
   return (
@@ -87,6 +58,11 @@ function Header() {
           style={{ cursor: 'pointer' }}
           role="button"
           tabIndex={0}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              handleLogoClick(e);
+            }
+          }}
         >
           <img src={require('../assets/images/spa-retro-logo-removebg.png')} alt="Sandlot Picks Analytics" />
         </div>
@@ -100,9 +76,144 @@ function Header() {
 
         {/* Navigation */}
         <nav className={`nav ${isMenuOpen ? 'nav-open' : ''}`}>
-          <button type="button" onClick={(e) => handleNavClick(e, 'about')} className="nav-button">About</button>
-          <button type="button" onClick={(e) => handleNavClick(e, 'features')} className="nav-button">Features</button>
-          <button type="button" onClick={(e) => handleNavClick(e, 'contact')} className="nav-button">Contact</button>
+          {/* Home */}
+          <button 
+            type="button" 
+            onClick={() => handleNavClick('/')} 
+            className={`nav-button ${location.pathname === '/' ? 'active' : ''}`}
+          >
+            Home
+          </button>
+
+          {/* Insights Dropdown */}
+          <div 
+            className="nav-dropdown"
+            onMouseEnter={() => setActiveDropdown('insights')}
+            onMouseLeave={() => setActiveDropdown(null)}
+          >
+            <button 
+              type="button" 
+              className={`nav-button ${location.pathname.startsWith('/sandlot-insider') || location.pathname.startsWith('/blogs') || location.pathname.startsWith('/data-science') ? 'active' : ''}`}
+              onClick={() => toggleDropdown('insights')}
+            >
+              Insights
+              <svg className="dropdown-arrow" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                <polyline points="6 9 12 15 18 9"/>
+              </svg>
+            </button>
+            <div className={`dropdown-menu ${activeDropdown === 'insights' ? 'show' : ''}`}>
+              <button onClick={() => handleNavClick('/sandlot-insider')} className="dropdown-item">
+                <span className="dropdown-icon">📰</span>
+                <div>
+                  <div className="dropdown-title">Sandlot Insider</div>
+                  <div className="dropdown-desc">Expert MLB analysis & commentary</div>
+                </div>
+              </button>
+              <button onClick={() => handleNavClick('/blogs')} className="dropdown-item">
+                <span className="dropdown-icon">✍️</span>
+                <div>
+                  <div className="dropdown-title">Strategy Blog</div>
+                  <div className="dropdown-desc">Betting tips & insights</div>
+                </div>
+              </button>
+              <button onClick={() => handleNavClick('/data-science')} className="dropdown-item">
+                <span className="dropdown-icon">📊</span>
+                <div>
+                  <div className="dropdown-title">Data Science & Baseball</div>
+                  <div className="dropdown-desc">ML models & analytics</div>
+                </div>
+              </button>
+            </div>
+          </div>
+
+          {/* Education Dropdown */}
+          <div 
+            className="nav-dropdown"
+            onMouseEnter={() => setActiveDropdown('education')}
+            onMouseLeave={() => setActiveDropdown(null)}
+          >
+            <button 
+              type="button" 
+              className={`nav-button ${location.pathname.startsWith('/how-to-use') || location.pathname.startsWith('/glossary') || location.pathname.startsWith('/faqs') || location.pathname.startsWith('/responsible-gaming') ? 'active' : ''}`}
+              onClick={() => toggleDropdown('education')}
+            >
+              Education
+              <svg className="dropdown-arrow" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                <polyline points="6 9 12 15 18 9"/>
+              </svg>
+            </button>
+            <div className={`dropdown-menu ${activeDropdown === 'education' ? 'show' : ''}`}>
+              <button onClick={() => handleNavClick('/how-to-use')} className="dropdown-item">
+                <span className="dropdown-icon">🎯</span>
+                <div>
+                  <div className="dropdown-title">How to Use</div>
+                  <div className="dropdown-desc">Platform guide</div>
+                </div>
+              </button>
+              <button onClick={() => handleNavClick('/glossary')} className="dropdown-item">
+                <span className="dropdown-icon">📖</span>
+                <div>
+                  <div className="dropdown-title">Glossary</div>
+                  <div className="dropdown-desc">Baseball & betting terms</div>
+                </div>
+              </button>
+              <button onClick={() => handleNavClick('/faqs')} className="dropdown-item">
+                <span className="dropdown-icon">❓</span>
+                <div>
+                  <div className="dropdown-title">FAQs</div>
+                  <div className="dropdown-desc">Common questions</div>
+                </div>
+              </button>
+              <button onClick={() => handleNavClick('/responsible-gaming')} className="dropdown-item">
+                <span className="dropdown-icon">🛡️</span>
+                <div>
+                  <div className="dropdown-title">Responsible Gaming</div>
+                  <div className="dropdown-desc">Safe betting practices</div>
+                </div>
+              </button>
+            </div>
+          </div>
+
+          {/* More Dropdown */}
+          <div 
+            className="nav-dropdown"
+            onMouseEnter={() => setActiveDropdown('more')}
+            onMouseLeave={() => setActiveDropdown(null)}
+          >
+            <button 
+              type="button" 
+              className={`nav-button ${location.pathname.startsWith('/features') || location.pathname.startsWith('/contact') || location.pathname.startsWith('/about') ? 'active' : ''}`}
+              onClick={() => toggleDropdown('more')}
+            >
+              More
+              <svg className="dropdown-arrow" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                <polyline points="6 9 12 15 18 9"/>
+              </svg>
+            </button>
+            <div className={`dropdown-menu ${activeDropdown === 'more' ? 'show' : ''}`}>
+              <button onClick={() => handleNavClick('/features')} className="dropdown-item">
+                <span className="dropdown-icon">⚡</span>
+                <div>
+                  <div className="dropdown-title">Features</div>
+                  <div className="dropdown-desc">Platform capabilities</div>
+                </div>
+              </button>
+              <button onClick={() => handleNavClick('/contact')} className="dropdown-item">
+                <span className="dropdown-icon">📧</span>
+                <div>
+                  <div className="dropdown-title">Contact Us</div>
+                  <div className="dropdown-desc">Get in touch</div>
+                </div>
+              </button>
+              <button onClick={() => handleNavClick('/about')} className="dropdown-item">
+                <span className="dropdown-icon">ℹ️</span>
+                <div>
+                  <div className="dropdown-title">About Sandlot Picks</div>
+                  <div className="dropdown-desc">Our story & mission</div>
+                </div>
+              </button>
+            </div>
+          </div>
         </nav>
       </div>
     </header>

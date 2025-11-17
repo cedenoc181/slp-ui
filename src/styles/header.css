@@ -1,20 +1,19 @@
 /* ============================================
    HEADER SECTION
    ============================================ */
-   :root {
-    --primary: #041E42;
-    --secondary: #0e2f5f;
-    --white-bg: #F7F7F9;
-    --card-white: #FFFFFF;
-    --text-dark: #1F2933;
-    --text-muted: #546A7B;
-    --cta-color: #C8102E; /* MLB red */
-    --cta-hover: #E31837; /* Lighter red */
-  }
-  
+:root {
+  --primary: #041E42;
+  --secondary: #0e2f5f;
+  --white-bg: #F7F7F9;
+  --card-white: #FFFFFF;
+  --text-dark: #1F2933;
+  --text-muted: #546A7B;
+  --cta-color: #C8102E;
+  --cta-hover: #E31837;
+}
 
 .header {
-  position: sticky; /* Changed from relative to sticky */
+  position: sticky;
   top: 0;
   z-index: 1000;
   background: var(--primary);
@@ -24,7 +23,6 @@
   transition: padding 0.3s ease, box-shadow 0.3s ease;
 }
 
-/* Optional: Add a slightly stronger shadow when scrolled */
 .header.scrolled {
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
   padding: 0.75rem 0;
@@ -35,6 +33,9 @@
   justify-content: space-between;
   align-items: center;
   position: relative;
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 2rem;
 }
 
 .logo {
@@ -54,7 +55,7 @@
   transform: scale(1.05);
 }
 
-/* Hamburger Menu (hidden on desktop) */
+/* Hamburger Menu */
 .hamburger {
   display: none;
   flex-direction: column;
@@ -89,8 +90,10 @@
 /* Navigation */
 .nav {
   display: flex;
-  gap: 2rem;
+  gap: 1.5rem; /* Reduced from 2rem */
+  align-items: center;
   transition: all 0.3s ease;
+  flex-wrap: nowrap;
 }
 
 .nav-button {
@@ -98,18 +101,140 @@
   border: none;
   color: #E6EDF5;
   text-decoration: none;
-  font-size: 1rem;
+  font-size: 0.95rem; /* Slightly smaller */
   font-weight: 500;
   transition: all 0.3s;
   border-bottom: 2px solid transparent;
-  padding-bottom: 4px;
+  padding: 0.5rem 0;
   cursor: pointer;
   font-family: inherit;
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  white-space: nowrap; /* Prevent text wrapping */
 }
 
 .nav-button:hover {
   border-bottom: 2px solid var(--cta-color);
   color: var(--cta-hover);
+}
+
+.nav-button.active {
+  border-bottom: 2px solid var(--cta-color);
+  color: var(--cta-hover);
+}
+
+/* Dropdown Styles */
+.nav-dropdown {
+  position: relative;
+}
+
+.dropdown-arrow {
+  transition: transform 0.3s ease;
+  stroke-width: 2;
+}
+
+.nav-dropdown:hover .dropdown-arrow {
+  transform: rotate(180deg);
+}
+
+/* Replace the .dropdown-menu section with this: */
+.dropdown-menu {
+  position: absolute;
+  top: 100%;
+  left: 50%; /* Changed from left: 0 */
+  transform: translateX(-50%) translateY(-10px); /* Center the dropdown */
+  margin-top: 0.5rem;
+  background: var(--primary);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+  min-width: 280px;
+  max-width: 320px; /* Add max-width to prevent overflow */
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.3s ease;
+  z-index: 1001;
+}
+
+.dropdown-menu.show {
+  opacity: 1;
+  visibility: visible;
+  transform: translateX(-50%) translateY(0); /* Maintain center when shown */
+}
+
+/* Add this for the last dropdown to align right if needed */
+.nav-dropdown:last-of-type .dropdown-menu {
+  left: auto;
+  right: 0;
+  transform: translateY(-10px);
+}
+
+.nav-dropdown:last-of-type .dropdown-menu.show {
+  transform: translateY(0);
+}
+
+.dropdown-item {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  width: 100%;
+  padding: 1rem 1.25rem;
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  cursor: pointer;
+  text-align: left;
+  transition: all 0.2s ease;
+  color: white;
+  font-family: inherit;
+}
+
+.dropdown-item:last-child {
+  border-bottom: none;
+}
+
+.dropdown-item:hover {
+  background: rgba(200, 16, 46, 0.1);
+  padding-left: 1.5rem;
+}
+
+.dropdown-icon {
+  font-size: 1.5rem;
+  flex-shrink: 0;
+}
+
+.dropdown-title {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #E6EDF5;
+  margin-bottom: 0.25rem;
+}
+
+.dropdown-desc {
+  font-size: 0.8rem;
+  color: #B8C5D6;
+}
+
+/* ============================================
+   RESPONSIVE - MEDIUM SCREENS (900px and below)
+   ============================================ */
+@media screen and (max-width: 900px) {
+  .header .container {
+    padding: 0 1.5rem;
+  }
+
+  .nav {
+    gap: 1rem;
+  }
+
+  .nav-button {
+    font-size: 0.9rem;
+  }
+
+  .dropdown-menu {
+    min-width: 260px;
+  }
 }
 
 /* ============================================
@@ -124,46 +249,74 @@
     height: 50px;
   }
 
-  /* Show hamburger menu */
   .hamburger {
     display: flex;
   }
 
-  /* Hide nav by default on mobile */
   .nav {
     position: fixed;
     top: 0;
     right: -100%;
     height: 100vh;
-    width: 70%;
-    max-width: 300px;
+    width: 80%;
+    max-width: 350px;
     background: var(--primary);
     flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    gap: 2rem;
+    justify-content: flex-start;
+    align-items: stretch;
+    gap: 0;
+    padding-top: 6rem;
     box-shadow: -5px 0 15px rgba(0, 0, 0, 0.3);
     transition: right 0.3s ease-in-out;
     z-index: 1000;
+    overflow-y: auto;
   }
 
-  /* Show nav when open */
   .nav.nav-open {
     right: 0;
   }
 
-  .nav a {
-    font-size: 1.2rem;
+  .nav-button {
     padding: 1rem 2rem;
-    width: 80%;
-    text-align: center;
-    border-bottom: none;
-    border-radius: 8px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    justify-content: space-between;
   }
 
-  .nav a:hover {
-    background-color: rgba(200, 16, 46, 0.2);
-    border-bottom: none;
+  .nav-button:hover {
+    background: rgba(200, 16, 46, 0.1);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  }
+
+  .nav-dropdown {
+    width: 100%;
+  }
+
+  .dropdown-menu {
+    position: static;
+    opacity: 1;
+    visibility: visible;
+    transform: none;
+    box-shadow: none;
+    border: none;
+    border-radius: 0;
+    margin: 0;
+    background: rgba(0, 0, 0, 0.2);
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s ease;
+  }
+
+  .dropdown-menu.show {
+    max-height: 500px;
+  }
+
+  .dropdown-item {
+    padding: 1rem 2.5rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  }
+
+  .dropdown-item:hover {
+    padding-left: 3rem;
   }
 }
 
@@ -176,11 +329,7 @@
   }
 
   .nav {
-    width: 80%;
-  }
-
-  .nav a {
-    font-size: 1.1rem;
+    width: 85%;
   }
 }
 
