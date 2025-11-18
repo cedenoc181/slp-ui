@@ -4,7 +4,8 @@ import '../../../styles/team-analytics.css';
 function TeamAnalytics() {
   const [selectedTeam, setSelectedTeam] = useState('LAD');
   const [timeframe, setTimeframe] = useState('season');
-  const [chartFilter, setChartFilter] = useState('season'); // Add this new state
+  const [chartFilter, setChartFilter] = useState('season'); 
+
 
   // Mock data - will be replaced with API later
   const teams = [
@@ -16,6 +17,8 @@ function TeamAnalytics() {
   ];
 
   const teamData = {
+  // Season data (full season)
+  season: {
     overall: {
       wins: 100,
       losses: 62,
@@ -26,34 +29,33 @@ function TeamAnalytics() {
       streak: 'W5'
     },
     overviewSplits: {
-        home: { wins: 54, losses: 27, winPct: 0.667 },
-        away: { wins: 46, losses: 35, winPct: 0.568 }
-        },
+      home: { wins: 54, losses: 27, winPct: 0.667 },
+      away: { wins: 46, losses: 35, winPct: 0.568 }
+    },
     splits: {
-        season: {
-          vsLHP: { wins: 38, losses: 22, winPct: 0.633 },
-          vsRHP: { wins: 62, losses: 40, winPct: 0.608 },
-          day: { wins: 28, losses: 18, winPct: 0.609 },
-          night: { wins: 72, losses: 44, winPct: 0.621 }
-        },
-        home: {
-          vsLHP: { wins: 21, losses: 10, winPct: 0.677 },
-          vsRHP: { wins: 33, losses: 17, winPct: 0.660 },
-          day: { wins: 15, losses: 8, winPct: 0.652 },
-          night: { wins: 39, losses: 19, winPct: 0.672 }
-        },
-        away: {
-          vsLHP: { wins: 17, losses: 12, winPct: 0.586 },
-          vsRHP: { wins: 29, losses: 23, winPct: 0.558 },
-          day: { wins: 13, losses: 10, winPct: 0.565 },
-          night: { wins: 33, losses: 25, winPct: 0.569 }
-        }
+      season: {
+        vsLHP: { wins: 38, losses: 22, winPct: 0.633 },
+        vsRHP: { wins: 62, losses: 40, winPct: 0.608 },
+        day: { wins: 28, losses: 18, winPct: 0.609 },
+        night: { wins: 72, losses: 44, winPct: 0.621 }
+      },
+      home: {
+        vsLHP: { wins: 21, losses: 10, winPct: 0.677 },
+        vsRHP: { wins: 33, losses: 17, winPct: 0.660 },
+        day: { wins: 15, losses: 8, winPct: 0.652 },
+        night: { wins: 39, losses: 19, winPct: 0.672 }
+      },
+      away: {
+        vsLHP: { wins: 17, losses: 12, winPct: 0.586 },
+        vsRHP: { wins: 29, losses: 23, winPct: 0.558 },
+        day: { wins: 13, losses: 10, winPct: 0.565 },
+        night: { wins: 33, losses: 25, winPct: 0.569 }
+      }
     },
     last10: {
-      wins: 7,
-      losses: 3,
-      runsScored: 52,
-      runsAllowed: 38
+      season: { wins: 7, losses: 3, runsScored: 52, runsAllowed: 38 },
+      home: { wins: 6, losses: 4, runsScored: 48, runsAllowed: 35 },
+      away: { wins: 5, losses: 5, runsScored: 42, runsAllowed: 40 }
     },
     trends: {
       season: [
@@ -80,19 +82,140 @@ function TeamAnalytics() {
         { date: 'Aug', wins: 8, losses: 7 },
         { date: 'Sep', wins: 4, losses: 5 }
       ]
+    }
+  },
+  
+  // First Half data (pre-All-Star break)
+  'first-half': {
+    overall: {
+      wins: 52,
+      losses: 31,
+      winPct: 0.627,
+      runsScored: 462,
+      runsAllowed: 338,
+      runDiff: 124,
+      streak: 'W3'
     },
-    upcoming: [
-      { date: '11/18', opponent: 'SF Giants', location: 'Home', pitchMatchup: 'Kershaw vs Webb' },
-      { date: '11/19', opponent: 'SF Giants', location: 'Home', pitchMatchup: 'Buehler vs Cobb' },
-      { date: '11/20', opponent: 'SD Padres', location: 'Away', pitchMatchup: 'Urías vs Darvish' }
-    ]
-  };
+    overviewSplits: {
+      home: { wins: 28, losses: 14, winPct: 0.667 },
+      away: { wins: 24, losses: 17, winPct: 0.585 }
+    },
+    splits: {
+      season: {
+        vsLHP: { wins: 20, losses: 11, winPct: 0.645 },
+        vsRHP: { wins: 32, losses: 20, winPct: 0.615 },
+        day: { wins: 14, losses: 9, winPct: 0.609 },
+        night: { wins: 38, losses: 22, winPct: 0.633 }
+      },
+      home: {
+        vsLHP: { wins: 11, losses: 5, winPct: 0.688 },
+        vsRHP: { wins: 17, losses: 9, winPct: 0.654 },
+        day: { wins: 8, losses: 4, winPct: 0.667 },
+        night: { wins: 20, losses: 10, winPct: 0.667 }
+      },
+      away: {
+        vsLHP: { wins: 9, losses: 6, winPct: 0.600 },
+        vsRHP: { wins: 15, losses: 11, winPct: 0.577 },
+        day: { wins: 6, losses: 5, winPct: 0.545 },
+        night: { wins: 18, losses: 12, winPct: 0.600 }
+      }
+    },
+    last10: {
+      season: { wins: 6, losses: 4, runsScored: 48, runsAllowed: 42 },
+      home: { wins: 5, losses: 2, runsScored: 38, runsAllowed: 28 },
+      away: { wins: 4, losses: 3, runsScored: 32, runsAllowed: 30 }
+    },
+    trends: {
+      season: [
+        { date: 'Apr', wins: 18, losses: 8 },
+        { date: 'May', wins: 20, losses: 10 },
+        { date: 'Jun', wins: 14, losses: 13 }
+      ],
+      home: [
+        { date: 'Apr', wins: 10, losses: 4 },
+        { date: 'May', wins: 11, losses: 4 },
+        { date: 'Jun', wins: 7, losses: 6 }
+      ],
+      away: [
+        { date: 'Apr', wins: 8, losses: 4 },
+        { date: 'May', wins: 9, losses: 6 },
+        { date: 'Jun', wins: 7, losses: 7 }
+      ]
+    }
+  },
+  
+  // Second Half data (post-All-Star break)
+  'second-half': {
+    overall: {
+      wins: 48,
+      losses: 31,
+      winPct: 0.608,
+      runsScored: 444,
+      runsAllowed: 334,
+      runDiff: 110,
+      streak: 'W5'
+    },
+    overviewSplits: {
+      home: { wins: 26, losses: 13, winPct: 0.667 },
+      away: { wins: 22, losses: 18, winPct: 0.550 }
+    },
+    splits: {
+      season: {
+        vsLHP: { wins: 18, losses: 11, winPct: 0.621 },
+        vsRHP: { wins: 30, losses: 20, winPct: 0.600 },
+        day: { wins: 14, losses: 9, winPct: 0.609 },
+        night: { wins: 34, losses: 22, winPct: 0.607 }
+      },
+      home: {
+        vsLHP: { wins: 10, losses: 5, winPct: 0.667 },
+        vsRHP: { wins: 16, losses: 8, winPct: 0.667 },
+        day: { wins: 7, losses: 4, winPct: 0.636 },
+        night: { wins: 19, losses: 9, winPct: 0.679 }
+      },
+      away: {
+        vsLHP: { wins: 8, losses: 6, winPct: 0.571 },
+        vsRHP: { wins: 14, losses: 12, winPct: 0.538 },
+        day: { wins: 7, losses: 5, winPct: 0.583 },
+        night: { wins: 15, losses: 13, winPct: 0.536 }
+      }
+    },
+    last10: {
+      season: { wins: 7, losses: 3, runsScored: 52, runsAllowed: 38 },
+      home: { wins: 6, losses: 4, runsScored: 48, runsAllowed: 35 },
+      away: { wins: 5, losses: 5, runsScored: 42, runsAllowed: 40 }
+    },
+    trends: {
+      season: [
+        { date: 'Jul', wins: 21, losses: 9 },
+        { date: 'Aug', wins: 15, losses: 14 },
+        { date: 'Sep', wins: 12, losses: 8 }
+      ],
+      home: [
+        { date: 'Jul', wins: 12, losses: 3 },
+        { date: 'Aug', wins: 7, losses: 7 },
+        { date: 'Sep', wins: 7, losses: 3 }
+      ],
+      away: [
+        { date: 'Jul', wins: 9, losses: 6 },
+        { date: 'Aug', wins: 8, losses: 7 },
+        { date: 'Sep', wins: 5, losses: 5 }
+      ]
+    }
+  },
+  
+  // Upcoming games (shared across all timeframes)
+  upcoming: [
+    { date: '11/18', opponent: 'SF Giants', location: 'Home', pitchMatchup: 'Kershaw vs Webb' },
+    { date: '11/19', opponent: 'SF Giants', location: 'Home', pitchMatchup: 'Buehler vs Cobb' },
+    { date: '11/20', opponent: 'SD Padres', location: 'Away', pitchMatchup: 'Urías vs Darvish' }
+  ]
+};
 
-  // Get the current chart data based on filter
-  const currentChartData = teamData.trends[chartFilter];
 
-  const currentSplitsData = teamData.splits[chartFilter];
-
+const currentTimeframeData = teamData[timeframe];
+const currentChartData = currentTimeframeData.trends[chartFilter];
+const currentSplitsData = currentTimeframeData.splits[chartFilter];
+const currentLast10Data = currentTimeframeData.last10[chartFilter];
 
   return (
     <div className="team-analytics-page">
@@ -125,16 +248,16 @@ function TeamAnalytics() {
                 Season
               </button>
               <button 
-                className={`tab ${timeframe === 'last30' ? 'active' : ''}`}
-                onClick={() => setTimeframe('last30')}
+                className={`tab ${timeframe === 'first-half' ? 'active' : ''}`}
+                onClick={() => setTimeframe('first-half')}
               >
-                Last 30
+                1st Half
               </button>
               <button 
-                className={`tab ${timeframe === 'last10' ? 'active' : ''}`}
-                onClick={() => setTimeframe('last10')}
+                className={`tab ${timeframe === 'second-half' ? 'active' : ''}`}
+                onClick={() => setTimeframe('second-half')}
               >
-                Last 10
+                2nd Half
               </button>
             </div>
           </div>
@@ -148,15 +271,15 @@ function TeamAnalytics() {
           <div className="stat-card highlight">
             <div className="stat-header">
               <span className="stat-label">Record</span>
-              <span className={`trend-badge ${teamData.overall.streak.startsWith('W') ? 'positive' : 'negative'}`}>
-                {teamData.overall.streak}
+              <span className={`trend-badge ${currentTimeframeData.overall.streak.startsWith('W') ? 'positive' : 'negative'}`}>
+                {currentTimeframeData.overall.streak}
               </span>
             </div>
             <div className="stat-value">
-              {teamData.overall.wins}-{teamData.overall.losses}
+              {currentTimeframeData.overall.wins}-{currentTimeframeData.overall.losses}
             </div>
             <div className="stat-detail">
-              Win % {(teamData.overall.winPct * 100).toFixed(1)}%
+              Win % {(currentTimeframeData.overall.winPct * 100).toFixed(1)}%
             </div>
           </div>
 
@@ -165,10 +288,10 @@ function TeamAnalytics() {
               <span className="stat-label">Run Differential</span>
             </div>
             <div className="stat-value positive">
-              +{teamData.overall.runDiff}
+              +{currentTimeframeData.overall.runDiff}
             </div>
             <div className="stat-detail">
-              {teamData.overall.runsScored} RS / {teamData.overall.runsAllowed} RA
+              {currentTimeframeData.overall.runsScored} RS / {currentTimeframeData.overall.runsAllowed} RA
             </div>
           </div>
 
@@ -177,10 +300,10 @@ function TeamAnalytics() {
               <span className="stat-label">Home Record</span>
             </div>
             <div className="stat-value">
-              {teamData.overviewSplits.home.wins}-{teamData.overviewSplits.home.losses}
+              {currentTimeframeData.overviewSplits.home.wins}-{currentTimeframeData.overviewSplits.home.losses}
             </div>
             <div className="stat-detail">
-              {(teamData.overviewSplits.home.winPct * 100).toFixed(1)}% win rate
+              {(currentTimeframeData.overviewSplits.home.winPct * 100).toFixed(1)}% win rate
             </div>
           </div>
 
@@ -189,10 +312,10 @@ function TeamAnalytics() {
               <span className="stat-label">Away Record</span>
             </div>
             <div className="stat-value">
-              {teamData.overviewSplits.away.wins}-{teamData.overviewSplits.away.losses}
+              {currentTimeframeData.overviewSplits.away.wins}-{currentTimeframeData.overviewSplits.away.losses}
             </div>
             <div className="stat-detail">
-              {(teamData.overviewSplits.away.winPct * 100).toFixed(1)}% win rate
+              {(currentTimeframeData.overviewSplits.away.winPct * 100).toFixed(1)}% win rate
             </div>
           </div>
         </div>
@@ -282,7 +405,7 @@ function TeamAnalytics() {
             <div className="card-header">
               <h3>Performance Splits</h3>
                 <p className="card-subtitle">
-                  {chartFilter === 'season' && <><span className="subtitle-bold">📊 Season-long</span> performance breakdown</>}
+                  {chartFilter === 'season' && <><span className="subtitle-bold">📊 Season</span> performance breakdown</>}
                   {chartFilter === 'home' && <><span className="subtitle-bold">🏠 Home</span> game performance breakdown</>}
                   {chartFilter === 'away' && <><span className="subtitle-bold">✈️ Away</span> game performance breakdown</>}
                 </p>
@@ -365,27 +488,34 @@ function TeamAnalytics() {
           {/* Last 10 Games */}
           <div className="section-card">
             <div className="card-header">
-              <h3>Last 10 Games</h3>
+                <div>
+                    <h3>Last 10 Games</h3>
+                     <p className="card-subtitle">
+                       {chartFilter === 'season' && <><strong>📊 Season: </strong> last 10 games performance</>}
+                       {chartFilter === 'home' && <><strong>🏠 Home: </strong> last 10 games performance</>}
+                       {chartFilter === 'away' && <><strong>✈️ Away: </strong> last 10 games performance</>}
+                     </p>
+                </div>
             </div>
             <div className="last-10-stats">
               <div className="last-10-item">
                 <div className="last-10-label">Record</div>
                 <div className="last-10-value">
-                  {teamData.last10.wins}-{teamData.last10.losses}
+                  {currentLast10Data.wins}-{currentLast10Data.losses}
                 </div>
               </div>
               <div className="last-10-item">
                 <div className="last-10-label">Runs Scored</div>
-                <div className="last-10-value">{teamData.last10.runsScored}</div>
+                <div className="last-10-value">{currentLast10Data.runsScored}</div>
               </div>
               <div className="last-10-item">
                 <div className="last-10-label">Runs Allowed</div>
-                <div className="last-10-value">{teamData.last10.runsAllowed}</div>
+                <div className="last-10-value">{currentLast10Data.runsAllowed}</div>
               </div>
               <div className="last-10-item">
                 <div className="last-10-label">Run Differential</div>
-                <div className="last-10-value positive">
-                  +{teamData.last10.runsScored - teamData.last10.runsAllowed}
+                <div className={`last-10-value ${currentLast10Data.runsScored - currentLast10Data.runsAllowed > 0 ? 'positive' : currentLast10Data.runsScored - currentLast10Data.runsAllowed < 0 ? 'negative' : ''}`}>
+                  {currentLast10Data.runsScored - currentLast10Data.runsAllowed > 0 ? '+' : ''}{currentLast10Data.runsScored - currentLast10Data.runsAllowed}
                 </div>
               </div>
             </div>
