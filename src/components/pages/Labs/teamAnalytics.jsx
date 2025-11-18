@@ -4,6 +4,7 @@ import '../../../styles/team-analytics.css';
 function TeamAnalytics() {
   const [selectedTeam, setSelectedTeam] = useState('LAD');
   const [timeframe, setTimeframe] = useState('season');
+  const [chartFilter, setChartFilter] = useState('season'); // Add this new state
 
   // Mock data - will be replaced with API later
   const teams = [
@@ -24,13 +25,29 @@ function TeamAnalytics() {
       runDiff: 234,
       streak: 'W5'
     },
+    overviewSplits: {
+        home: { wins: 54, losses: 27, winPct: 0.667 },
+        away: { wins: 46, losses: 35, winPct: 0.568 }
+        },
     splits: {
-      home: { wins: 54, losses: 27, winPct: 0.667 },
-      away: { wins: 46, losses: 35, winPct: 0.568 },
-      vsLHP: { wins: 38, losses: 22, winPct: 0.633 },
-      vsRHP: { wins: 62, losses: 40, winPct: 0.608 },
-      day: { wins: 28, losses: 18, winPct: 0.609 },
-      night: { wins: 72, losses: 44, winPct: 0.621 }
+        season: {
+          vsLHP: { wins: 38, losses: 22, winPct: 0.633 },
+          vsRHP: { wins: 62, losses: 40, winPct: 0.608 },
+          day: { wins: 28, losses: 18, winPct: 0.609 },
+          night: { wins: 72, losses: 44, winPct: 0.621 }
+        },
+        home: {
+          vsLHP: { wins: 21, losses: 10, winPct: 0.677 },
+          vsRHP: { wins: 33, losses: 17, winPct: 0.660 },
+          day: { wins: 15, losses: 8, winPct: 0.652 },
+          night: { wins: 39, losses: 19, winPct: 0.672 }
+        },
+        away: {
+          vsLHP: { wins: 17, losses: 12, winPct: 0.586 },
+          vsRHP: { wins: 29, losses: 23, winPct: 0.558 },
+          day: { wins: 13, losses: 10, winPct: 0.565 },
+          night: { wins: 33, losses: 25, winPct: 0.569 }
+        }
     },
     last10: {
       wins: 7,
@@ -38,20 +55,44 @@ function TeamAnalytics() {
       runsScored: 52,
       runsAllowed: 38
     },
-    trends: [
-      { date: 'Apr', wins: 18, losses: 8 },
-      { date: 'May', wins: 20, losses: 10 },
-      { date: 'Jun', wins: 17, losses: 13 },
-      { date: 'Jul', wins: 21, losses: 9 },
-      { date: 'Aug', wins: 15, losses: 14 },
-      { date: 'Sep', wins: 9, losses: 8 }
-    ],
+    trends: {
+      season: [
+        { date: 'Apr', wins: 18, losses: 8 },
+        { date: 'May', wins: 20, losses: 10 },
+        { date: 'Jun', wins: 17, losses: 13 },
+        { date: 'Jul', wins: 21, losses: 9 },
+        { date: 'Aug', wins: 15, losses: 14 },
+        { date: 'Sep', wins: 9, losses: 8 }
+      ],
+      home: [
+        { date: 'Apr', wins: 10, losses: 4 },
+        { date: 'May', wins: 11, losses: 4 },
+        { date: 'Jun', wins: 9, losses: 6 },
+        { date: 'Jul', wins: 12, losses: 3 },
+        { date: 'Aug', wins: 7, losses: 7 },
+        { date: 'Sep', wins: 5, losses: 3 }
+      ],
+      away: [
+        { date: 'Apr', wins: 8, losses: 4 },
+        { date: 'May', wins: 9, losses: 6 },
+        { date: 'Jun', wins: 8, losses: 7 },
+        { date: 'Jul', wins: 9, losses: 6 },
+        { date: 'Aug', wins: 8, losses: 7 },
+        { date: 'Sep', wins: 4, losses: 5 }
+      ]
+    },
     upcoming: [
       { date: '11/18', opponent: 'SF Giants', location: 'Home', pitchMatchup: 'Kershaw vs Webb' },
       { date: '11/19', opponent: 'SF Giants', location: 'Home', pitchMatchup: 'Buehler vs Cobb' },
       { date: '11/20', opponent: 'SD Padres', location: 'Away', pitchMatchup: 'Urías vs Darvish' }
     ]
   };
+
+  // Get the current chart data based on filter
+  const currentChartData = teamData.trends[chartFilter];
+
+  const currentSplitsData = teamData.splits[chartFilter];
+
 
   return (
     <div className="team-analytics-page">
@@ -136,10 +177,10 @@ function TeamAnalytics() {
               <span className="stat-label">Home Record</span>
             </div>
             <div className="stat-value">
-              {teamData.splits.home.wins}-{teamData.splits.home.losses}
+              {teamData.overviewSplits.home.wins}-{teamData.overviewSplits.home.losses}
             </div>
             <div className="stat-detail">
-              {(teamData.splits.home.winPct * 100).toFixed(1)}% win rate
+              {(teamData.overviewSplits.home.winPct * 100).toFixed(1)}% win rate
             </div>
           </div>
 
@@ -148,10 +189,10 @@ function TeamAnalytics() {
               <span className="stat-label">Away Record</span>
             </div>
             <div className="stat-value">
-              {teamData.splits.away.wins}-{teamData.splits.away.losses}
+              {teamData.overviewSplits.away.wins}-{teamData.overviewSplits.away.losses}
             </div>
             <div className="stat-detail">
-              {(teamData.splits.away.winPct * 100).toFixed(1)}% win rate
+              {(teamData.overviewSplits.away.winPct * 100).toFixed(1)}% win rate
             </div>
           </div>
         </div>
@@ -160,7 +201,10 @@ function TeamAnalytics() {
         <div className="chart-section">
           <div className="section-card">
             <div className="card-header">
-              <h3>Monthly Win Trend</h3>
+               <div>
+                <h3>Monthly Performance Trends</h3>
+                <p className="card-subtitle">Track performance across the season</p>
+               </div>
               <div className="chart-legend">
                 <span className="legend-item">
                   <span className="legend-dot wins"></span> Wins
@@ -170,31 +214,63 @@ function TeamAnalytics() {
                 </span>
               </div>
             </div>
+
             <div className="chart-container">
               <div className="bar-chart">
-                {teamData.trends.map((month, idx) => (
-                  <div key={idx} className="bar-group">
-                    <div className="bar-wrapper">
-                      <div 
-                        className="bar wins" 
-                        style={{ height: `${(month.wins / 30) * 100}%` }}
-                        data-value={month.wins}
-                      >
-                        <span className="bar-label">{month.wins}</span>
+                {currentChartData.map((month, idx) => {
+                  const totalGames = month.wins + month.losses;
+                  const winPct = totalGames > 0 ? (month.wins / totalGames * 100).toFixed(1) : 0;
+                
+                  return (
+                    <div key={idx} className="bar-group">
+                      <div className="bar-wrapper">
+                        {/* Win Bar */}
+                        <div 
+                          className="bar wins" 
+                          style={{ height: `${(month.wins / 30) * 100}%` }}
+                        >
+                          <span className="bar-label">{month.wins}</span>
+                        </div>
+                        {/* Loss Bar */}
+                        <div 
+                          className="bar losses" 
+                          style={{ height: `${(month.losses / 30) * 100}%` }}
+                        >
+                          <span className="bar-label">{month.losses}</span>
+                        </div>
                       </div>
+                      <div className="bar-month">{month.date}</div>
+                      <div className="bar-win-pct"   style={{ 
+                         color: winPct >= 60 ? '#4CAF50' : winPct >= 50 ? '#FF9800' : '#F44336' 
+                            }}>{winPct}%</div>
                     </div>
-                    <div className="bar-wrapper">
-                      <div 
-                        className="bar losses" 
-                        style={{ height: `${(month.losses / 30) * 100}%` }}
-                        data-value={month.losses}
-                      >
-                        <span className="bar-label">{month.losses}</span>
-                      </div>
-                    </div>
-                    <div className="bar-month">{month.date}</div>
-                  </div>
-                ))}
+                  );
+                })}
+              </div>
+
+              {/* Chart Filter Buttons */}
+              <div className="chart-filters">
+                <button 
+                  className={`chart-filter-btn ${chartFilter === 'season' ? 'active' : ''}`}
+                  onClick={() => setChartFilter('season')}
+                >
+                  <span className="filter-icon">📊</span>
+                  Season
+                </button>
+                <button 
+                  className={`chart-filter-btn ${chartFilter === 'home' ? 'active' : ''}`}
+                  onClick={() => setChartFilter('home')}
+                >
+                  <span className="filter-icon">🏠</span>
+                  Home
+                </button>
+                <button 
+                  className={`chart-filter-btn ${chartFilter === 'away' ? 'active' : ''}`}
+                  onClick={() => setChartFilter('away')}
+                >
+                  <span className="filter-icon">✈️</span>
+                  Away
+                </button>
               </div>
             </div>
           </div>
@@ -205,21 +281,26 @@ function TeamAnalytics() {
           <div className="section-card">
             <div className="card-header">
               <h3>Performance Splits</h3>
+                <p className="card-subtitle">
+                  {chartFilter === 'season' && <><span className="subtitle-bold">📊 Season-long</span> performance breakdown</>}
+                  {chartFilter === 'home' && <><span className="subtitle-bold">🏠 Home</span> game performance breakdown</>}
+                  {chartFilter === 'away' && <><span className="subtitle-bold">✈️ Away</span> game performance breakdown</>}
+                </p>
             </div>
             <div className="splits-grid">
               <div className="split-row">
                 <div className="split-label">vs Left-Handed Pitching</div>
                 <div className="split-stats">
                   <span className="split-record">
-                    {teamData.splits.vsLHP.wins}-{teamData.splits.vsLHP.losses}
+                    {currentSplitsData.vsLHP.wins}-{currentSplitsData.vsLHP.losses}
                   </span>
                   <span className="split-pct">
-                    {(teamData.splits.vsLHP.winPct * 100).toFixed(1)}%
+                    {(currentSplitsData.vsLHP.winPct * 100).toFixed(1)}%
                   </span>
                   <div className="progress-bar">
                     <div 
                       className="progress-fill" 
-                      style={{ width: `${teamData.splits.vsLHP.winPct * 100}%` }}
+                      style={{ width: `${currentSplitsData.vsLHP.winPct * 100}%` }}
                     ></div>
                   </div>
                 </div>
@@ -229,15 +310,15 @@ function TeamAnalytics() {
                 <div className="split-label">vs Right-Handed Pitching</div>
                 <div className="split-stats">
                   <span className="split-record">
-                    {teamData.splits.vsRHP.wins}-{teamData.splits.vsRHP.losses}
+                    {currentSplitsData.vsRHP.wins}-{currentSplitsData.vsRHP.losses}
                   </span>
                   <span className="split-pct">
-                    {(teamData.splits.vsRHP.winPct * 100).toFixed(1)}%
+                    {(currentSplitsData.vsRHP.winPct * 100).toFixed(1)}%
                   </span>
                   <div className="progress-bar">
                     <div 
                       className="progress-fill" 
-                      style={{ width: `${teamData.splits.vsRHP.winPct * 100}%` }}
+                      style={{ width: `${currentSplitsData.vsRHP.winPct * 100}%` }}
                     ></div>
                   </div>
                 </div>
@@ -247,39 +328,39 @@ function TeamAnalytics() {
                 <div className="split-label">Day Games</div>
                 <div className="split-stats">
                   <span className="split-record">
-                    {teamData.splits.day.wins}-{teamData.splits.day.losses}
+                    {currentSplitsData.day.wins}-{currentSplitsData.day.losses}
                   </span>
                   <span className="split-pct">
-                    {(teamData.splits.day.winPct * 100).toFixed(1)}%
+                    {(currentSplitsData.day.winPct * 100).toFixed(1)}%
                   </span>
                   <div className="progress-bar">
                     <div 
                       className="progress-fill" 
-                      style={{ width: `${teamData.splits.day.winPct * 100}%` }}
+                      style={{ width: `${currentSplitsData.day.winPct * 100}%` }}
                     ></div>
                   </div>
                 </div>
               </div>
 
-              <div className="split-row">
-                <div className="split-label">Night Games</div>
-                <div className="split-stats">
-                  <span className="split-record">
-                    {teamData.splits.night.wins}-{teamData.splits.night.losses}
-                  </span>
-                  <span className="split-pct">
-                    {(teamData.splits.night.winPct * 100).toFixed(1)}%
-                  </span>
-                  <div className="progress-bar">
-                    <div 
-                      className="progress-fill" 
-                      style={{ width: `${teamData.splits.night.winPct * 100}%` }}
-                    ></div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
+             <div className="split-row">
+               <div className="split-label">Night Games</div>
+               <div className="split-stats">
+                 <span className="split-record">
+                   {currentSplitsData.night.wins}-{currentSplitsData.night.losses}
+                 </span>
+                 <span className="split-pct">
+                   {(currentSplitsData.night.winPct * 100).toFixed(1)}%
+                 </span>
+                 <div className="progress-bar">
+                   <div 
+                     className="progress-fill" 
+                     style={{ width: `${currentSplitsData.night.winPct * 100}%` }}
+                   ></div>
+                 </div>
+               </div>
+             </div>
+           </div>
+         </div>
 
           {/* Last 10 Games */}
           <div className="section-card">

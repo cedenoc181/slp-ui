@@ -197,6 +197,14 @@
   margin-bottom: 2rem;
 }
 
+.card-subtitle {
+  font-size: 0.875rem;
+  color: #7C8B9A;
+  margin-top: 0.25rem;
+  font-weight: 400;
+  line-height: 1.4;
+}
+
 .card-header {
   display: flex;
   justify-content: space-between;
@@ -204,6 +212,12 @@
   margin-bottom: 2rem;
   padding-bottom: 1rem;
   border-bottom: 2px solid #f0f4f8;
+}
+
+.card-header > div:first-child {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
 }
 
 .card-header h3 {
@@ -217,7 +231,8 @@
    BAR CHART
    ============================================ */
 .chart-container {
-  padding: 2rem 1rem;
+  padding: 2rem 0.5rem;
+  overflow-x: auto;
 }
 
 .bar-chart {
@@ -225,7 +240,8 @@
   justify-content: space-around;
   align-items: flex-end;
   height: 300px;
-  gap: 1rem;
+  gap: 1.5rem;
+  padding: 0 1rem;
 }
 
 .bar-group {
@@ -233,20 +249,24 @@
   flex-direction: column;
   align-items: center;
   flex: 1;
-  max-width: 80px;
+  max-width: 100px;
+  min-width: 60px;
 }
 
 .bar-wrapper {
   display: flex;
-  flex-direction: column;
-  justify-content: flex-end;
+  flex-direction: row; /* Changed from column to row */
+  justify-content: center;
+  align-items: flex-end;
   height: 250px;
-  width: 32px;
+  width: 100%;
+  gap: 4px; /* Space between win and loss bars */
   position: relative;
 }
 
 .bar {
-  width: 100%;
+  width: 50%; /* Each bar takes 50% of the wrapper */
+  max-width: 32px;
   border-radius: 6px 6px 0 0;
   position: relative;
   transition: all 0.3s ease;
@@ -258,12 +278,14 @@
 
 .bar.wins {
   background: linear-gradient(180deg, #4CAF50 0%, #66BB6A 100%);
-  margin-right: 4px;
+  margin-right: 0; /* Remove margin */
+  padding-top: 0;
 }
 
 .bar.losses {
   background: linear-gradient(180deg, #F44336 0%, #EF5350 100%);
-  margin-left: 4px;
+  margin-left: 0; /* Remove margin */
+  padding-top: 0;
 }
 
 .bar:hover {
@@ -278,15 +300,25 @@
 }
 
 .bar-month {
-  margin-top: 0.5rem;
+  margin-top: 0.75rem;
   font-size: 0.875rem;
   font-weight: 600;
   color: #546A7B;
+  text-align: center;
+}
+
+.bar-win-pct {
+  margin-top: 0.25rem;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #4CAF50;
+  text-align: center;
 }
 
 .chart-legend {
   display: flex;
   gap: 1.5rem;
+  justify-content: center;
 }
 
 .legend-item {
@@ -310,6 +342,58 @@
 
 .legend-dot.losses {
   background: #F44336;
+}
+
+/* ============================================
+   CHART FILTERS
+   ============================================ */
+.chart-filters {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  padding: 2rem 1rem 1rem;
+  border-top: 1px solid #e8eef5;
+  margin-top: 2rem;
+}
+
+.chart-filter-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.75rem;
+  background: white;
+  border: 2px solid #e2e8f0;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #546A7B;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  min-width: 120px;
+  justify-content: center;
+}
+
+.chart-filter-btn:hover {
+  background: #f8fafc;
+  border-color: #cbd5e1;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.chart-filter-btn.active {
+  background: linear-gradient(135deg, #041E42 0%, #0e2f5f 100%);
+  color: white;
+  border-color: #041E42;
+  box-shadow: 0 4px 12px rgba(4, 30, 66, 0.3);
+}
+
+.chart-filter-btn.active:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(4, 30, 66, 0.4);
+}
+
+.filter-icon {
+  font-size: 1.1rem;
 }
 
 /* ============================================
@@ -369,6 +453,12 @@
   font-weight: 600;
   color: #4CAF50;
   min-width: 55px;
+}
+
+.subtitle-bold {
+  font-weight: 700;
+  font-size: 1rem;
+  color: #041E42; /* Slightly darker for emphasis */
 }
 
 .progress-bar {
@@ -519,6 +609,10 @@
     align-items: stretch;
   }
 
+.analytics-content, .container {
+  padding: 1rem 1rem 0rem !important;
+}
+
   .team-selector-wrapper h1 {
     font-size: 1.5rem;
   }
@@ -543,17 +637,40 @@
   }
 
   .section-card {
-    padding: 1.5rem;
+    padding: 1rem;
   }
 
   .bar-chart {
     height: 250px;
-    gap: 0.5rem;
+    gap: 1rem;
+    padding: 0 0rem;
+  }
+
+  .bar-group {
+    min-width: 50px;
   }
 
   .bar-wrapper {
     height: 200px;
-    width: 24px;
+    gap: 3px;
+  }
+
+  .bar {
+    max-width: 24px;
+  }
+
+  .bar-label {
+    font-size: 0.7rem;
+  }
+
+  .bar-month {
+    font-size: 0.75rem;
+    margin-top: 0.5rem;
+  }
+
+  .bar-win-pct {
+    font-size: 0.7rem;
+    margin-top: 0.25rem;
   }
 
   .split-row {
@@ -582,6 +699,21 @@
   .upcoming-games-table tbody td {
     padding: 0.875rem;
   }
+
+  .chart-filters {
+    gap: 0.75rem;
+    padding: 1.5rem 1rem 1rem;
+  }
+
+  .chart-filter-btn {
+    padding: 0.625rem 1.25rem;
+    font-size: 0.875rem;
+    min-width: 100px;
+  }
+
+  .filter-icon {
+    font-size: 1rem;
+  }
 }
 
 @media screen and (max-width: 480px) {
@@ -599,7 +731,39 @@
     gap: 1rem;
   }
 
-  .bar-month {
-    font-size: 0.75rem;
+  .bar-chart {
+    gap: 0.5rem;
+    height: 220px;
   }
+
+  .bar-group {
+    min-width: 40px;
+  }
+
+  .bar-wrapper {
+    height: 180px;
+    gap: 2px;
+  }
+
+  .bar {
+    max-width: 20px;
+  }
+
+  .bar-month {
+    font-size: 0.7rem;
+  }
+
+  .bar-win-pct {
+    font-size: 0.65rem;
+  }
+
+.chart-filters {
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.chart-filter-btn {
+  width: 100%;
+}
+
 }
