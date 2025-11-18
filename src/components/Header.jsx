@@ -102,6 +102,13 @@ function Header() {
               </svg>
             </button>
             <div className={`dropdown-menu ${activeDropdown === 'insights' ? 'show' : ''}`}>
+              <button onClick={() => handleNavClick('/team-analytics')} className="dropdown-item">
+                 <span className="dropdown-icon">📊</span>
+                 <div>
+                    <div className="dropdown-title">Team Analytics</div>
+                    <div className="dropdown-desc">Advanced team statistics</div>
+                </div>
+              </button>       
               <button onClick={() => handleNavClick('/sandlot-insider')} className="dropdown-item">
                 <span className="dropdown-icon">📰</span>
                 <div>

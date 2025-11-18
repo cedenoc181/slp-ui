@@ -1,0 +1,605 @@
+/* .team-analytics-page {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #f5f7fa 0%, #e8eef5 100%);
+  padding-bottom: 4rem;
+} */
+
+/* ============================================
+   HEADER SECTION
+   ============================================ */
+/* .analytics-header {
+  background: linear-gradient(135deg, #041E42 0%, #0e2f5f 100%);
+  padding: 3rem 0 2rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.header-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 2rem;
+}
+
+.team-selector-wrapper h1 {
+  color: white;
+  font-size: 2rem;
+  margin-bottom: 1rem;
+  font-weight: 700;
+}
+
+.team-dropdown {
+  width: 100%;
+  max-width: 350px;
+  padding: 0.875rem 1.25rem;
+  font-size: 1rem;
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.1);
+  color: white;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-weight: 500;
+}
+
+.team-dropdown:hover {
+  background: rgba(255, 255, 255, 0.15);
+  border-color: rgba(255, 255, 255, 0.3);
+}
+
+.team-dropdown option {
+  background: #041E42;
+  color: white;
+}
+
+.timeframe-tabs {
+  display: flex;
+  gap: 0.5rem;
+  background: rgba(0, 0, 0, 0.2);
+  padding: 0.375rem;
+  border-radius: 8px;
+}
+
+.timeframe-tabs .tab {
+  padding: 0.625rem 1.5rem;
+  background: transparent;
+  border: none;
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  border-radius: 6px;
+  transition: all 0.3s ease;
+}
+
+.timeframe-tabs .tab:hover {
+  color: white;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.timeframe-tabs .tab.active {
+  background: white;
+  color: #041E42;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+} */
+
+/* ============================================
+   CONTENT LAYOUT
+   ============================================ */
+/* .analytics-content {
+  padding-top: 2rem;
+} */
+
+/* ============================================
+   OVERVIEW STAT CARDS
+   ============================================ */
+/* .overview-section {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.stat-card {
+  background: white;
+  padding: 1.75rem;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  transition: all 0.3s ease;
+  border: 1px solid #e8eef5;
+}
+
+.stat-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.12);
+}
+
+.stat-card.highlight {
+  background: linear-gradient(135deg, #041E42 0%, #0e2f5f 100%);
+  color: white;
+  border: none;
+}
+
+.stat-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.stat-label {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #546A7B;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.stat-card.highlight .stat-label {
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.trend-badge {
+  padding: 0.25rem 0.75rem;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+
+.trend-badge.positive {
+  background: rgba(76, 175, 80, 0.2);
+  color: #4CAF50;
+}
+
+.trend-badge.negative {
+  background: rgba(244, 67, 54, 0.2);
+  color: #F44336;
+}
+
+.stat-value {
+  font-size: 2.25rem;
+  font-weight: 700;
+  color: #1F2933;
+  margin-bottom: 0.5rem;
+  line-height: 1;
+}
+
+.stat-card.highlight .stat-value {
+  color: white;
+}
+
+.stat-value.positive {
+  color: #4CAF50;
+}
+
+.stat-value.negative {
+  color: #F44336;
+}
+
+.stat-detail {
+  font-size: 0.875rem;
+  color: #7C8B9A;
+}
+
+.stat-card.highlight .stat-detail {
+  color: rgba(255, 255, 255, 0.7);
+} */
+
+/* ============================================
+   SECTION CARDS
+   ============================================ */
+/* .section-card {
+  background: white;
+  border-radius: 12px;
+  padding: 2rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  border: 1px solid #e8eef5;
+  margin-bottom: 2rem;
+}
+
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+  padding-bottom: 1rem;
+  border-bottom: 2px solid #f0f4f8;
+}
+
+.card-header h3 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #1F2933;
+  margin: 0;
+} */
+
+/* ============================================
+   BAR CHART
+   ============================================ */
+/* .chart-container {
+  padding: 2rem 1rem;
+}
+
+.bar-chart {
+  display: flex;
+  justify-content: space-around;
+  align-items: flex-end;
+  height: 300px;
+  gap: 1rem;
+}
+
+.bar-group {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex: 1;
+  max-width: 80px;
+}
+
+.bar-wrapper {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  height: 250px;
+  width: 32px;
+  position: relative;
+}
+
+.bar {
+  width: 100%;
+  border-radius: 6px 6px 0 0;
+  position: relative;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding-top: 0.25rem;
+}
+
+.bar.wins {
+  background: linear-gradient(180deg, #4CAF50 0%, #66BB6A 100%);
+  margin-right: 4px;
+}
+
+.bar.losses {
+  background: linear-gradient(180deg, #F44336 0%, #EF5350 100%);
+  margin-left: 4px;
+}
+
+.bar:hover {
+  opacity: 0.85;
+  transform: translateY(-2px);
+}
+
+.bar-label {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: white;
+}
+
+.bar-month {
+  margin-top: 0.5rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #546A7B;
+}
+
+.chart-legend {
+  display: flex;
+  gap: 1.5rem;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.875rem;
+  color: #546A7B;
+  font-weight: 500;
+}
+
+.legend-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+}
+
+.legend-dot.wins {
+  background: #4CAF50;
+}
+
+.legend-dot.losses {
+  background: #F44336;
+} */
+
+/* ============================================
+   SPLITS SECTION
+   ============================================ */
+/* .splits-section {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 2rem;
+}
+
+.splits-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.split-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.25rem;
+  background: #f8fafc;
+  border-radius: 8px;
+  border: 1px solid #e2e8f0;
+  transition: all 0.2s ease;
+}
+
+.split-row:hover {
+  background: #f1f5f9;
+  border-color: #cbd5e1;
+}
+
+.split-label {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #334155;
+  flex: 0 0 250px;
+}
+
+.split-stats {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex: 1;
+}
+
+.split-record {
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: #1F2933;
+  min-width: 60px;
+}
+
+.split-pct {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #4CAF50;
+  min-width: 55px;
+}
+
+.progress-bar {
+  flex: 1;
+  height: 8px;
+  background: #e2e8f0;
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #4CAF50 0%, #66BB6A 100%);
+  border-radius: 10px;
+  transition: width 0.5s ease;
+} */
+
+/* ============================================
+   LAST 10 GAMES
+   ============================================ */
+/* .last-10-stats {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1.5rem;
+}
+
+.last-10-item {
+  padding: 1.25rem;
+  background: #f8fafc;
+  border-radius: 8px;
+  border: 1px solid #e2e8f0;
+  text-align: center;
+}
+
+.last-10-label {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #64748b;
+  margin-bottom: 0.5rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.last-10-value {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: #1F2933;
+}
+
+.last-10-value.positive {
+  color: #4CAF50;
+} */
+
+/* ============================================
+   UPCOMING GAMES TABLE
+   ============================================ */
+/* .upcoming-games-table {
+  overflow-x: auto;
+}
+
+.upcoming-games-table table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+.upcoming-games-table thead th {
+  background: #f8fafc;
+  padding: 1rem 1.25rem;
+  text-align: left;
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: #475569;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  border-bottom: 2px solid #e2e8f0;
+}
+
+.upcoming-games-table tbody tr {
+  transition: all 0.2s ease;
+}
+
+.upcoming-games-table tbody tr:hover {
+  background: #f8fafc;
+}
+
+.upcoming-games-table tbody td {
+  padding: 1.25rem;
+  border-bottom: 1px solid #e2e8f0;
+  color: #334155;
+  font-size: 0.95rem;
+}
+
+.opponent-cell {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-weight: 600;
+}
+
+.team-logo {
+  font-size: 1.5rem;
+}
+
+.location-badge {
+  padding: 0.375rem 0.875rem;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.location-badge.home {
+  background: rgba(33, 150, 243, 0.15);
+  color: #2196F3;
+}
+
+.location-badge.away {
+  background: rgba(255, 152, 0, 0.15);
+  color: #FF9800;
+}
+
+.matchup-cell {
+  font-weight: 500;
+  color: #64748b;
+} */
+
+/* ============================================
+   RESPONSIVE
+   ============================================ */
+/* @media screen and (max-width: 1024px) {
+  .splits-section {
+    grid-template-columns: 1fr;
+  }
+
+  .last-10-stats {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media screen and (max-width: 768px) {
+  .analytics-header {
+    padding: 2rem 0 1.5rem;
+  }
+
+  .header-content {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .team-selector-wrapper h1 {
+    font-size: 1.5rem;
+  }
+
+  .team-dropdown {
+    max-width: 100%;
+  }
+
+  .timeframe-tabs {
+    width: 100%;
+    justify-content: stretch;
+  }
+
+  .timeframe-tabs .tab {
+    flex: 1;
+    padding: 0.625rem 0.75rem;
+  }
+
+  .overview-section {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+  }
+
+  .section-card {
+    padding: 1.5rem;
+  }
+
+  .bar-chart {
+    height: 250px;
+    gap: 0.5rem;
+  }
+
+  .bar-wrapper {
+    height: 200px;
+    width: 24px;
+  }
+
+  .split-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+
+  .split-label {
+    flex: none;
+  }
+
+  .split-stats {
+    width: 100%;
+  }
+
+  .last-10-stats {
+    grid-template-columns: 1fr;
+  }
+
+  .upcoming-games-table {
+    font-size: 0.875rem;
+  }
+
+  .upcoming-games-table thead th,
+  .upcoming-games-table tbody td {
+    padding: 0.875rem;
+  }
+}
+
+@media screen and (max-width: 480px) {
+  .overview-section {
+    grid-template-columns: 1fr;
+  }
+
+  .stat-value {
+    font-size: 1.875rem;
+  }
+
+  .card-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+
+  .bar-month {
+    font-size: 0.75rem;
+  }
+} */
