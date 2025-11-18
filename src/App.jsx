@@ -25,8 +25,8 @@ import DsBaseball from './components/pages/Research/ds_baseball';
 import TermsOfUse from './components/legal/termsofuse';
 import PrivacyPolicy from './components/legal/PrivacyPolicy';
 
-
-// import TeamAnalytics from './components/pages/Labs/teamAnalytics';
+// product page imports
+import TeamAnalytics from './components/pages/Labs/teamAnalytics';
 
 // styling imports
 import './styles/chalkboard.css';
@@ -47,7 +47,7 @@ import './styles/faq.css';
 import './styles/glossary.css';
 import './styles/howtouse.css';
 import './styles/responsibleGaming-page.css';
-// import './styles/team-analytics.css';
+import './styles/team-analytics.css';
 
 // Home page component
 function HomePage() {
@@ -86,7 +86,7 @@ function App() {
           <Route path="/about" element={<AboutPage />} />
           <Route path="/features" element={<FeaturesPage />} />
           <Route path="/contact" element={<ContactPage />} />
-          {/* <Route path="/team-analytics" element={<TeamAnalytics />} /> */}
+          <Route path="/team-analytics" element={<TeamAnalytics />} />
 
           <Route path="/glossary" element={<Glossary />} />
           <Route path="/faqs" element={<FAQPage />} />

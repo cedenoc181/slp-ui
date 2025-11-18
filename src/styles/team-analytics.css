@@ -1,13 +1,13 @@
-/* .team-analytics-page {
+.team-analytics-page {
   min-height: 100vh;
   background: linear-gradient(135deg, #f5f7fa 0%, #e8eef5 100%);
   padding-bottom: 4rem;
-} */
+}
 
 /* ============================================
    HEADER SECTION
    ============================================ */
-/* .analytics-header {
+.analytics-header {
   background: linear-gradient(135deg, #041E42 0%, #0e2f5f 100%);
   padding: 3rem 0 2rem;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
@@ -81,19 +81,19 @@
   background: white;
   color: #041E42;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-} */
+}
 
 /* ============================================
    CONTENT LAYOUT
    ============================================ */
-/* .analytics-content {
+.analytics-content {
   padding-top: 2rem;
-} */
+}
 
 /* ============================================
    OVERVIEW STAT CARDS
    ============================================ */
-/* .overview-section {
+.overview-section {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
   gap: 1.5rem;
@@ -183,12 +183,12 @@
 
 .stat-card.highlight .stat-detail {
   color: rgba(255, 255, 255, 0.7);
-} */
+}
 
 /* ============================================
    SECTION CARDS
    ============================================ */
-/* .section-card {
+.section-card {
   background: white;
   border-radius: 12px;
   padding: 2rem;
@@ -211,12 +211,12 @@
   font-weight: 700;
   color: #1F2933;
   margin: 0;
-} */
+}
 
 /* ============================================
    BAR CHART
    ============================================ */
-/* .chart-container {
+.chart-container {
   padding: 2rem 1rem;
 }
 
@@ -310,12 +310,12 @@
 
 .legend-dot.losses {
   background: #F44336;
-} */
+}
 
 /* ============================================
    SPLITS SECTION
    ============================================ */
-/* .splits-section {
+.splits-section {
   display: grid;
   grid-template-columns: 2fr 1fr;
   gap: 2rem;
@@ -384,12 +384,12 @@
   background: linear-gradient(90deg, #4CAF50 0%, #66BB6A 100%);
   border-radius: 10px;
   transition: width 0.5s ease;
-} */
+}
 
 /* ============================================
    LAST 10 GAMES
    ============================================ */
-/* .last-10-stats {
+.last-10-stats {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   gap: 1.5rem;
@@ -420,12 +420,12 @@
 
 .last-10-value.positive {
   color: #4CAF50;
-} */
+}
 
 /* ============================================
    UPCOMING GAMES TABLE
    ============================================ */
-/* .upcoming-games-table {
+.upcoming-games-table {
   overflow-x: auto;
 }
 
@@ -494,12 +494,12 @@
 .matchup-cell {
   font-weight: 500;
   color: #64748b;
-} */
+}
 
 /* ============================================
    RESPONSIVE
    ============================================ */
-/* @media screen and (max-width: 1024px) {
+@media screen and (max-width: 1024px) {
   .splits-section {
     grid-template-columns: 1fr;
   }
@@ -602,4 +602,4 @@
   .bar-month {
     font-size: 0.75rem;
   }
-} */
+}
