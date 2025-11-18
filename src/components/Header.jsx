@@ -85,7 +85,48 @@ function Header() {
             Home
           </button>
 
-          {/* Insights Dropdown */}
+          {/* Stats Dropdown - NEW */}
+          <div 
+            className="nav-dropdown"
+            onMouseEnter={() => setActiveDropdown('stats')}
+            onMouseLeave={() => setActiveDropdown(null)}
+          >
+            <button 
+              type="button" 
+              className={`nav-button ${location.pathname.startsWith('/team-analytics') || location.pathname.startsWith('/batter-analytics') || location.pathname.startsWith('/pitcher-analytics') ? 'active' : ''}`}
+              onClick={() => toggleDropdown('stats')}
+            >
+              Stats
+              <svg className="dropdown-arrow" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                <polyline points="6 9 12 15 18 9"/>
+              </svg>
+            </button>
+            <div className={`dropdown-menu ${activeDropdown === 'stats' ? 'show' : ''}`}>
+              <button onClick={() => handleNavClick('/team-analytics')} className="dropdown-item">
+                <span className="dropdown-icon">📊</span>
+                <div>
+                  <div className="dropdown-title">Team Analytics</div>
+                  <div className="dropdown-desc">Advanced team statistics</div>
+                </div>
+              </button>
+              <button onClick={() => handleNavClick('/batter-analytics')} className="dropdown-item">
+                <span className="dropdown-icon">⚾</span>
+                <div>
+                  <div className="dropdown-title">Batter Analytics</div>
+                  <div className="dropdown-desc">Batter performance metrics</div>
+                </div>
+              </button>
+              <button onClick={() => handleNavClick('/pitcher-analytics')} className="dropdown-item">
+                <span className="dropdown-icon">⚾</span>
+                <div>
+                  <div className="dropdown-title">Pitcher Analytics</div>
+                  <div className="dropdown-desc">Pitcher performance metrics</div>
+                </div>
+              </button>
+            </div>
+          </div>
+
+          {/* Insights Dropdown - UPDATED (removed Team Analytics) */}
           <div 
             className="nav-dropdown"
             onMouseEnter={() => setActiveDropdown('insights')}
@@ -102,13 +143,6 @@ function Header() {
               </svg>
             </button>
             <div className={`dropdown-menu ${activeDropdown === 'insights' ? 'show' : ''}`}>
-              <button onClick={() => handleNavClick('/team-analytics')} className="dropdown-item">
-                 <span className="dropdown-icon">📊</span>
-                 <div>
-                    <div className="dropdown-title">Team Analytics</div>
-                    <div className="dropdown-desc">Advanced team statistics</div>
-                </div>
-              </button>       
               <button onClick={() => handleNavClick('/sandlot-insider')} className="dropdown-item">
                 <span className="dropdown-icon">📰</span>
                 <div>
@@ -124,7 +158,7 @@ function Header() {
                 </div>
               </button>
               <button onClick={() => handleNavClick('/data-science')} className="dropdown-item">
-                <span className="dropdown-icon">📊</span>
+                <span className="dropdown-icon">👨‍🔬</span>
                 <div>
                   <div className="dropdown-title">Data Science & Baseball</div>
                   <div className="dropdown-desc">ML models & analytics</div>
