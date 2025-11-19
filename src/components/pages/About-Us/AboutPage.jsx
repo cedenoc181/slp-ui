@@ -1,5 +1,4 @@
 import { useEffect } from 'react';
-import '../../../styles/about-page.css';
 
 function AboutPage() {
   useEffect(() => {

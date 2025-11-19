@@ -1,5 +1,4 @@
 import { useEffect } from 'react';
-import '../../../styles/features-page.css';
 
 function FeaturesPage() {
   useEffect(() => {

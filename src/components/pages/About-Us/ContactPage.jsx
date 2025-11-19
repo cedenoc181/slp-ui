@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import ReCAPTCHA from "react-google-recaptcha";
 import contactImage from '../../../assets/images/spa-retro-logo-removebg.png';
-import '../../../styles/contact-page.css';
 
 function ContactPage() {
 

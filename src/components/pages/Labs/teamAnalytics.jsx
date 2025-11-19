@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import '../../../styles/team-analytics.css';
 import teamData from '../../../data/teamData.json';
 
 function TeamAnalytics() {
