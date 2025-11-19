@@ -471,8 +471,7 @@
 
 .progress-fill {
   height: 100%;
-  background: linear-gradient(90deg, #4CAF50 0%, #66BB6A 100%);
-  border-radius: 10px;
+  border-radius: 4px;
   transition: width 0.5s ease;
 }
 
@@ -511,6 +510,190 @@
 .last-10-value.positive {
   color: #4CAF50;
 }
+
+/* ============================================
+   TEAM INFO TABLE
+   ============================================ */
+.team-info-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+/* Standings Styles */
+.standings-content {
+  padding: 1.5rem;
+}
+
+.standings-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 0;
+  border-bottom: 1px solid rgba(4, 30, 66, 0.08);
+}
+
+.standings-row:last-child {
+  border-bottom: none;
+}
+
+.standings-row.highlight {
+  background: linear-gradient(to right, rgba(4, 30, 66, 0.03), transparent);
+  padding: 1rem;
+  margin: 0 -1rem;
+  border-radius: 8px;
+  border-bottom: none;
+}
+
+.standings-label {
+  font-size: 0.95rem;
+  color: #5A6C7D;
+  font-weight: 500;
+}
+
+.standings-value {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #041E42;
+}
+
+.streak-badge {
+  padding: 0.25rem 0.75rem;
+  border-radius: 12px;
+  font-size: 0.9rem;
+  font-weight: 700;
+}
+
+.streak-badge.positive {
+  background: rgba(76, 175, 80, 0.1);
+  color: #4CAF50;
+}
+
+.streak-badge.negative {
+  background: rgba(244, 67, 54, 0.1);
+  color: #F44336;
+}
+
+/* Toggle Buttons */
+.toggle-buttons {
+  display: flex;
+  gap: 0.5rem;
+  background: rgba(4, 30, 66, 0.05);
+  padding: 0.25rem;
+  border-radius: 8px;
+  margin-top: 2rem;
+}
+
+.toggle-btn {
+  flex: 1;
+  padding: 0.5rem 1rem;
+  border: none;
+  background: transparent;
+  color: #5A6C7D;
+  font-weight: 600;
+  font-size: 0.85rem;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+
+.toggle-btn:hover {
+  background: rgba(4, 30, 66, 0.05);
+}
+
+.toggle-btn.active {
+  background: #041E42;
+  color: white;
+}
+
+/* ============================================
+   TEAM LEADERS TABLE
+   ============================================ */
+.leaders-content {
+  padding: 1.5rem;
+}
+
+.leader-row {
+  padding: 1rem 0;
+  border-bottom: 1px solid rgba(4, 30, 66, 0.08);
+}
+
+.leader-row:last-child {
+  border-bottom: none;
+}
+
+.leader-stat-label {
+  font-size: 0.85rem;
+  color: #5A6C7D;
+  font-weight: 500;
+  margin-bottom: 0.5rem;
+}
+
+.leader-info {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.leader-player {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #041E42;
+}
+
+.leader-value {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #C8102E;
+}
+
+/* ============================================
+   TEAM STATS TABLE
+   ============================================ */
+
+.team-stats-content {
+  padding: 1.5rem;
+}
+
+.team-stat-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 0;
+  border-bottom: 1px solid rgba(4, 30, 66, 0.08);
+}
+
+.team-stat-row:last-child {
+  border-bottom: none;
+}
+
+.team-stat-row.highlight {
+  background: linear-gradient(to right, rgba(200, 16, 46, 0.05), transparent);
+  padding: 1rem;
+  margin: 0 -1rem;
+  border-radius: 8px;
+  border-bottom: none;
+}
+
+.team-stat-label {
+  font-size: 0.95rem;
+  color: #5A6C7D;
+  font-weight: 500;
+}
+
+.team-stat-value {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #041E42;
+}
+
+.team-stat-value.rank {
+  color: #C8102E;
+  font-size: 1.25rem;
+}
+
 
 /* ============================================
    UPCOMING GAMES TABLE
@@ -594,6 +777,10 @@
     grid-template-columns: 1fr;
   }
 
+  .team-info-grid {
+    grid-template-columns: 1fr;
+  }
+
   .last-10-stats {
     grid-template-columns: repeat(2, 1fr);
   }
@@ -609,9 +796,9 @@
     align-items: stretch;
   }
 
-.analytics-content, .container {
-  padding: 1rem 1rem 0rem !important;
-}
+  .analytics-content, .container {
+    padding: 1rem 1rem 0rem !important;
+  }
 
   .team-selector-wrapper h1 {
     font-size: 1.5rem;
@@ -714,6 +901,29 @@
   .filter-icon {
     font-size: 1rem;
   }
+
+  .toggle-buttons {
+    flex-direction: row;
+    gap: 1rem ;
+    margin-top: 0rem;
+  }
+  
+  .toggle-btn {
+    width: 100%;
+  }
+  
+  .leader-info {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+  
+  .standings-value,
+  .team-stat-value {
+    font-size: 1rem;
+  }
+
+
 }
 
 @media screen and (max-width: 480px) {

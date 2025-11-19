@@ -4,8 +4,9 @@ import '../../../styles/team-analytics.css';
 function TeamAnalytics() {
   const [selectedTeam, setSelectedTeam] = useState('LAD');
   const [timeframe, setTimeframe] = useState('season');
-  const [chartFilter, setChartFilter] = useState('season'); 
-
+  const [chartFilter, setChartFilter] = useState('season');
+  const [leadersToggle, setLeadersToggle] = useState('batting'); // 'batting' or 'pitching'
+  const [teamStatsToggle, setTeamStatsToggle] = useState('batting'); // 'batting' or 'pitching'
 
   // Mock data - will be replaced with API later
   const teams = [
@@ -82,6 +83,44 @@ function TeamAnalytics() {
         { date: 'Aug', wins: 8, losses: 7 },
         { date: 'Sep', wins: 4, losses: 5 }
       ]
+    },
+    // NEW: Team Standings Data
+    standings: {
+      rank: 1,
+      wins: 100,
+      losses: 62,
+      winPct: 0.617,
+      gamesBack: 0,
+      streak: 'W5',
+      divisionRank: '1st NL West'
+    },
+    // NEW: Team Leaders Data
+    leaders: {
+      batting: {
+        homeRuns: { player: 'Mookie Betts', value: 39, stat: 'HR' },
+        average: { player: 'Freddie Freeman', value: .331, stat: 'AVG' },
+        rbi: { player: 'Will Smith', value: 108, stat: 'RBI' }
+      },
+      pitching: {
+        strikeouts: { player: 'Clayton Kershaw', value: 189, stat: 'K' },
+        era: { player: 'Julio Urías', value: 2.16, stat: 'ERA' },
+        wins: { player: 'Tony Gonsolin', value: 16, stat: 'W' }
+      }
+    },
+    // NEW: Team Stats Data
+    teamStats: {
+      batting: {
+        average: .265,
+        ops: .789,
+        strikeoutRate: 21.3,
+        offenseRank: 2
+      },
+      pitching: {
+        era: 3.17,
+        whip: 1.12,
+        qualityStarts: 78,
+        oppAvg: .228
+      }
     }
   },
   
@@ -141,6 +180,41 @@ function TeamAnalytics() {
         { date: 'May', wins: 9, losses: 6 },
         { date: 'Jun', wins: 7, losses: 7 }
       ]
+    },
+    standings: {
+      rank: 1,
+      wins: 52,
+      losses: 31,
+      winPct: 0.627,
+      gamesBack: 0,
+      streak: 'W3',
+      divisionRank: '1st NL West'
+    },
+    leaders: {
+      batting: {
+        homeRuns: { player: 'Mookie Betts', value: 20, stat: 'HR' },
+        average: { player: 'Freddie Freeman', value: .338, stat: 'AVG' },
+        rbi: { player: 'Will Smith', value: 54, stat: 'RBI' }
+      },
+      pitching: {
+        strikeouts: { player: 'Clayton Kershaw', value: 98, stat: 'K' },
+        era: { player: 'Julio Urías', value: 2.08, stat: 'ERA' },
+        wins: { player: 'Tony Gonsolin', value: 9, stat: 'W' }
+      }
+    },
+    teamStats: {
+      batting: {
+        average: .268,
+        ops: .795,
+        strikeoutRate: 20.8,
+        offenseRank: 1
+      },
+      pitching: {
+        era: 3.02,
+        whip: 1.08,
+        qualityStarts: 42,
+        oppAvg: .221
+      }
     }
   },
   
@@ -200,6 +274,41 @@ function TeamAnalytics() {
         { date: 'Aug', wins: 8, losses: 7 },
         { date: 'Sep', wins: 5, losses: 5 }
       ]
+    },
+    standings: {
+      rank: 1,
+      wins: 48,
+      losses: 31,
+      winPct: 0.608,
+      gamesBack: 0,
+      streak: 'W5',
+      divisionRank: '1st NL West'
+    },
+    leaders: {
+      batting: {
+        homeRuns: { player: 'Mookie Betts', value: 19, stat: 'HR' },
+        average: { player: 'Freddie Freeman', value: .324, stat: 'AVG' },
+        rbi: { player: 'Will Smith', value: 54, stat: 'RBI' }
+      },
+      pitching: {
+        strikeouts: { player: 'Clayton Kershaw', value: 91, stat: 'K' },
+        era: { player: 'Julio Urías', value: 2.24, stat: 'ERA' },
+        wins: { player: 'Tony Gonsolin', value: 7, stat: 'W' }
+      }
+    },
+    teamStats: {
+      batting: {
+        average: .262,
+        ops: .783,
+        strikeoutRate: 21.8,
+        offenseRank: 3
+      },
+      pitching: {
+        era: 3.32,
+        whip: 1.16,
+        qualityStarts: 36,
+        oppAvg: .235
+      }
     }
   },
   
@@ -210,7 +319,6 @@ function TeamAnalytics() {
     { date: '11/20', opponent: 'SD Padres', location: 'Away', pitchMatchup: 'Urías vs Darvish' }
   ]
 };
-
 
 const currentTimeframeData = teamData[timeframe];
 const currentChartData = currentTimeframeData.trends[chartFilter];
@@ -363,7 +471,7 @@ const currentLast10Data = currentTimeframeData.last10[chartFilter];
                         </div>
                       </div>
                       <div className="bar-month">{month.date}</div>
-                      <div className="bar-win-pct"   style={{ 
+                      <div className="bar-win-pct" style={{ 
                          color: winPct >= 60 ? '#4CAF50' : winPct >= 50 ? '#FF9800' : '#F44336' 
                             }}>{winPct}%</div>
                     </div>
@@ -417,14 +525,24 @@ const currentLast10Data = currentTimeframeData.last10[chartFilter];
                   <span className="split-record">
                     {currentSplitsData.vsLHP.wins}-{currentSplitsData.vsLHP.losses}
                   </span>
-                  <span className="split-pct">
+                  <span 
+                    className="split-pct"
+                    style={{
+                      color: (currentSplitsData.vsLHP.winPct * 100) >= 60 ? '#4CAF50' : 
+                             (currentSplitsData.vsLHP.winPct * 100) >= 50 ? '#FF9800' : '#F44336'
+                    }}
+                  >
                     {(currentSplitsData.vsLHP.winPct * 100).toFixed(1)}%
                   </span>
                   <div className="progress-bar">
-                    <div 
-                      className="progress-fill" 
-                      style={{ width: `${currentSplitsData.vsLHP.winPct * 100}%` }}
-                    ></div>
+                  <div 
+                    className="progress-fill" 
+                    style={{ 
+                      width: `${currentSplitsData.vsLHP.winPct * 100}%`,
+                      backgroundColor: (currentSplitsData.vsLHP.winPct * 100) >= 60 ? '#4CAF50' : 
+                                       (currentSplitsData.vsLHP.winPct * 100) >= 50 ? '#FF9800' : '#F44336'
+                    }}
+                  ></div>
                   </div>
                 </div>
               </div>
@@ -435,14 +553,24 @@ const currentLast10Data = currentTimeframeData.last10[chartFilter];
                   <span className="split-record">
                     {currentSplitsData.vsRHP.wins}-{currentSplitsData.vsRHP.losses}
                   </span>
-                  <span className="split-pct">
+                  <span 
+                    className="split-pct"
+                    style={{
+                      color: (currentSplitsData.vsRHP.winPct * 100) >= 60 ? '#4CAF50' : 
+                             (currentSplitsData.vsRHP.winPct * 100) >= 50 ? '#FF9800' : '#F44336'
+                    }}
+                  >
                     {(currentSplitsData.vsRHP.winPct * 100).toFixed(1)}%
                   </span>
                   <div className="progress-bar">
-                    <div 
-                      className="progress-fill" 
-                      style={{ width: `${currentSplitsData.vsRHP.winPct * 100}%` }}
-                    ></div>
+                  <div 
+                    className="progress-fill" 
+                    style={{ 
+                      width: `${currentSplitsData.vsRHP.winPct * 100}%`,
+                      backgroundColor: (currentSplitsData.vsRHP.winPct * 100) >= 60 ? '#4CAF50' : 
+                                       (currentSplitsData.vsRHP.winPct * 100) >= 50 ? '#FF9800' : '#F44336'
+                    }}
+                  ></div>
                   </div>
                 </div>
               </div>
@@ -453,14 +581,24 @@ const currentLast10Data = currentTimeframeData.last10[chartFilter];
                   <span className="split-record">
                     {currentSplitsData.day.wins}-{currentSplitsData.day.losses}
                   </span>
-                  <span className="split-pct">
+                  <span 
+                    className="split-pct"
+                    style={{
+                      color: (currentSplitsData.day.winPct * 100) >= 60 ? '#4CAF50' : 
+                             (currentSplitsData.day.winPct * 100) >= 50 ? '#FF9800' : '#F44336'
+                    }}
+                  >
                     {(currentSplitsData.day.winPct * 100).toFixed(1)}%
                   </span>
                   <div className="progress-bar">
-                    <div 
-                      className="progress-fill" 
-                      style={{ width: `${currentSplitsData.day.winPct * 100}%` }}
-                    ></div>
+                  <div 
+                    className="progress-fill" 
+                    style={{ 
+                      width: `${currentSplitsData.day.winPct * 100}%`,
+                      backgroundColor: (currentSplitsData.day.winPct * 100) >= 60 ? '#4CAF50' : 
+                                       (currentSplitsData.day.winPct * 100) >= 50 ? '#FF9800' : '#F44336'
+                    }}
+                  ></div>
                   </div>
                 </div>
               </div>
@@ -471,14 +609,24 @@ const currentLast10Data = currentTimeframeData.last10[chartFilter];
                  <span className="split-record">
                    {currentSplitsData.night.wins}-{currentSplitsData.night.losses}
                  </span>
-                 <span className="split-pct">
+                 <span 
+                   className="split-pct"
+                   style={{
+                     color: (currentSplitsData.night.winPct * 100) >= 60 ? '#4CAF50' : 
+                            (currentSplitsData.night.winPct * 100) >= 50 ? '#FF9800' : '#F44336'
+                   }}
+                 >
                    {(currentSplitsData.night.winPct * 100).toFixed(1)}%
                  </span>
                  <div className="progress-bar">
-                   <div 
-                     className="progress-fill" 
-                     style={{ width: `${currentSplitsData.night.winPct * 100}%` }}
-                   ></div>
+                  <div 
+                    className="progress-fill" 
+                    style={{ 
+                      width: `${currentSplitsData.night.winPct * 100}%`,
+                      backgroundColor: (currentSplitsData.night.winPct * 100) >= 60 ? '#4CAF50' : 
+                                       (currentSplitsData.night.winPct * 100) >= 50 ? '#FF9800' : '#F44336'
+                    }}
+                  ></div>
                  </div>
                </div>
              </div>
@@ -519,6 +667,179 @@ const currentLast10Data = currentTimeframeData.last10[chartFilter];
                 </div>
               </div>
             </div>
+          </div>
+        </div>
+
+        {/* NEW: Team Info Grid - Standings, Leaders, Stats - MOVED HERE */}
+        <div className="team-info-grid">
+          {/* 1. Team Standings */}
+          <div className="section-card">
+            <div className="card-header">
+              <h3>Team Standings</h3>
+              <p className="card-subtitle">{currentTimeframeData.standings.divisionRank}</p>
+            </div>
+            <div className="standings-content">
+              <div className="standings-row">
+                <span className="standings-label">Wins</span>
+                <span className="standings-value">{currentTimeframeData.standings.wins}</span>
+              </div>
+              <div className="standings-row">
+                <span className="standings-label">Losses</span>
+                <span className="standings-value">{currentTimeframeData.standings.losses}</span>
+              </div>
+              <div className="standings-row">
+                <span className="standings-label">Win %</span>
+                <span className="standings-value">{currentTimeframeData.standings.winPct.toFixed(3)}</span>
+              </div>
+              <div className="standings-row">
+                <span className="standings-label">Games Back</span>
+                <span className="standings-value">{currentTimeframeData.standings.gamesBack === 0 ? '-' : currentTimeframeData.standings.gamesBack}</span>
+              </div>
+              <div className="standings-row highlight">
+                <span className="standings-label">Streak</span>
+                <span className={`standings-value streak-badge ${currentTimeframeData.standings.streak.startsWith('W') ? 'positive' : 'negative'}`}>
+                  {currentTimeframeData.standings.streak}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          {/* 2. Team Leaders */}
+          <div className="section-card">
+            <div className="card-header">
+              <div>
+                <h3>Team Leaders</h3>
+                <p className="card-subtitle">Top performers</p>
+              </div>
+              <div className="toggle-buttons">
+                <button 
+                  className={`toggle-btn ${leadersToggle === 'batting' ? 'active' : ''}`}
+                  onClick={() => setLeadersToggle('batting')}
+                >
+                  Batting
+                </button>
+                <button 
+                  className={`toggle-btn ${leadersToggle === 'pitching' ? 'active' : ''}`}
+                  onClick={() => setLeadersToggle('pitching')}
+                >
+                  Pitching
+                </button>
+              </div>
+            </div>
+            
+            {leadersToggle === 'batting' ? (
+              <div className="leaders-content">
+                <div className="leader-row">
+                  <div className="leader-stat-label">Home Runs</div>
+                  <div className="leader-info">
+                    <span className="leader-player">{currentTimeframeData.leaders.batting.homeRuns.player}</span>
+                    <span className="leader-value">{currentTimeframeData.leaders.batting.homeRuns.value}</span>
+                  </div>
+                </div>
+                <div className="leader-row">
+                  <div className="leader-stat-label">Batting Average</div>
+                  <div className="leader-info">
+                    <span className="leader-player">{currentTimeframeData.leaders.batting.average.player}</span>
+                    <span className="leader-value">{currentTimeframeData.leaders.batting.average.value.toFixed(3)}</span>
+                  </div>
+                </div>
+                <div className="leader-row">
+                  <div className="leader-stat-label">RBI</div>
+                  <div className="leader-info">
+                    <span className="leader-player">{currentTimeframeData.leaders.batting.rbi.player}</span>
+                    <span className="leader-value">{currentTimeframeData.leaders.batting.rbi.value}</span>
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <div className="leaders-content">
+                <div className="leader-row">
+                  <div className="leader-stat-label">Strikeouts</div>
+                  <div className="leader-info">
+                    <span className="leader-player">{currentTimeframeData.leaders.pitching.strikeouts.player}</span>
+                    <span className="leader-value">{currentTimeframeData.leaders.pitching.strikeouts.value}</span>
+                  </div>
+                </div>
+                <div className="leader-row">
+                  <div className="leader-stat-label">ERA</div>
+                  <div className="leader-info">
+                    <span className="leader-player">{currentTimeframeData.leaders.pitching.era.player}</span>
+                    <span className="leader-value">{currentTimeframeData.leaders.pitching.era.value.toFixed(2)}</span>
+                  </div>
+                </div>
+                <div className="leader-row">
+                  <div className="leader-stat-label">Wins</div>
+                  <div className="leader-info">
+                    <span className="leader-player">{currentTimeframeData.leaders.pitching.wins.player}</span>
+                    <span className="leader-value">{currentTimeframeData.leaders.pitching.wins.value}</span>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* 3. Team Stats */}
+          <div className="section-card">
+            <div className="card-header">
+              <div>
+                <h3>Team Stats</h3>
+                <p className="card-subtitle">Overall performance</p>
+              </div>
+              <div className="toggle-buttons">
+                <button 
+                  className={`toggle-btn ${teamStatsToggle === 'batting' ? 'active' : ''}`}
+                  onClick={() => setTeamStatsToggle('batting')}
+                >
+                  Batting
+                </button>
+                <button 
+                  className={`toggle-btn ${teamStatsToggle === 'pitching' ? 'active' : ''}`}
+                  onClick={() => setTeamStatsToggle('pitching')}
+                >
+                  Pitching
+                </button>
+              </div>
+            </div>
+            
+            {teamStatsToggle === 'batting' ? (
+              <div className="team-stats-content">
+                <div className="team-stat-row">
+                  <span className="team-stat-label">Team AVG</span>
+                  <span className="team-stat-value">{currentTimeframeData.teamStats.batting.average.toFixed(3)}</span>
+                </div>
+                <div className="team-stat-row">
+                  <span className="team-stat-label">OPS</span>
+                  <span className="team-stat-value">{currentTimeframeData.teamStats.batting.ops.toFixed(3)}</span>
+                </div>
+                <div className="team-stat-row">
+                  <span className="team-stat-label">K Rate</span>
+                  <span className="team-stat-value">{currentTimeframeData.teamStats.batting.strikeoutRate.toFixed(1)}%</span>
+                </div>
+                <div className="team-stat-row highlight">
+                  <span className="team-stat-label">Offense Rank</span>
+                  <span className="team-stat-value rank">#{currentTimeframeData.teamStats.batting.offenseRank}</span>
+                </div>
+              </div>
+            ) : (
+              <div className="team-stats-content">
+                <div className="team-stat-row">
+                  <span className="team-stat-label">Team ERA</span>
+                  <span className="team-stat-value">{currentTimeframeData.teamStats.pitching.era.toFixed(2)}</span>
+                </div>
+                <div className="team-stat-row">
+                  <span className="team-stat-label">WHIP</span>
+                  <span className="team-stat-value">{currentTimeframeData.teamStats.pitching.whip.toFixed(2)}</span>
+                </div>
+                <div className="team-stat-row">
+                  <span className="team-stat-label">Quality Starts</span>
+                  <span className="team-stat-value">{currentTimeframeData.teamStats.pitching.qualityStarts}</span>
+                </div>
+                <div className="team-stat-row highlight">
+                  <span className="team-stat-label">Opp AVG</span>
+                  <span className="team-stat-value">{currentTimeframeData.teamStats.pitching.oppAvg.toFixed(3)}</span>
+                </div>
+              </div>
+            )}
           </div>
         </div>
 
