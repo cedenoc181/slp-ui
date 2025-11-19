@@ -35,7 +35,9 @@ import TermsOfUse from './components/legal/termsofuse';
 import PrivacyPolicy from './components/legal/PrivacyPolicy';
 
 // Stats page imports//
+import MLBStandings from './components/pages/Stats/mlbStandings';
 import TeamAnalytics from './components/pages/Stats/teamAnalytics';
+import PlayerAnalytics from './components/pages/Stats/playerAnalytics';
 
 // styling imports
 import './styles/chalkboard.css';
@@ -50,6 +52,9 @@ import './styles/home-page-styling/footer.css';
 
 // Stats-page-styles//
 import './styles/stats-page-styling/team-analytics.css';
+import './styles/stats-page-styling/mlb-standings.css';
+import './styles/stats-page-styling/player-analytics.css';
+
 
 //Insights-page-styles//
 import './styles/insights-page-styling/blog-page.css';
@@ -105,22 +110,34 @@ function App() {
         <Header />
         <Routes>
           <Route path="/" element={<HomePage />} />
+
+          {/* More routes */}
           <Route path="/about" element={<AboutPage />} />
           <Route path="/features" element={<FeaturesPage />} />
           <Route path="/contact" element={<ContactPage />} />
-          <Route path="/team-analytics" element={<TeamAnalytics />} />
 
+          {/* Stats routes */}
+          <Route path="/mlb-standings" element={<MLBStandings />} />
+          <Route path="/team-analytics" element={<TeamAnalytics />} />
+          <Route path="/player-analytics" element={<PlayerAnalytics />} />
+
+          {/* Education routes */}
           <Route path="/glossary" element={<Glossary />} />
           <Route path="/faqs" element={<FAQPage />} />
           <Route path="/how-to-use" element={<HowToUsePage />} />
           <Route path="/responsible-gaming" element={<ResponsibleGaming />} />
+
+          {/* Insights routes */}
           <Route path="/blogs" element={<Blogs />} />
           <Route path="/blogs/:slug" element={<BlogPost />} />
           <Route path="/sandlot-insider" element={<Articles />} />
           <Route path="/sandlot-insider/:slug" element={<ArticlesPost />} />
           <Route path="/data-science" element={<DsBaseball />} />
+
+          {/* legal routes */}
           <Route path="/terms-of-use" element={<TermsOfUse />} />
           <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+
           {/* 404 Catch-all route - must be last */}
           <Route path="*" element={<NotFound />} />
         </Routes>

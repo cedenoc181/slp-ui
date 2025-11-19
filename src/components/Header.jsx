@@ -106,7 +106,7 @@ function Header() {
                 <span className="dropdown-icon">🏅</span>
                 <div>
                   <div className="dropdown-title">MLB Standings</div>
-                  <div className="dropdown-desc">League standings & rankings</div>
+                  <div className="dropdown-desc">Division & wild card rankings</div>
                 </div>
               </button>
               <button onClick={() => handleNavClick('/team-analytics')} className="dropdown-item">
