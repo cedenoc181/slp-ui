@@ -539,7 +539,7 @@
 }
 
 .standings-row.highlight {
-  background: linear-gradient(to right, rgba(4, 30, 66, 0.03), transparent);
+  background: linear-gradient(to right, rgba(17, 77, 105, 0.03), transparent);
   padding: 1rem;
   margin: 0 -1rem;
   border-radius: 8px;
@@ -769,6 +769,194 @@
   color: #64748b;
 }
 
+
+/* ============================================
+   Roster and Injury Section
+   ============================================ */
+
+
+.roster-injury-section {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+/* Team Roster Styles */
+.roster-card {
+  min-height: 500px;
+}
+
+.roster-table-container {
+  max-height: 600px;
+  overflow-y: auto;
+  padding: 0 1.5rem 1.5rem;
+}
+
+.roster-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.roster-table thead {
+  position: sticky;
+  top: 0;
+  background: #f8fafc;
+  z-index: 1;
+}
+
+.roster-table th {
+  padding: 1rem;
+  text-align: left;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #5A6C7D;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  border-bottom: 2px solid #e2e8f0;
+}
+
+.roster-table tbody tr {
+  border-bottom: 1px solid #f0f4f8;
+  transition: background-color 0.2s;
+}
+
+.roster-table tbody tr:hover {
+  background-color: rgba(4, 30, 66, 0.02);
+}
+
+.roster-table td {
+  padding: 1rem;
+  font-size: 0.95rem;
+}
+
+.player-number {
+  font-weight: 700;
+  color: #041E42;
+  font-size: 1rem;
+}
+
+.player-name {
+  font-weight: 600;
+  color: #041E42;
+}
+
+.position-badge {
+  display: inline-block;
+  padding: 0.25rem 0.75rem;
+  background: rgba(200, 16, 46, 0.1);
+  color: #C8102E;
+  border-radius: 12px;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.player-hands {
+  color: #5A6C7D;
+  font-weight: 500;
+}
+
+/* Injury List Styles */
+.injury-card {
+  min-height: 500px;
+}
+
+.injury-list {
+  padding: 1.5rem;
+}
+
+.injury-item {
+  padding: 1.25rem;
+  background: #f8fafc;
+  border-radius: 8px;
+  margin-bottom: 1rem;
+  border-left: 4px solid #C8102E;
+}
+
+.injury-item:last-child {
+  margin-bottom: 0;
+}
+
+.injury-player-info {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.75rem;
+}
+
+.injury-player-name {
+  font-weight: 700;
+  color: #041E42;
+  font-size: 1rem;
+}
+
+.injury-position {
+  padding: 0.25rem 0.5rem;
+  background: rgba(4, 30, 66, 0.1);
+  color: #041E42;
+  border-radius: 8px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.injury-details {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.injury-type {
+  font-size: 0.9rem;
+  color: #5A6C7D;
+  font-weight: 500;
+}
+
+.injury-status-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.injury-status {
+  padding: 0.25rem 0.75rem;
+  border-radius: 12px;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.injury-status.short-term {
+  background: rgba(255, 152, 0, 0.1);
+  color: #FF9800;
+}
+
+.injury-status.long-term {
+  background: rgba(244, 67, 54, 0.1);
+  color: #F44336;
+}
+
+.injury-return {
+  font-size: 0.85rem;
+  color: #5A6C7D;
+  font-weight: 500;
+}
+
+.no-injuries {
+  text-align: center;
+  padding: 3rem 1rem;
+  color: #5A6C7D;
+}
+
+.no-injuries-icon {
+  font-size: 3rem;
+  display: block;
+  margin-bottom: 1rem;
+}
+
+.no-injuries p {
+  font-size: 1rem;
+  font-weight: 500;
+}
+
 /* ============================================
    RESPONSIVE
    ============================================ */
@@ -783,6 +971,14 @@
 
   .last-10-stats {
     grid-template-columns: repeat(2, 1fr);
+  }
+
+  .roster-injury-section {
+    grid-template-columns: 1fr;
+  }
+  
+  .injury-card {
+    min-height: auto;
   }
 }
 
@@ -923,7 +1119,17 @@
     font-size: 1rem;
   }
 
-
+  .roster-table th,
+  .roster-table td {
+    padding: 0.75rem 0.5rem;
+    font-size: 0.85rem;
+  }
+  
+  .injury-player-info {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
 }
 
 @media screen and (max-width: 480px) {

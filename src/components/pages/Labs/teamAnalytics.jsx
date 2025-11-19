@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import '../../../styles/team-analytics.css';
+import teamData from '../../../data/teamData.json';
 
 function TeamAnalytics() {
   const [selectedTeam, setSelectedTeam] = useState('LAD');
@@ -17,309 +18,7 @@ function TeamAnalytics() {
     // Add more teams...
   ];
 
-  const teamData = {
-  // Season data (full season)
-  season: {
-    overall: {
-      wins: 100,
-      losses: 62,
-      winPct: 0.617,
-      runsScored: 906,
-      runsAllowed: 672,
-      runDiff: 234,
-      streak: 'W5'
-    },
-    overviewSplits: {
-      home: { wins: 54, losses: 27, winPct: 0.667 },
-      away: { wins: 46, losses: 35, winPct: 0.568 }
-    },
-    splits: {
-      season: {
-        vsLHP: { wins: 38, losses: 22, winPct: 0.633 },
-        vsRHP: { wins: 62, losses: 40, winPct: 0.608 },
-        day: { wins: 28, losses: 18, winPct: 0.609 },
-        night: { wins: 72, losses: 44, winPct: 0.621 }
-      },
-      home: {
-        vsLHP: { wins: 21, losses: 10, winPct: 0.677 },
-        vsRHP: { wins: 33, losses: 17, winPct: 0.660 },
-        day: { wins: 15, losses: 8, winPct: 0.652 },
-        night: { wins: 39, losses: 19, winPct: 0.672 }
-      },
-      away: {
-        vsLHP: { wins: 17, losses: 12, winPct: 0.586 },
-        vsRHP: { wins: 29, losses: 23, winPct: 0.558 },
-        day: { wins: 13, losses: 10, winPct: 0.565 },
-        night: { wins: 33, losses: 25, winPct: 0.569 }
-      }
-    },
-    last10: {
-      season: { wins: 7, losses: 3, runsScored: 52, runsAllowed: 38 },
-      home: { wins: 6, losses: 4, runsScored: 48, runsAllowed: 35 },
-      away: { wins: 5, losses: 5, runsScored: 42, runsAllowed: 40 }
-    },
-    trends: {
-      season: [
-        { date: 'Apr', wins: 18, losses: 8 },
-        { date: 'May', wins: 20, losses: 10 },
-        { date: 'Jun', wins: 17, losses: 13 },
-        { date: 'Jul', wins: 21, losses: 9 },
-        { date: 'Aug', wins: 15, losses: 14 },
-        { date: 'Sep', wins: 9, losses: 8 }
-      ],
-      home: [
-        { date: 'Apr', wins: 10, losses: 4 },
-        { date: 'May', wins: 11, losses: 4 },
-        { date: 'Jun', wins: 9, losses: 6 },
-        { date: 'Jul', wins: 12, losses: 3 },
-        { date: 'Aug', wins: 7, losses: 7 },
-        { date: 'Sep', wins: 5, losses: 3 }
-      ],
-      away: [
-        { date: 'Apr', wins: 8, losses: 4 },
-        { date: 'May', wins: 9, losses: 6 },
-        { date: 'Jun', wins: 8, losses: 7 },
-        { date: 'Jul', wins: 9, losses: 6 },
-        { date: 'Aug', wins: 8, losses: 7 },
-        { date: 'Sep', wins: 4, losses: 5 }
-      ]
-    },
-    // NEW: Team Standings Data
-    standings: {
-      rank: 1,
-      wins: 100,
-      losses: 62,
-      winPct: 0.617,
-      gamesBack: 0,
-      streak: 'W5',
-      divisionRank: '1st NL West'
-    },
-    // NEW: Team Leaders Data
-    leaders: {
-      batting: {
-        homeRuns: { player: 'Mookie Betts', value: 39, stat: 'HR' },
-        average: { player: 'Freddie Freeman', value: .331, stat: 'AVG' },
-        rbi: { player: 'Will Smith', value: 108, stat: 'RBI' }
-      },
-      pitching: {
-        strikeouts: { player: 'Clayton Kershaw', value: 189, stat: 'K' },
-        era: { player: 'Julio Urías', value: 2.16, stat: 'ERA' },
-        wins: { player: 'Tony Gonsolin', value: 16, stat: 'W' }
-      }
-    },
-    // NEW: Team Stats Data
-    teamStats: {
-      batting: {
-        average: .265,
-        ops: .789,
-        strikeoutRate: 21.3,
-        offenseRank: 2
-      },
-      pitching: {
-        era: 3.17,
-        whip: 1.12,
-        qualityStarts: 78,
-        oppAvg: .228
-      }
-    }
-  },
   
-  // First Half data (pre-All-Star break)
-  'first-half': {
-    overall: {
-      wins: 52,
-      losses: 31,
-      winPct: 0.627,
-      runsScored: 462,
-      runsAllowed: 338,
-      runDiff: 124,
-      streak: 'W3'
-    },
-    overviewSplits: {
-      home: { wins: 28, losses: 14, winPct: 0.667 },
-      away: { wins: 24, losses: 17, winPct: 0.585 }
-    },
-    splits: {
-      season: {
-        vsLHP: { wins: 20, losses: 11, winPct: 0.645 },
-        vsRHP: { wins: 32, losses: 20, winPct: 0.615 },
-        day: { wins: 14, losses: 9, winPct: 0.609 },
-        night: { wins: 38, losses: 22, winPct: 0.633 }
-      },
-      home: {
-        vsLHP: { wins: 11, losses: 5, winPct: 0.688 },
-        vsRHP: { wins: 17, losses: 9, winPct: 0.654 },
-        day: { wins: 8, losses: 4, winPct: 0.667 },
-        night: { wins: 20, losses: 10, winPct: 0.667 }
-      },
-      away: {
-        vsLHP: { wins: 9, losses: 6, winPct: 0.600 },
-        vsRHP: { wins: 15, losses: 11, winPct: 0.577 },
-        day: { wins: 6, losses: 5, winPct: 0.545 },
-        night: { wins: 18, losses: 12, winPct: 0.600 }
-      }
-    },
-    last10: {
-      season: { wins: 6, losses: 4, runsScored: 48, runsAllowed: 42 },
-      home: { wins: 5, losses: 2, runsScored: 38, runsAllowed: 28 },
-      away: { wins: 4, losses: 3, runsScored: 32, runsAllowed: 30 }
-    },
-    trends: {
-      season: [
-        { date: 'Apr', wins: 18, losses: 8 },
-        { date: 'May', wins: 20, losses: 10 },
-        { date: 'Jun', wins: 14, losses: 13 }
-      ],
-      home: [
-        { date: 'Apr', wins: 10, losses: 4 },
-        { date: 'May', wins: 11, losses: 4 },
-        { date: 'Jun', wins: 7, losses: 6 }
-      ],
-      away: [
-        { date: 'Apr', wins: 8, losses: 4 },
-        { date: 'May', wins: 9, losses: 6 },
-        { date: 'Jun', wins: 7, losses: 7 }
-      ]
-    },
-    standings: {
-      rank: 1,
-      wins: 52,
-      losses: 31,
-      winPct: 0.627,
-      gamesBack: 0,
-      streak: 'W3',
-      divisionRank: '1st NL West'
-    },
-    leaders: {
-      batting: {
-        homeRuns: { player: 'Mookie Betts', value: 20, stat: 'HR' },
-        average: { player: 'Freddie Freeman', value: .338, stat: 'AVG' },
-        rbi: { player: 'Will Smith', value: 54, stat: 'RBI' }
-      },
-      pitching: {
-        strikeouts: { player: 'Clayton Kershaw', value: 98, stat: 'K' },
-        era: { player: 'Julio Urías', value: 2.08, stat: 'ERA' },
-        wins: { player: 'Tony Gonsolin', value: 9, stat: 'W' }
-      }
-    },
-    teamStats: {
-      batting: {
-        average: .268,
-        ops: .795,
-        strikeoutRate: 20.8,
-        offenseRank: 1
-      },
-      pitching: {
-        era: 3.02,
-        whip: 1.08,
-        qualityStarts: 42,
-        oppAvg: .221
-      }
-    }
-  },
-  
-  // Second Half data (post-All-Star break)
-  'second-half': {
-    overall: {
-      wins: 48,
-      losses: 31,
-      winPct: 0.608,
-      runsScored: 444,
-      runsAllowed: 334,
-      runDiff: 110,
-      streak: 'W5'
-    },
-    overviewSplits: {
-      home: { wins: 26, losses: 13, winPct: 0.667 },
-      away: { wins: 22, losses: 18, winPct: 0.550 }
-    },
-    splits: {
-      season: {
-        vsLHP: { wins: 18, losses: 11, winPct: 0.621 },
-        vsRHP: { wins: 30, losses: 20, winPct: 0.600 },
-        day: { wins: 14, losses: 9, winPct: 0.609 },
-        night: { wins: 34, losses: 22, winPct: 0.607 }
-      },
-      home: {
-        vsLHP: { wins: 10, losses: 5, winPct: 0.667 },
-        vsRHP: { wins: 16, losses: 8, winPct: 0.667 },
-        day: { wins: 7, losses: 4, winPct: 0.636 },
-        night: { wins: 19, losses: 9, winPct: 0.679 }
-      },
-      away: {
-        vsLHP: { wins: 8, losses: 6, winPct: 0.571 },
-        vsRHP: { wins: 14, losses: 12, winPct: 0.538 },
-        day: { wins: 7, losses: 5, winPct: 0.583 },
-        night: { wins: 15, losses: 13, winPct: 0.536 }
-      }
-    },
-    last10: {
-      season: { wins: 7, losses: 3, runsScored: 52, runsAllowed: 38 },
-      home: { wins: 6, losses: 4, runsScored: 48, runsAllowed: 35 },
-      away: { wins: 5, losses: 5, runsScored: 42, runsAllowed: 40 }
-    },
-    trends: {
-      season: [
-        { date: 'Jul', wins: 21, losses: 9 },
-        { date: 'Aug', wins: 15, losses: 14 },
-        { date: 'Sep', wins: 12, losses: 8 }
-      ],
-      home: [
-        { date: 'Jul', wins: 12, losses: 3 },
-        { date: 'Aug', wins: 7, losses: 7 },
-        { date: 'Sep', wins: 7, losses: 3 }
-      ],
-      away: [
-        { date: 'Jul', wins: 9, losses: 6 },
-        { date: 'Aug', wins: 8, losses: 7 },
-        { date: 'Sep', wins: 5, losses: 5 }
-      ]
-    },
-    standings: {
-      rank: 1,
-      wins: 48,
-      losses: 31,
-      winPct: 0.608,
-      gamesBack: 0,
-      streak: 'W5',
-      divisionRank: '1st NL West'
-    },
-    leaders: {
-      batting: {
-        homeRuns: { player: 'Mookie Betts', value: 19, stat: 'HR' },
-        average: { player: 'Freddie Freeman', value: .324, stat: 'AVG' },
-        rbi: { player: 'Will Smith', value: 54, stat: 'RBI' }
-      },
-      pitching: {
-        strikeouts: { player: 'Clayton Kershaw', value: 91, stat: 'K' },
-        era: { player: 'Julio Urías', value: 2.24, stat: 'ERA' },
-        wins: { player: 'Tony Gonsolin', value: 7, stat: 'W' }
-      }
-    },
-    teamStats: {
-      batting: {
-        average: .262,
-        ops: .783,
-        strikeoutRate: 21.8,
-        offenseRank: 3
-      },
-      pitching: {
-        era: 3.32,
-        whip: 1.16,
-        qualityStarts: 36,
-        oppAvg: .235
-      }
-    }
-  },
-  
-  // Upcoming games (shared across all timeframes)
-  upcoming: [
-    { date: '11/18', opponent: 'SF Giants', location: 'Home', pitchMatchup: 'Kershaw vs Webb' },
-    { date: '11/19', opponent: 'SF Giants', location: 'Home', pitchMatchup: 'Buehler vs Cobb' },
-    { date: '11/20', opponent: 'SD Padres', location: 'Away', pitchMatchup: 'Urías vs Darvish' }
-  ]
-};
-
 const currentTimeframeData = teamData[timeframe];
 const currentChartData = currentTimeframeData.trends[chartFilter];
 const currentSplitsData = currentTimeframeData.splits[chartFilter];
@@ -373,8 +72,9 @@ const currentLast10Data = currentTimeframeData.last10[chartFilter];
       </div>
 
       {/* Main Content */}
+
       <div className="analytics-content container">
-        {/* Overview Cards */}
+        {/* Season Overview Cards for Record, Home Record, Away Record, Run diff, */}
         <div className="overview-section">
           <div className="stat-card highlight">
             <div className="stat-header">
@@ -428,7 +128,7 @@ const currentLast10Data = currentTimeframeData.last10[chartFilter];
           </div>
         </div>
 
-        {/* Performance Chart */}
+        {/* Monthly Performance Trends Chart */}
         <div className="chart-section">
           <div className="section-card">
             <div className="card-header">
@@ -479,7 +179,7 @@ const currentLast10Data = currentTimeframeData.last10[chartFilter];
                 })}
               </div>
 
-              {/* Chart Filter Buttons */}
+              {/* Chart Filter Buttons for Season, Home and Away*/}
               <div className="chart-filters">
                 <button 
                   className={`chart-filter-btn ${chartFilter === 'season' ? 'active' : ''}`}
@@ -670,7 +370,7 @@ const currentLast10Data = currentTimeframeData.last10[chartFilter];
           </div>
         </div>
 
-        {/* NEW: Team Info Grid - Standings, Leaders, Stats - MOVED HERE */}
+        {/* 1. Team Standings */}
         <div className="team-info-grid">
           {/* 1. Team Standings */}
           <div className="section-card">
@@ -840,6 +540,77 @@ const currentLast10Data = currentTimeframeData.last10[chartFilter];
                 </div>
               </div>
             )}
+          </div>
+        </div>
+
+        {/* Team Roster and Injury List */}
+        <div className="roster-injury-section">
+          {/* Team Roster */}
+          <div className="section-card roster-card">
+            <div className="card-header">
+              <h3>Team Roster</h3>
+              <p className="card-subtitle">{currentTimeframeData.roster.length} Active Players</p>
+            </div>
+            <div className="roster-table-container">
+              <table className="roster-table">
+                <thead>
+                  <tr>
+                    <th>#</th>
+                    <th>Player</th>
+                    <th>Position</th>
+                    <th>B/T</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {currentTimeframeData.roster.map((player, idx) => (
+                    <tr key={idx}>
+                      <td className="player-number">{player.number}</td>
+                      <td className="player-name">{player.name}</td>
+                      <td className="player-position">
+                        <span className="position-badge">{player.position}</span>
+                      </td>
+                      <td className="player-hands">{player.battingHand}/{player.throwingHand}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          {/* Team Injury List */}
+          <div className="section-card injury-card">
+            <div className="card-header">
+              <h3>Injury Report</h3>
+              <p className="card-subtitle">
+                {currentTimeframeData.injuries.length} {currentTimeframeData.injuries.length === 1 ? 'Player' : 'Players'} Injured
+              </p>
+            </div>
+            <div className="injury-list">
+              {currentTimeframeData.injuries.length > 0 ? (
+                currentTimeframeData.injuries.map((injury, idx) => (
+                  <div key={idx} className="injury-item">
+                    <div className="injury-player-info">
+                      <div className="injury-player-name">{injury.name}</div>
+                      <div className="injury-position">{injury.position}</div>
+                    </div>
+                    <div className="injury-details">
+                      <div className="injury-type">{injury.injury}</div>
+                      <div className="injury-status-row">
+                        <span className={`injury-status ${injury.status.includes('60') ? 'long-term' : 'short-term'}`}>
+                          {injury.status}
+                        </span>
+                        <span className="injury-return">Return: {injury.expectedReturn}</span>
+                      </div>
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <div className="no-injuries">
+                  <span className="no-injuries-icon">✅</span>
+                  <p>No players currently on injured list</p>
+                </div>
+              )}
+            </div>
           </div>
         </div>
 

@@ -1,0 +1,340 @@
+{
+  "season": {
+    "overall": {
+      "wins": 100,
+      "losses": 62,
+      "winPct": 0.617,
+      "runsScored": 906,
+      "runsAllowed": 672,
+      "runDiff": 234,
+      "streak": "W5"
+    },
+    "overviewSplits": {
+      "home": { "wins": 54, "losses": 27, "winPct": 0.667 },
+      "away": { "wins": 46, "losses": 35, "winPct": 0.568 }
+    },
+    "splits": {
+      "season": {
+        "vsLHP": { "wins": 38, "losses": 22, "winPct": 0.633 },
+        "vsRHP": { "wins": 62, "losses": 40, "winPct": 0.608 },
+        "day": { "wins": 28, "losses": 18, "winPct": 0.609 },
+        "night": { "wins": 72, "losses": 44, "winPct": 0.621 }
+      },
+      "home": {
+        "vsLHP": { "wins": 21, "losses": 10, "winPct": 0.677 },
+        "vsRHP": { "wins": 33, "losses": 17, "winPct": 0.660 },
+        "day": { "wins": 15, "losses": 8, "winPct": 0.652 },
+        "night": { "wins": 39, "losses": 19, "winPct": 0.672 }
+      },
+      "away": {
+        "vsLHP": { "wins": 17, "losses": 12, "winPct": 0.586 },
+        "vsRHP": { "wins": 29, "losses": 23, "winPct": 0.558 },
+        "day": { "wins": 13, "losses": 10, "winPct": 0.565 },
+        "night": { "wins": 33, "losses": 25, "winPct": 0.569 }
+      }
+    },
+    "last10": {
+      "season": { "wins": 7, "losses": 3, "runsScored": 52, "runsAllowed": 38 },
+      "home": { "wins": 6, "losses": 4, "runsScored": 48, "runsAllowed": 35 },
+      "away": { "wins": 5, "losses": 5, "runsScored": 42, "runsAllowed": 40 }
+    },
+    "trends": {
+      "season": [
+        { "date": "Apr", "wins": 18, "losses": 8 },
+        { "date": "May", "wins": 20, "losses": 10 },
+        { "date": "Jun", "wins": 17, "losses": 13 },
+        { "date": "Jul", "wins": 21, "losses": 9 },
+        { "date": "Aug", "wins": 15, "losses": 14 },
+        { "date": "Sep", "wins": 9, "losses": 8 }
+      ],
+      "home": [
+        { "date": "Apr", "wins": 10, "losses": 4 },
+        { "date": "May", "wins": 11, "losses": 4 },
+        { "date": "Jun", "wins": 9, "losses": 6 },
+        { "date": "Jul", "wins": 12, "losses": 3 },
+        { "date": "Aug", "wins": 7, "losses": 7 },
+        { "date": "Sep", "wins": 5, "losses": 3 }
+      ],
+      "away": [
+        { "date": "Apr", "wins": 8, "losses": 4 },
+        { "date": "May", "wins": 9, "losses": 6 },
+        { "date": "Jun", "wins": 8, "losses": 7 },
+        { "date": "Jul", "wins": 9, "losses": 6 },
+        { "date": "Aug", "wins": 8, "losses": 7 },
+        { "date": "Sep", "wins": 4, "losses": 5 }
+      ]
+    },
+    "standings": {
+      "rank": 1,
+      "wins": 100,
+      "losses": 62,
+      "winPct": 0.617,
+      "gamesBack": 0,
+      "streak": "W5",
+      "divisionRank": "1st NL West"
+    },
+    "leaders": {
+      "batting": {
+        "homeRuns": { "player": "Mookie Betts", "value": 39, "stat": "HR" },
+        "average": { "player": "Freddie Freeman", "value": 0.331, "stat": "AVG" },
+        "rbi": { "player": "Will Smith", "value": 108, "stat": "RBI" }
+      },
+      "pitching": {
+        "strikeouts": { "player": "Clayton Kershaw", "value": 189, "stat": "K" },
+        "era": { "player": "Julio Urías", "value": 2.16, "stat": "ERA" },
+        "wins": { "player": "Tony Gonsolin", "value": 16, "stat": "W" }
+      }
+    },
+    "teamStats": {
+      "batting": {
+        "average": 0.265,
+        "ops": 0.789,
+        "strikeoutRate": 21.3,
+        "offenseRank": 2
+      },
+      "pitching": {
+        "era": 3.17,
+        "whip": 1.12,
+        "qualityStarts": 78,
+        "oppAvg": 0.228
+      }
+    },
+    "roster": [
+      { "number": 50, "name": "Mookie Betts", "position": "RF", "battingHand": "R", "throwingHand": "R" },
+      { "number": 5, "name": "Freddie Freeman", "position": "1B", "battingHand": "L", "throwingHand": "R" },
+      { "number": 16, "name": "Will Smith", "position": "C", "battingHand": "R", "throwingHand": "R" },
+      { "number": 22, "name": "Clayton Kershaw", "position": "SP", "battingHand": "L", "throwingHand": "L" },
+      { "number": 7, "name": "Julio Urías", "position": "SP", "battingHand": "L", "throwingHand": "L" },
+      { "number": 26, "name": "Tony Gonsolin", "position": "SP", "battingHand": "R", "throwingHand": "R" },
+      { "number": 11, "name": "Max Muncy", "position": "3B", "battingHand": "L", "throwingHand": "R" },
+      { "number": 3, "name": "Chris Taylor", "position": "SS", "battingHand": "R", "throwingHand": "R" },
+      { "number": 14, "name": "Trea Turner", "position": "2B", "battingHand": "R", "throwingHand": "R" },
+      { "number": 17, "name": "Joe Kelly", "position": "RP", "battingHand": "R", "throwingHand": "R" }
+    ],
+    "injuries": [
+      { "name": "Dustin May", "position": "SP", "injury": "Tommy John Surgery", "status": "60-Day IL", "expectedReturn": "June 2024" },
+      { "name": "Walker Buehler", "position": "SP", "injury": "Elbow Strain", "status": "15-Day IL", "expectedReturn": "May 2024" },
+      { "name": "Gavin Lux", "position": "SS", "injury": "ACL Tear", "status": "60-Day IL", "expectedReturn": "August 2024" }
+    ]
+  },
+  "first-half": {
+    "overall": {
+      "wins": 52,
+      "losses": 31,
+      "winPct": 0.627,
+      "runsScored": 462,
+      "runsAllowed": 338,
+      "runDiff": 124,
+      "streak": "W3"
+    },
+    "overviewSplits": {
+      "home": { "wins": 28, "losses": 14, "winPct": 0.667 },
+      "away": { "wins": 24, "losses": 17, "winPct": 0.585 }
+    },
+    "splits": {
+      "season": {
+        "vsLHP": { "wins": 20, "losses": 11, "winPct": 0.645 },
+        "vsRHP": { "wins": 32, "losses": 20, "winPct": 0.615 },
+        "day": { "wins": 14, "losses": 9, "winPct": 0.609 },
+        "night": { "wins": 38, "losses": 22, "winPct": 0.633 }
+      },
+      "home": {
+        "vsLHP": { "wins": 11, "losses": 5, "winPct": 0.688 },
+        "vsRHP": { "wins": 17, "losses": 9, "winPct": 0.654 },
+        "day": { "wins": 8, "losses": 4, "winPct": 0.667 },
+        "night": { "wins": 20, "losses": 10, "winPct": 0.667 }
+      },
+      "away": {
+        "vsLHP": { "wins": 9, "losses": 6, "winPct": 0.600 },
+        "vsRHP": { "wins": 15, "losses": 11, "winPct": 0.577 },
+        "day": { "wins": 6, "losses": 5, "winPct": 0.545 },
+        "night": { "wins": 18, "losses": 12, "winPct": 0.600 }
+      }
+    },
+    "last10": {
+      "season": { "wins": 6, "losses": 4, "runsScored": 48, "runsAllowed": 42 },
+      "home": { "wins": 5, "losses": 2, "runsScored": 38, "runsAllowed": 28 },
+      "away": { "wins": 4, "losses": 3, "runsScored": 32, "runsAllowed": 30 }
+    },
+    "trends": {
+      "season": [
+        { "date": "Apr", "wins": 18, "losses": 8 },
+        { "date": "May", "wins": 20, "losses": 10 },
+        { "date": "Jun", "wins": 14, "losses": 13 }
+      ],
+      "home": [
+        { "date": "Apr", "wins": 10, "losses": 4 },
+        { "date": "May", "wins": 11, "losses": 4 },
+        { "date": "Jun", "wins": 7, "losses": 6 }
+      ],
+      "away": [
+        { "date": "Apr", "wins": 8, "losses": 4 },
+        { "date": "May", "wins": 9, "losses": 6 },
+        { "date": "Jun", "wins": 7, "losses": 7 }
+      ]
+    },
+    "standings": {
+      "rank": 1,
+      "wins": 52,
+      "losses": 31,
+      "winPct": 0.627,
+      "gamesBack": 0,
+      "streak": "W3",
+      "divisionRank": "1st NL West"
+    },
+    "leaders": {
+      "batting": {
+        "homeRuns": { "player": "Mookie Betts", "value": 20, "stat": "HR" },
+        "average": { "player": "Freddie Freeman", "value": 0.338, "stat": "AVG" },
+        "rbi": { "player": "Will Smith", "value": 54, "stat": "RBI" }
+      },
+      "pitching": {
+        "strikeouts": { "player": "Clayton Kershaw", "value": 98, "stat": "K" },
+        "era": { "player": "Julio Urías", "value": 2.08, "stat": "ERA" },
+        "wins": { "player": "Tony Gonsolin", "value": 9, "stat": "W" }
+      }
+    },
+    "teamStats": {
+      "batting": {
+        "average": 0.268,
+        "ops": 0.795,
+        "strikeoutRate": 20.8,
+        "offenseRank": 1
+      },
+      "pitching": {
+        "era": 3.02,
+        "whip": 1.08,
+        "qualityStarts": 42,
+        "oppAvg": 0.221
+      }
+    },
+    "roster": [
+      { "number": 50, "name": "Mookie Betts", "position": "RF", "battingHand": "R", "throwingHand": "R" },
+      { "number": 5, "name": "Freddie Freeman", "position": "1B", "battingHand": "L", "throwingHand": "R" },
+      { "number": 16, "name": "Will Smith", "position": "C", "battingHand": "R", "throwingHand": "R" },
+      { "number": 22, "name": "Clayton Kershaw", "position": "SP", "battingHand": "L", "throwingHand": "L" },
+      { "number": 7, "name": "Julio Urías", "position": "SP", "battingHand": "L", "throwingHand": "L" },
+      { "number": 26, "name": "Tony Gonsolin", "position": "SP", "battingHand": "R", "throwingHand": "R" },
+      { "number": 11, "name": "Max Muncy", "position": "3B", "battingHand": "L", "throwingHand": "R" },
+      { "number": 3, "name": "Chris Taylor", "position": "SS", "battingHand": "R", "throwingHand": "R" },
+      { "number": 14, "name": "Trea Turner", "position": "2B", "battingHand": "R", "throwingHand": "R" },
+      { "number": 17, "name": "Joe Kelly", "position": "RP", "battingHand": "R", "throwingHand": "R" }
+    ],
+    "injuries": [
+      { "name": "Dustin May", "position": "SP", "injury": "Tommy John Surgery", "status": "60-Day IL", "expectedReturn": "June 2024" },
+      { "name": "Walker Buehler", "position": "SP", "injury": "Elbow Strain", "status": "15-Day IL", "expectedReturn": "May 2024" }
+    ]
+  },
+  "second-half": {
+    "overall": {
+      "wins": 48,
+      "losses": 31,
+      "winPct": 0.608,
+      "runsScored": 444,
+      "runsAllowed": 334,
+      "runDiff": 110,
+      "streak": "W5"
+    },
+    "overviewSplits": {
+      "home": { "wins": 26, "losses": 13, "winPct": 0.667 },
+      "away": { "wins": 22, "losses": 18, "winPct": 0.550 }
+    },
+    "splits": {
+      "season": {
+        "vsLHP": { "wins": 18, "losses": 11, "winPct": 0.621 },
+        "vsRHP": { "wins": 30, "losses": 20, "winPct": 0.600 },
+        "day": { "wins": 14, "losses": 9, "winPct": 0.609 },
+        "night": { "wins": 34, "losses": 22, "winPct": 0.607 }
+      },
+      "home": {
+        "vsLHP": { "wins": 10, "losses": 5, "winPct": 0.667 },
+        "vsRHP": { "wins": 16, "losses": 8, "winPct": 0.667 },
+        "day": { "wins": 7, "losses": 4, "winPct": 0.636 },
+        "night": { "wins": 19, "losses": 9, "winPct": 0.679 }
+      },
+      "away": {
+        "vsLHP": { "wins": 8, "losses": 6, "winPct": 0.571 },
+        "vsRHP": { "wins": 14, "losses": 12, "winPct": 0.538 },
+        "day": { "wins": 7, "losses": 5, "winPct": 0.583 },
+        "night": { "wins": 15, "losses": 13, "winPct": 0.536 }
+      }
+    },
+    "last10": {
+      "season": { "wins": 7, "losses": 3, "runsScored": 52, "runsAllowed": 38 },
+      "home": { "wins": 6, "losses": 4, "runsScored": 48, "runsAllowed": 35 },
+      "away": { "wins": 5, "losses": 5, "runsScored": 42, "runsAllowed": 40 }
+    },
+    "trends": {
+      "season": [
+        { "date": "Jul", "wins": 21, "losses": 9 },
+        { "date": "Aug", "wins": 15, "losses": 14 },
+        { "date": "Sep", "wins": 12, "losses": 8 }
+      ],
+      "home": [
+        { "date": "Jul", "wins": 12, "losses": 3 },
+        { "date": "Aug", "wins": 7, "losses": 7 },
+        { "date": "Sep", "wins": 7, "losses": 3 }
+      ],
+      "away": [
+        { "date": "Jul", "wins": 9, "losses": 6 },
+        { "date": "Aug", "wins": 8, "losses": 7 },
+        { "date": "Sep", "wins": 5, "losses": 5 }
+      ]
+    },
+    "standings": {
+      "rank": 1,
+      "wins": 48,
+      "losses": 31,
+      "winPct": 0.608,
+      "gamesBack": 0,
+      "streak": "W5",
+      "divisionRank": "1st NL West"
+    },
+    "leaders": {
+      "batting": {
+        "homeRuns": { "player": "Mookie Betts", "value": 19, "stat": "HR" },
+        "average": { "player": "Freddie Freeman", "value": 0.324, "stat": "AVG" },
+        "rbi": { "player": "Will Smith", "value": 54, "stat": "RBI" }
+      },
+      "pitching": {
+        "strikeouts": { "player": "Clayton Kershaw", "value": 91, "stat": "K" },
+        "era": { "player": "Julio Urías", "value": 2.24, "stat": "ERA" },
+        "wins": { "player": "Tony Gonsolin", "value": 7, "stat": "W" }
+      }
+    },
+    "teamStats": {
+      "batting": {
+        "average": 0.262,
+        "ops": 0.783,
+        "strikeoutRate": 21.8,
+        "offenseRank": 3
+      },
+      "pitching": {
+        "era": 3.32,
+        "whip": 1.16,
+        "qualityStarts": 36,
+        "oppAvg": 0.235
+      }
+    },
+    "roster": [
+      { "number": 50, "name": "Mookie Betts", "position": "RF", "battingHand": "R", "throwingHand": "R" },
+      { "number": 5, "name": "Freddie Freeman", "position": "1B", "battingHand": "L", "throwingHand": "R" },
+      { "number": 16, "name": "Will Smith", "position": "C", "battingHand": "R", "throwingHand": "R" },
+      { "number": 22, "name": "Clayton Kershaw", "position": "SP", "battingHand": "L", "throwingHand": "L" },
+      { "number": 7, "name": "Julio Urías", "position": "SP", "battingHand": "L", "throwingHand": "L" },
+      { "number": 26, "name": "Tony Gonsolin", "position": "SP", "battingHand": "R", "throwingHand": "R" },
+      { "number": 11, "name": "Max Muncy", "position": "3B", "battingHand": "L", "throwingHand": "R" },
+      { "number": 3, "name": "Chris Taylor", "position": "SS", "battingHand": "R", "throwingHand": "R" },
+      { "number": 14, "name": "Trea Turner", "position": "2B", "battingHand": "R", "throwingHand": "R" },
+      { "number": 17, "name": "Joe Kelly", "position": "RP", "battingHand": "R", "throwingHand": "R" }
+    ],
+    "injuries": [
+      { "name": "Gavin Lux", "position": "SS", "injury": "ACL Tear", "status": "60-Day IL", "expectedReturn": "August 2024" }
+    ]
+  },
+  "upcoming": [
+    { "date": "11/18", "opponent": "SF Giants", "location": "Home", "pitchMatchup": "Kershaw vs Webb" },
+    { "date": "11/19", "opponent": "SF Giants", "location": "Home", "pitchMatchup": "Buehler vs Cobb" },
+    { "date": "11/20", "opponent": "SD Padres", "location": "Away", "pitchMatchup": "Urías vs Darvish" }
+  ]
+}
