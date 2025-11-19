@@ -102,6 +102,13 @@ function Header() {
               </svg>
             </button>
             <div className={`dropdown-menu ${activeDropdown === 'stats' ? 'show' : ''}`}>
+              <button onClick={() => handleNavClick('/mlb-standings')} className="dropdown-item">
+                <span className="dropdown-icon">🏅</span>
+                <div>
+                  <div className="dropdown-title">MLB Standings</div>
+                  <div className="dropdown-desc">League standings & rankings</div>
+                </div>
+              </button>
               <button onClick={() => handleNavClick('/team-analytics')} className="dropdown-item">
                 <span className="dropdown-icon">📊</span>
                 <div>
@@ -109,18 +116,11 @@ function Header() {
                   <div className="dropdown-desc">Advanced team statistics</div>
                 </div>
               </button>
-              <button onClick={() => handleNavClick('/batter-analytics')} className="dropdown-item">
+              <button onClick={() => handleNavClick('/player-analytics')} className="dropdown-item">
                 <span className="dropdown-icon">⚾</span>
                 <div>
-                  <div className="dropdown-title">Batter Analytics</div>
-                  <div className="dropdown-desc">Batter performance metrics</div>
-                </div>
-              </button>
-              <button onClick={() => handleNavClick('/pitcher-analytics')} className="dropdown-item">
-                <span className="dropdown-icon">⚾</span>
-                <div>
-                  <div className="dropdown-title">Pitcher Analytics</div>
-                  <div className="dropdown-desc">Pitcher performance metrics</div>
+                  <div className="dropdown-title">Player Analytics</div>
+                  <div className="dropdown-desc">Player performance metrics</div>
                 </div>
               </button>
             </div>
