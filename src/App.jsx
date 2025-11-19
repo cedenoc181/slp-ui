@@ -1,6 +1,9 @@
 import React, { useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
 import ReactGA from 'react-ga4';
+
+
+// Home page component imports//
 import Header from './components/Header';
 import Hero from './components/Hero';
 import About from './components/About';
@@ -9,24 +12,30 @@ import FeaturedArticle from './components/FeaturedArticles';
 import Footer from './components/Footer';
 import NotFound from './components/NotFound';
 
-
+// More info page imports//
 import AboutPage from './components/pages/About-Us/AboutPage';
 import FeaturesPage from './components/pages/About-Us/FeaturesPage';
 import ContactPage from './components/pages/About-Us/ContactPage';
+
+// Education page imports//
 import Glossary from './components/pages/Education/GlossaryPage';
 import FAQPage from './components/pages/Education/FAQPage';
 import HowToUsePage from './components/pages/Education/HowToUsePage';
 import ResponsibleGaming from './components/pages/Education/responsibleGaming';
+
+// Research page imports//
 import Blogs from './components/pages/Research/blog';
 import BlogPost from './components/pages/Research/blog-post';
 import Articles from './components/pages/Research/articles';
 import ArticlesPost from './components/pages/Research/ArticlesPost';
 import DsBaseball from './components/pages/Research/ds_baseball';
+
+// Legal page imports//
 import TermsOfUse from './components/legal/termsofuse';
 import PrivacyPolicy from './components/legal/PrivacyPolicy';
 
-// product page imports
-import TeamAnalytics from './components/pages/Labs/teamAnalytics';
+// Stats page imports//
+import TeamAnalytics from './components/pages/Stats/teamAnalytics';
 
 // styling imports
 import './styles/chalkboard.css';
