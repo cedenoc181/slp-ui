@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import ReactGA from 'react-ga4';
-import '../styles/hero.css';
+
 
 function Hero() {
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });

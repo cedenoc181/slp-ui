@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import articlesData from '../data/article.json';
-import '../styles/featured-articles.css';
+
 
 function FeaturedArticle() {
   // Get the most recent article (first one in the array)

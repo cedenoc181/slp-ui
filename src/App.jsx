@@ -30,24 +30,37 @@ import TeamAnalytics from './components/pages/Labs/teamAnalytics';
 
 // styling imports
 import './styles/chalkboard.css';
-import './styles/featured-articles.css';
-import './styles/header.css';
-import './styles/hero.css';
-import './styles/about.css';
-import './styles/about-page.css';
-import './styles/features-page.css';
-import './styles/contact-page.css';
-import './styles/blog-page.css';
-import './styles/articles.css';
-import './styles/ds_baseball-page.css';
-import './styles/features.css';
-import './styles/footer.css';
-import './styles/legal.css';
-import './styles/faq.css';
-import './styles/glossary.css';
-import './styles/howtouse.css';
-import './styles/responsibleGaming-page.css';
-import './styles/team-analytics.css';
+
+// Home-page-styles//
+import './styles/home-page-styling/header.css';
+import './styles/home-page-styling/hero.css';
+import './styles/home-page-styling/featured-articles.css';
+import './styles/home-page-styling/about.css';
+import './styles/home-page-styling/features.css';
+import './styles/home-page-styling/footer.css';
+
+// Stats-page-styles//
+import './styles/stats-page-styling/team-analytics.css';
+
+//Insights-page-styles//
+import './styles/insights-page-styling/blog-page.css';
+import './styles/insights-page-styling/articles.css';
+import './styles/insights-page-styling/ds_baseball-page.css';
+
+//Education-page-styles//
+import './styles/education-page-styling/faq.css';
+import './styles/education-page-styling/glossary.css';
+import './styles/education-page-styling/howtouse.css';
+import './styles/education-page-styling/responsibleGaming-page.css';
+
+//More-info-page-styles//
+import './styles/more-page-styling/about-page.css';
+import './styles/more-page-styling/features-page.css';
+import './styles/more-page-styling/contact-page.css';
+
+// Legal-page-styles//
+import './styles/legal-page-styling/legal.css';
+
 
 // Home page component
 function HomePage() {

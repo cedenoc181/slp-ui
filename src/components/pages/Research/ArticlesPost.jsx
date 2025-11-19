@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import articlesData from '../../../data/article.json';
 import moreArticlesData from '../../../data/moreArticles.json';
-import '../../../styles/articles-post.css';
+import '../../../styles/insights-page-styling/articles-post.css';
 
 function ArticlePost() {
   const { slug } = useParams();
