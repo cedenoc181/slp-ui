@@ -1,0 +1,150 @@
+{
+"2023": {
+  "AL": {
+    "East": [
+      { "rank": 1, "team": "Baltimore Orioles", "wins": 101, "losses": 61, "pct": 0.623, "gb": "-", "streak": "W3", "home": "54-27", "away": "47-34", "last10": "7-3" },
+      { "rank": 2, "team": "Tampa Bay Rays", "wins": 99, "losses": 63, "pct": 0.611, "gb": "2.0", "streak": "L1", "home": "52-29", "away": "47-34", "last10": "6-4" },
+      { "rank": 3, "team": "Toronto Blue Jays", "wins": 89, "losses": 73, "pct": 0.549, "gb": "12.0", "streak": "W2", "home": "48-33", "away": "41-40", "last10": "5-5" },
+      { "rank": 4, "team": "New York Yankees", "wins": 82, "losses": 80, "pct": 0.506, "gb": "19.0", "streak": "L2", "home": "43-38", "away": "39-42", "last10": "4-6" },
+      { "rank": 5, "team": "Boston Red Sox", "wins": 78, "losses": 84, "pct": 0.481, "gb": "23.0", "streak": "W1", "home": "42-39", "away": "36-45", "last10": "5-5" }
+    ],
+    "Central": [
+      { "rank": 1, "team": "Minnesota Twins", "wins": 87, "losses": 75, "pct": 0.537, "gb": "-", "streak": "W4", "home": "47-34", "away": "40-41", "last10": "8-2" },
+      { "rank": 2, "team": "Cleveland Guardians", "wins": 76, "losses": 86, "pct": 0.469, "gb": "11.0", "streak": "L3", "home": "41-40", "away": "35-46", "last10": "3-7" },
+      { "rank": 3, "team": "Detroit Tigers", "wins": 78, "losses": 84, "pct": 0.481, "gb": "9.0", "streak": "W2", "home": "43-38", "away": "35-46", "last10": "6-4" },
+      { "rank": 4, "team": "Chicago White Sox", "wins": 61, "losses": 101, "pct": 0.377, "gb": "26.0", "streak": "L5", "home": "35-46", "away": "26-55", "last10": "2-8" },
+      { "rank": 5, "team": "Kansas City Royals", "wins": 56, "losses": 106, "pct": 0.346, "gb": "31.0", "streak": "L4", "home": "31-50", "away": "25-56", "last10": "1-9" }
+    ],
+    "West": [
+      { "rank": 1, "team": "Houston Astros", "wins": 90, "losses": 72, "pct": 0.556, "gb": "-", "streak": "W2", "home": "48-33", "away": "42-39", "last10": "6-4" },
+      { "rank": 2, "team": "Texas Rangers", "wins": 90, "losses": 72, "pct": 0.556, "gb": "-", "streak": "W5", "home": "50-31", "away": "40-41", "last10": "7-3" },
+      { "rank": 3, "team": "Seattle Mariners", "wins": 88, "losses": 74, "pct": 0.543, "gb": "2.0", "streak": "L1", "home": "47-34", "away": "41-40", "last10": "5-5" },
+      { "rank": 4, "team": "Los Angeles Angels", "wins": 73, "losses": 89, "pct": 0.451, "gb": "17.0", "streak": "L3", "home": "39-42", "away": "34-47", "last10": "4-6" },
+      { "rank": 5, "team": "Oakland Athletics", "wins": 50, "losses": 112, "pct": 0.309, "gb": "40.0", "streak": "L6", "home": "28-53", "away": "22-59", "last10": "2-8" }
+    ],
+    "wildCard": [
+      { "rank": 1, "team": "Texas Rangers", "wins": 90, "losses": 72, "pct": 0.556, "gb": "-", "wcgb": "+5.0" },
+      { "rank": 2, "team": "Toronto Blue Jays", "wins": 89, "losses": 73, "pct": 0.549, "gb": "1.0", "wcgb": "+4.0" },
+      { "rank": 3, "team": "Seattle Mariners", "wins": 88, "losses": 74, "pct": 0.543, "gb": "2.0", "wcgb": "+3.0" },
+      { "rank": 4, "team": "New York Yankees", "wins": 82, "losses": 80, "pct": 0.506, "gb": "8.0", "wcgb": "-3.0" },
+      { "rank": 5, "team": "Boston Red Sox", "wins": 78, "losses": 84, "pct": 0.481, "gb": "12.0", "wcgb": "-7.0" }
+    ]
+  },
+  "NL": {
+    "East": [
+      { "rank": 1, "team": "Atlanta Braves", "wins": 104, "losses": 58, "pct": 0.642, "gb": "-", "streak": "W6", "home": "55-26", "away": "49-32", "last10": "8-2" },
+      { "rank": 2, "team": "Philadelphia Phillies", "wins": 90, "losses": 72, "pct": 0.556, "gb": "14.0", "streak": "W3", "home": "49-32", "away": "41-40", "last10": "7-3" },
+      { "rank": 3, "team": "Miami Marlins", "wins": 84, "losses": 78, "pct": 0.519, "gb": "20.0", "streak": "L2", "home": "45-36", "away": "39-42", "last10": "5-5" },
+      { "rank": 4, "team": "New York Mets", "wins": 75, "losses": 87, "pct": 0.463, "gb": "29.0", "streak": "L4", "home": "40-41", "away": "35-46", "last10": "3-7" },
+      { "rank": 5, "team": "Washington Nationals", "wins": 71, "losses": 91, "pct": 0.438, "gb": "33.0", "streak": "W1", "home": "38-43", "away": "33-48", "last10": "4-6" }
+    ],
+    "Central": [
+      { "rank": 1, "team": "Milwaukee Brewers", "wins": 92, "losses": 70, "pct": 0.568, "gb": "-", "streak": "W2", "home": "50-31", "away": "42-39", "last10": "6-4" },
+      { "rank": 2, "team": "Chicago Cubs", "wins": 83, "losses": 79, "pct": 0.512, "gb": "9.0", "streak": "W4", "home": "46-35", "away": "37-44", "last10": "7-3" },
+      { "rank": 3, "team": "Cincinnati Reds", "wins": 82, "losses": 80, "pct": 0.506, "gb": "10.0", "streak": "L1", "home": "44-37", "away": "38-43", "last10": "5-5" },
+      { "rank": 4, "team": "Pittsburgh Pirates", "wins": 76, "losses": 86, "pct": 0.469, "gb": "16.0", "streak": "L3", "home": "41-40", "away": "35-46", "last10": "4-6" },
+      { "rank": 5, "team": "St. Louis Cardinals", "wins": 71, "losses": 91, "pct": 0.438, "gb": "21.0", "streak": "L5", "home": "38-43", "away": "33-48", "last10": "2-8" }
+    ],
+    "West": [
+      { "rank": 1, "team": "Los Angeles Dodgers", "wins": 100, "losses": 62, "pct": 0.617, "gb": "-", "streak": "W5", "home": "54-27", "away": "46-35", "last10": "7-3" },
+      { "rank": 2, "team": "Arizona Diamondbacks", "wins": 84, "losses": 78, "pct": 0.519, "gb": "16.0", "streak": "W2", "home": "45-36", "away": "39-42", "last10": "6-4" },
+      { "rank": 3, "team": "San Diego Padres", "wins": 82, "losses": 80, "pct": 0.506, "gb": "18.0", "streak": "W3", "home": "44-37", "away": "38-43", "last10": "6-4" },
+      { "rank": 4, "team": "San Francisco Giants", "wins": 79, "losses": 83, "pct": 0.488, "gb": "21.0", "streak": "L2", "home": "42-39", "away": "37-44", "last10": "5-5" },
+      { "rank": 5, "team": "Colorado Rockies", "wins": 59, "losses": 103, "pct": 0.364, "gb": "41.0", "streak": "L7", "home": "34-47", "away": "25-56", "last10": "1-9" }
+    ],
+    "wildCard": [
+      { "rank": 1, "team": "Philadelphia Phillies", "wins": 90, "losses": 72, "pct": 0.556, "gb": "-", "wcgb": "+6.0" },
+      { "rank": 2, "team": "Arizona Diamondbacks", "wins": 84, "losses": 78, "pct": 0.519, "gb": "6.0", "wcgb": "-" },
+      { "rank": 3, "team": "Miami Marlins", "wins": 84, "losses": 78, "pct": 0.519, "gb": "6.0", "wcgb": "-" },
+      { "rank": 4, "team": "Chicago Cubs", "wins": 83, "losses": 79, "pct": 0.512, "gb": "7.0", "wcgb": "-1.0" },
+      { "rank": 5, "team": "Cincinnati Reds", "wins": 82, "losses": 80, "pct": 0.506, "gb": "8.0", "wcgb": "-2.0" }
+    ]
+  },
+  "powerRankings": [
+    { "rank": 1, "team": "Atlanta Braves", "league": "NL", "record": "104-58", "lastWeek": 1, "trend": "→" },
+    { "rank": 2, "team": "Baltimore Orioles", "league": "AL", "record": "101-61", "lastWeek": 2, "trend": "→" },
+    { "rank": 3, "team": "Los Angeles Dodgers", "league": "NL", "record": "100-62", "lastWeek": 3, "trend": "→" },
+    { "rank": 4, "team": "Tampa Bay Rays", "league": "AL", "record": "99-63", "lastWeek": 4, "trend": "→" },
+    { "rank": 5, "team": "Milwaukee Brewers", "league": "NL", "record": "92-70", "lastWeek": 6, "trend": "↑" },
+    { "rank": 6, "team": "Texas Rangers", "league": "AL", "record": "90-72", "lastWeek": 5, "trend": "↓" },
+    { "rank": 7, "team": "Houston Astros", "league": "AL", "record": "90-72", "lastWeek": 7, "trend": "→" },
+    { "rank": 8, "team": "Philadelphia Phillies", "league": "NL", "record": "90-72", "lastWeek": 8, "trend": "→" },
+    { "rank": 9, "team": "Toronto Blue Jays", "league": "AL", "record": "89-73", "lastWeek": 9, "trend": "→" },
+    { "rank": 10, "team": "Seattle Mariners", "league": "AL", "record": "88-74", "lastWeek": 10, "trend": "→" }
+  ]
+},
+  "2022": {
+    "AL": {
+      "East": [
+        { "rank": 1, "team": "New York Yankees", "wins": 99, "losses": 63, "pct": 0.611, "gb": "-", "streak": "W2", "home": "52-29", "away": "47-34", "last10": "6-4" },
+        { "rank": 2, "team": "Toronto Blue Jays", "wins": 92, "losses": 70, "pct": 0.568, "gb": "7.0", "streak": "W3", "home": "50-31", "away": "42-39", "last10": "7-3" },
+        { "rank": 3, "team": "Tampa Bay Rays", "wins": 86, "losses": 76, "pct": 0.531, "gb": "13.0", "streak": "L1", "home": "45-36", "away": "41-40", "last10": "5-5" },
+        { "rank": 4, "team": "Baltimore Orioles", "wins": 83, "losses": 79, "pct": 0.512, "gb": "16.0", "streak": "W4", "home": "44-37", "away": "39-42", "last10": "6-4" },
+        { "rank": 5, "team": "Boston Red Sox", "wins": 78, "losses": 84, "pct": 0.481, "gb": "21.0", "streak": "L2", "home": "42-39", "away": "36-45", "last10": "4-6" }
+      ],
+      "Central": [
+        { "rank": 1, "team": "Cleveland Guardians", "wins": 92, "losses": 70, "pct": 0.568, "gb": "-", "streak": "W5", "home": "50-31", "away": "42-39", "last10": "8-2" },
+        { "rank": 2, "team": "Chicago White Sox", "wins": 81, "losses": 81, "pct": 0.500, "gb": "11.0", "streak": "L3", "home": "44-37", "away": "37-44", "last10": "5-5" },
+        { "rank": 3, "team": "Minnesota Twins", "wins": 78, "losses": 84, "pct": 0.481, "gb": "14.0", "streak": "W2", "home": "42-39", "away": "36-45", "last10": "5-5" },
+        { "rank": 4, "team": "Detroit Tigers", "wins": 66, "losses": 96, "pct": 0.407, "gb": "26.0", "streak": "L4", "home": "35-46", "away": "31-50", "last10": "3-7" },
+        { "rank": 5, "team": "Kansas City Royals", "wins": 65, "losses": 97, "pct": 0.401, "gb": "27.0", "streak": "L5", "home": "34-47", "away": "31-50", "last10": "2-8" }
+      ],
+      "West": [
+        { "rank": 1, "team": "Houston Astros", "wins": 106, "losses": 56, "pct": 0.654, "gb": "-", "streak": "W6", "home": "56-25", "away": "50-31", "last10": "9-1" },
+        { "rank": 2, "team": "Seattle Mariners", "wins": 90, "losses": 72, "pct": 0.556, "gb": "16.0", "streak": "W3", "home": "48-33", "away": "42-39", "last10": "7-3" },
+        { "rank": 3, "team": "Los Angeles Angels", "wins": 73, "losses": 89, "pct": 0.451, "gb": "33.0", "streak": "L2", "home": "39-42", "away": "34-47", "last10": "4-6" },
+        { "rank": 4, "team": "Texas Rangers", "wins": 68, "losses": 94, "pct": 0.420, "gb": "38.0", "streak": "L4", "home": "36-45", "away": "32-49", "last10": "3-7" },
+        { "rank": 5, "team": "Oakland Athletics", "wins": 60, "losses": 102, "pct": 0.370, "gb": "46.0", "streak": "L7", "home": "32-49", "away": "28-53", "last10": "1-9" }
+      ],
+      "wildCard": [
+        { "rank": 1, "team": "Toronto Blue Jays", "wins": 92, "losses": 70, "pct": 0.568, "gb": "-", "wcgb": "+6.0" },
+        { "rank": 2, "team": "Seattle Mariners", "wins": 90, "losses": 72, "pct": 0.556, "gb": "2.0", "wcgb": "+4.0" },
+        { "rank": 3, "team": "Tampa Bay Rays", "wins": 86, "losses": 76, "pct": 0.531, "gb": "6.0", "wcgb": "-" },
+        { "rank": 4, "team": "Baltimore Orioles", "wins": 83, "losses": 79, "pct": 0.512, "gb": "9.0", "wcgb": "-3.0" },
+        { "rank": 5, "team": "Chicago White Sox", "wins": 81, "losses": 81, "pct": 0.500, "gb": "11.0", "wcgb": "-5.0" }
+      ]
+    },
+    "NL": {
+      "East": [
+        { "rank": 1, "team": "Atlanta Braves", "wins": 101, "losses": 61, "pct": 0.623, "gb": "-", "streak": "W4", "home": "54-27", "away": "47-34", "last10": "8-2" },
+        { "rank": 2, "team": "New York Mets", "wins": 101, "losses": 61, "pct": 0.623, "gb": "-", "streak": "W5", "home": "53-28", "away": "48-33", "last10": "7-3" },
+        { "rank": 3, "team": "Philadelphia Phillies", "wins": 87, "losses": 75, "pct": 0.537, "gb": "14.0", "streak": "W2", "home": "47-34", "away": "40-41", "last10": "6-4" },
+        { "rank": 4, "team": "Miami Marlins", "wins": 69, "losses": 93, "pct": 0.426, "gb": "32.0", "streak": "L3", "home": "37-44", "away": "32-49", "last10": "4-6" },
+        { "rank": 5, "team": "Washington Nationals", "wins": 55, "losses": 107, "pct": 0.340, "gb": "46.0", "streak": "L6", "home": "30-51", "away": "25-56", "last10": "2-8" }
+      ],
+      "Central": [
+        { "rank": 1, "team": "St. Louis Cardinals", "wins": 93, "losses": 69, "pct": 0.574, "gb": "-", "streak": "W3", "home": "50-31", "away": "43-38", "last10": "7-3" },
+        { "rank": 2, "team": "Milwaukee Brewers", "wins": 86, "losses": 76, "pct": 0.531, "gb": "7.0", "streak": "W2", "home": "46-35", "away": "40-41", "last10": "6-4" },
+        { "rank": 3, "team": "Chicago Cubs", "wins": 74, "losses": 88, "pct": 0.457, "gb": "19.0", "streak": "L2", "home": "40-41", "away": "34-47", "last10": "5-5" },
+        { "rank": 4, "team": "Cincinnati Reds", "wins": 62, "losses": 100, "pct": 0.383, "gb": "31.0", "streak": "L5", "home": "33-48", "away": "29-52", "last10": "3-7" },
+        { "rank": 5, "team": "Pittsburgh Pirates", "wins": 62, "losses": 100, "pct": 0.383, "gb": "31.0", "streak": "L4", "home": "34-47", "away": "28-53", "last10": "2-8" }
+      ],
+      "West": [
+        { "rank": 1, "team": "Los Angeles Dodgers", "wins": 111, "losses": 51, "pct": 0.685, "gb": "-", "streak": "W8", "home": "58-23", "away": "53-28", "last10": "9-1" },
+        { "rank": 2, "team": "San Diego Padres", "wins": 89, "losses": 73, "pct": 0.549, "gb": "22.0", "streak": "W4", "home": "48-33", "away": "41-40", "last10": "7-3" },
+        { "rank": 3, "team": "San Francisco Giants", "wins": 81, "losses": 81, "pct": 0.500, "gb": "30.0", "streak": "L1", "home": "44-37", "away": "37-44", "last10": "5-5" },
+        { "rank": 4, "team": "Arizona Diamondbacks", "wins": 74, "losses": 88, "pct": 0.457, "gb": "37.0", "streak": "L3", "home": "40-41", "away": "34-47", "last10": "4-6" },
+        { "rank": 5, "team": "Colorado Rockies", "wins": 68, "losses": 94, "pct": 0.420, "gb": "43.0", "streak": "L5", "home": "37-44", "away": "31-50", "last10": "3-7" }
+      ],
+      "wildCard": [
+        { "rank": 1, "team": "Philadelphia Phillies", "wins": 87, "losses": 75, "pct": 0.537, "gb": "-", "wcgb": "+4.0" },
+        { "rank": 2, "team": "San Diego Padres", "wins": 89, "losses": 73, "pct": 0.549, "gb": "2.0", "wcgb": "+6.0" },
+        { "rank": 3, "team": "Milwaukee Brewers", "wins": 86, "losses": 76, "pct": 0.531, "gb": "1.0", "wcgb": "+3.0" },
+        { "rank": 4, "team": "San Francisco Giants", "wins": 81, "losses": 81, "pct": 0.500, "gb": "6.0", "wcgb": "-2.0" },
+        { "rank": 5, "team": "Arizona Diamondbacks", "wins": 74, "losses": 88, "pct": 0.457, "gb": "13.0", "wcgb": "-9.0" }
+      ]
+    },
+    "powerRankings": [
+      { "rank": 1, "team": "Los Angeles Dodgers", "league": "NL", "record": "111-51", "lastWeek": 1, "trend": "→" },
+      { "rank": 2, "team": "Houston Astros", "league": "AL", "record": "106-56", "lastWeek": 2, "trend": "→" },
+      { "rank": 3, "team": "Atlanta Braves", "league": "NL", "record": "101-61", "lastWeek": 3, "trend": "→" },
+      { "rank": 4, "team": "New York Mets", "league": "NL", "record": "101-61", "lastWeek": 4, "trend": "→" },
+      { "rank": 5, "team": "New York Yankees", "league": "AL", "record": "99-63", "lastWeek": 5, "trend": "→" },
+      { "rank": 6, "team": "St. Louis Cardinals", "league": "NL", "record": "93-69", "lastWeek": 7, "trend": "↑" },
+      { "rank": 7, "team": "Toronto Blue Jays", "league": "AL", "record": "92-70", "lastWeek": 6, "trend": "↓" },
+      { "rank": 8, "team": "Cleveland Guardians", "league": "AL", "record": "92-70", "lastWeek": 8, "trend": "→" },
+      { "rank": 9, "team": "Seattle Mariners", "league": "AL", "record": "90-72", "lastWeek": 9, "trend": "→" },
+      { "rank": 10, "team": "San Diego Padres", "league": "NL", "record": "89-73", "lastWeek": 11, "trend": "↑" }
+    ]
+  }
+}

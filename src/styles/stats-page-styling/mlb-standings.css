@@ -1,0 +1,526 @@
+/* MLB Standings Page Styles */
+.mlb-standings-page {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+  padding-bottom: 4rem;
+}
+
+/* Header Section */
+.standings-header {
+  background: linear-gradient(135deg, #041E42 0%, #0a2f5c 100%);
+  color: white;
+  padding: 3rem 0 2rem;
+  text-align: center;
+}
+
+.standings-header h1 {
+  font-size: 2.5rem;
+  font-weight: 800;
+  margin-bottom: 0.5rem;
+  color: white;
+}
+
+.header-subtitle {
+  font-size: 1.1rem;
+  color: rgba(255, 255, 255, 0.8);
+  margin-bottom: 2rem;
+}
+
+/* Season Selector */
+.season-selector {
+  margin-bottom: 2rem;
+}
+
+.season-tabs {
+  display: flex;
+  gap: 0.5rem;
+  justify-content: center;
+  align-items: center;
+  flex-wrap: wrap;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.season-tab {
+  padding: 0.75rem 1.5rem;
+  background: rgba(255, 255, 255, 0.1);
+  color: white;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  min-width: 80px;
+}
+
+.season-tab:hover {
+  background: rgba(255, 255, 255, 0.2);
+  border-color: rgba(255, 255, 255, 0.5);
+}
+
+.season-tab.active {
+  background: white;
+  color: #041E42;
+  border-color: white;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+}
+
+.season-dropdown-wrapper {
+  position: relative;
+}
+
+.season-dropdown {
+  padding: 0.75rem 1.5rem;
+  background: rgba(255, 255, 255, 0.1);
+  color: white;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  min-width: 150px;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='white' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 1rem center;
+  padding-right: 2.5rem;
+}
+
+.season-dropdown:hover {
+  background-color: rgba(255, 255, 255, 0.2);
+  border-color: rgba(255, 255, 255, 0.5);
+}
+
+.season-dropdown option {
+  background: #041E42;
+  color: white;
+  padding: 0.5rem;
+}
+
+/* Season Banner */
+.season-banner {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 1.5rem;
+  background: linear-gradient(135deg, #041E42 0%, #0a2f5c 100%);
+  color: white;
+  border-radius: 12px;
+  margin-bottom: 2rem;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.season-year {
+  font-size: 1.5rem;
+  font-weight: 800;
+}
+
+.season-league {
+  font-size: 1rem;
+  font-weight: 600;
+  opacity: 0.9;
+}
+
+/* League Toggle */
+.league-toggle {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  padding: 0.5rem;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  max-width: 500px;
+  margin: 0 auto;
+}
+
+.league-btn {
+  flex: 1;
+  padding: 1rem 2rem;
+  background: transparent;
+  color: white;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.league-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.5);
+}
+
+.league-btn.active {
+  background: white;
+  color: #041E42;
+  border-color: white;
+}
+
+/* Main Content */
+.standings-content {
+  padding: 2rem 1rem;
+}
+
+/* Divisions Grid */
+.divisions-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+/* Division Cards */
+.division-card {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+}
+
+.division-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.5rem;
+  background: linear-gradient(135deg, #041E42 0%, #0a2f5c 100%);
+  color: white;
+}
+
+.division-header h3 {
+  font-size: 1.3rem;
+  font-weight: 700;
+  margin: 0;
+}
+
+.division-badge,
+.wildcard-badge,
+.power-badge {
+  padding: 0.375rem 0.875rem;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* Standings Table */
+.standings-table-container {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.standings-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.standings-table thead {
+  background: #f8fafc;
+  border-bottom: 2px solid #e2e8f0;
+}
+
+.standings-table th {
+  padding: 1rem 0.75rem;
+  text-align: left;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #5A6C7D;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.standings-table tbody tr {
+  border-bottom: 1px solid #f0f4f8;
+  transition: background-color 0.2s;
+}
+
+.standings-table tbody tr:hover {
+  background-color: rgba(4, 30, 66, 0.02);
+}
+
+.standings-table tbody tr.division-leader {
+  background-color: rgba(76, 175, 80, 0.05);
+}
+
+.standings-table tbody tr.wildcard-position {
+  background-color: rgba(255, 152, 0, 0.05);
+}
+
+.standings-table td {
+  padding: 0.75rem 0.5rem;
+  font-size: 0.95rem;
+}
+
+.rank-col {
+  width: 40px;
+  font-weight: 700;
+  color: #041E42;
+}
+
+.team-col {
+  min-width: 180px;
+  font-weight: 600;
+  color: #041E42;
+}
+
+.team-logo {
+  margin-right: 0.5rem;
+}
+
+.clinch-badge,
+.wildcard-clinch {
+  display: inline-block;
+  margin-left: 0.5rem;
+  padding: 0.125rem 0.5rem;
+  background: #4CAF50;
+  color: white;
+  border-radius: 12px;
+  font-size: 0.7rem;
+  font-weight: 700;
+}
+
+.wildcard-clinch {
+  background: #FF9800;
+}
+
+.wins {
+  color: #4CAF50;
+  font-weight: 600;
+}
+
+.losses {
+  color: #F44336;
+  font-weight: 600;
+}
+
+.gb {
+  color: #5A6C7D;
+  font-weight: 500;
+}
+
+.streak {
+  font-weight: 600;
+  padding: 0.25rem 0.5rem;
+  border-radius: 8px;
+  font-size: 0.85rem;
+}
+
+.win-streak {
+  background: rgba(76, 175, 80, 0.1);
+  color: #4CAF50;
+}
+
+.loss-streak {
+  background: rgba(244, 67, 54, 0.1);
+  color: #F44336;
+}
+
+/* Wild Card Section */
+.wildcard-section {
+  margin-bottom: 2rem;
+}
+
+.wildcard-card {
+  max-width: 100%;
+}
+
+.wcgb {
+  font-weight: 600;
+}
+
+.wcgb.positive {
+  color: #4CAF50;
+}
+
+.wcgb.negative {
+  color: #F44336;
+}
+
+/* Power Rankings */
+.power-rankings-section {
+  margin-bottom: 2rem;
+}
+
+.power-rankings-card .division-header {
+  background: linear-gradient(135deg, #C8102E 0%, #d32f4d 100%);
+}
+
+.power-rankings-list {
+  padding: 1rem;
+}
+
+.power-ranking-item {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  padding: 1.25rem;
+  background: #f8fafc;
+  border-radius: 8px;
+  margin-bottom: 0.75rem;
+  transition: all 0.2s;
+}
+
+.power-ranking-item:hover {
+  background: #e2e8f0;
+  transform: translateX(5px);
+}
+
+.power-rank {
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: #041E42;
+  min-width: 40px;
+  text-align: center;
+}
+
+.power-team-info {
+  flex: 1;
+}
+
+.power-team-name {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #041E42;
+  margin-bottom: 0.25rem;
+}
+
+.league-badge {
+  padding: 0.125rem 0.5rem;
+  border-radius: 8px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.league-badge.AL {
+  background: rgba(4, 30, 66, 0.1);
+  color: #041E42;
+}
+
+.league-badge.NL {
+  background: rgba(200, 16, 46, 0.1);
+  color: #C8102E;
+}
+
+.power-team-record {
+  font-size: 0.9rem;
+  color: #5A6C7D;
+  font-weight: 500;
+}
+
+.power-movement {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.25rem;
+}
+
+.last-week {
+  font-size: 0.8rem;
+  color: #5A6C7D;
+}
+
+.trend-arrow {
+  font-size: 1.5rem;
+  font-weight: 700;
+}
+
+.trend-arrow.up {
+  color: #4CAF50;
+}
+
+.trend-arrow.down {
+  color: #F44336;
+}
+
+.trend-arrow.same {
+  color: #5A6C7D;
+}
+
+/* Responsive Design */
+@media (max-width: 1024px) {
+  .divisions-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  .standings-header h1 {
+    font-size: 2rem;
+  }
+
+  .season-tabs {
+    flex-direction: column;
+    max-width: 250px;
+  }
+
+  .season-tab,
+  .season-dropdown {
+    width: 100%;
+  }
+
+  .season-banner {
+    flex-direction: column;
+    gap: 0.5rem;
+    text-align: center;
+  }
+
+  .season-year {
+    font-size: 1.25rem;
+  }
+
+  .season-league {
+    font-size: 0.9rem;
+  }
+
+  .league-toggle {
+    flex-direction: column;
+    max-width: 300px;
+  }
+
+  .hide-mobile {
+    display: table-cell;
+  }
+
+  .standings-table {
+    min-width: 700px; /* Ensure table is wide enough to require scrolling */
+  }
+
+  .standings-table th,
+  .standings-table td {
+    padding: 0.75rem 0.35rem;
+    font-size: 0.85rem;
+    white-space: nowrap;
+  }
+
+  .power-ranking-item {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+
+  .power-movement {
+    align-items: flex-start;
+  }
+}
+
+@media (max-width: 480px) {
+  .standings-header h1 {
+    font-size: 1.5rem;
+  }
+
+  .power-rank {
+    font-size: 1.2rem;
+  }
+
+  .power-team-name {
+    font-size: 1rem;
+  }
+}
