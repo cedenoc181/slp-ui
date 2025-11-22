@@ -319,6 +319,36 @@
   color: #F44336;
 }
 
+/* Clickable Rows and Items */
+.clickable-row {
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.clickable-row:hover {
+  background-color: rgba(4, 30, 66, 0.08) !important;
+  transform: scale(1.01);
+}
+
+.clickable-row:active {
+  transform: scale(0.99);
+}
+
+.clickable-power-item {
+  cursor: pointer;
+}
+
+.clickable-power-item:hover {
+  background: #d1d9e2 !important;
+  transform: translateX(8px) !important;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.clickable-power-item:active {
+  transform: translateX(6px) !important;
+}
+
+
 /* Wild Card Section */
 .wildcard-section {
   margin-bottom: 2rem;
@@ -339,6 +369,104 @@
 .wcgb.negative {
   color: #F44336;
 }
+
+.wildcard-power-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.team-col {
+  cursor: pointer;
+}
+
+
+/* League Power Rankings (Top 5) */
+.league-power-card .division-header {
+  background: linear-gradient(135deg, #C8102E 0%, #d32f4d 100%);
+}
+
+.league-power-list {
+  padding: 1rem;
+}
+
+.league-power-item {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem;
+  background: #f8fafc;
+  border-radius: 8px;
+  margin-bottom: 0.75rem;
+  transition: all 0.2s;
+  border-left: 4px solid #C8102E;
+  cursor: pointer;
+}
+
+.league-power-item:hover {
+  background: #e2e8f0;
+  transform: translateX(5px);
+}
+
+.league-power-rank {
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: #C8102E;
+  min-width: 35px;
+  text-align: center;
+}
+
+.league-power-team-info {
+  flex: 1;
+}
+
+.league-power-team-name {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 1rem;
+  font-weight: 700;
+  color: #041E42;
+  margin-bottom: 0.25rem;
+}
+
+.league-power-team-record {
+  font-size: 0.85rem;
+  color: #5A6C7D;
+  font-weight: 500;
+}
+
+.league-power-movement {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.25rem;
+}
+
+.league-last-week {
+  font-size: 0.75rem;
+  color: #5A6C7D;
+}
+
+.league-trend-arrow {
+  font-size: 1.25rem;
+  font-weight: 700;
+}
+
+.league-trend-arrow.up {
+  color: #4CAF50;
+}
+
+.league-trend-arrow.down {
+  color: #F44336;
+}
+
+.league-trend-arrow.same {
+  color: #5A6C7D;
+}
+
+
 
 /* Power Rankings */
 .power-rankings-section {
@@ -362,6 +490,7 @@
   border-radius: 8px;
   margin-bottom: 0.75rem;
   transition: all 0.2s;
+  cursor: pointer;
 }
 
 .power-ranking-item:hover {
@@ -449,6 +578,10 @@
   .divisions-grid {
     grid-template-columns: 1fr;
   }
+
+  .wildcard-power-grid {
+    grid-template-columns: 1fr;
+  }
 }
 
 @media (max-width: 768px) {
@@ -485,8 +618,18 @@
     max-width: 300px;
   }
 
-  .hide-mobile {
-    display: table-cell;
+  .wildcard-power-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .league-power-item {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.75rem;
+  }
+
+  .league-power-movement {
+    align-items: flex-start;
   }
 
   .standings-table {

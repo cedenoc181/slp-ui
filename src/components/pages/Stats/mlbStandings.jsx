@@ -1,9 +1,12 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import '../../../styles/stats-page-styling/mlb-standings.css';
 import standingsData from '../../../data/mlbStandingsData.json';
 
 function MLBStandings() {
   const [selectedLeague, setSelectedLeague] = useState('AL'); // 'AL' or 'NL'
   const [selectedSeason, setSelectedSeason] = useState('2023');
+  const navigate = useNavigate();
 
   // Available seasons
   const recentSeasons = ['2023', '2022', '2021'];
@@ -11,6 +14,23 @@ function MLBStandings() {
 
   const currentLeagueData = standingsData[selectedSeason]?.[selectedLeague] || standingsData['2023'][selectedLeague];
   const powerRankings = standingsData[selectedSeason]?.powerRankings || standingsData['2023'].powerRankings;
+
+  // Filter power rankings by selected league and get top 5 with sequential 1-5 ranking
+  const leaguePowerRankings = powerRankings
+    .filter(team => team.league === selectedLeague)
+    .slice(0, 5)
+    .map((team, index) => ({ ...team, leagueRank: index + 1 }));
+
+  // Helper function to convert team name to URL-friendly format
+  const formatTeamNameForUrl = (teamName) => {
+    return teamName.toLowerCase().replace(/\s+/g, '-');
+  };
+
+  // Handle team click navigation
+  const handleTeamClick = (teamName) => {
+    const formattedName = formatTeamNameForUrl(teamName);
+    navigate(`/team-analytics/${formattedName}`);
+  };
 
   return (
     <div className="mlb-standings-page">
@@ -105,7 +125,11 @@ function MLBStandings() {
                 </thead>
                 <tbody>
                   {currentLeagueData.East.map((team) => (
-                    <tr key={team.rank} className={team.rank === 1 ? 'division-leader' : ''}>
+                    <tr 
+                      key={team.rank} 
+                      className={`${team.rank === 1 ? 'division-leader' : ''} clickable-row`}
+                      onClick={() => handleTeamClick(team.team)}
+                    >
                       <td className="rank-col">{team.rank}</td>
                       <td className="team-col">
                         <span className="team-logo">⚾</span>
@@ -153,7 +177,11 @@ function MLBStandings() {
                 </thead>
                 <tbody>
                   {currentLeagueData.Central.map((team) => (
-                    <tr key={team.rank} className={team.rank === 1 ? 'division-leader' : ''}>
+                    <tr 
+                      key={team.rank} 
+                      className={`${team.rank === 1 ? 'division-leader' : ''} clickable-row`}
+                      onClick={() => handleTeamClick(team.team)}
+                    >
                       <td className="rank-col">{team.rank}</td>
                       <td className="team-col">
                         <span className="team-logo">⚾</span>
@@ -201,7 +229,11 @@ function MLBStandings() {
                 </thead>
                 <tbody>
                   {currentLeagueData.West.map((team) => (
-                    <tr key={team.rank} className={team.rank === 1 ? 'division-leader' : ''}>
+                    <tr 
+                      key={team.rank} 
+                      className={`${team.rank === 1 ? 'division-leader' : ''} clickable-row`}
+                      onClick={() => handleTeamClick(team.team)}
+                    >
                       <td className="rank-col">{team.rank}</td>
                       <td className="team-col">
                         <span className="team-logo">⚾</span>
@@ -226,8 +258,9 @@ function MLBStandings() {
           </div>
         </div>
 
-        {/* Wild Card Standings */}
-        <div className="wildcard-section">
+        {/* Wild Card and League Power Rankings Grid */}
+        <div className="wildcard-power-grid">
+          {/* Wild Card Standings */}
           <div className="division-card wildcard-card">
             <div className="division-header">
               <h3>{selectedLeague} Wild Card</h3>
@@ -248,7 +281,11 @@ function MLBStandings() {
                 </thead>
                 <tbody>
                   {currentLeagueData.wildCard.map((team) => (
-                    <tr key={team.rank} className={team.rank <= 3 ? 'wildcard-position' : ''}>
+                    <tr 
+                      key={team.rank} 
+                      className={`${team.rank <= 3 ? 'wildcard-position' : ''} clickable-row`}
+                      onClick={() => handleTeamClick(team.team)}
+                    >
                       <td className="rank-col">{team.rank}</td>
                       <td className="team-col">
                         <span className="team-logo">⚾</span>
@@ -268,9 +305,41 @@ function MLBStandings() {
               </table>
             </div>
           </div>
+
+          {/* League Power Rankings */}
+          <div className="division-card league-power-card">
+            <div className="division-header">
+              <h3>⚡ {selectedLeague} Power Rankings</h3>
+              <span className="power-badge">Top 5</span>
+            </div>
+            <div className="league-power-list">
+              {leaguePowerRankings.map((team) => (
+                <div 
+                  key={team.leagueRank} 
+                  className="league-power-item clickable-power-item"
+                  onClick={() => handleTeamClick(team.team)}
+                >
+                  <div className="league-power-rank">{team.leagueRank}</div>
+                  <div className="league-power-team-info">
+                    <div className="league-power-team-name">
+                      <span className="team-logo">⚾</span>
+                      {team.team}
+                    </div>
+                    <div className="league-power-team-record">{team.record}</div>
+                  </div>
+                  <div className="league-power-movement">
+                    <span className="league-last-week">Last: #{team.lastWeek}</span>
+                    <span className={`league-trend-arrow ${team.trend === '↑' ? 'up' : team.trend === '↓' ? 'down' : 'same'}`}>
+                      {team.trend}
+                    </span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
 
-        {/* Power Rankings */}
+        {/* Overall Power Rankings */}
         <div className="power-rankings-section">
           <div className="division-card power-rankings-card">
             <div className="division-header">
@@ -279,7 +348,11 @@ function MLBStandings() {
             </div>
             <div className="power-rankings-list">
               {powerRankings.map((team) => (
-                <div key={team.rank} className="power-ranking-item">
+                <div 
+                  key={team.rank} 
+                  className="power-ranking-item clickable-power-item"
+                  onClick={() => handleTeamClick(team.team)}
+                >
                   <div className="power-rank">{team.rank}</div>
                   <div className="power-team-info">
                     <div className="power-team-name">
