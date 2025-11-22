@@ -1,0 +1,149 @@
+{
+  "2024": {
+    "AL": {
+      "wildCard": [
+        { "seed": 6, "team": "Texas Rangers", "logo": "⚾", "score": 3 },
+        { "seed": 5, "team": "Tampa Bay Rays", "logo": "⚾", "score": 2 }
+      ],
+      "divisionSeries": [
+        {
+          "topSeed": { "seed": 1, "team": "Baltimore Orioles", "logo": "⚾", "score": 3 },
+          "bottomSeed": { "seed": 6, "team": "Texas Rangers", "logo": "⚾", "score": 0 }
+        },
+        {
+          "topSeed": { "seed": 2, "team": "Houston Astros", "logo": "⚾", "score": 3 },
+          "bottomSeed": { "seed": 3, "team": "Minnesota Twins", "logo": "⚾", "score": 1 }
+        }
+      ],
+      "championshipSeries": {
+        "team1": { "seed": 1, "team": "Baltimore Orioles", "logo": "⚾", "score": 2 },
+        "team2": { "seed": 2, "team": "Houston Astros", "logo": "⚾", "score": 4 }
+      },
+      "pennantWinner": { "seed": 2, "team": "Houston Astros", "logo": "⚾" }
+    },
+    "NL": {
+      "wildCard": [
+        { "seed": 6, "team": "Miami Marlins", "logo": "⚾", "score": 3 },
+        { "seed": 5, "team": "Arizona Diamondbacks", "logo": "⚾", "score": 2 }
+      ],
+      "divisionSeries": [
+        {
+          "topSeed": { "seed": 1, "team": "Los Angeles Dodgers", "logo": "⚾", "score": 3 },
+          "bottomSeed": { "seed": 6, "team": "Miami Marlins", "logo": "⚾", "score": 1 }
+        },
+        {
+          "topSeed": { "seed": 2, "team": "Atlanta Braves", "logo": "⚾", "score": 2 },
+          "bottomSeed": { "seed": 4, "team": "Philadelphia Phillies", "logo": "⚾", "score": 3 }
+        }
+      ],
+      "championshipSeries": {
+        "team1": { "seed": 1, "team": "Los Angeles Dodgers", "logo": "⚾", "score": 4 },
+        "team2": { "seed": 4, "team": "Philadelphia Phillies", "logo": "⚾", "score": 3 }
+      },
+      "pennantWinner": { "seed": 1, "team": "Los Angeles Dodgers", "logo": "⚾" }
+    },
+    "worldSeries": {
+      "alChampion": { "seed": 2, "team": "Houston Astros", "logo": "⚾", "score": 4 },
+      "nlChampion": { "seed": 1, "team": "Los Angeles Dodgers", "logo": "⚾", "score": 3 },
+      "winner": "Houston Astros"
+    }
+  },
+  "2023": {
+    "AL": {
+      "wildCard": [
+        { "seed": 6, "team": "Toronto Blue Jays", "logo": "⚾", "score": 3 },
+        { "seed": 5, "team": "Minnesota Twins", "logo": "⚾", "score": 1 }
+      ],
+      "divisionSeries": [
+        {
+          "topSeed": { "seed": 1, "team": "Tampa Bay Rays", "logo": "⚾", "score": 2 },
+          "bottomSeed": { "seed": 6, "team": "Toronto Blue Jays", "logo": "⚾", "score": 3 }
+        },
+        {
+          "topSeed": { "seed": 2, "team": "Houston Astros", "logo": "⚾", "score": 3 },
+          "bottomSeed": { "seed": 3, "team": "Seattle Mariners", "logo": "⚾", "score": 1 }
+        }
+      ],
+      "championshipSeries": {
+        "team1": { "seed": 6, "team": "Toronto Blue Jays", "logo": "⚾", "score": 3 },
+        "team2": { "seed": 2, "team": "Houston Astros", "logo": "⚾", "score": 4 }
+      },
+      "pennantWinner": { "seed": 2, "team": "Houston Astros", "logo": "⚾" }
+    },
+    "NL": {
+      "wildCard": [
+        { "seed": 6, "team": "Arizona Diamondbacks", "logo": "⚾", "score": 3 },
+        { "seed": 5, "team": "Miami Marlins", "logo": "⚾", "score": 2 }
+      ],
+      "divisionSeries": [
+        {
+          "topSeed": { "seed": 1, "team": "Atlanta Braves", "logo": "⚾", "score": 1 },
+          "bottomSeed": { "seed": 6, "team": "Arizona Diamondbacks", "logo": "⚾", "score": 3 }
+        },
+        {
+          "topSeed": { "seed": 2, "team": "Los Angeles Dodgers", "logo": "⚾", "score": 2 },
+          "bottomSeed": { "seed": 4, "team": "Philadelphia Phillies", "logo": "⚾", "score": 3 }
+        }
+      ],
+      "championshipSeries": {
+        "team1": { "seed": 6, "team": "Arizona Diamondbacks", "logo": "⚾", "score": 4 },
+        "team2": { "seed": 4, "team": "Philadelphia Phillies", "logo": "⚾", "score": 3 }
+      },
+      "pennantWinner": { "seed": 6, "team": "Arizona Diamondbacks", "logo": "⚾" }
+    },
+    "worldSeries": {
+      "alChampion": { "seed": 2, "team": "Houston Astros", "logo": "⚾", "score": 4 },
+      "nlChampion": { "seed": 6, "team": "Arizona Diamondbacks", "logo": "⚾", "score": 3 },
+      "winner": "Houston Astros"
+    }
+  },
+  "2022": {
+    "AL": {
+      "wildCard": [
+        { "seed": 6, "team": "Seattle Mariners", "logo": "⚾", "score": 3 },
+        { "seed": 5, "team": "Tampa Bay Rays", "logo": "⚾", "score": 1 }
+      ],
+      "divisionSeries": [
+        {
+          "topSeed": { "seed": 1, "team": "Houston Astros", "logo": "⚾", "score": 3 },
+          "bottomSeed": { "seed": 6, "team": "Seattle Mariners", "logo": "⚾", "score": 0 }
+        },
+        {
+          "topSeed": { "seed": 2, "team": "New York Yankees", "logo": "⚾", "score": 2 },
+          "bottomSeed": { "seed": 3, "team": "Cleveland Guardians", "logo": "⚾", "score": 3 }
+        }
+      ],
+      "championshipSeries": {
+        "team1": { "seed": 1, "team": "Houston Astros", "logo": "⚾", "score": 4 },
+        "team2": { "seed": 3, "team": "Cleveland Guardians", "logo": "⚾", "score": 0 }
+      },
+      "pennantWinner": { "seed": 1, "team": "Houston Astros", "logo": "⚾" }
+    },
+    "NL": {
+      "wildCard": [
+        { "seed": 6, "team": "Philadelphia Phillies", "logo": "⚾", "score": 3 },
+        { "seed": 5, "team": "St. Louis Cardinals", "logo": "⚾", "score": 2 }
+      ],
+      "divisionSeries": [
+        {
+          "topSeed": { "seed": 1, "team": "Los Angeles Dodgers", "logo": "⚾", "score": 1 },
+          "bottomSeed": { "seed": 6, "team": "Philadelphia Phillies", "logo": "⚾", "score": 3 }
+        },
+        {
+          "topSeed": { "seed": 2, "team": "Atlanta Braves", "logo": "⚾", "score": 1 },
+          "bottomSeed": { "seed": 4, "team": "San Diego Padres", "logo": "⚾", "score": 3 }
+        }
+      ],
+      "championshipSeries": {
+        "team1": { "seed": 6, "team": "Philadelphia Phillies", "logo": "⚾", "score": 4 },
+        "team2": { "seed": 4, "team": "San Diego Padres", "logo": "⚾", "score": 1 }
+      },
+      "pennantWinner": { "seed": 6, "team": "Philadelphia Phillies", "logo": "⚾" }
+    },
+    "worldSeries": {
+      "alChampion": { "seed": 1, "team": "Houston Astros", "logo": "⚾", "score": 4 },
+      "nlChampion": { "seed": 6, "team": "Philadelphia Phillies", "logo": "⚾", "score": 2 },
+      "winner": "Houston Astros"
+    }
+  }
+}

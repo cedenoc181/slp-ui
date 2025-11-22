@@ -1,0 +1,403 @@
+/* Spring Training Container */
+.spring-training-container {
+  width: 100%;
+  padding: 2rem 0;
+  background: linear-gradient(135deg, #f5f7fa 0%, #e3f2fd 100%);
+}
+
+/* Spring Banner */
+.spring-banner {
+  display: flex;
+  align-items: center;
+  gap: 2rem;
+  background: linear-gradient(135deg, #4CAF50 0%, #8BC34A 100%);
+  padding: 2rem;
+  border-radius: 16px;
+  margin-bottom: 2rem;
+  box-shadow: 0 8px 24px rgba(76, 175, 80, 0.3);
+}
+
+.spring-icon {
+  font-size: 4rem;
+  animation: bounce 2s infinite;
+}
+
+@keyframes bounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+
+.spring-info h2 {
+  font-size: 2rem;
+  color: white;
+  margin-bottom: 0.5rem;
+  font-weight: 800;
+}
+
+.spring-location {
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+.spring-stats {
+  display: flex;
+  gap: 2rem;
+  margin-left: auto;
+}
+
+.stat-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background: rgba(255, 255, 255, 0.2);
+  padding: 1rem 1.5rem;
+  border-radius: 12px;
+  backdrop-filter: blur(10px);
+}
+
+.stat-label {
+  font-size: 0.85rem;
+  color: rgba(255, 255, 255, 0.9);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.stat-value {
+  font-size: 2rem;
+  color: white;
+  font-weight: 800;
+  margin-top: 0.25rem;
+}
+
+/* Spring Standings Grid */
+.spring-standings-grid {
+  display: grid;
+  grid-template-columns: 1.5fr 1fr;
+  gap: 2rem;
+  margin-bottom: 2rem;
+}
+
+.spring-standings-card,
+.spring-stats-card {
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+}
+
+.spring-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.5rem;
+  background: linear-gradient(135deg, #041E42 0%, #1976D2 100%);
+  color: white;
+}
+
+.spring-card-header h3 {
+  font-size: 1.5rem;
+  font-weight: 800;
+  margin: 0;
+}
+
+.spring-badge,
+.stats-badge {
+  background: rgba(255, 255, 255, 0.2);
+  padding: 0.5rem 1rem;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  backdrop-filter: blur(10px);
+}
+
+/* Spring Training Table */
+.spring-table-container {
+  overflow-x: auto;
+  padding: 1.5rem;
+}
+
+.spring-standings-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.95rem;
+}
+
+.spring-standings-table th {
+  background: #f8fafc;
+  padding: 1rem 0.75rem;
+  text-align: left;
+  font-weight: 700;
+  color: #041E42;
+  text-transform: uppercase;
+  font-size: 0.85rem;
+  letter-spacing: 0.5px;
+  border-bottom: 2px solid #e2e8f0;
+}
+
+.spring-standings-table td {
+  padding: 1rem 0.75rem;
+  border-bottom: 1px solid #e2e8f0;
+  color: #2d3748;
+}
+
+.spring-standings-table tr.clickable-row {
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.spring-standings-table tr.clickable-row:hover {
+  background-color: #f8fafc;
+  transform: scale(1.01);
+}
+
+.spring-standings-table tr.spring-leader {
+  background: linear-gradient(90deg, #fff9e6 0%, #ffffff 100%);
+  border-left: 4px solid #FFD700;
+}
+
+.rank-col {
+  width: 40px;
+  text-align: center;
+  font-weight: 700;
+  color: #5A6C7D;
+}
+
+.team-col {
+  min-width: 280px;
+}
+
+.team-logo {
+  font-size: 1.5rem;
+  margin-right: 0.75rem;
+}
+
+.team-info {
+  display: inline-flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.team-name {
+  font-weight: 700;
+  color: #041E42;
+  font-size: 1rem;
+}
+
+.team-location {
+  font-size: 0.75rem;
+  color: #5A6C7D;
+  font-weight: 500;
+}
+
+.spring-top-badge {
+  font-size: 1.25rem;
+  margin-left: 0.5rem;
+}
+
+.wins {
+  color: #4CAF50;
+  font-weight: 700;
+}
+
+.losses {
+  color: #F44336;
+  font-weight: 700;
+}
+
+.pct {
+  font-weight: 600;
+}
+
+.gb {
+  color: #5A6C7D;
+  font-weight: 600;
+}
+
+.diff.positive {
+  color: #4CAF50;
+  font-weight: 700;
+}
+
+.diff.negative {
+  color: #F44336;
+  font-weight: 700;
+}
+
+.streak {
+  font-weight: 700;
+  padding: 0.25rem 0.5rem;
+  border-radius: 6px;
+  font-size: 0.85rem;
+}
+
+.streak.win-streak {
+  background: #e8f5e9;
+  color: #4CAF50;
+}
+
+.streak.loss-streak {
+  background: #ffebee;
+  color: #F44336;
+}
+
+/* Stats Grid */
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1rem;
+  padding: 1.5rem;
+}
+
+.stat-box {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem;
+  background: #f8fafc;
+  border-radius: 12px;
+  border-left: 4px solid #4CAF50;
+  transition: all 0.2s ease;
+}
+
+.stat-box:hover {
+  background: #e2e8f0;
+  transform: translateX(5px);
+}
+
+.stat-icon {
+  font-size: 2rem;
+}
+
+.stat-content {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.stat-box .stat-label {
+  font-size: 0.75rem;
+  color: #5A6C7D;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.stat-number {
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: #041E42;
+}
+
+/* Top Performers */
+.top-performers {
+  padding: 1.5rem;
+  border-top: 2px solid #e2e8f0;
+}
+
+.top-performers h4 {
+  font-size: 1.25rem;
+  color: #041E42;
+  margin-bottom: 1rem;
+  font-weight: 800;
+}
+
+.performers-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.performer-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.75rem;
+  background: #f8fafc;
+  border-radius: 8px;
+  border-left: 3px solid #FFD700;
+}
+
+.performer-category {
+  font-size: 0.85rem;
+  color: #5A6C7D;
+  font-weight: 600;
+  flex: 1;
+}
+
+.performer-value {
+  font-size: 0.95rem;
+  color: #041E42;
+  font-weight: 700;
+  flex: 1;
+  text-align: center;
+}
+
+.performer-stat {
+  font-size: 1rem;
+  color: #4CAF50;
+  font-weight: 800;
+  flex: 0.5;
+  text-align: right;
+}
+
+/* Spring Info Footer */
+.spring-info-footer {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2rem;
+  background: white;
+  padding: 2rem;
+  border-radius: 16px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.info-section h4 {
+  font-size: 1.25rem;
+  color: #041E42;
+  margin-bottom: 1rem;
+  font-weight: 800;
+}
+
+.info-section p {
+  font-size: 1rem;
+  color: #5A6C7D;
+  line-height: 1.6;
+}
+
+/* Responsive Design */
+@media (max-width: 1200px) {
+  .spring-standings-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .stats-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  .spring-banner {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .spring-stats {
+    margin-left: 0;
+    width: 100%;
+    justify-content: center;
+  }
+
+  .spring-info-footer {
+    grid-template-columns: 1fr;
+  }
+
+  .hide-mobile {
+    display: none;
+  }
+
+  .team-col {
+    min-width: 200px;
+  }
+}

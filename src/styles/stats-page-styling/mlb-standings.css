@@ -37,7 +37,7 @@
   justify-content: center;
   align-items: center;
   flex-wrap: wrap;
-  max-width: 600px;
+  max-width: 700px;
   margin: 0 auto;
 }
 
@@ -66,11 +66,13 @@
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
 }
 
-.season-dropdown-wrapper {
+.season-dropdown-wrapper,
+.season-type-wrapper {
   position: relative;
 }
 
-.season-dropdown {
+.season-dropdown,
+.season-type-dropdown {
   padding: 0.75rem 1.5rem;
   background: rgba(255, 255, 255, 0.1);
   color: white;
@@ -88,12 +90,14 @@
   padding-right: 2.5rem;
 }
 
-.season-dropdown:hover {
+.season-dropdown:hover,
+.season-type-dropdown:hover {
   background-color: rgba(255, 255, 255, 0.2);
   border-color: rgba(255, 255, 255, 0.5);
 }
 
-.season-dropdown option {
+.season-dropdown option,
+.season-type-dropdown option {
   background: #041E42;
   color: white;
   padding: 0.5rem;
@@ -123,6 +127,17 @@
   opacity: 0.9;
 }
 
+.season-type-dropdown {
+  min-width: 180px;
+  background-color: rgba(200, 16, 46, 0.2);
+  border-color: rgba(200, 16, 46, 0.5);
+}
+
+.season-type-dropdown:hover {
+  background-color: rgba(200, 16, 46, 0.3);
+  border-color: rgba(200, 16, 46, 0.7);
+}
+
 /* League Toggle */
 .league-toggle {
   display: flex;
@@ -134,6 +149,41 @@
   max-width: 500px;
   margin: 0 auto;
 }
+
+/* Playoff Mode - Single Button */
+.league-toggle.playoff-mode {
+  max-width: 300px;
+}
+
+.playoff-btn {
+  background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%) !important;
+  color: #041E42 !important;
+  font-weight: 700;
+  cursor: default;
+  box-shadow: 0 4px 8px rgba(255, 215, 0, 0.4);
+}
+
+.playoff-btn:hover {
+  background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%) !important;
+  transform: none;
+}
+
+/* Spring Training Mode */
+.league-toggle.spring-mode .league-btn {
+  font-size: 0.95rem;
+}
+
+.league-toggle.spring-mode .league-btn:first-child.active {
+  background: linear-gradient(135deg, #8B4513 0%, #A0522D 100%);
+  border-color: #8B4513;
+}
+
+.league-toggle.spring-mode .league-btn:last-child.active {
+  background: linear-gradient(135deg, #FF8C00 0%, #FFA500 100%);
+  border-color: #FF8C00;
+}
+
+
 
 .league-btn {
   flex: 1;
@@ -595,7 +645,8 @@
   }
 
   .season-tab,
-  .season-dropdown {
+  .season-dropdown,
+  .season-type-dropdown {
     width: 100%;
   }
 
@@ -613,7 +664,9 @@
     font-size: 0.9rem;
   }
 
-  .league-toggle {
+  .league-toggle,
+  .league-toggle.playoff-mode,
+  .league-toggle.spring-mode {
     flex-direction: column;
     max-width: 300px;
   }

@@ -1,7 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
 import teamData from '../../../data/teamData.json';
 
 function TeamAnalytics() {
+  const { teamName } = useParams();
+  const navigate = useNavigate();
   const [selectedTeam, setSelectedTeam] = useState('LAD');
   const [timeframe, setTimeframe] = useState('season');
   const [chartFilter, setChartFilter] = useState('season');
@@ -10,18 +13,59 @@ function TeamAnalytics() {
 
   // Mock data - will be replaced with API later
   const teams = [
-    { id: 'LAD', name: 'Los Angeles Dodgers', logo: '⚾' },
-    { id: 'NYY', name: 'New York Yankees', logo: '⚾' },
-    { id: 'HOU', name: 'Houston Astros', logo: '⚾' },
-    { id: 'ATL', name: 'Atlanta Braves', logo: '⚾' },
+    { id: 'LAD', name: 'Los Angeles Dodgers', urlName: 'los-angeles-dodgers', logo: '⚾' },
+    { id: 'NYY', name: 'New York Yankees', urlName: 'new-york-yankees', logo: '⚾' },
+    { id: 'HOU', name: 'Houston Astros', urlName: 'houston-astros', logo: '⚾' },
+    { id: 'ATL', name: 'Atlanta Braves', urlName: 'atlanta-braves', logo: '⚾' },
+    { id: 'BAL', name: 'Baltimore Orioles', urlName: 'baltimore-orioles', logo: '⚾' },
+    { id: 'TBR', name: 'Tampa Bay Rays', urlName: 'tampa-bay-rays', logo: '⚾' },
+    { id: 'TOR', name: 'Toronto Blue Jays', urlName: 'toronto-blue-jays', logo: '⚾' },
+    { id: 'BOS', name: 'Boston Red Sox', urlName: 'boston-red-sox', logo: '⚾' },
     // Add more teams...
   ];
 
-  
-const currentTimeframeData = teamData[timeframe];
-const currentChartData = currentTimeframeData.trends[chartFilter];
-const currentSplitsData = currentTimeframeData.splits[chartFilter];
-const currentLast10Data = currentTimeframeData.last10[chartFilter];
+  // Helper function to convert team name to URL format
+  const formatTeamNameForUrl = (teamName) => {
+    return teamName.toLowerCase().replace(/\s+/g, '-');
+  };
+
+  // Helper function to find team by URL name
+  const findTeamByUrlName = (urlName) => {
+    return teams.find(team => team.urlName === urlName);
+  };
+
+  // Set selected team based on URL parameter
+  useEffect(() => {
+    if (teamName) {
+      const team = findTeamByUrlName(teamName);
+      if (team) {
+        setSelectedTeam(team.id);
+      } else {
+        // Redirect to default team if not found
+        navigate('/team-analytics/los-angeles-dodgers', { replace: true });
+      }
+    } else {
+      // Redirect to default team if no team in URL
+      navigate('/team-analytics/los-angeles-dodgers', { replace: true });
+    }
+  }, [teamName, navigate]);
+
+  // Handle team change from dropdown
+  const handleTeamChange = (teamId) => {
+    const team = teams.find(t => t.id === teamId);
+    if (team) {
+      setSelectedTeam(teamId);
+      navigate(`/team-analytics/${team.urlName}`);
+    }
+  };
+
+  const currentTimeframeData = teamData[timeframe];
+  const currentChartData = currentTimeframeData.trends[chartFilter];
+  const currentSplitsData = currentTimeframeData.splits[chartFilter];
+  const currentLast10Data = currentTimeframeData.last10[chartFilter];
+
+  // Get current team display name
+  const currentTeamName = teams.find(t => t.id === selectedTeam)?.name || 'Team';
 
   return (
     <div className="team-analytics-page">
@@ -30,11 +74,11 @@ const currentLast10Data = currentTimeframeData.last10[chartFilter];
         <div className="container">
           <div className="header-content">
             <div className="team-selector-wrapper">
-              <h1>Team Analytics Dashboard</h1>
+              <h1>{currentTeamName}</h1>
               <div className="team-selector">
                 <select 
                   value={selectedTeam} 
-                  onChange={(e) => setSelectedTeam(e.target.value)}
+                  onChange={(e) => handleTeamChange(e.target.value)}
                   className="team-dropdown"
                 >
                   {teams.map(team => (
@@ -71,7 +115,6 @@ const currentLast10Data = currentTimeframeData.last10[chartFilter];
       </div>
 
       {/* Main Content */}
-
       <div className="analytics-content container">
         {/* Season Overview Cards for Record, Home Record, Away Record, Run diff, */}
         <div className="overview-section">
@@ -127,6 +170,8 @@ const currentLast10Data = currentTimeframeData.last10[chartFilter];
           </div>
         </div>
 
+        {/* ...rest of the existing code remains the same... */}
+        
         {/* Monthly Performance Trends Chart */}
         <div className="chart-section">
           <div className="section-card">

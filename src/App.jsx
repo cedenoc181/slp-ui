@@ -119,6 +119,7 @@ function App() {
           {/* Stats routes */}
           <Route path="/mlb-standings" element={<MLBStandings />} />
           <Route path="/team-analytics" element={<TeamAnalytics />} />
+          <Route path="/team-analytics/:teamName" element={<TeamAnalytics />} />
           <Route path="/player-analytics" element={<PlayerAnalytics />} />
 
           {/* Education routes */}
