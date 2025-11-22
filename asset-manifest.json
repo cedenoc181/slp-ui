@@ -1,7 +1,7 @@
 {
   "files": {
     "main.css": "/static/css/main.1ec81b4d.css",
-    "main.js": "/static/js/main.fa889a40.js",
+    "main.js": "/static/js/main.db5e00f9.js",
     "static/media/spa-chalkboard.png": "/static/media/spa-chalkboard.fca57b82f042a69c391c.png",
     "static/media/spa-sandlot.png": "/static/media/spa-sandlot.49b8778487835caf7c81.png",
     "static/media/spa-chalk-stats-logo.png": "/static/media/spa-chalk-stats-logo.7b945cda3faa90be59e8.png",
@@ -19,10 +19,10 @@
     "static/media/pitcher_prop.png": "/static/media/pitcher_prop.cc2f6b8b5e51bf6374b7.png",
     "index.html": "/index.html",
     "main.1ec81b4d.css.map": "/static/css/main.1ec81b4d.css.map",
-    "main.fa889a40.js.map": "/static/js/main.fa889a40.js.map"
+    "main.db5e00f9.js.map": "/static/js/main.db5e00f9.js.map"
   },
   "entrypoints": [
     "static/css/main.1ec81b4d.css",
-    "static/js/main.fa889a40.js"
+    "static/js/main.db5e00f9.js"
   ]
 }
