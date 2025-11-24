@@ -1,6 +1,9 @@
 import React from 'react';
 import '../../../styles/stats-page-styling/mlb-standings-postseason.css';
 import playoffDataJSON from '../../../data/mlbStandingsPostseason.json';
+import alIcon from '../../../assets/images/AL-icon.png';
+import nlIcon from '../../../assets/images/NL-icon.png';
+import wsIcon from '../../../assets/images/mlb-ws.png';
 
 const chunkIntoMatchups = (teams) => {
   const pairs = [];
@@ -63,12 +66,24 @@ function MLBStandingsPostseason({ selectedSeason }) {
     return pairs.map((pair, idx) => {
       const [teamA, teamB] = pair;
       const teamAWins = teamB ? teamA.score >= teamB.score : true;
-      return (
+      const items = (
         <div key={`${league}-wc-${idx}`} className={`series-block wild-card connect-${connectDirection}`}>
           {renderTeamRow(teamA, teamAWins, league)}
           {teamB && renderTeamRow(teamB, !teamAWins, league)}
         </div>
       );
+
+      if (pairs.length > 1 && idx === 0) {
+        const iconSrc = league === 'al' ? alIcon : nlIcon;
+        return [
+          items,
+          <div key={`${league}-wc-icon`} className={`wildcard-icon ${league}`}>
+            <img src={iconSrc} alt={`${league.toUpperCase()} Wild Card`} />
+          </div>,
+        ];
+      }
+
+      return items;
     });
   };
 
@@ -76,13 +91,16 @@ function MLBStandingsPostseason({ selectedSeason }) {
     const alWins = playoffData.worldSeries.alChampion.score >= playoffData.worldSeries.nlChampion.score;
     return (
       <div className="world-series-block">
-        <div className="world-series-header">
-          <p className="eyebrow">Postseason {selectedSeason}</p>
-          <h3>World Series</h3>
+        <div className="world-series-logo">
+          <img src={wsIcon} alt="World Series logo" />
         </div>
         <div className="series-block world-series">
           {renderTeamRow(playoffData.worldSeries.alChampion, alWins, 'al')}
           {renderTeamRow(playoffData.worldSeries.nlChampion, !alWins, 'nl')}
+        </div>
+        <div className="world-series-header">
+          <p className="eyebrow">Postseason {selectedSeason}</p>
+          {/* <h3>World Series</h3> */}
         </div>
       </div>
     );
