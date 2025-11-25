@@ -36,8 +36,8 @@ import PrivacyPolicy from './components/legal/PrivacyPolicy';
 
 // Stats page imports//
 import MLBStandings from './components/pages/Stats/mlb-standings/mlbStandings';
-import TeamAnalytics from './components/pages/Stats/teamAnalytics';
-import PlayerAnalytics from './components/pages/Stats/playerAnalytics';
+import TeamAnalytics from './components/pages/Stats/team-analytics/teamAnalytics';
+import PlayerAnalytics from './components/pages/Stats/player-analytics/playerAnalytics';
 
 // styling imports
 import './styles/chalkboard.css';
