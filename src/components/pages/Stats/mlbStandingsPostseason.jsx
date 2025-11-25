@@ -18,6 +18,26 @@ function MLBStandingsPostseason({ selectedSeason }) {
   const alDivisionSeries = playoffData.AL.divisionSeries || [];
   const nlDivisionSeries = playoffData.NL.divisionSeries || [];
 
+  const renderSeriesInfo = (teamA, teamB, label) => {
+    const winner = teamB ? (teamA.score >= teamB.score ? teamA : teamB) : teamA;
+    return (
+      <div className="series-info-pop">
+        <p className="series-info-title">{label}</p>
+        <div className="series-info-row">
+          <span>{teamA.team}</span>
+          <span className="series-info-score">{teamA.score}</span>
+        </div>
+        {teamB && (
+          <div className="series-info-row">
+            <span>{teamB.team}</span>
+            <span className="series-info-score">{teamB.score}</span>
+          </div>
+        )}
+        <p className="series-info-winner">Winner: {winner.team}</p>
+      </div>
+    );
+  };
+
   const renderTeamRow = (team, isWinner, league) => {
     const isNL = league === 'nl';
     return (
@@ -43,8 +63,15 @@ function MLBStandingsPostseason({ selectedSeason }) {
 
   const renderSeriesBlock = (matchup, league, round, connectDirection) => {
     const isTopWinner = matchup.topSeed.score >= matchup.bottomSeed.score;
+    const label =
+      round === 'division'
+        ? `${league.toUpperCase()} Division Series`
+        : round === 'championship'
+          ? `${league.toUpperCase()} Championship Series`
+          : 'Series';
     return (
       <div className={`series-block ${round} connect-${connectDirection}`}>
+        {renderSeriesInfo(matchup.topSeed, matchup.bottomSeed, label)}
         {renderTeamRow(matchup.topSeed, isTopWinner, league)}
         {renderTeamRow(matchup.bottomSeed, !isTopWinner, league)}
       </div>
@@ -53,8 +80,10 @@ function MLBStandingsPostseason({ selectedSeason }) {
 
   const renderChampionshipSeries = (series, league, connectDirection) => {
     const isFirstWinner = series.team1.score >= series.team2.score;
+    const label = `${league.toUpperCase()} Championship Series`;
     return (
       <div className={`series-block championship connect-${connectDirection}`}>
+        {renderSeriesInfo(series.team1, series.team2, label)}
         {renderTeamRow(series.team1, isFirstWinner, league)}
         {renderTeamRow(series.team2, !isFirstWinner, league)}
       </div>
@@ -68,6 +97,7 @@ function MLBStandingsPostseason({ selectedSeason }) {
       const teamAWins = teamB ? teamA.score >= teamB.score : true;
       const items = (
         <div key={`${league}-wc-${idx}`} className={`series-block wild-card connect-${connectDirection}`}>
+          {renderSeriesInfo(teamA, teamB, `${league.toUpperCase()} Wild Card`)}
           {renderTeamRow(teamA, teamAWins, league)}
           {teamB && renderTeamRow(teamB, !teamAWins, league)}
         </div>
@@ -89,12 +119,14 @@ function MLBStandingsPostseason({ selectedSeason }) {
 
   const renderWorldSeries = () => {
     const alWins = playoffData.worldSeries.alChampion.score >= playoffData.worldSeries.nlChampion.score;
+    const label = 'World Series';
     return (
       <div className="world-series-block">
         <div className="world-series-logo">
           <img src={wsIcon} alt="World Series logo" />
         </div>
         <div className="series-block world-series">
+          {renderSeriesInfo(playoffData.worldSeries.alChampion, playoffData.worldSeries.nlChampion, label)}
           {renderTeamRow(playoffData.worldSeries.alChampion, alWins, 'al')}
           {renderTeamRow(playoffData.worldSeries.nlChampion, !alWins, 'nl')}
         </div>

@@ -294,13 +294,6 @@
   right: auto;
 }
 
-.series-block:hover {
-  transform: scale(1.02);
-  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.12);
-  z-index: 3;
-  cursor: pointer;
-}
-
 .series-block.wild-card {
   min-height: 140px;
 }
@@ -332,6 +325,56 @@
   color: var(--text-main);
   width: 100%;
   min-width: 180px;
+}
+
+.series-info-pop {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: #0f1522;
+  color: #fff;
+  padding: 10px 12px;
+  border-radius: 10px;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.2);
+  opacity: 0;
+  transform: translateY(-6px);
+  transition: opacity 0.15s ease, transform 0.15s ease;
+  pointer-events: none;
+  z-index: 4;
+}
+
+.series-block:hover .series-info-pop {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.series-info-title {
+  margin: 0 0 6px;
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.series-info-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  font-size: 13px;
+  margin: 2px 0;
+}
+
+.series-info-score {
+  font-weight: 700;
+  color: #f2c200;
+}
+
+.series-info-winner {
+  margin: 8px 0 0;
+  font-size: 12px;
+  font-weight: 700;
+  color: #f2c200;
 }
 
 .team-row.nl {

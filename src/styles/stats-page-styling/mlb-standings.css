@@ -54,11 +54,6 @@
   min-width: 80px;
 }
 
-.season-tab:hover {
-  background: rgba(255, 255, 255, 0.2);
-  border-color: rgba(255, 255, 255, 0.5);
-}
-
 .season-tab.active {
   background: white;
   color: #041E42;
@@ -88,12 +83,6 @@
   background-repeat: no-repeat;
   background-position: right 1rem center;
   padding-right: 2.5rem;
-}
-
-.season-dropdown:hover,
-.season-type-dropdown:hover {
-  background-color: rgba(255, 255, 255, 0.2);
-  border-color: rgba(255, 255, 255, 0.5);
 }
 
 .season-dropdown option,
@@ -133,11 +122,6 @@
   border-color: rgba(200, 16, 46, 0.5);
 }
 
-.season-type-dropdown:hover {
-  background-color: rgba(200, 16, 46, 0.3);
-  border-color: rgba(200, 16, 46, 0.7);
-}
-
 /* League Toggle */
 .league-toggle {
   display: flex;
@@ -161,11 +145,6 @@
   font-weight: 700;
   cursor: default;
   box-shadow: 0 4px 8px rgba(255, 215, 0, 0.4);
-}
-
-.playoff-btn:hover {
-  background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%) !important;
-  transform: none;
 }
 
 /* Spring Training Mode */
@@ -196,11 +175,6 @@
   font-weight: 600;
   cursor: pointer;
   transition: all 0.3s ease;
-}
-
-.league-btn:hover {
-  background: rgba(255, 255, 255, 0.1);
-  border-color: rgba(255, 255, 255, 0.5);
 }
 
 .league-btn.active {
@@ -288,10 +262,6 @@
   transition: background-color 0.2s;
 }
 
-.standings-table tbody tr:hover {
-  background-color: rgba(4, 30, 66, 0.02);
-}
-
 .standings-table tbody tr.division-leader {
   background-color: rgba(76, 175, 80, 0.05);
 }
@@ -375,23 +345,12 @@
   transition: all 0.2s ease;
 }
 
-.clickable-row:hover {
-  background-color: rgba(4, 30, 66, 0.08) !important;
-  transform: scale(1.01);
-}
-
 .clickable-row:active {
   transform: scale(0.99);
 }
 
 .clickable-power-item {
   cursor: pointer;
-}
-
-.clickable-power-item:hover {
-  background: #d1d9e2 !important;
-  transform: translateX(8px) !important;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
 }
 
 .clickable-power-item:active {
@@ -452,11 +411,6 @@
   transition: all 0.2s;
   border-left: 4px solid #C8102E;
   cursor: pointer;
-}
-
-.league-power-item:hover {
-  background: #e2e8f0;
-  transform: translateX(5px);
 }
 
 .league-power-rank {
@@ -541,11 +495,6 @@
   margin-bottom: 0.75rem;
   transition: all 0.2s;
   cursor: pointer;
-}
-
-.power-ranking-item:hover {
-  background: #e2e8f0;
-  transform: translateX(5px);
 }
 
 .power-rank {
