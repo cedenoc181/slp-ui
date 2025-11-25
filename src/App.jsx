@@ -35,7 +35,7 @@ import TermsOfUse from './components/legal/termsofuse';
 import PrivacyPolicy from './components/legal/PrivacyPolicy';
 
 // Stats page imports//
-import MLBStandings from './components/pages/Stats/mlbStandings';
+import MLBStandings from './components/pages/Stats/mlb-standings/mlbStandings';
 import TeamAnalytics from './components/pages/Stats/teamAnalytics';
 import PlayerAnalytics from './components/pages/Stats/playerAnalytics';
 

@@ -1,7 +1,7 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import '../../../styles/stats-page-styling/mlb-standings-springtraining.css';
-import springTrainingDataJSON from '../../../data/mlbStandingsSpringTraining.json';
+import '../../../../styles/stats-page-styling/mlb-standings-springtraining.css';
+import springTrainingDataJSON from '../../../../data/mlbStandingsSpringTraining.json';
 
 function MLBStandingsSpringTraining({ selectedSeason, selectedLeague }) {
   const navigate = useNavigate();

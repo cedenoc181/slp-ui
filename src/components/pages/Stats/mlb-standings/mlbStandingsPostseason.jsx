@@ -1,9 +1,9 @@
 import React from 'react';
-import '../../../styles/stats-page-styling/mlb-standings-postseason.css';
-import playoffDataJSON from '../../../data/mlbStandingsPostseason.json';
-import alIcon from '../../../assets/images/AL-icon.png';
-import nlIcon from '../../../assets/images/NL-icon.png';
-import wsIcon from '../../../assets/images/mlb-ws.png';
+import '../../../../styles/stats-page-styling/mlb-standings-postseason.css';
+import playoffDataJSON from '../../../../data/mlbStandingsPostseason.json';
+import alIcon from '../../../../assets/images/AL-icon.png';
+import nlIcon from '../../../../assets/images/NL-icon.png';
+import wsIcon from '../../../../assets/images/mlb-ws.png';
 
 const chunkIntoMatchups = (teams) => {
   const pairs = [];

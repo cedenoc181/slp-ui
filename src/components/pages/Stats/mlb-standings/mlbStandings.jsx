@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import '../../../styles/stats-page-styling/mlb-standings.css';
-import standingsData from '../../../data/mlbStandingsData.json';
+import '../../../../styles/stats-page-styling/mlb-standings.css';
+import standingsData from '../../../../data/mlbStandingsData.json';
 import MLBStandingsPostseason from './mlbStandingsPostseason';
 import MLBStandingsSpringTraining from './mlbStandingsSpringTraning';
 
