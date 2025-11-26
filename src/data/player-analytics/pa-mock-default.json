@@ -1,0 +1,138 @@
+{
+  "battingLeaders": [
+    {
+      "category": "Most Home Runs",
+      "statLabel": "HR",
+      "value": 54,
+      "displayValue": "54 HR",
+      "player": "Aaron Judge",
+      "team": "New York Yankees",
+      "league": "AL",
+      "division": "AL East",
+      "year": "2025"
+    },
+    {
+      "category": "Best Batting Average",
+      "statLabel": "AVG",
+      "value": 0.331,
+      "displayValue": ".331 AVG",
+      "player": "Freddie Freeman",
+      "team": "Los Angeles Dodgers",
+      "league": "NL",
+      "division": "NL West",
+      "year": "2025"
+    },
+    {
+      "category": "Most RBIs",
+      "statLabel": "RBI",
+      "value": 126,
+      "displayValue": "126 RBI",
+      "player": "Juan Soto",
+      "team": "New York Yankees",
+      "league": "AL",
+      "division": "AL East",
+      "year": "2025"
+    },
+    {
+      "category": "Most Home Runs",
+      "statLabel": "HR",
+      "value": 51,
+      "displayValue": "51 HR",
+      "player": "Shohei Ohtani",
+      "team": "Los Angeles Dodgers",
+      "league": "NL",
+      "division": "NL West",
+      "year": "2024"
+    },
+    {
+      "category": "Best Batting Average",
+      "statLabel": "AVG",
+      "value": 0.337,
+      "displayValue": ".337 AVG",
+      "player": "Luis Arraez",
+      "team": "Miami Marlins",
+      "league": "NL",
+      "division": "NL East",
+      "year": "2024"
+    },
+    {
+      "category": "Most RBIs",
+      "statLabel": "RBI",
+      "value": 121,
+      "displayValue": "121 RBI",
+      "player": "Yordan Alvarez",
+      "team": "Houston Astros",
+      "league": "AL",
+      "division": "AL West",
+      "year": "2024"
+    }
+  ],
+  "pitchingLeaders": [
+    {
+      "category": "Lowest ERA",
+      "statLabel": "ERA",
+      "value": 2.17,
+      "displayValue": "2.17 ERA",
+      "player": "Tarik Skubal",
+      "team": "Detroit Tigers",
+      "league": "AL",
+      "division": "AL Central",
+      "year": "2025"
+    },
+    {
+      "category": "Lowest WHIP",
+      "statLabel": "WHIP",
+      "value": 0.94,
+      "displayValue": "0.94 WHIP",
+      "player": "George Kirby",
+      "team": "Seattle Mariners",
+      "league": "AL",
+      "division": "AL West",
+      "year": "2025"
+    },
+    {
+      "category": "Most Strikeouts",
+      "statLabel": "K",
+      "value": 247,
+      "displayValue": "247 K",
+      "player": "Spencer Strider",
+      "team": "Atlanta Braves",
+      "league": "NL",
+      "division": "NL East",
+      "year": "2025"
+    },
+    {
+      "category": "Lowest ERA",
+      "statLabel": "ERA",
+      "value": 2.34,
+      "displayValue": "2.34 ERA",
+      "player": "Logan Webb",
+      "team": "San Francisco Giants",
+      "league": "NL",
+      "division": "NL West",
+      "year": "2024"
+    },
+    {
+      "category": "Lowest WHIP",
+      "statLabel": "WHIP",
+      "value": 0.97,
+      "displayValue": "0.97 WHIP",
+      "player": "Zac Gallen",
+      "team": "Arizona Diamondbacks",
+      "league": "NL",
+      "division": "NL West",
+      "year": "2024"
+    },
+    {
+      "category": "Most Strikeouts",
+      "statLabel": "K",
+      "value": 236,
+      "displayValue": "236 K",
+      "player": "Gerrit Cole",
+      "team": "New York Yankees",
+      "league": "AL",
+      "division": "AL East",
+      "year": "2024"
+    }
+  ]
+}
