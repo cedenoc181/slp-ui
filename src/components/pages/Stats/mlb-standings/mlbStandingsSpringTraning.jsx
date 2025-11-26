@@ -135,7 +135,7 @@ function MLBStandingsSpringTraining({ selectedSeason, selectedLeague }) {
 
           <div className="stats-grid">
             <div className="stat-box">
-              <div className="stat-icon">⚾</div>
+              {/* <div className="stat-icon">⚾</div> */}
               <div className="stat-content">
                 <span className="stat-label">Avg Runs/Game</span>
                 <span className="stat-number">{leagueData.avgRunsPerGame}</span>
@@ -143,7 +143,7 @@ function MLBStandingsSpringTraining({ selectedSeason, selectedLeague }) {
             </div>
 
             <div className="stat-box">
-              <div className="stat-icon">🏏</div>
+              {/* <div className="stat-icon">🏏</div> */}
               <div className="stat-content">
                 <span className="stat-label">Avg Hits/Game</span>
                 <span className="stat-number">{leagueData.avgHitsPerGame}</span>
@@ -151,7 +151,7 @@ function MLBStandingsSpringTraining({ selectedSeason, selectedLeague }) {
             </div>
 
             <div className="stat-box">
-              <div className="stat-icon">🎯</div>
+              {/* <div className="stat-icon">🎯</div> */}
               <div className="stat-content">
                 <span className="stat-label">Team Batting Avg</span>
                 <span className="stat-number">{leagueData.teamBattingAvg}</span>
@@ -159,7 +159,7 @@ function MLBStandingsSpringTraining({ selectedSeason, selectedLeague }) {
             </div>
 
             <div className="stat-box">
-              <div className="stat-icon">🔥</div>
+              {/* <div className="stat-icon">🔥</div> */}
               <div className="stat-content">
                 <span className="stat-label">Team ERA</span>
                 <span className="stat-number">{leagueData.teamERA}</span>
@@ -167,7 +167,7 @@ function MLBStandingsSpringTraining({ selectedSeason, selectedLeague }) {
             </div>
 
             <div className="stat-box">
-              <div className="stat-icon">💪</div>
+              {/* <div className="stat-icon">💪</div> */}
               <div className="stat-content">
                 <span className="stat-label">Home Runs</span>
                 <span className="stat-number">{leagueData.totalHomeRuns}</span>
@@ -175,7 +175,7 @@ function MLBStandingsSpringTraining({ selectedSeason, selectedLeague }) {
             </div>
 
             <div className="stat-box">
-              <div className="stat-icon">⚡</div>
+              {/* <div className="stat-icon">⚡</div> */}
               <div className="stat-content">
                 <span className="stat-label">Stolen Bases</span>
                 <span className="stat-number">{leagueData.totalStolenBases}</span>

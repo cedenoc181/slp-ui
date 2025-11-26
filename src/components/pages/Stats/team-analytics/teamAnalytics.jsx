@@ -224,7 +224,7 @@ function TeamAnalytics() {
               </div>
 
               {/* Chart Filter Buttons for Season, Home and Away*/}
-              <div className="chart-filters">
+              <div className="chart-filters floating-remote" aria-label="Toggle season/home/away stats">
                 <button 
                   className={`chart-filter-btn ${chartFilter === 'season' ? 'active' : ''}`}
                   onClick={() => setChartFilter('season')}
