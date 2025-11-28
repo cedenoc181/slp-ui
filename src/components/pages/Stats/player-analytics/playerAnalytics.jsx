@@ -4,6 +4,7 @@ import '../../../../styles/stats-page-styling/player-analytics.css';
 function PlayerAnalytics() {
   const [metricType, setMetricType] = useState('batting');
   const [selectedTeam, setSelectedTeam] = useState('LAD');
+  const [selectedSeason, setSelectedSeason] = useState('2025');
 
   const teams = useMemo(
     () => [
@@ -19,6 +20,11 @@ function PlayerAnalytics() {
     []
   );
 
+  const seasons = useMemo(
+    () => ['2025', '2024', '2023', '2022', '2021', '2020', '2019', '2018'],
+    []
+  );
+
   const currentTeamName = teams.find((t) => t.id === selectedTeam)?.name || 'Team';
 
   return (
@@ -28,18 +34,33 @@ function PlayerAnalytics() {
           <div className="header-content">
             <div className="team-selector-wrapper">
               <h1>{currentTeamName}</h1>
-              <div className="team-selector">
-                <select
-                  value={selectedTeam}
-                  onChange={(e) => setSelectedTeam(e.target.value)}
-                  className="team-dropdown"
-                >
-                  {teams.map((team) => (
-                    <option key={team.id} value={team.id}>
-                      {team.name}
-                    </option>
-                  ))}
-                </select>
+              <div className="team-selector-row">
+                <div className="team-selector">
+                  <select
+                    value={selectedTeam}
+                    onChange={(e) => setSelectedTeam(e.target.value)}
+                    className="team-dropdown player-team-dropdown"
+                  >
+                    {teams.map((team) => (
+                      <option key={team.id} value={team.id}>
+                        {team.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <div className="season-selector">
+                  <select
+                    value={selectedSeason}
+                    onChange={(e) => setSelectedSeason(e.target.value)}
+                    className="season-dropdown"
+                  >
+                    {seasons.map((season) => (
+                      <option key={season} value={season}>
+                        {season}
+                      </option>
+                    ))}
+                  </select>
+                </div>
               </div>
             </div>
             <div className="timeframe-tabs" aria-label="Toggle batting or pitching leaders">
