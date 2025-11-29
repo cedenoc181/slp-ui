@@ -64,6 +64,9 @@
 .season-dropdown-wrapper,
 .season-type-wrapper {
   position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: flex-end;
 }
 
 .season-dropdown,
@@ -83,6 +86,9 @@
   background-repeat: no-repeat;
   background-position: right 1rem center;
   padding-right: 2.5rem;
+  height: 52px;
+  line-height: 1.25;
+  text-align: center;
 }
 
 .season-dropdown option,
@@ -120,6 +126,10 @@
   min-width: 180px;
   background-color: rgba(200, 16, 46, 0.2);
   border-color: rgba(200, 16, 46, 0.5);
+}
+
+.season-dropdown {
+  margin-top: 0.75rem;
 }
 
 /* League Toggle */

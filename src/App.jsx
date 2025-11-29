@@ -54,6 +54,7 @@ import './styles/home-page-styling/footer.css';
 import './styles/stats-page-styling/team-analytics.css';
 import './styles/stats-page-styling/mlb-standings.css';
 import './styles/stats-page-styling/player-analytics.css';
+import './styles/stats-page-styling/batter-stats.css';
 
 
 //Insights-page-styles//

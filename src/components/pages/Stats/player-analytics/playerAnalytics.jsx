@@ -1,13 +1,15 @@
 import React, { useState, useMemo } from 'react';
+import BatterStats from './batterStats';
 import '../../../../styles/stats-page-styling/player-analytics.css';
 
 function PlayerAnalytics() {
   const [metricType, setMetricType] = useState('batting');
-  const [selectedTeam, setSelectedTeam] = useState('LAD');
+  const [selectedTeam, setSelectedTeam] = useState('ALL');
   const [selectedSeason, setSelectedSeason] = useState('2025');
 
   const teams = useMemo(
     () => [
+      { id: 'ALL', name: 'MLB (All Teams)' },
       { id: 'LAD', name: 'Los Angeles Dodgers' },
       { id: 'NYY', name: 'New York Yankees' },
       { id: 'HOU', name: 'Houston Astros' },
@@ -52,7 +54,7 @@ function PlayerAnalytics() {
                   <select
                     value={selectedSeason}
                     onChange={(e) => setSelectedSeason(e.target.value)}
-                    className="season-dropdown"
+                    className="pa-season-dropdown"
                   >
                     {seasons.map((season) => (
                       <option key={season} value={season}>
@@ -80,6 +82,7 @@ function PlayerAnalytics() {
           </div>
         </div>
       </div>
+      <BatterStats teamId={selectedTeam} season={selectedSeason} teamName={currentTeamName} />
     </div>
   );
 }
