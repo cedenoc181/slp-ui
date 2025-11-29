@@ -164,6 +164,12 @@
   border-color: #041e42;
 }
 
+@media (max-width: 390px) {
+  .hot-toggle.hot-toggle-bb {
+    display: none;
+  }
+}
+
 .hot-bats-chart {
   display: grid;
   grid-template-columns: repeat(7, minmax(0, 1fr));
@@ -201,6 +207,27 @@
   color: #4b5875;
 }
 
+.hot-bar-underline {
+  width: 100%;
+  height: 1px;
+  background: #d5dde8;
+  display: none;
+  margin: 2px 0;
+}
+
+.hot-bats-month-label {
+  text-align: center;
+  margin-top: 0.5rem;
+  color: #4b5875;
+  font-weight: 700;
+}
+
+@media (max-width: 430px) {
+  .hot-bar-underline {
+    display: block;
+  }
+}
+
 .batter-splits-card {
   background: #fff;
   border: 1px solid #e4e9f1;
@@ -229,6 +256,7 @@
 
 .batter-splits-layout {
   margin-top: 1.5rem;
+  margin-bottom: 2rem;
   display: grid;
   grid-template-columns: 2fr 1fr;
   gap: 2rem;
@@ -362,7 +390,7 @@
 .batter-top-list-items {
   list-style: none;
   padding: 0;
-  margin: 0;
+  margin: 1.25rem 0 0;
   display: flex;
   flex-direction: column;
   gap: 0.6rem;

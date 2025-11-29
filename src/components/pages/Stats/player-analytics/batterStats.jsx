@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import batterData from '../../../../data/batterData.json';
 import '../../../../styles/stats-page-styling/batter-stats.css';
 
@@ -37,15 +37,34 @@ function BatterStats({ teamId, season, teamName }) {
     'Washington Nationals': 'WSH',
   };
 
-  const formatDateLabel = (dateStr) => {
+  const [isMobile, setIsMobile] = useState(false);
+  const [isSmallMobile, setIsSmallMobile] = useState(false);
+  const [isXSmallMobile, setIsXSmallMobile] = useState(false);
+
+  useEffect(() => {
+    const updateIsMobile = () => {
+      const width = window.innerWidth;
+      setIsMobile(width <= 768);
+      setIsSmallMobile(width <= 540);
+      setIsXSmallMobile(width <= 390);
+    };
+    updateIsMobile();
+    window.addEventListener('resize', updateIsMobile);
+    return () => window.removeEventListener('resize', updateIsMobile);
+  }, []);
+
+  const formatDateLabel = useCallback((dateStr) => {
     if (!dateStr || dateStr.startsWith('G')) return dateStr;
     const parts = dateStr.split('-');
     if (parts.length === 3) {
       const [year, month, day] = parts;
-      return `${month}-${day}-${year}`;
+      if (isXSmallMobile) return day;
+      if (isSmallMobile) return `${month}-${day}`;
+      const yearPart = isMobile ? year.slice(-2) : year;
+      return `${month}-${day}-${yearPart}`;
     }
     return dateStr;
-  };
+  }, [isMobile, isSmallMobile, isXSmallMobile]);
 
   const formatTeamShort = (team) => {
     if (!team) return '';
@@ -99,7 +118,22 @@ function BatterStats({ teamId, season, teamName }) {
       const gameDate = hotBatsDates[idx] || `G${idx + 1}`;
       return { val, gameDate: formatDateLabel(gameDate), idx };
     }).reverse();
-  }, [hotBatsDates, hotBatsValues]);
+  }, [hotBatsDates, hotBatsValues, formatDateLabel]);
+
+  const hotBarsMonthLabel = useMemo(() => {
+    const rawDate = hotBatsDates.find((d) => d && d.includes('-'));
+    if (!rawDate) return '';
+    const parts = rawDate.split('-');
+    if (parts.length < 3) return '';
+    const monthNum = Number(parts[1]);
+    const monthNames = [
+      'January', 'February', 'March', 'April', 'May', 'June',
+      'July', 'August', 'September', 'October', 'November', 'December',
+    ];
+    const monthAbbr = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    const monthLabel = isXSmallMobile ? monthNames[monthNum - 1] : monthAbbr[monthNum - 1];
+    return monthLabel || '';
+  }, [hotBatsDates, isXSmallMobile]);
 
   const performanceSplits = useMemo(() => {
     if (!season) return null;
@@ -134,7 +168,7 @@ function BatterStats({ teamId, season, teamName }) {
 
   const [showAllTopBatters, setShowAllTopBatters] = useState(false);
   const visibleTopBatters = useMemo(
-    () => (showAllTopBatters ? topBatters : topBatters.slice(0, 6)),
+    () => (showAllTopBatters ? topBatters : topBatters.slice(0, 7)),
     [showAllTopBatters, topBatters]
   );
 
@@ -188,7 +222,7 @@ function BatterStats({ teamId, season, teamName }) {
             {hotCategories.map((cat) => (
               <button
                 key={cat}
-                className={`hot-toggle ${hotMetric === cat ? 'active' : ''}`}
+                className={`hot-toggle ${cat === 'BB' ? 'hot-toggle-bb' : ''} ${hotMetric === cat ? 'active' : ''}`}
                 onClick={() => setHotMetric(cat)}
               >
                 {cat}
@@ -212,11 +246,17 @@ function BatterStats({ teamId, season, teamName }) {
                 <span className="hot-bar-value">
                   {hotMetric === 'AVG' ? val.toFixed(3) : val}
                 </span>
+                <span className="hot-bar-underline" aria-hidden="true" />
                 <span className="hot-bar-label">{gameDate}</span>
               </div>
             );
           })}
         </div>
+        {isXSmallMobile && hotBarsMonthLabel && (
+          <div className="hot-bats-month-label">
+            {hotBarsMonthLabel}
+          </div>
+        )}
       </div>
 
       <div className="batter-splits-layout">
@@ -270,8 +310,8 @@ function BatterStats({ teamId, season, teamName }) {
 
         <div className={topCardClass}>
           <div className="batter-top-list-header">
-            <p className="eyebrow">Top 10 Batters</p>
-            <h4>{topListTitle}</h4>
+            <h2>{topListTitle}</h2>
+             <p className="eyebrow">Top 10 Batters</p>
           </div>
           {topBatters.length === 0 && (
             <div className="batter-empty">No batter leaderboard data.</div>
@@ -294,7 +334,7 @@ function BatterStats({ teamId, season, teamName }) {
               ))}
             </ol>
           )}
-          {topBatters.length > 6 && (
+          {topBatters.length > 7 && (
             <div className="batter-top-actions">
               <button
                 className="batter-top-toggle"
