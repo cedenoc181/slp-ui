@@ -10,6 +10,7 @@ function TeamAnalytics() {
   const [chartFilter, setChartFilter] = useState('season');
   const [leadersToggle, setLeadersToggle] = useState('batting'); // 'batting' or 'pitching'
   const [teamStatsToggle, setTeamStatsToggle] = useState('batting'); // 'batting' or 'pitching'
+  const [hideFloatingFilters, setHideFloatingFilters] = useState(false);
 
   // Mock data - will be replaced with API later
   const teams = [
@@ -58,6 +59,21 @@ function TeamAnalytics() {
       navigate(`/team-analytics/${team.urlName}`);
     }
   };
+
+  // Hide floating filters when footer is in view
+  useEffect(() => {
+    const footer = document.querySelector('footer');
+    if (!footer) return;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const entry = entries[0];
+        setHideFloatingFilters(entry.isIntersecting);
+      },
+      { root: null, threshold: 0 }
+    );
+    observer.observe(footer);
+    return () => observer.disconnect();
+  }, []);
 
   const currentTimeframeData = teamData[timeframe];
   const currentChartData = currentTimeframeData.trends[chartFilter];
@@ -224,7 +240,7 @@ function TeamAnalytics() {
               </div>
 
               {/* Chart Filter Buttons for Season, Home and Away*/}
-              <div className="chart-filters floating-remote" aria-label="Toggle season/home/away stats">
+              <div className={`chart-filters floating-remote ${hideFloatingFilters ? 'floating-hidden' : ''}`} aria-label="Toggle season/home/away stats">
                 <button 
                   className={`chart-filter-btn ${chartFilter === 'season' ? 'active' : ''}`}
                   onClick={() => setChartFilter('season')}

@@ -140,7 +140,7 @@ function MLBStandingsPostseason({ selectedSeason }) {
 
     return (
       <div className="playoff-bracket-container">
-        <div className="bracket-wrapper">
+        <div>
           <div className="bracket-grid">
             <div className="round-column al wild-card">
             <div className="round-title">AL Wild Card</div>

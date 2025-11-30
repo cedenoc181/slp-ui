@@ -211,7 +211,7 @@ function MLBStandings() {
                           </td>
                           <td className="wins">{team.wins}</td>
                           <td className="losses">{team.losses}</td>
-                          <td>{team.pct.toFixed(3)}</td>
+                          <td className="pct">{team.pct.toFixed(3)}</td>
                           <td className="gb">{team.gb}</td>
                           <td className={`streak ${team.streak.startsWith('W') ? 'win-streak' : 'loss-streak'}`}>
                             {team.streak}
@@ -263,7 +263,7 @@ function MLBStandings() {
                           </td>
                           <td className="wins">{team.wins}</td>
                           <td className="losses">{team.losses}</td>
-                          <td>{team.pct.toFixed(3)}</td>
+                          <td className="pct">{team.pct.toFixed(3)}</td>
                           <td className="gb">{team.gb}</td>
                           <td className={`streak ${team.streak.startsWith('W') ? 'win-streak' : 'loss-streak'}`}>
                             {team.streak}
@@ -315,7 +315,7 @@ function MLBStandings() {
                           </td>
                           <td className="wins">{team.wins}</td>
                           <td className="losses">{team.losses}</td>
-                          <td>{team.pct.toFixed(3)}</td>
+                          <td className="pct">{team.pct.toFixed(3)}</td>
                           <td className="gb">{team.gb}</td>
                           <td className={`streak ${team.streak.startsWith('W') ? 'win-streak' : 'loss-streak'}`}>
                             {team.streak}
@@ -367,7 +367,7 @@ function MLBStandings() {
                           </td>
                           <td className="wins">{team.wins}</td>
                           <td className="losses">{team.losses}</td>
-                          <td>{team.pct.toFixed(3)}</td>
+                          <td className="pct">{team.pct.toFixed(3)}</td>
                           <td className="gb">{team.gb}</td>
                           <td className={`wcgb ${team.wcgb.startsWith('+') ? 'positive' : team.wcgb.startsWith('-') ? 'negative' : ''}`}>
                             {team.wcgb}

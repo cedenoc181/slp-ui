@@ -599,8 +599,12 @@
   }
 
   .season-tabs {
-    flex-direction: column;
-    max-width: 250px;
+    flex-direction: row;
+    max-width: 350px;
+  }
+
+  .season-selector {
+    margin-bottom: 1rem;
   }
 
   .season-tab,
@@ -626,8 +630,8 @@
   .league-toggle,
   .league-toggle.playoff-mode,
   .league-toggle.spring-mode {
-    flex-direction: column;
-    max-width: 300px;
+    flex-direction: row;
+    max-width: 500px;
   }
 
   .wildcard-power-grid {
@@ -666,7 +670,7 @@
   }
 }
 
-@media (max-width: 480px) {
+@media (max-width: 430px) {
   .standings-header h1 {
     font-size: 1.5rem;
   }
@@ -678,4 +682,32 @@
   .power-team-name {
     font-size: 1rem;
   }
+
+  .season-tabs {
+    margin: auto;
+    justify-content: center;
+    width: 345px;
+  }
+  .season-type-dropdown {
+    margin-top: .75rem;
+  }
+
+  .standings-table td.rank-col, td.team-col, td.wins, td.losses, td.pct, td.gb, td.streak, td.wcgb {
+    width: 5% !important;
+  }
+
+
+}
+
+@media (max-width: 390px) {
+  .standings-table td.streak, td.wcgb {
+    width: 1% !important;
+  }
+}
+
+@media (max-width: 320px) {
+  .season-tabs {
+    width: 300px;
+  }
+
 }

@@ -16,6 +16,14 @@
         "team": "Seattle Mariners",
         "runsAllowed": 78
       },
+      "topBattingAvgTeam": {
+        "team": "Texas Rangers",
+        "avg": ".284"
+      },
+      "topEraTeam": {
+        "team": "Seattle Mariners",
+        "era": "3.52"
+      },
       "teams": [
         {
           "team": "Los Angeles Dodgers",
@@ -174,6 +182,14 @@
       "topPitching": {
         "team": "Tampa Bay Rays",
         "runsAllowed": 82
+      },
+      "topBattingAvgTeam": {
+        "team": "Atlanta Braves",
+        "avg": ".289"
+      },
+      "topEraTeam": {
+        "team": "Tampa Bay Rays",
+        "era": "3.68"
       },
       "teams": [
         {
