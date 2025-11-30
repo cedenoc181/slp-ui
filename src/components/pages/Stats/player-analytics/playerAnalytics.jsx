@@ -1,5 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import BatterStats from './batterStats';
+import PitcherStats from './pitcherStats';
 import '../../../../styles/stats-page-styling/player-analytics.css';
 
 function PlayerAnalytics() {
@@ -82,7 +83,11 @@ function PlayerAnalytics() {
           </div>
         </div>
       </div>
-      <BatterStats teamId={selectedTeam} season={selectedSeason} teamName={currentTeamName} />
+      {metricType === 'batting' ? (
+        <BatterStats teamId={selectedTeam} season={selectedSeason} teamName={currentTeamName} />
+      ) : (
+        <PitcherStats teamId={selectedTeam} season={selectedSeason} teamName={currentTeamName} />
+      )}
     </div>
   );
 }
