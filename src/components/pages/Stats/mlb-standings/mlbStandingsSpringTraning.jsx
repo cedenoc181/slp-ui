@@ -38,6 +38,11 @@ const teamAbbreviationMap = {
 function MLBStandingsSpringTraining({ selectedSeason, selectedLeague }) {
   const navigate = useNavigate();
   const [isCompactTeams, setIsCompactTeams] = useState(false);
+  const stripStatUnits = useCallback((stat) => {
+    if (stat === undefined || stat === null) return '';
+    const matches = String(stat).match(/-?\d*\.?\d+/g);
+    return matches ? matches.join(' ') : String(stat);
+  }, []);
 
   // Get spring training data for the selected season, fallback to 2024
   const springData = springTrainingDataJSON[selectedSeason] || springTrainingDataJSON['2024'];
@@ -211,22 +216,22 @@ function MLBStandingsSpringTraining({ selectedSeason, selectedLeague }) {
                 <div className="performer-item">
                   <span className="performer-category">Runs Scored</span>
                   <span className="performer-value">{formatTeamDisplay(leagueData.topOffense.team)}</span>
-                  <span className="performer-stat">{leagueData.topOffense.runs} RS</span>
+                  <span className="performer-stat">{stripStatUnits(leagueData.topOffense.runs)}</span>
                 </div>
                 <div className="performer-item">
                   <span className="performer-category">Runs Allowed</span>
                   <span className="performer-value">{formatTeamDisplay(leagueData.topPitching.team)}</span>
-                  <span className="performer-stat">{leagueData.topPitching.runsAllowed} RA</span>
+                  <span className="performer-stat">{stripStatUnits(leagueData.topPitching.runsAllowed)}</span>
                 </div>
                 <div className="performer-item">
                   <span className="performer-category">Team Batting Avg</span>
                   <span className="performer-value">{formatTeamDisplay(leagueData.topBattingAvgTeam.team)}</span>
-                  <span className="performer-stat">{leagueData.topBattingAvgTeam.avg}</span>
+                  <span className="performer-stat">{stripStatUnits(leagueData.topBattingAvgTeam.avg)}</span>
                 </div>
                 <div className="performer-item">
                   <span className="performer-category">Team ERA</span>
                   <span className="performer-value">{formatTeamDisplay(leagueData.topEraTeam.team)}</span>
-                  <span className="performer-stat">{leagueData.topEraTeam.era}</span>
+                  <span className="performer-stat">{stripStatUnits(leagueData.topEraTeam.era)}</span>
                 </div>
               </div>
             </div>
@@ -236,22 +241,22 @@ function MLBStandingsSpringTraining({ selectedSeason, selectedLeague }) {
                 <div className="performer-item">
                   <span className="performer-category">Strikeouts</span>
                   <span className="performer-value">{leagueLeaders.strikeouts.player}</span>
-                  <span className="performer-stat">{leagueLeaders.strikeouts.stat}</span>
+                  <span className="performer-stat">{stripStatUnits(leagueLeaders.strikeouts.stat)}</span>
                 </div>
                 <div className="performer-item">
                   <span className="performer-category">ERA</span>
                   <span className="performer-value">{leagueLeaders.era.player}</span>
-                  <span className="performer-stat">{leagueLeaders.era.stat}</span>
+                  <span className="performer-stat">{stripStatUnits(leagueLeaders.era.stat)}</span>
                 </div>
                 <div className="performer-item">
                   <span className="performer-category">WHIP</span>
                   <span className="performer-value">{leagueLeaders.whip.player}</span>
-                  <span className="performer-stat">{leagueLeaders.whip.stat}</span>
+                  <span className="performer-stat">{stripStatUnits(leagueLeaders.whip.stat)}</span>
                 </div>
                 <div className="performer-item">
                   <span className="performer-category">Innings Pitched</span>
                   <span className="performer-value">{leagueLeaders.innings.player}</span>
-                  <span className="performer-stat">{leagueLeaders.innings.stat}</span>
+                  <span className="performer-stat">{stripStatUnits(leagueLeaders.innings.stat)}</span>
                 </div>
               </div>
             </div>
@@ -262,22 +267,22 @@ function MLBStandingsSpringTraining({ selectedSeason, selectedLeague }) {
                 <div className="performer-item">
                   <span className="performer-category">Home Runs</span>
                   <span className="performer-value">{leagueLeaders.homers.player}</span>
-                  <span className="performer-stat">{leagueLeaders.homers.stat}</span>
+                  <span className="performer-stat">{stripStatUnits(leagueLeaders.homers.stat)}</span>
                 </div>
                 <div className="performer-item">
                   <span className="performer-category">Hits</span>
                   <span className="performer-value">{leagueLeaders.hits.player}</span>
-                  <span className="performer-stat">{leagueLeaders.hits.stat}</span>
+                  <span className="performer-stat">{stripStatUnits(leagueLeaders.hits.stat)}</span>
                 </div>
                 <div className="performer-item">
                   <span className="performer-category">Batting Avg</span>
                   <span className="performer-value">{leagueLeaders.battingAvg.player}</span>
-                  <span className="performer-stat">{leagueLeaders.battingAvg.stat}</span>
+                  <span className="performer-stat">{stripStatUnits(leagueLeaders.battingAvg.stat)}</span>
                 </div>
                 <div className="performer-item">
                   <span className="performer-category">OPS</span>
                   <span className="performer-value">{leagueLeaders.ops.player}</span>
-                  <span className="performer-stat">{leagueLeaders.ops.stat}</span>
+                  <span className="performer-stat">{stripStatUnits(leagueLeaders.ops.stat)}</span>
                 </div>
               </div>
             </div>
