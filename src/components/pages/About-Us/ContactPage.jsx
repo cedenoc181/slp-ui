@@ -34,49 +34,36 @@ function ContactPage() {
     setCaptchaValue(value);
   };
 
+  
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
     if (!captchaValue) {
       setSubmitStatus({ type: 'error', message: 'Please complete the reCAPTCHA' });
       return;
     }
-
     setIsSubmitting(true);
-    
     try {
-      // TODO: Replace with your actual API endpoint
-      // const response = await fetch('/api/contact', {
-      //   method: 'POST',
-      //   headers: { 'Content-Type': 'application/json' },
-      //   body: JSON.stringify({ ...formData, captcha: captchaValue })
-      // });
-
-      // Simulating API call
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      
-      setSubmitStatus({ 
-        type: 'success', 
-        message: 'Thank you! Your message has been sent successfully.' 
+      const res = await fetch('/api/contact', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          ...formData,
+          captchaToken: captchaValue,
+          expectedAction: 'contact_submit' // optional label
+        })
       });
-      
-      // Reset form
+      const data = await res.json();
+      if (!res.ok || !data.success) throw new Error(data.message || 'verify failed');
+      setSubmitStatus({ type: 'success', message: 'Thank you! Your message has been sent successfully.' });
       setFormData({ name: '', email: '', issueType: '', message: '' });
       setCaptchaValue(null);
-
-    setTimeout(() => {
-      navigate('/contact');
-    }, 2000);
-      
-    } catch (error) {
-      setSubmitStatus({ 
-        type: 'error', 
-        message: 'Something went wrong. Please try again later.' 
-      });
+    } catch (err) {
+      setSubmitStatus({ type: 'error', message: 'Something went wrong. Please try again later.' });
     } finally {
       setIsSubmitting(false);
     }
   };
+
 
   return (
     <section className="contact-page">
@@ -153,7 +140,7 @@ function ContactPage() {
 
               <div className="form-group captcha-group">
                 <ReCAPTCHA
-                  sitekey={process.env.REACT_APP_RECAPTCHA_SITE_KEY} // Replace with your actual site key
+                  sitekey={process.env.SANDLOT_APP_RECAPTCHA_SITE_KEY || process.env.REACT_APP_RECAPTCHA_SITE_KEY}
                   onChange={handleCaptchaChange}
                   theme="light"
                 />
