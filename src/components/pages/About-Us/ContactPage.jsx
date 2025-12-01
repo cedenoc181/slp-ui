@@ -1,12 +1,9 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
 import ReCAPTCHA from "react-google-recaptcha";
 import contactImage from '../../../assets/images/spa-retro-logo-removebg.png';
 import '../../../styles/contact-page.css';
 
 function ContactPage() {
-
-  const navigate = useNavigate();
   
   const [formData, setFormData] = useState({
     name: '',
@@ -31,6 +28,7 @@ function ContactPage() {
   };
 
   const handleCaptchaChange = (value) => {
+    console.log('captcha token', value);
     setCaptchaValue(value);
   };
 
@@ -140,7 +138,7 @@ function ContactPage() {
 
               <div className="form-group captcha-group">
                 <ReCAPTCHA
-                  sitekey={process.env.SANDLOT_APP_RECAPTCHA_SITE_KEY || process.env.REACT_APP_RECAPTCHA_SITE_KEY}
+                  sitekey={process.env.REACT_APP_RECAPTCHA_SITE_KEY || process.env.SANDLOT_APP_RECAPTCHA_SITE_KEY}
                   onChange={handleCaptchaChange}
                   theme="light"
                 />
