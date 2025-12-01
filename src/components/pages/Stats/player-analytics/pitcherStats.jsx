@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import '../../../../styles/stats-page-styling/pitcher-stats.css';
 
 const mockPitcherData = {
@@ -8,8 +8,8 @@ const mockPitcherData = {
     { category: 'Wins', value: 19, pitcher: 'Gerrit Cole', team: 'New York Yankees' },
   ],
   hotArms: {
-    ERA: [1.12, 2.05, 1.78, 2.21, 1.95],
-    WHIP: [0.85, 0.98, 1.02, 1.05, 0.97],
+    W: [1, 1, 0, 1, 1],
+    IP: [7.0, 6.1, 5.2, 7.1, 6.0],
     K: [11, 8, 9, 7, 10],
     QS: [1, 1, 1, 1, 1],
     ER: [1, 2, 2, 3, 2],
@@ -17,18 +17,20 @@ const mockPitcherData = {
   },
   hotDates: ['2025-03-24', '2025-03-18', '2025-03-12', '2025-03-06', '2025-02-28'],
   hotLeaders: {
-    ERA: { pitcher: 'Spencer Strider', team: 'Atlanta Braves' },
-    WHIP: { pitcher: 'Logan Webb', team: 'San Francisco Giants' },
+    W: { pitcher: 'Gerrit Cole', team: 'New York Yankees' },
+    IP: { pitcher: 'Logan Webb', team: 'San Francisco Giants' },
     K: { pitcher: 'Gerrit Cole', team: 'New York Yankees' },
     QS: { pitcher: 'Corbin Burnes', team: 'Baltimore Orioles' },
     ER: { pitcher: 'Zac Gallen', team: 'Arizona Diamondbacks' },
     BB: { pitcher: 'Kyle Bradish', team: 'Baltimore Orioles' },
   },
   performanceSplits: {
-    vsLHB: { ip: 34.2, era: 2.31, oppAvg: 0.215, pitcher: 'Max Fried', team: 'Atlanta Braves' },
-    vsRHB: { ip: 38.1, era: 2.74, oppAvg: 0.228, pitcher: 'Pablo López', team: 'Minnesota Twins' },
-    home: { ip: 40.0, era: 2.10, oppAvg: 0.207, pitcher: 'Tarik Skubal', team: 'Detroit Tigers' },
-    away: { ip: 33.2, era: 2.95, oppAvg: 0.236, pitcher: 'Tyler Glasnow', team: 'Los Angeles Dodgers' },
+    vsLHB: { whip: 1.08, era: 2.31, oppAvg: 0.215, pitcher: 'Max Fried', team: 'Atlanta Braves' },
+    vsRHB: { whip: 1.12, era: 2.74, oppAvg: 0.228, pitcher: 'Pablo López', team: 'Minnesota Twins' },
+    home: { whip: 1.05, era: 2.10, oppAvg: 0.207, pitcher: 'Tarik Skubal', team: 'Detroit Tigers' },
+    away: { whip: 1.15, era: 2.95, oppAvg: 0.236, pitcher: 'Tyler Glasnow', team: 'Los Angeles Dodgers' },
+    firstHalf: { whip: 1.02, era: 2.25, oppAvg: 0.210, pitcher: 'Spencer Strider', team: 'Atlanta Braves' },
+    secondHalf: { whip: 1.10, era: 2.88, oppAvg: 0.235, pitcher: 'Logan Webb', team: 'San Francisco Giants' },
   },
   topPitchers: [
     { pitcher: 'Corbin Burnes', team: 'Baltimore Orioles', era: 2.21, whip: 0.94, wins: 19 },
@@ -44,20 +46,68 @@ const mockPitcherData = {
   ],
 };
 
-const formatDate = (dateStr) => {
-  const parts = dateStr.split('-');
-  if (parts.length !== 3) return dateStr;
-  return `${parts[1]}-${parts[2].slice(-2)}-${parts[0]}`;
-};
-
 function PitcherStats({ teamId = 'ALL', season = '2025', teamName = 'MLB' }) {
-  const [hotMetric, setHotMetric] = useState('ERA');
+  const [hotMetric, setHotMetric] = useState('W');
   const [showAllTopPitchers, setShowAllTopPitchers] = useState(false);
+  const [hoverMetric, setHoverMetric] = useState(null);
+  const [showTooltip, setShowTooltip] = useState(false);
+  const hoverTimerRef = useRef(null);
+  const [isMobile, setIsMobile] = useState(false);
+  const [isSmallMobile, setIsSmallMobile] = useState(false);
+  const [isXSmallMobile, setIsXSmallMobile] = useState(false);
 
-  const hotCategories = ['ERA', 'WHIP', 'K', 'QS', 'ER', 'BB'];
+  const hotCategories = ['W', 'IP', 'K', 'QS', 'ER', 'BB'];
+  const hotCategoryDescriptions = {
+    W: 'Wins in last 5 starts',
+    IP: 'Innings pitched per start',
+    K: 'Strikeouts per start',
+    QS: 'Quality starts',
+    ER: 'Earned runs allowed',
+    BB: 'Walks allowed',
+  };
+
+  const teamAbbreviationMap = {
+    'Baltimore Orioles': 'BAL',
+    'New York Yankees': 'NYY',
+    'Arizona Diamondbacks': 'ARI',
+    'Atlanta Braves': 'ATL',
+    'San Francisco Giants': 'SFG',
+    'Los Angeles Dodgers': 'LAD',
+    'Detroit Tigers': 'DET',
+    'Minnesota Twins': 'MIN',
+    'Toronto Blue Jays': 'TOR',
+    'Houston Astros': 'HOU',
+  };
+
+  const formatTeamAbbr = (team) => teamAbbreviationMap[team] || team;
+
+  useEffect(() => {
+    const handleResize = () => {
+      const width = window.innerWidth;
+      setIsMobile(width <= 768);
+      setIsSmallMobile(width <= 430);
+      setIsXSmallMobile(width <= 390);
+    };
+    handleResize();
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   const hotValues = useMemo(() => mockPitcherData.hotArms[hotMetric] || [], [hotMetric]);
   const hotLeader = useMemo(() => mockPitcherData.hotLeaders[hotMetric] || null, [hotMetric]);
+
+  const formatHotDate = useCallback(
+    (rawDate) => {
+      const parts = rawDate?.split('-') || [];
+      if (parts.length !== 3) return rawDate;
+      const [year, month, day] = parts;
+      if (isXSmallMobile) return day;
+      if (isSmallMobile) return `${month}-${day}`;
+      const yearPart = isMobile ? year.slice(-2) : year;
+      return `${month}-${day}-${yearPart}`;
+    },
+    [isMobile, isSmallMobile, isXSmallMobile]
+  );
 
   const hotBars = useMemo(() => {
     const combined = (mockPitcherData.hotDates || []).map((date, idx) => ({
@@ -67,12 +117,43 @@ function PitcherStats({ teamId = 'ALL', season = '2025', teamName = 'MLB' }) {
     return combined
       .filter((entry) => entry.val !== undefined)
       .sort((a, b) => new Date(a.rawDate) - new Date(b.rawDate))
-      .map((entry) => ({ val: entry.val, date: formatDate(entry.rawDate) }));
-  }, [hotValues]);
+      .map((entry) => ({
+        val: entry.val,
+        date: formatHotDate(entry.rawDate),
+      }));
+  }, [formatHotDate, hotValues]);
+
+  const hotMonthLabel = useMemo(() => {
+    if (!isXSmallMobile) return '';
+    const firstDate = mockPitcherData.hotDates?.find((d) => d && d.includes('-'));
+    if (!firstDate) return '';
+    const [, month] = firstDate.split('-');
+    const monthNames = [
+      'January',
+      'February',
+      'March',
+      'April',
+      'May',
+      'June',
+      'July',
+      'August',
+      'September',
+      'October',
+      'November',
+      'December',
+    ];
+    const idx = Number(month) - 1;
+    return monthNames[idx] || '';
+  }, [isXSmallMobile]);
 
   const leaderCards = useMemo(
     () => mockPitcherData.leaders.map((l) => ({ ...l, key: l.category })),
     []
+  );
+
+  const visibleTopPitchers = useMemo(
+    () => (showAllTopPitchers ? mockPitcherData.topPitchers : mockPitcherData.topPitchers.slice(0, 7)),
+    [showAllTopPitchers]
   );
 
   const splitRows = useMemo(() => {
@@ -82,6 +163,8 @@ function PitcherStats({ teamId = 'ALL', season = '2025', teamName = 'MLB' }) {
       { key: 'vsRHB', label: 'vs Right-Handed Batters' },
       { key: 'home', label: 'Home Games' },
       { key: 'away', label: 'Away Games' },
+      { key: 'firstHalf', label: '1st Half' },
+      { key: 'secondHalf', label: '2nd Half' },
     ];
     return categories
       .map((c) => {
@@ -92,11 +175,6 @@ function PitcherStats({ teamId = 'ALL', season = '2025', teamName = 'MLB' }) {
       })
       .filter(Boolean);
   }, []);
-
-  const visibleTopPitchers = useMemo(
-    () => (showAllTopPitchers ? mockPitcherData.topPitchers : mockPitcherData.topPitchers.slice(0, 7)),
-    [showAllTopPitchers]
-  );
 
   return (
     <section className="pitcher-stats-section container">
@@ -141,16 +219,42 @@ function PitcherStats({ teamId = 'ALL', season = '2025', teamName = 'MLB' }) {
                 key={cat}
                 className={`hot-toggle ${hotMetric === cat ? 'active' : ''}`}
                 onClick={() => setHotMetric(cat)}
+                onMouseEnter={() => {
+                  setHoverMetric(cat);
+                  if (hoverTimerRef.current) clearTimeout(hoverTimerRef.current);
+                  hoverTimerRef.current = setTimeout(() => setShowTooltip(true), 1000);
+                }}
+                onMouseLeave={() => {
+                  if (hoverTimerRef.current) clearTimeout(hoverTimerRef.current);
+                  setShowTooltip(false);
+                  setHoverMetric(null);
+                }}
               >
                 {cat}
               </button>
             ))}
+            {showTooltip && hoverMetric && (
+              <div className="hot-toggle-tooltip">
+                {hotCategoryDescriptions[hoverMetric] || hoverMetric}
+              </div>
+            )}
           </div>
         </div>
         <div className="hot-arms-chart">
           {hotBars.length === 0 && <div className="pitcher-empty">No recent start data.</div>}
           {hotBars.map((bar, idx) => {
-            const height = Math.min(220, hotMetric === 'ERA' || hotMetric === 'WHIP' ? 220 - bar.val * 40 : bar.val * 8 + 20);
+            let height = 0;
+            if (hotMetric === 'IP') {
+              height = Math.min(220, bar.val * 25);
+            } else if (hotMetric === 'W') {
+              height = Math.min(220, bar.val * 40 + 20);
+            } else if (hotMetric === 'ER' || hotMetric === 'BB') {
+              height = Math.min(220, bar.val * 25 + 20);
+            } else if (hotMetric === 'QS') {
+              height = Math.min(220, bar.val * 60 + 20);
+            } else {
+              height = Math.min(220, bar.val * 10 + 20);
+            }
             return (
               <div className="hot-bar" key={`${hotMetric}-${idx}`}>
                 <div
@@ -159,21 +263,25 @@ function PitcherStats({ teamId = 'ALL', season = '2025', teamName = 'MLB' }) {
                   aria-label={`Start ${idx + 1} ${hotMetric} ${bar.val}`}
                 />
                 <span className="hot-bar-value">
-                  {hotMetric === 'ERA' || hotMetric === 'WHIP' ? bar.val.toFixed(2) : bar.val}
+                  {hotMetric === 'IP' ? bar.val.toFixed(1) : bar.val}
                 </span>
+                <span className="hot-bar-underline" aria-hidden="true" />
                 <span className="hot-bar-label">{bar.date}</span>
               </div>
             );
           })}
         </div>
+        {hotMonthLabel && <div className="hot-arms-month-label">{hotMonthLabel}</div>}
       </div>
 
       <div className="pitcher-splits-layout">
         <div className="pitcher-splits-card">
           <div className="pitcher-splits-header">
             <div>
-              <p className="eyebrow">Performance Splits</p>
-              <h3>Matchup Breakdown</h3>
+              <h1>Performance Splits</h1>
+              <p className="pitcher-split-subtitle">
+                {season} {teamId === 'ALL' ? 'MLB' : teamName || 'Team'} splits
+              </p>
             </div>
           </div>
           {splitRows.length === 0 && <div className="pitcher-empty">No split data available.</div>}
@@ -189,12 +297,11 @@ function PitcherStats({ teamId = 'ALL', season = '2025', teamName = 'MLB' }) {
                   </div>
                   <div className="pitcher-split-stats">
                     <div className="pitcher-split-topline">
-                      <span className="pitcher-split-record">{data.ip} IP</span>
+                      <span className="pitcher-split-record">{data.whip.toFixed(2)} WHIP</span>
                       <span className="pitcher-split-era" style={{ color }}>
                         {data.era.toFixed(2)} ERA
                       </span>
                     </div>
-                    <div className="pitcher-split-oppavg">Opp AVG {data.oppAvg.toFixed(3).replace(/^0/, '')}</div>
                     <div className="pitcher-progress-bar">
                       <div className="pitcher-progress-fill" style={{ width: `${Math.min(data.era * 12, 100)}%`, backgroundColor: color }} />
                     </div>
@@ -207,17 +314,16 @@ function PitcherStats({ teamId = 'ALL', season = '2025', teamName = 'MLB' }) {
 
         <div className="pitcher-top-card">
           <div className="pitcher-top-list-header">
-            <p className="eyebrow">Top 10 Pitchers</p>
-            <h4>{season} MLB Leaders</h4>
+            <h1 className="pitcher-top-title">{season} MLB Leaders</h1>
+              <div className="pitcher-top-list-subtitle">Top 10 pitchers</div>
           </div>
-          <div className="pitcher-top-list-subtitle">Top 10 pitchers</div>
           <ol className="pitcher-top-list-items">
             {visibleTopPitchers.map((p, idx) => (
               <li key={`${p.pitcher}-${idx}`} className="pitcher-top-list-item">
                 <div className="pitcher-top-rank">#{idx + 1}</div>
                 <div className="pitcher-top-info">
                   <div className="pitcher-top-name">{p.pitcher}</div>
-                  <div className="pitcher-top-team">{p.team}</div>
+                  <div className="pitcher-top-team">{formatTeamAbbr(p.team)}</div>
                 </div>
                 <div className="pitcher-top-stats">
                   <span>ERA {p.era.toFixed(2)}</span>

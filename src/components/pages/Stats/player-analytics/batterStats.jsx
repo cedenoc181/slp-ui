@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import batterData from '../../../../data/batterData.json';
 import '../../../../styles/stats-page-styling/batter-stats.css';
 
@@ -40,6 +40,9 @@ function BatterStats({ teamId, season, teamName }) {
   const [isMobile, setIsMobile] = useState(false);
   const [isSmallMobile, setIsSmallMobile] = useState(false);
   const [isXSmallMobile, setIsXSmallMobile] = useState(false);
+  const [hoverMetric, setHoverMetric] = useState(null);
+  const [showTooltip, setShowTooltip] = useState(false);
+  const hoverTimerRef = useRef(null);
 
   useEffect(() => {
     const updateIsMobile = () => {
@@ -51,6 +54,12 @@ function BatterStats({ teamId, season, teamName }) {
     updateIsMobile();
     window.addEventListener('resize', updateIsMobile);
     return () => window.removeEventListener('resize', updateIsMobile);
+  }, []);
+
+  useEffect(() => {
+    return () => {
+      if (hoverTimerRef.current) clearTimeout(hoverTimerRef.current);
+    };
   }, []);
 
   const formatDateLabel = useCallback((dateStr) => {
@@ -111,7 +120,15 @@ function BatterStats({ teamId, season, teamName }) {
     () => (hotBats ? hotBats[hotMetric] || [] : []),
     [hotBats, hotMetric]
   );
-  const hotCategories = ['HR', 'HITS', 'RBI', 'AVG', 'SB', 'BB'];
+  const hotCategories = ['HR', 'HITS', 'RBI', 'RUNS', 'SB', 'BB'];
+  const hotCategoryDescriptions = {
+    HR: 'Home runs in the last 7 games',
+    HITS: 'Hits in the last 7 games',
+    RBI: 'Runs batted in during last 7 games',
+    RUNS: 'Runs scored in the last 7 games',
+    SB: 'Stolen bases in the last 7 games',
+    BB: 'Walks drawn in the last 7 games',
+  };
 
   const hotBars = useMemo(() => {
     return hotBatsValues.map((val, idx) => {
@@ -224,10 +241,25 @@ function BatterStats({ teamId, season, teamName }) {
                 key={cat}
                 className={`hot-toggle ${cat === 'BB' ? 'hot-toggle-bb' : ''} ${hotMetric === cat ? 'active' : ''}`}
                 onClick={() => setHotMetric(cat)}
+                onMouseEnter={() => {
+                  setHoverMetric(cat);
+                  if (hoverTimerRef.current) clearTimeout(hoverTimerRef.current);
+                  hoverTimerRef.current = setTimeout(() => setShowTooltip(true), 1000);
+                }}
+                onMouseLeave={() => {
+                  if (hoverTimerRef.current) clearTimeout(hoverTimerRef.current);
+                  setShowTooltip(false);
+                  setHoverMetric(null);
+                }}
               >
                 {cat}
               </button>
             ))}
+            {showTooltip && hoverMetric && (
+              <div className="hot-toggle-tooltip">
+                {hotCategoryDescriptions[hoverMetric] || hoverMetric}
+              </div>
+            )}
           </div>
         </div>
         <div className="hot-bats-chart">
@@ -235,7 +267,7 @@ function BatterStats({ teamId, season, teamName }) {
             <div className="batter-empty">No recent game data for this selection.</div>
           )}
           {hotBars.map(({ val, gameDate, idx }) => {
-            const height = Math.min(220, hotMetric === 'AVG' ? val * 450 : val * 45 + 30);
+            const height = Math.min(220, hotMetric === 'RUNS' ? val * 30 + 30 : val * 45 + 30);
             return (
               <div className="hot-bar" key={`${hotMetric}-${idx}`}>
                 <div
@@ -244,7 +276,7 @@ function BatterStats({ teamId, season, teamName }) {
                   aria-label={`${gameDate} ${hotMetric} ${val}`}
                 />
                 <span className="hot-bar-value">
-                  {hotMetric === 'AVG' ? val.toFixed(3) : val}
+                  {val}
                 </span>
                 <span className="hot-bar-underline" aria-hidden="true" />
                 <span className="hot-bar-label">{gameDate}</span>
@@ -269,9 +301,6 @@ function BatterStats({ teamId, season, teamName }) {
                   {season} {teamId === 'ALL' ? 'MLB' : teamName || 'Team'} splits
                 </p>
               )}
-            </div>
-            <div className="batter-splits-col align-end">
-              <h2 className="batter-splits-secondary">📊 Offense Production</h2>
             </div>
           </div>
           <div className="batter-splits-main">

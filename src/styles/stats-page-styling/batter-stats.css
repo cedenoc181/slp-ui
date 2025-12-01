@@ -141,6 +141,23 @@
 .hot-bats-toggle {
   display: flex;
   gap: 0.5rem;
+  position: relative;
+}
+
+.hot-toggle-tooltip {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  margin-top: 0.4rem;
+  padding: 0.55rem 0.75rem;
+  background: #041e42;
+  color: #fff;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  font-weight: 700;
+  box-shadow: 0 10px 24px rgba(4, 30, 66, 0.18);
+  z-index: 5;
+  min-width: 190px;
 }
 
 .hot-toggle {
@@ -165,6 +182,12 @@
 }
 
 @media (max-width: 390px) {
+  .hot-toggle.hot-toggle-bb {
+    display: none;
+  }
+}
+
+@media (max-width: 414px) {
   .hot-toggle.hot-toggle-bb {
     display: none;
   }
