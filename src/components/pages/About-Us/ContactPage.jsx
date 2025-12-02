@@ -41,7 +41,8 @@ function ContactPage() {
     }
     setIsSubmitting(true);
     try {
-      const res = await fetch('/api/contact', {
+      const apiBase = process.env.REACT_APP_API_BASE || '';
+      const res = await fetch(`${apiBase}/api/contact`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -138,7 +139,7 @@ function ContactPage() {
 
               <div className="form-group captcha-group">
                 <ReCAPTCHA
-                  sitekey={process.env.REACT_APP_RECAPTCHA_SITE_KEY || process.env.SANDLOT_APP_RECAPTCHA_SITE_KEY}
+                  sitekey={process.env.REACT_APP_RECAPTCHA_SITE_KEY}
                   onChange={handleCaptchaChange}
                   theme="light"
                 />

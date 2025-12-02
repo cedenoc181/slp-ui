@@ -3,11 +3,11 @@ const express = require('express');
 const cors = require('cors');
 const dotenv = require('dotenv');
 
+dotenv.config();
+
 // Use built-in fetch in modern Node; fall back to node-fetch if needed.
 const fetch = (...args) =>
   import('node-fetch').then(({ default: fn }) => fn(...args));
-
-dotenv.config();
 
 const app = express();
 app.use(express.json());
@@ -17,66 +17,49 @@ app.use(
   })
 );
 
-const RECAPTCHA_API_KEY = process.env.SANDLOT_APP_RECAPTCHA_API_KEY;
-const RECAPTCHA_SITE_KEY = process.env.SANDLOT_APP_RECAPTCHA_SITE_KEY;
-const PROJECT_ID = 'sandlot-picks-1762350728582';
+const RECAPTCHA_SECRET = process.env.SANDLOT_APP_RECAPTCHA_SECRET;
 
 const verifyRecaptcha = async ({ token, expectedAction = 'contact_submit' }) => {
   if (!token) {
     return { ok: false, message: 'Missing captcha token' };
   }
-  if (!RECAPTCHA_API_KEY || !RECAPTCHA_SITE_KEY) {
-    return { ok: false, message: 'Server missing reCAPTCHA configuration' };
+  if (!RECAPTCHA_SECRET) {
+    return { ok: false, message: 'Server missing reCAPTCHA secret' };
   }
 
-  const body = {
-    event: {
-      token,
-      expectedAction,
-      siteKey: RECAPTCHA_SITE_KEY,
-    },
-  };
+  const params = new URLSearchParams();
+  params.append('secret', RECAPTCHA_SECRET);
+  params.append('response', token);
 
-  const resp = await fetch(
-    `https://recaptchaenterprise.googleapis.com/v1/projects/${PROJECT_ID}/assessments?key=${RECAPTCHA_API_KEY}`,
-    {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(body),
-    }
-  );
+  const resp = await fetch('https://www.google.com/recaptcha/api/siteverify', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    body: params.toString(),
+  });
 
   if (!resp.ok) {
     const detail = await resp.text();
-    return { ok: false, message: 'ReCAPTCHA API error', detail };
+    return { ok: false, message: 'ReCAPTCHA verify error', detail };
   }
 
-  const assessment = await resp.json();
-  const tokenProps = assessment?.tokenProperties || {};
-  const risk = assessment?.riskAnalysis || {};
-
-  if (!tokenProps.valid || tokenProps.invalidReason) {
+  const result = await resp.json();
+  if (!result.success) {
     return {
       ok: false,
       message: 'Invalid captcha token',
-      detail: tokenProps.invalidReason || 'invalid',
+      detail: (result['error-codes'] || []).join(', ') || 'invalid',
     };
   }
 
-  if (tokenProps.action && tokenProps.action !== expectedAction) {
+  if (result.action && result.action !== expectedAction) {
     return {
       ok: false,
       message: 'Unexpected captcha action',
-      detail: tokenProps.action,
+      detail: result.action,
     };
   }
 
-  const score = typeof risk.score === 'number' ? risk.score : 0;
-  if (score < 0.5) {
-    return { ok: false, message: 'Captcha score too low', score };
-  }
-
-  return { ok: true, score };
+  return { ok: true, score: result.score };
 };
 
 app.post('/api/contact', async (req, res) => {
