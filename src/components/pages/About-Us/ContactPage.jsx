@@ -162,8 +162,8 @@ function ContactPage() {
 
             <div className="contact-info">
               <p>Or reach us directly at:</p>
-              <a href="mailto:sandlotpicksanalytics@gmail.com" className="email-link">
-                sandlotpicksanalytics@gmail.com
+              <a href="mailto:support@sandlotpicks.com" className="email-link">
+                support@sandlotpicks.com
               </a>
             </div>
           </div>
