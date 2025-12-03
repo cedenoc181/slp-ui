@@ -17,14 +17,25 @@ app.use(
   })
 );
 
-const RECAPTCHA_SECRET = process.env.SANDLOT_APP_RECAPTCHA_SECRET;
+const RECAPTCHA_SECRET =
+  process.env.SANDLOT_APP_RECAPTCHA_SECRET ||
+  process.env.RECAPTCHA_SECRET ||
+  process.env.RECAPTCHA_SECRET_KEY;
+const SENDGRID_API_KEY = process.env.SENDGRID_API_KEY;
+const CONTACT_TO_EMAIL = process.env.CONTACT_TO_EMAIL || process.env.SENDGRID_TO_EMAIL;
+const CONTACT_FROM_EMAIL =
+  process.env.CONTACT_FROM_EMAIL || process.env.SENDGRID_FROM_EMAIL || 'no-reply@sandlotpicks.com';
 
 const verifyRecaptcha = async ({ token, expectedAction = 'contact_submit' }) => {
   if (!token) {
     return { ok: false, message: 'Missing captcha token' };
   }
   if (!RECAPTCHA_SECRET) {
-    return { ok: false, message: 'Server missing reCAPTCHA secret' };
+    return {
+      ok: false,
+      message: 'Server missing reCAPTCHA secret',
+      detail: 'Set SANDLOT_APP_RECAPTCHA_SECRET (or RECAPTCHA_SECRET)',
+    };
   }
 
   const params = new URLSearchParams();
@@ -62,6 +73,50 @@ const verifyRecaptcha = async ({ token, expectedAction = 'contact_submit' }) => 
   return { ok: true, score: result.score };
 };
 
+const sendContactEmail = async (formData) => {
+  if (!SENDGRID_API_KEY || !CONTACT_TO_EMAIL || !CONTACT_FROM_EMAIL) {
+    console.warn('SendGrid not configured, skipping email send');
+    return { sent: false, error: 'SendGrid not configured' };
+  }
+
+  const payload = {
+    personalizations: [
+      {
+        to: [{ email: CONTACT_TO_EMAIL }],
+      },
+    ],
+    from: { email: CONTACT_FROM_EMAIL, name: 'Sandlot Picks Contact' },
+    subject: `Contact Form: ${formData.issueType || 'General'}`,
+    content: [
+      {
+        type: 'text/plain',
+        value: `Name: ${formData.name || 'N/A'}
+Email: ${formData.email || 'N/A'}
+Issue: ${formData.issueType || 'N/A'}
+
+Message:
+${formData.message || ''}`,
+      },
+    ],
+  };
+
+  const resp = await fetch('https://api.sendgrid.com/v3/mail/send', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${SENDGRID_API_KEY}`,
+    },
+    body: JSON.stringify(payload),
+  });
+
+  if (!resp.ok) {
+    const detail = await resp.text();
+    throw new Error(`SendGrid error ${resp.status}: ${detail}`);
+  }
+
+  return { sent: true };
+};
+
 app.post('/api/contact', async (req, res) => {
   try {
     const { captchaToken, expectedAction = 'contact_submit', ...formData } = req.body || {};
@@ -70,8 +125,20 @@ app.post('/api/contact', async (req, res) => {
       return res.status(400).json({ success: false, ...verification });
     }
 
-    // TODO: Handle formData (send email, store in DB, etc.)
-    return res.json({ success: true, score: verification.score });
+    let emailResult = { sent: false };
+    try {
+      emailResult = await sendContactEmail(formData);
+    } catch (err) {
+      console.error('Contact email send error', err);
+      emailResult = { sent: false, error: err.message };
+    }
+
+    return res.json({
+      success: true,
+      score: verification.score,
+      emailSent: emailResult.sent,
+      emailError: emailResult.error,
+    });
   } catch (err) {
     console.error('Contact submit error', err);
     return res.status(500).json({ success: false, message: 'Server error' });
