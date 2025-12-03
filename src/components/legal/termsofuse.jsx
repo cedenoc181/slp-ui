@@ -289,7 +289,7 @@ function TermsOfUse() {
             <h3>15.6 Contact Information</h3>
             <p>
               For questions about these Terms, contact us at:<br />
-              Email: sandlotpicksanalytics@gmail.com
+              Email: support@sandlotpicks.com
             </p>
           </section>
         </div>
