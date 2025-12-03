@@ -22,6 +22,7 @@ const RECAPTCHA_SECRET =
   process.env.RECAPTCHA_SECRET ||
   process.env.RECAPTCHA_SECRET_KEY;
 const SENDGRID_API_KEY = process.env.SENDGRID_API_KEY;
+const SENDGRID_TEMPLATE_ID = process.env.SENDGRID_TEMPLATE_ID;
 const CONTACT_TO_EMAIL = process.env.CONTACT_TO_EMAIL || process.env.SENDGRID_TO_EMAIL;
 const CONTACT_FROM_EMAIL =
   process.env.CONTACT_FROM_EMAIL || process.env.SENDGRID_FROM_EMAIL || 'no-reply@sandlotpicks.com';
@@ -79,26 +80,44 @@ const sendContactEmail = async (formData) => {
     return { sent: false, error: 'SendGrid not configured' };
   }
 
-  const payload = {
-    personalizations: [
-      {
-        to: [{ email: CONTACT_TO_EMAIL }],
-      },
-    ],
-    from: { email: CONTACT_FROM_EMAIL, name: 'Sandlot Picks Contact' },
-    subject: `Contact Form: ${formData.issueType || 'General'}`,
-    content: [
-      {
-        type: 'text/plain',
-        value: `Name: ${formData.name || 'N/A'}
+  const usesTemplate = Boolean(SENDGRID_TEMPLATE_ID);
+
+  const payload = usesTemplate
+    ? {
+        personalizations: [
+          {
+            to: [{ email: CONTACT_TO_EMAIL }],
+            dynamic_template_data: {
+              name: formData.name || 'N/A',
+              email: formData.email || 'N/A',
+              issueType: formData.issueType || 'General',
+              message: formData.message || '',
+            },
+          },
+        ],
+        from: { email: CONTACT_FROM_EMAIL, name: 'Sandlot Picks Contact' },
+        template_id: SENDGRID_TEMPLATE_ID,
+      }
+    : {
+        personalizations: [
+          {
+            to: [{ email: CONTACT_TO_EMAIL }],
+          },
+        ],
+        from: { email: CONTACT_FROM_EMAIL, name: 'Sandlot Picks Contact' },
+        subject: `Contact Form: ${formData.issueType || 'General'}`,
+        content: [
+          {
+            type: 'text/plain',
+            value: `Name: ${formData.name || 'N/A'}
 Email: ${formData.email || 'N/A'}
 Issue: ${formData.issueType || 'N/A'}
 
 Message:
 ${formData.message || ''}`,
-      },
-    ],
-  };
+          },
+        ],
+      };
 
   const resp = await fetch('https://api.sendgrid.com/v3/mail/send', {
     method: 'POST',
