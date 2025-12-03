@@ -207,7 +207,7 @@ function PrivacyPolicy() {
 
             <h3>6.2 Delete Your Account</h3>
             <p>
-              You may request deletion of your account and associated data by contacting us at sandlotpicksanalytics@gmail.com. Some information may be retained for legal or operational purposes.
+              You may request deletion of your account and associated data by contacting us at support@sandlotpicks.com. Some information may be retained for legal or operational purposes.
             </p>
 
             <h3>6.3 Marketing Communications</h3>
@@ -249,7 +249,7 @@ function PrivacyPolicy() {
               Our services are not intended for individuals under 21 years of age (or the legal gambling age in your jurisdiction). We do not knowingly collect personal information from minors.
             </p>
             <p>
-              If we discover that we have collected information from a minor, we will delete it immediately. If you believe we have information from a minor, please contact us at sandlotpicksanalytics@gmail.com.
+              If we discover that we have collected information from a minor, we will delete it immediately. If you believe we have information from a minor, please contact us at support@sandlotpicks.com.
             </p>
           </section>
 
@@ -264,7 +264,7 @@ function PrivacyPolicy() {
               <li>Right to non-discrimination for exercising your rights</li>
             </ul>
             <p>
-              To exercise these rights, contact us at sandlotpicksanalytics@gmail.com.
+              To exercise these rights, contact us at support@sandlotpicks.com.
             </p>
           </section>
 
@@ -281,7 +281,7 @@ function PrivacyPolicy() {
               <li>Right to withdraw consent</li>
             </ul>
             <p>
-              To exercise these rights, contact us at sandlotpicksanalytics@gmail.com.
+              To exercise these rights, contact us at support@sandlotpicks.com.
             </p>
           </section>
 
@@ -313,7 +313,7 @@ function PrivacyPolicy() {
               If you have questions, concerns, or requests regarding this Privacy Policy or our data practices, please contact us:
             </p>
             <p>
-              <strong>Email:</strong> sandlotpicksanalytics@gmail.com<br />
+              <strong>Email:</strong> support@sandlotpicks.com<br />
               <strong>Website:</strong> www.sandlotpicks.com
             </p>
             <p>
