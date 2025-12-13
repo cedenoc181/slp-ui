@@ -1,20 +1,22 @@
 import React, { useState } from 'react';
 import ReactGA from 'react-ga4';
+import { useNavigate } from 'react-router-dom';
 
 
 function Hero() {
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
   const [isHovering, setIsHovering] = useState(false);
+  const navigate = useNavigate();
 
-  const handleDiscordClick = () => {
-   // Track Discord button click
-   ReactGA.event({
-     category: 'User Interaction',
-     action: 'Click',
-     label: 'Discord Join Button'
-   });
+  const handleTeamAnalyticsClick = () => {
+    // Track CTA click to team analytics page
+    ReactGA.event({
+      category: 'User Interaction',
+      action: 'Click',
+      label: 'Hero Team Analytics Button'
+    });
 
-    window.open('https://discord.com/invite/CQsrtNp4S7', '_blank', 'noopener,noreferrer');
+    navigate('/team-analytics');
   };
 
   const handleMouseMove = (e) => {
@@ -95,8 +97,8 @@ function Hero() {
           Sandlot Picks Analytics
         </h1>
         <p className="hero-subtitle">Smart analytics for smarter picks</p>
-        <button className="cta-button" onClick={handleDiscordClick}>
-          Join Discord
+        <button className="cta-button" onClick={handleTeamAnalyticsClick}>
+          Explore Team Analytics
         </button>
       </div>
     </section>

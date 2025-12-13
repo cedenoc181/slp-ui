@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import teamData from '../../../../data/teamData.json';
 
@@ -11,6 +11,8 @@ function TeamAnalytics() {
   const [leadersToggle, setLeadersToggle] = useState('batting'); // 'batting' or 'pitching'
   const [teamStatsToggle, setTeamStatsToggle] = useState('batting'); // 'batting' or 'pitching'
   const [hideFloatingFilters, setHideFloatingFilters] = useState(false);
+  const [isChartSectionVisible, setIsChartSectionVisible] = useState(false);
+  const chartSectionRef = useRef(null);
 
   // Mock data - will be replaced with API later
   const teams = [
@@ -75,6 +77,26 @@ function TeamAnalytics() {
     return () => observer.disconnect();
   }, []);
 
+  // Reveal floating filters once the chart section enters view
+  useEffect(() => {
+    const target = chartSectionRef.current;
+    if (!target) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const entry = entries[0];
+        setIsChartSectionVisible(entry.isIntersecting);
+      },
+      {
+        root: null,
+        threshold: 0.15
+      }
+    );
+
+    observer.observe(target);
+    return () => observer.disconnect();
+  }, []);
+
   const currentTimeframeData = teamData[timeframe];
   const currentChartData = currentTimeframeData.trends[chartFilter];
   const currentSplitsData = currentTimeframeData.splits[chartFilter];
@@ -82,6 +104,7 @@ function TeamAnalytics() {
 
   // Get current team display name
   const currentTeamName = teams.find(t => t.id === selectedTeam)?.name || 'Team';
+  const shouldHideFloatingFilters = hideFloatingFilters || !isChartSectionVisible;
 
   return (
     <div className="team-analytics-page">
@@ -189,7 +212,7 @@ function TeamAnalytics() {
         {/* ...rest of the existing code remains the same... */}
         
         {/* Monthly Performance Trends Chart */}
-        <div className="chart-section">
+        <div className="chart-section" ref={chartSectionRef}>
           <div className="section-card">
             <div className="card-header">
                <div>
@@ -240,13 +263,13 @@ function TeamAnalytics() {
               </div>
 
               {/* Chart Filter Buttons for Season, Home and Away*/}
-              <div className={`chart-filters floating-remote ${hideFloatingFilters ? 'floating-hidden' : ''}`} aria-label="Toggle season/home/away stats">
+              <div className={`chart-filters floating-remote ${shouldHideFloatingFilters ? 'floating-hidden' : ''}`} aria-label="Toggle season/home/away stats">
                 <button 
                   className={`chart-filter-btn ${chartFilter === 'season' ? 'active' : ''}`}
                   onClick={() => setChartFilter('season')}
                 >
                   <span className="filter-icon">📊</span>
-                  Season
+                  Combined
                 </button>
                 <button 
                   className={`chart-filter-btn ${chartFilter === 'home' ? 'active' : ''}`}
@@ -273,7 +296,7 @@ function TeamAnalytics() {
             <div className="card-header">
               <h3>Performance Splits</h3>
                 <p className="card-subtitle">
-                  {chartFilter === 'season' && <><span className="subtitle-bold">📊 Season</span> performance breakdown</>}
+                  {chartFilter === 'season' && <><span className="subtitle-bold">📊 Combined</span> performance breakdown</>}
                   {chartFilter === 'home' && <><span className="subtitle-bold">🏠 Home</span> game performance breakdown</>}
                   {chartFilter === 'away' && <><span className="subtitle-bold">✈️ Away</span> game performance breakdown</>}
                 </p>
@@ -399,7 +422,7 @@ function TeamAnalytics() {
                 <div>
                     <h3>Last 10 Games</h3>
                      <p className="card-subtitle">
-                       {chartFilter === 'season' && <><strong>📊 Season: </strong> last 10 games performance</>}
+                       {chartFilter === 'season' && <><strong>📊 Combined: </strong> last 10 games performance</>}
                        {chartFilter === 'home' && <><strong>🏠 Home: </strong> last 10 games performance</>}
                        {chartFilter === 'away' && <><strong>✈️ Away: </strong> last 10 games performance</>}
                      </p>
