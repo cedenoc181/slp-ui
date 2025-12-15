@@ -1,13 +1,41 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
+import articlesData from '../data/article.json';
+import moreArticlesData from '../data/moreArticles.json';
 
 
 function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const [activeDropdown, setActiveDropdown] = useState(null);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searchSuggestions, setSearchSuggestions] = useState([]);
+  const [isSearchFocused, setIsSearchFocused] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
+
+  const teamOptions = useMemo(() => ([
+    { id: 'LAD', name: 'Los Angeles Dodgers', urlName: 'los-angeles-dodgers' },
+    { id: 'NYY', name: 'New York Yankees', urlName: 'new-york-yankees' },
+    { id: 'HOU', name: 'Houston Astros', urlName: 'houston-astros' },
+    { id: 'ATL', name: 'Atlanta Braves', urlName: 'atlanta-braves' },
+    { id: 'BAL', name: 'Baltimore Orioles', urlName: 'baltimore-orioles' },
+    { id: 'TBR', name: 'Tampa Bay Rays', urlName: 'tampa-bay-rays' },
+    { id: 'TOR', name: 'Toronto Blue Jays', urlName: 'toronto-blue-jays' },
+    { id: 'BOS', name: 'Boston Red Sox', urlName: 'boston-red-sox' }
+  ]), []);
+
+  const articleTags = useMemo(() => {
+    const articles = [
+      ...(articlesData?.articles || []),
+      ...(moreArticlesData?.articles || [])
+    ];
+    const tags = new Set();
+    articles.forEach((article) => {
+      (article.tags || []).forEach((tag) => tags.add(tag));
+    });
+    return Array.from(tags);
+  }, []);
 
   // Detect scroll
   useEffect(() => {
@@ -49,6 +77,107 @@ function Header() {
     setActiveDropdown(activeDropdown === dropdown ? null : dropdown);
   };
 
+  const parseYearFromQuery = (value) => {
+    const match = value.match(/\b(20\d{2})\b/);
+    return match ? match[1] : null;
+  };
+
+  const buildSuggestions = (value) => {
+    const trimmed = value.trim();
+    const year = parseYearFromQuery(trimmed);
+    const normalized = trimmed.replace(/\b20\d{2}\b/, '').trim().toLowerCase();
+    const results = [];
+
+    if (normalized.length >= 2 || year) {
+      const teamMatches = teamOptions.filter(
+        (team) =>
+          team.name.toLowerCase().includes(normalized) ||
+          team.id.toLowerCase() === normalized ||
+          team.urlName.includes(normalized.replace(/\s+/g, '-'))
+      );
+
+      teamMatches.forEach((team) => {
+        // Team analytics suggestion
+        results.push({
+          type: 'team',
+          label: `${team.name}${year ? ` (${year})` : ''}`,
+          onSelect: () => {
+            closeMenu();
+            navigate(`/team-analytics/${team.urlName}${year ? `?year=${year}` : ''}`);
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+            setSearchQuery('');
+            setSearchSuggestions([]);
+          }
+        });
+
+        // Player analytics suggestion for that team
+        results.push({
+          type: 'players',
+          label: `${team.name} players${year ? ` (${year})` : ''}`,
+          onSelect: () => {
+            closeMenu();
+            const seasonParam = year ? `&season=${year}` : '';
+            navigate(`/player-analytics?team=${team.id}${seasonParam}`);
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+            setSearchQuery('');
+            setSearchSuggestions([]);
+          }
+        });
+      });
+    }
+
+    if (normalized.includes('player') || trimmed.toLowerCase().includes('player')) {
+      results.push({
+        type: 'players',
+        label: 'Player Analytics',
+        onSelect: () => {
+          closeMenu();
+          navigate('/player-analytics');
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+          setSearchQuery('');
+          setSearchSuggestions([]);
+        }
+      });
+    }
+
+    const lowerTokens = normalized.split(/\s+/).filter(Boolean);
+    const articleMatches = articleTags.filter((tag) => {
+      const lowerTag = tag.toLowerCase();
+      if (normalized && lowerTag.includes(normalized)) return true;
+      if (lowerTokens.length === 0) return false;
+      return lowerTokens.some((token) => lowerTag.includes(token));
+    });
+
+    articleMatches.slice(0, 3).forEach((tag) => {
+      results.push({
+        type: 'articles',
+        label: `Sandlot Insider: ${tag}`,
+        onSelect: () => {
+          closeMenu();
+          navigate(`/sandlot-insider?tag=${encodeURIComponent(tag)}`);
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+          setSearchQuery('');
+          setSearchSuggestions([]);
+        }
+      });
+    });
+
+    setSearchSuggestions(results.slice(0, 5));
+  };
+
+  const handleSearchChange = (e) => {
+    const value = e.target.value;
+    setSearchQuery(value);
+    buildSuggestions(value);
+  };
+
+  const handleSearchSubmit = (e) => {
+    e.preventDefault();
+    if (searchSuggestions.length > 0) {
+      searchSuggestions[0].onSelect();
+    }
+  };
+
   return (
     <header className={`header ${isScrolled ? 'scrolled' : ''}`}>
       <div className="container">
@@ -66,6 +195,33 @@ function Header() {
         >
           <img src={require('../assets/images/spa-retro-logo-removebg.png')} alt="Sandlot Picks Analytics" />
         </div>
+
+        <form className="nav-search" onSubmit={handleSearchSubmit}>
+          <input
+            type="search"
+            value={searchQuery}
+            onChange={handleSearchChange}
+            onFocus={() => setIsSearchFocused(true)}
+            onBlur={() => setTimeout(() => setIsSearchFocused(false), 150)}
+            placeholder="Search teams, players, articles..."
+            aria-label="Search"
+          />
+          {isSearchFocused && searchSuggestions.length > 0 && (
+            <div className="search-suggestions">
+              {searchSuggestions.map((item, idx) => (
+                <button
+                  key={`${item.type}-${idx}`}
+                  type="button"
+                  className="search-suggestion"
+                  onClick={item.onSelect}
+                >
+                  <span className="suggestion-type">{item.type}</span>
+                  <span className="suggestion-label">{item.label}</span>
+                </button>
+              ))}
+            </div>
+          )}
+        </form>
         
         {/* Hamburger Icon */}
         <button className="hamburger" onClick={toggleMenu} aria-label="Toggle menu">

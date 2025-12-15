@@ -1,4 +1,5 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import BatterStats from './batterStats';
 import PitcherStats from './pitcherStats';
 import '../../../../styles/stats-page-styling/player-analytics.css';
@@ -7,6 +8,7 @@ function PlayerAnalytics() {
   const [metricType, setMetricType] = useState('batting');
   const [selectedTeam, setSelectedTeam] = useState('ALL');
   const [selectedSeason, setSelectedSeason] = useState('2025');
+  const [searchParams] = useSearchParams();
 
   const teams = useMemo(
     () => [
@@ -27,6 +29,20 @@ function PlayerAnalytics() {
     () => ['2025', '2024', '2023', '2022', '2021', '2020', '2019', '2018'],
     []
   );
+
+  // Seed dropdowns from query params when present
+  useEffect(() => {
+    const teamParam = searchParams.get('team');
+    const seasonParam = searchParams.get('season');
+
+    if (teamParam && teams.some((t) => t.id === teamParam)) {
+      setSelectedTeam(teamParam);
+    }
+
+    if (seasonParam && seasons.includes(seasonParam)) {
+      setSelectedSeason(seasonParam);
+    }
+  }, [searchParams, teams, seasons]);
 
   const currentTeamName = teams.find((t) => t.id === selectedTeam)?.name || 'Team';
 

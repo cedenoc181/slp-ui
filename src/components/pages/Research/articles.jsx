@@ -1,11 +1,15 @@
 import { useState, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { Link } from 'react-router-dom';
 import articlesData from '../../../data/article.json';
 import moreArticlesData from '../../../data/moreArticles.json';
 
 function Article() {
-  const [searchTerm, setSearchTerm] = useState('');
-  const [selectedTag, setSelectedTag] = useState('all');
+  const [searchParams] = useSearchParams();
+  const initialSearch = searchParams.get('q') || '';
+  const initialTag = searchParams.get('tag') || 'all';
+  const [searchTerm, setSearchTerm] = useState(initialSearch);
+  const [selectedTag, setSelectedTag] = useState(initialTag);
   const [currentPage, setCurrentPage] = useState(1);
   const articlesPerPage = 4;
 
@@ -20,6 +24,14 @@ function Article() {
   useEffect(() => {
     window.scrollTo(0, 0);
   }, [currentPage]);
+
+  // Sync state with URL params when they change
+  useEffect(() => {
+    const qpSearch = searchParams.get('q') || '';
+    const qpTag = searchParams.get('tag') || 'all';
+    setSearchTerm(qpSearch);
+    setSelectedTag(qpTag);
+  }, [searchParams]);
 
   // Reset to page 1 when search/filter changes
   useEffect(() => {
@@ -49,18 +61,26 @@ function Article() {
     });
   });
 
-  // Sort by frequency and take top 10 for DISPLAY (plus 'all')
-  const displayTags = ['all', ...Object.entries(tagCounts)
-    .sort((a, b) => b[1] - a[1])
-    .slice(0, 10)
-    .map(([tag]) => tag)
-  ];
+  // Sort by frequency and take top 10 for DISPLAY (plus 'all'), always include selectedTag if custom
+  const displayTagsSet = new Set([
+    'all',
+    ...Object.entries(tagCounts)
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 10)
+      .map(([tag]) => tag)
+  ]);
+  if (selectedTag !== 'all') {
+    displayTagsSet.add(selectedTag);
+  }
+  const displayTags = Array.from(displayTagsSet);
 
   // Filter articles by search and tag
+  const activeTag = selectedTag === 'all' || allUniqueTags.has(selectedTag) ? selectedTag : 'all';
+
   const filteredArticles = allArticles.filter(article => {
     const matchesSearch = article.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          article.summary.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesTag = selectedTag === 'all' || article.tags.includes(selectedTag);
+    const matchesTag = activeTag === 'all' || article.tags.includes(activeTag);
     return matchesSearch && matchesTag;
   });
 
