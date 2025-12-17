@@ -1,0 +1,152 @@
+{
+  "document_title": "Sandlot Picks Membership Access Agreement",
+  "last_updated": "2025-12-17",
+  "parties": {
+    "company": "Sandlot Picks Analytics",
+    "website": "https://www.sandlotpicks.com",
+    "contact_email": "support@sandlotpicks.com",
+    "member_definition": "Individual or entity purchasing a membership"
+  },
+  "sections": [
+    {
+      "section_number": "1",
+      "title": "Relationship to Terms & Conditions",
+      "content": [
+        "This Membership Access Agreement is incorporated into and governed by the Sandlot Picks Terms & Conditions.",
+        "By purchasing or using a membership, the Member agrees to both this Agreement and the Terms & Conditions.",
+        "In the event of a conflict, the Terms & Conditions shall control."
+      ]
+    },
+    {
+      "section_number": "2",
+      "title": "Services Provided",
+      "content": [
+        "Sandlot Picks provides sports analytics, data-driven insights, predictive modeling, and related educational content for informational and educational purposes only.",
+        "Sandlot Picks does not operate a sportsbook, place bets, or guarantee outcomes.",
+        "All gambling risk disclosures and legal compliance obligations are governed by the Terms & Conditions."
+      ]
+    },
+    {
+      "section_number": "3",
+      "title": "Membership Types",
+      "subsections": [
+        {
+          "title": "Monthly Membership",
+          "terms": [
+            "Recurring monthly billing",
+            "Access valid only during active billing period",
+            "Automatically renews unless canceled before renewal date"
+          ]
+        },
+        {
+          "title": "Seasonal Membership",
+          "terms": [
+            "One-time payment for defined sports season",
+            "Access expires at end of season",
+            "No automatic renewal unless stated at purchase"
+          ]
+        },
+        {
+          "title": "Lifetime Membership",
+          "terms": [
+            "One-time payment",
+            "Access valid for lifetime of the Sandlot Picks Platform",
+            "Lifetime refers to the platform, not the Member",
+            "Features may evolve, change, or be discontinued"
+          ]
+        }
+      ]
+    },
+    {
+      "section_number": "4",
+      "title": "Account Access & Use",
+      "content": [
+        "Memberships are personal and non-transferable",
+        "Credential sharing is prohibited",
+        "Members are responsible for account security",
+        "Sandlot Picks may suspend or terminate access for violations"
+      ]
+    },
+    {
+      "section_number": "5",
+      "title": "Payments, Billing & Renewals",
+      "content": [
+        "All prices are listed in U.S. dollars unless stated otherwise",
+        "Payments are processed through third-party payment processors",
+        "Members authorize recurring charges where applicable",
+        "Monthly memberships automatically renew unless canceled"
+      ]
+    },
+    {
+      "section_number": "6",
+      "title": "Refunds & Cancellations",
+      "content": [
+        "Refunds and cancellations are governed exclusively by the Terms & Conditions",
+        "Monthly memberships are non-refundable",
+        "Seasonal memberships are non-refundable once access has begun",
+        "Lifetime memberships are non-refundable under all circumstances",
+        "No refunds for partial use, downtime, or dissatisfaction"
+      ]
+    },
+    {
+      "section_number": "7",
+      "title": "Prohibited Use",
+      "content": [
+        "Unlawful use of the Services is prohibited",
+        "Sharing, reselling, or sublicensing access is prohibited",
+        "Scraping or reverse engineering data or models is prohibited",
+        "Automated access without authorization is prohibited",
+        "Using data to create competing services is prohibited"
+      ]
+    },
+    {
+      "section_number": "8",
+      "title": "Intellectual Property",
+      "content": [
+        "All content and materials are owned by Sandlot Picks or its licensors",
+        "Membership does not grant ownership or commercial rights",
+        "Content is protected by intellectual property laws"
+      ]
+    },
+    {
+      "section_number": "9",
+      "title": "Modifications to Services",
+      "content": [
+        "Sandlot Picks may modify, suspend, or discontinue features",
+        "Features may be added, removed, or replaced",
+        "Lifetime Members acknowledge that features may evolve"
+      ]
+    },
+    {
+      "section_number": "10",
+      "title": "Termination",
+      "content": [
+        "Memberships may be terminated for violations, abuse, fraud, or legal compliance",
+        "Termination does not relieve obligations under the Terms & Conditions",
+        "No refunds will be issued for termination for cause"
+      ]
+    },
+    {
+      "section_number": "11",
+      "title": "Limitation of Liability",
+      "content": [
+        "Liability limitations are governed by the Terms & Conditions",
+        "Total liability shall not exceed the amount paid in the preceding 12 months or $100, whichever is less"
+      ]
+    },
+    {
+      "section_number": "12",
+      "title": "Governing Law",
+      "content": [
+        "This Agreement is governed by the laws specified in the Terms & Conditions"
+      ]
+    },
+    {
+      "section_number": "13",
+      "title": "Acceptance",
+      "content": [
+        "By purchasing or using a membership, the Member agrees to this Agreement and the Terms & Conditions"
+      ]
+    }
+  ]
+}

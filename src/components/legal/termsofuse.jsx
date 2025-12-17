@@ -206,9 +206,10 @@ function TermsOfUse() {
 
             <h3>10.2 Cancellation and Refunds</h3>
             <ul>
-              <li>Annual subscriptions: 30-day money-back guarantee</li>
+              <li>Seasonal subscriptions: No refunds</li>
+              <li>Life time subscription: 30-day money-back guarantee</li>
               <li>Monthly subscriptions: No refunds</li>
-              <li>Refund requests must be submitted within 30 days of purchase</li>
+              <li>Refund requests for *seasonal subscriptions* must be submitted within 30 days of purchase</li>
               <li>You may cancel your subscription at any time</li>
             </ul>
 
