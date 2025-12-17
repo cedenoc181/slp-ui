@@ -209,7 +209,7 @@ function TermsOfUse() {
               <li>Monthly subscriptions: No refunds</li>
               <li>Seasonal subscriptions: 30-day money-back guarantee</li>
               <li>Lifetime subscription: 30-day money-back guarantee</li>
-              <li>Refund requests for *seasonal subscriptions* and *Lifetime subscriptionsmust be submitted within 30 days of purchase</li>
+              <li>Refund requests for *seasonal subscriptions* and *Lifetime subscriptions* must be submitted within 30 days of purchase</li>
               <li>You may cancel your subscription at any time</li>
             </ul>
 
