@@ -209,13 +209,16 @@ function TermsOfUse() {
               <li>Monthly subscriptions: No refunds</li>
               <li>Seasonal subscriptions: 30-day money-back guarantee</li>
               <li>Lifetime subscription: 30-day money-back guarantee</li>
-              <li>Refund requests for *seasonal subscriptions* and *Lifetime subscriptions* must be submitted within 30 days of purchase</li>
+              <li>Refund requests for *Seasonal subscriptions* and *Lifetime subscriptions* must be submitted within 30 days of purchase</li>
               <li>You may cancel your subscription at any time</li>
             </ul>
 
             <h3>10.3 Auto-Renewal</h3>
             <p>
-              Subscriptions automatically renew unless canceled before the renewal date. You will be charged the then-current subscription fee.
+              The monthly access subscription plan: automatically renew unless canceled before the renewal date. You will be charged the then-current subscription fee.
+            </p>
+            <p>
+              Seasonal and Lifetime access subscription plans: do not auto-renew. They are one-time payments for the specified duration.
             </p>
           </section>
 
