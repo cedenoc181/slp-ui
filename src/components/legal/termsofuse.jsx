@@ -22,7 +22,7 @@ function TermsOfUse() {
           <section>
             <h2>1. Nature of Services</h2>
             <p>
-              Sandlot Picks provides sports analytics, data-driven insights, and predictive modeling for sports betting information purposes. Our Services include:
+              Sandlot Picks provides sports analytics, data-driven insights, and predictive modeling for sports betting. These analytics are used for educational and informational purposes only. Our Services include:
             </p>
             <ul>
               <li>Statistical analysis and sports data visualization</li>
