@@ -1,14 +1,180 @@
 {
   "schema_version": "1.0",
   "site": "sandlotpicks.com",
-  "generated_at": "2025-11-22",
+  "generated_at": "2025-12-17",
   "pagination": {
     "current_page": 1,
     "articles_per_page": 4,
-    "total_pages": 2,
+    "total_pages": 3,
     "has_more": true
   },
   "articles": [
+    {
+      "id": 9,
+      "title": "Team Dominican Republic-2026 WBC: A Lineup Built to Steamroll",
+      "slug": "dominican-republic-2026-wbc-lineup-favorites",
+      "author": "Sandlot Picks Team",
+      "date": "2025-12-06",
+      "status": "Final",
+      "tags": [
+        "WBC",
+        "Dominican Republic",
+        "Juan Soto",
+        "Vladimir Guerrero Jr",
+        "José Ramírez",
+        "Fernando Tatis Jr",
+        "International Baseball",
+        "Player Projections",
+        "Tournament Favorites"
+      ],
+      "summary": "Baseball America’s ideal roster projection for the Dominican Republic pairs perfectly with the stars’ 2025 production. We — the Sandlot Picks Team — love DR as the top team in Pool D and expect a real run for Gold.",
+      "read_time_minutes": 5,
+      "estimated_word_count": 700,
+      "hero_image": {
+        "url": "/article-heros/team-DR.png",
+        "alt": "Team Dominican Republic WBC 2026 lineup graphic with star players"
+      },
+      "content": [
+        {
+          "type": "paragraph",
+          "text": "Baseball America’s “ideal roster” projection for the Dominican Republic reads like a fever dream for pitchers and a parade route for hitters. If this nine takes the field next March, you’re looking at a group with star power at every spot, thump in all quadrants, and enough athleticism to turn routine singles into crooked numbers. Layer in how these bats actually performed in 2025, and the case for “tournament favorite” moves from narrative to math."
+        },
+        {
+          "type": "paragraph",
+          "text": "Where we stand: We — the Sandlot Picks Team — love Team Dominican Republic as the top team in Pool D, and we’re expecting a strong run for Gold."
+        },
+        {
+          "type": "heading",
+          "text": "The Projected Nine (with 2025 production)"
+        },
+        {
+          "type": "paragraph",
+          "text": "C — Yainer Díaz: Contact-first catcher who doesn’t have to sell out for power to beat you. In 2025, he posted 20 HR, .256 AVG, .701 OPS; 2.7 WAR—solid floor behind the plate, and more than enough pop in a DH-heavy era."
+        },
+        {
+          "type": "paragraph",
+          "text": "1B — Vladimir Guerrero Jr: The most electric hitter when he’s synced. 23 HR, .292 AVG, .848 OPS; 4.5 WAR in 2025, with the kind of plate coverage that makes in-tournament scouting reports feel pointless."
+        },
+        {
+          "type": "paragraph",
+          "text": "2B — Ketel Marte: Efficient damage up the middle of the field: 28 HR, .283 AVG, .893 OPS; 4.4 WAR in 2025. Switch-hitting, gap-to-gap power, and playoff-caliber poise."
+        },
+        {
+          "type": "paragraph",
+          "text": "SS — Jeremy Peña: The “glue” player whose 2025 was a genuine breakout at the plate: 17 HR, .304 AVG, .840 OPS; 5.6 WAR. Add plus instincts and steady hands at short, and he’s the perfect WBC table-setter/turner."
+        },
+        {
+          "type": "paragraph",
+          "text": "3B — José Ramírez: Relentless. 30 HR, .283 AVG, .863 OPS; 5.8 WAR in 2025, elite swing decisions, and baserunning that steals outs as often as it steals bases."
+        },
+        {
+          "type": "paragraph",
+          "text": "LF — Fernando Tatis Jr: Game-breaking athlete who still turned in a well-rounded year: 25 HR, .268 AVG, .814 OPS; 5.9 WAR. He changes fielding alignments just by stepping in."
+        },
+        {
+          "type": "paragraph",
+          "text": "CF — Julio Rodríguez: If “carry an offense for a week” was a stat, he’d lead it. 32 HR, .267 AVG, .798 OPS; 6.8 WAR in 2025, with late-inning electricity that travels."
+        },
+        {
+          "type": "paragraph",
+          "text": "RF — Juan Soto: The zone is his, not the pitcher’s. 43 HR, .263 AVG, .921 OPS; 6.2 WAR in 2025, with a swing/decision combo that keeps rallies alive even on his “quiet” days."
+        },
+        {
+          "type": "paragraph",
+          "text": "DH — Junior Caminero: The young thunderstick: 45 HR, .264 AVG, .846 OPS; 4.5 WAR in 2025. You can’t pitch around everyone; when they try, he punishes it."
+        },
+        {
+          "type": "heading",
+          "text": "The Math Behind the Mayhem"
+        },
+        {
+          "type": "paragraph",
+          "text": "Stack these nine together and the 2025 ledger looks like a juggernaut: Total HR: 263; team AVG (mean of player AVGs): ~.275; team OPS (mean of player OPS): ~.836; total WAR: ~46.4 (≈ 5.2 WAR per player). In a tournament setting—short series, compact schedules—that level of bankable production compresses variance. You’re not hoping for one hot bat; you’re demanding at-bats that win expected value across the lineup, inning after inning."
+        },
+        {
+          "type": "heading",
+          "text": "What Makes This Lineup Different"
+        },
+        {
+          "type": "subheading",
+          "text": "1) No soft landings."
+        },
+        {
+          "type": "paragraph",
+          "text": "Most WBC lineups feature a star cluster at the top and air pockets at the bottom. The DR can conceivably run seven 5+ WAR bats from 2025 in a row. Miss in any quadrant and someone with 25–45 HR power is waiting."
+        },
+        {
+          "type": "subheading",
+          "text": "2) Diverse run creation — with elite HR/OPS punch."
+        },
+        {
+          "type": "paragraph",
+          "text": "This isn’t a “three true outcomes” group stuck in one gear; it’s a multi-modal offense with premium impact. Guerrero Jr. and Ramírez can manufacture with two strikes. Peña and Marte keep rallies alive with contact and gap power. Rodríguez and Tatis Jr. pressure defenders and create extra 90s with speed. And the top-end thump is real: Soto (.921 OPS, 43 HR), Caminero (.846 OPS, 45 HR), Ramírez (.863 OPS, 30 HR), and Marte (.893 OPS, 28 HR) headline a unit that averaged ~.836 OPS across the nine. Add Guerrero Jr.’s high-contact thunder and Rodríguez’s 30+ homer pop and you get a lineup that can win with OPS or win with sequence—whichever the game state demands."
+        },
+        {
+          "type": "subheading",
+          "text": "3) Defensive sanity."
+        },
+        {
+          "type": "paragraph",
+          "text": "It’s easy to get intoxicated by power totals, but this alignment can also convert contact into outs at premium spots: Peña at SS, Ramírez at 3B, Rodríguez in CF, Tatis Jr. in LF. In a tournament where one bad inning can send you home, that’s non-negotiable value supported by their 2025 WAR profiles."
+        },
+        {
+          "type": "heading",
+          "text": "Depth Check: A Bench of Superstars"
+        },
+        {
+          "type": "paragraph",
+          "text": "If the projected nine is frightening, the bench might be scarier. Options like Manny Machado, Rafael Devers, O’Neil Cruz, Elly De La Cruz, and Geraldo Perdomo give the DR matchup nukes and positional flexibility. Need late-inning thump versus a righty? Devers changes the inning with one swing. Want length at short or a left-side cannon? O’Neil Cruz brings elite arm strength and light-tower power. Prefer speed/chaos? Elly De La Cruz can flip an inning with a steal or a missile to the gap. Perdomo offers glove-first stability and OBP to reset the top. And Machado remains a bankable at-bat with postseason-grade poise. In a compressed tournament, this depth wins days when one or two stars don’t have it."
+        },
+        {
+          "type": "heading",
+          "text": "The Favorite’s Burden"
+        },
+        {
+          "type": "paragraph",
+          "text": "Being the heavyweight cuts both ways. Every opponent will throw their best two arms at this lineup, and WBC variance is real—one brilliant four-inning bulk outing can flip a pool. But when you compare 2025 performance across nine hitters, plus the star-studded bench, it narrows down the countries that can match the Dominican Republic’s combination of peak power, on-base skill, athletic defense, and depth. That’s why, on paper, we have Team DR atop Pool D—and we expect them to make a legitimate run for Gold."
+        }
+      ],
+      "seo": {
+        "title_tag": "Dominican Republic 2026 WBC Lineup: Soto, J-Rod, Tatis Jr., J-Ram, Peña, Marte, Vlad Jr., Yainer Díaz, Caminero | Sandlot Insider",
+        "meta_description": "BaseballAmerica.com’s ideal roster projection plus 2025 stats paint the Dominican Republic as Pool D’s top team—and our pick to make a run for Gold. Breakdown of Soto, Julio Rodríguez, Tatis Jr., José Ramírez, Jeremy Peña, Ketel Marte, Vladimir Guerrero Jr., Yainer Díaz, and Junior Caminero.",
+        "keywords": [
+          "Dominican Republic WBC 2026",
+          "Juan Soto",
+          "Julio Rodríguez",
+          "Fernando Tatis Jr.",
+          "José Ramírez",
+          "Jeremy Peña",
+          "Ketel Marte",
+          "Vladimir Guerrero Jr.",
+          "Yainer Díaz",
+          "Junior Caminero",
+          "Baseball America WBC projection",
+          "Pool D favorites",
+          "Sandlot Picks",
+          "Sandlot Insider",
+          "2025 player stats",
+          "Sandlot Picks Analytics",
+          "WBC 2026 predictions",
+          "World Baseball Classic 2026"
+        ],
+        "canonical_url": "https://sandlotpicks.com/articles/dominican-republic-2026-wbc-lineup-favorites",
+        "og_image": "https://sandlotpicks.com/article-heros/team-DR.png",
+        "reference_url": "https://www.baseballamerica.com/stories/world-baseball-classic-2026-projecting-ideal-rosters-for-the-dominican-republic-venezuela-latin-american-teams/"
+      },
+      "affiliate_cta": {
+        "enabled": true,
+        "platform": "Pikkit",
+        "context": "Effortlessly track all your sports bets in one convenient place — focus on what you do best: make winning picks.",
+        "link": "https://links.pikkit.com/invite/bullseye52540",
+        "hero-banner": "/article-heros/pikkit-promo-img.png"
+      },
+      "affiliate_disclaimer": "We may earn a commission if you sign up through our Pikkit link. Using our code BULLSEYE52540 supports our content and helps us keep delivering daily insights.",
+      "related_posts": [
+        "yankees-2026-four-offseason-pillars-closer-shortstop-or-second-base"
+      ]
+    },
     {
       "id": 8,
       "title": "Blueprint to the Bronx (2025 → 2026): Four Offseason Pillars That Turn the Yankees Into Real Contenders",
@@ -461,133 +627,6 @@
       "related_posts": [
         "paul-skenes-cy-young-legend-in-the-making-2025",
         "tarik-skubal-two-time-al-cy-young-journey-2025"
-      ]
-    },
-    {
-      "id": 5,
-      "title": "Tarik Skubal: From 9th-Round Longshot to Two-Time AL Cy Young Ace",
-      "slug": "tarik-skubal-two-time-al-cy-young-journey-2025",
-      "author": "Sandlot Picks Team",
-      "date": "2025-11-14",
-      "status": "Final",
-      "tags": [
-        "MLB",
-        "Detroit Tigers",
-        "Tarik Skubal",
-        "Cy Young",
-        "AL Awards",
-        "Pitching",
-        "Underdog Stories",
-        "Sports Betting"
-      ],
-      "summary": "Tarik Skubal’s rise from 9th-round pick to back-to-back AL Cy Young winner is one of baseball’s greatest underdog stories. Through resilience, reinvention, and dominance, he’s become the AL’s most feared left-handed ace.",
-      "read_time_minutes": 4,
-      "estimated_word_count": 744,
-      "hero_image": {
-        "url": "/article-heros/tarik-skubal-cy-young-hero.png",
-        "alt": "Tarik Skubal, earning his second AL Cy Young award"
-      },
-      "content": [
-        {
-          "type": "paragraph",
-          "text": "In baseball, greatness comes in many forms. Some players rocket to superstardom with generational hype and instant dominance. Others forge their legacy the hard way, carving out excellence through resilience, reinvention, and sheer competitive fire. That’s the Tarik Skubal story."
-        },
-        {
-          "type": "paragraph",
-          "text": "Skubal’s rise isn’t lightning-strike quick or preordained. It’s built on sweat, setbacks, surgeries, and self-belief. The 255th pick of the 2018 MLB Draft — a 9th-rounder — was never meant to become the American League’s most feared arm. And yet, here he stands: a two-time AL Cy Young winner, the league’s most consistent left-handed ace, and the living definition of a pitcher who beat the odds."
-        },
-        {
-          "type": "heading",
-          "text": "From Overlooked to Untouchable"
-        },
-        {
-          "type": "paragraph",
-          "text": "When Skubal was drafted out of Seattle University, he wasn’t even a household name among college baseball fans. Tommy John surgery had nearly derailed his career before it began. Scouts doubted whether his velocity would ever return. Some teams removed him from their boards entirely."
-        },
-        {
-          "type": "paragraph",
-          "text": "But Detroit took a chance with pick No. 255 — and Skubal repaid that faith with one of the most unlikely ace trajectories baseball has witnessed in decades."
-        },
-        {
-          "type": "paragraph",
-          "text": "He didn’t arrive polished. He didn’t arrive with a perfect delivery. He didn’t arrive with blue-chip hype. What he did arrive with was an elite work ethic, a burning drive to prove people wrong, and a fastball that kept getting better."
-        },
-        {
-          "type": "heading",
-          "text": "The First Cy Young: A Warning Shot"
-        },
-        {
-          "type": "paragraph",
-          "text": "Skubal’s first Cy Young season put the league on notice. In 2024, he went 18–4 with a 2.39 ERA, 0.99 WHIP, and 228 strikeouts over 192 innings. Opponents hit just .201 against him as he shredded lineups with a riding fastball and a slider that finally developed into a true swing-and-miss weapon. The Tigers had found their ace — one who combined power, discipline, and relentless competitiveness."
-        },
-        {
-          "type": "paragraph",
-          "text": "It wasn’t just dominance; it was transformation. Skubal tightened his mechanics, trusted his stuff in the zone, and stopped pitching like a guy trying to stay in the league — he started pitching like someone who knew he belonged among the elite."
-        },
-        {
-          "type": "heading",
-          "text": "The Second Cy Young: Greatness Confirmed"
-        },
-        {
-          "type": "paragraph",
-          "text": "Winning one Cy Young can be lightning in a bottle. Winning two? That’s legacy. In 2025, Skubal doubled down on his dominance, posting a 13–6 record with a 2.21 ERA, 0.95 WHIP, and 241 strikeouts in 195 innings. Opponents hit just .200 against him, and even when teams saw him multiple times, they still couldn’t square him up consistently."
-        },
-        {
-          "type": "paragraph",
-          "text": "While the Tigers battled inconsistency around him, Skubal became the constant — the stop-every-losing-streak ace, the tone-setter, the one man who ensured Detroit stayed in every game he touched. He pitched like a veteran, dominated like a superstar, and carried himself like someone who knew exactly how far he’d climbed to get here."
-        },
-        {
-          "type": "heading",
-          "text": "A Pitcher Who Mastered the Long Road"
-        },
-        {
-          "type": "paragraph",
-          "text": "Skubal doesn’t overpower hitters with hype — he overpowers them with mastery. He learned the hard way. He tightened his mechanics through repetition, not revelation. He built his durability through discipline, not luck. He sharpened his command through failure, not entitlement."
-        },
-        {
-          "type": "paragraph",
-          "text": "And that’s what makes him special: his greatness came from the grind. Every pitch is a testament to the road he traveled — a road most pitchers never escape."
-        },
-        {
-          "type": "heading",
-          "text": "Final Thoughts: Respect the Road, Respect the Ace"
-        },
-        {
-          "type": "paragraph",
-          "text": "The baseball world loves phenoms — but the game also needs reminders like Tarik Skubal: that legends can rise from anywhere, that today’s overlooked prospect can become tomorrow’s most dominant force, and that greatness often grows from the cracks where nobody bothers to look."
-        },
-        {
-          "type": "paragraph",
-          "text": "Two-time Cy Young winner. Former 9th-round pick. The heart of Detroit’s pitching identity. The ace who earned every ounce of his success. Tarik Skubal isn’t just a great pitcher — he’s a symbol of what’s still possible in baseball’s most unforgiving craft."
-        }
-      ],
-      "seo": {
-        "title_tag": "Tarik Skubal: Two-Time AL Cy Young Winner and MLB’s Ultimate Underdog Ace | Sandlot Insider",
-        "meta_description": "Tarik Skubal went from 9th-round pick to back-to-back AL Cy Young winner. Here’s how he became one of baseball’s most dominant and inspiring aces.",
-        "keywords": [
-          "Tarik Skubal",
-          "AL Cy Young 2024",
-          "AL Cy Young 2025",
-          "Detroit Tigers ace",
-          "MLB pitching",
-          "underdog stories",
-          "two-time Cy Young winner"
-        ],
-        "canonical_url": "https://sandlotpicks.com/articles/tarik-skubal-two-time-al-cy-young-journey-2025",
-        "og_image": "https://sandlotpicks.com/article-heros/tarik-skubal-cy-young-hero.png"
-      },
-      "affiliate_cta": {
-        "enabled": true,
-        "platform": "Pikkit",
-        "context": "Effortlessly track all your sports bets in one convenient place — focus on what you do best: make winning picks.",
-        "link": "https://links.pikkit.com/invite/bullseye52540",
-        "hero-banner": "/article-heros/pikkit-promo-img.png",
-        "promo_code": "BULLSEYE52540"
-      },
-      "affiliate_disclaimer": "We may earn a commission if you sign up through our Pikkit link. Using our code BULLSEYE52540 supports our content and helps us keep delivering daily insights.",
-      "related_posts": [
-        "paul-skenes-cy-young-legend-in-the-making-2025",
-        "john-schneider-robbed-al-manager-of-the-year-2025"
       ]
     }
   ]
