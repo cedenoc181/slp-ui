@@ -10,6 +10,204 @@
   },
   "articles": [
     {
+      "id": 10,
+      "title": "AL & NL Cy Youngs Set to Dominate the World…Baseball Classic: Team USA’s 2026 WBC Super-Roster",
+      "slug": "team-usa-2026-wbc-roster-cy-youngs-dominate",
+      "author": "Sandlot Picks Team",
+      "date": "2025-12-26",
+      "status": "Final",
+      "tags": [
+        "WBC 2026",
+        "Team USA",
+        "MLB",
+        "Baseball America",
+        "ESPN",
+        "Roster Projection",
+        "International Baseball",
+        "Analytics"
+      ],
+      "summary": "Two reigning Cy Young winners—Paul Skenes and Tarik Skubal—headline a Team USA core loaded with 2025 star power. We compile confirmed commitments, project a starting nine and rotation, roll up 2025 stat lines, and explain why the Americans should cruise to the finals.",
+      "read_time_minutes": 6,
+      "estimated_word_count": 1100,
+      "hero_image": {
+        "url": "/article-heros/team-USA.png",
+        "alt": "aaron judge, bryce harper, tarik skubal and cal raleigh in Team USA baseball uniforms" 
+      },
+      "content": [
+        {
+          "type": "heading",
+          "text": "“AL & NL Cy Youngs Set to Dominate the World…Baseball Classic”"
+        },
+        {
+          "type": "paragraph",
+          "text": "Team USA’s 2026 WBC build reads like a superteam. With the reigning AL and NL Cy Young winners—Tarik Skubal and Paul Skenes—fronting the staff and an everyday group led by Aaron Judge, Bobby Witt Jr., Bryce Harper and more, the path to gold runs through the stars and stripes. Official commitments tracked by MLB.com already include Judge (captain), Witt Jr., Gunnar Henderson, Cal Raleigh, Kyle Schwarber, Corbin Carroll, Pete Crow-Armstrong, Will Smith, Brice Turang, and arms like Skenes, Skubal, Logan Webb, Joe Ryan, Mason Miller, Clay Holmes and Nolan McLean. :contentReference[oaicite:0]{index=0}"
+        },
+        {
+          "type": "paragraph",
+          "text": "Add Bryce Harper’s public commitment, and it’s clear the lineup depth is catching up to the headline pitching. :contentReference[oaicite:1]{index=1}"
+        },
+        {
+          "type": "heading",
+          "text": "Projected USA Starting Lineup (with 2025 MLB production)"
+        },
+        {
+          "type": "paragraph",
+          "text": "1) SS Bobby Witt Jr. — .295 AVG, 23 HR, 88 RBI, .852 OPS. :contentReference[oaicite:2]{index=2}"
+        },
+        {
+          "type": "paragraph",
+          "text": "2) CF Pete Crow-Armstrong — .247, 31 HR, 95 RBI, .768 OPS. :contentReference[oaicite:3]{index=3}"
+        },
+        {
+          "type": "paragraph",
+          "text": "3) RF Aaron Judge — .331, 53 HR, 114 RBI, 1.144 OPS. :contentReference[oaicite:4]{index=4}"
+        },
+        {
+          "type": "paragraph",
+          "text": "4) DH Kyle Schwarber — .240, 56 HR, 132 RBI, .928 OPS. :contentReference[oaicite:5]{index=5}"
+        },
+        {
+          "type": "paragraph",
+          "text": "5) 1B Bryce Harper — .261, 27 HR, 75 RBI, .844 OPS. :contentReference[oaicite:6]{index=6}"
+        },
+        {
+          "type": "paragraph",
+          "text": "6) LF Corbin Carroll — .259, 31 HR, 84 RBI, .883 OPS. :contentReference[oaicite:7]{index=7}"
+        },
+        {
+          "type": "paragraph",
+          "text": "7) 3B Gunnar Henderson — .274, 17 HR, 68 RBI, .787 OPS. :contentReference[oaicite:8]{index=8}"
+        },
+        {
+          "type": "paragraph",
+          "text": "8) C Cal Raleigh — .247, 60 HR, 125 RBI, .948 OPS. :contentReference[oaicite:9]{index=9}"
+        },
+        {
+          "type": "paragraph",
+          "text": "9) 2B Brice Turang — .288, 18 HR, 81 RBI, .794 OPS. :contentReference[oaicite:10]{index=10}"
+        },
+        {
+          "type": "paragraph",
+          "text": "Lineup snapshot (computed from the nine above): Total HR 316; Total RBI 862; Average AVG ≈ .271; Average OPS ≈ .883. "
+        },
+        {
+          "type": "paragraph",
+          "text": "WAR context (ESPN position-player board): Judge 9.7; Raleigh 7.3; Witt Jr. 7.1; Crow-Armstrong 6.0; Carroll 5.8; Turang 5.5; Henderson 5.4; Schwarber 4.7 — a subtotal of 51.5 WAR from eight hitters (Harper’s 2025 WAR not listed on the leaders page, so the true total is higher). :contentReference[oaicite:12]{index=12}"
+        },
+        {
+          "type": "heading",
+          "text": "Rotation & Late-Inning Plan (with 2025 MLB production)"
+        },
+        {
+          "type": "paragraph",
+          "text": "SP1 Paul Skenes — 10–10, 1.97 ERA, 0.95 WHIP, 216 K; unanimous 2025 NL Cy Young. :contentReference[oaicite:13]{index=13}"
+        },
+        {
+          "type": "paragraph",
+          "text": "SP2 Tarik Skubal — 13–6, 2.21 ERA, 0.89 WHIP, 241 K; back-to-back AL Cy Young (2024–2025). :contentReference[oaicite:14]{index=14}"
+        },
+        {
+          "type": "paragraph",
+          "text": "SP3 Logan Webb — 15–11, 3.22 ERA, 1.24 WHIP, 224 K. :contentReference[oaicite:15]{index=15}"
+        },
+        {
+          "type": "paragraph",
+          "text": "SP4 Joe Ryan — 13–10, 3.42 ERA, 1.04 WHIP, 194 K. :contentReference[oaicite:16]{index=16}"
+        },
+        {
+          "type": "paragraph",
+          "text": "Late innings: Mason Miller — 22 SV, 2.63 ERA, 0.91 WHIP, 104 K; David Bednar — 27 SV, 2.30 ERA, 1.04 WHIP. :contentReference[oaicite:17]{index=17}"
+        },
+        {
+          "type": "paragraph",
+          "text": "Rotation snapshot (Skenes/Skubal/Webb/Ryan): Average ERA ≈ 2.71; Average WHIP ≈ 1.03; Combined strikeouts 875; W-L 51–37. Pitching WAR (ESPN leaders subset): Skenes 7.6 + Skubal 6.6 + Ryan 4.5 = 18.7 (Webb not listed on the leaders page, so the true total is higher). :contentReference[oaicite:18]{index=18}"
+        },
+        {
+          "type": "heading",
+          "text": "Why It Scales in March"
+        },
+        {
+          "type": "paragraph",
+          "text": "Two aces who just won the major awards travel in any format; add a middle-order anchored by Judge/Harper/Schwarber, plus plus-glove/impact bats like Witt Jr., Henderson, Raleigh and speed/pressure from Carroll and Crow-Armstrong, and you get both detonation (HR/OPS) and sequence offense. With Miller/Bednar at the back, the U.S. can shorten games to seven innings in bracket play. :contentReference[oaicite:19]{index=19}"
+        },
+        {
+          "type": "heading",
+          "text": "Sandlot Picks’ Call"
+        },
+        {
+          "type": "paragraph",
+          "text": "On paper, this is the tournament’s best top-end rotation (two reigning Cy Youngs) and a starting nine that averaged ~.883 OPS with 316 HR in 2025. We expect Team USA to dominate pool play and walk into the finals as the favorite. :contentReference[oaicite:20]{index=20}"
+        },
+        {
+          "type": "heading",
+          "text": "Sources"
+        },
+        {
+          "type": "paragraph",
+          "text": "Commitments & WBC hub: MLB.com running list of confirmed 2026 WBC players; USA Baseball updates. Harper commit: Reuters. Player stats & WAR: ESPN player pages and 2025 WAR leaderboard. Context/coverage: Baseball America WBC pages. :contentReference[oaicite:21]{index=21}"
+        }
+      ],
+      "seo": {
+        "title_tag": "Team USA 2026 WBC Roster: Judge, Harper, Witt Jr., Raleigh + Cy Youngs Skenes & Skubal | Sandlot Insider",
+        "meta_description": "Using MLB.com, ESPN.com and Baseball America sources, we compile Team USA’s 2026 WBC roster and 2025 stat lines—Judge, Harper, Witt Jr., Henderson, Raleigh, Schwarber, Carroll, Crow-Armstrong, Turang—with Cy Youngs Paul Skenes and Tarik Skubal atop the rotation. Totals/averages, WAR roll-ups, and why the U.S. should cruise to the finals.",
+        "keywords": [
+          "Team USA WBC 2026 roster",
+          "Aaron Judge 2025 stats",
+          "Bryce Harper Team USA 2026",
+          "Bobby Witt Jr. WBC 2026",
+          "Gunnar Henderson 2025 stats",
+          "Cal Raleigh 60 HR 2025",
+          "Kyle Schwarber 56 HR 2025",
+          "Corbin Carroll 2025 OPS",
+          "Pete Crow-Armstrong 2025 stats",
+          "Brice Turang 2025 stats",
+          "Paul Skenes 2025 Cy Young",
+          "Tarik Skubal 2025 Cy Young",
+          "Mason Miller 2025 saves",
+          "Logan Webb 2025 stats",
+          "Joe Ryan 2025 stats",
+          "MLB.com WBC commitments",
+          "ESPN WAR leaders 2025",
+          "Baseball America WBC coverage"
+        ],
+        "canonical_url": "https://sandlotpicks.com/articles/team-usa-wbc-roster",
+        "og_image": "https://sandlotpicks.com/article-heros/team-USA.png"
+        },
+          "affiliate_cta": {
+          "enabled": true,
+          "platform": "Pikkit",
+          "context": "Effortlessly track all your sports bets in one convenient place — focus on what you do best: make winning picks.",
+          "link": "https://links.pikkit.com/invite/bullseye52540",
+          "hero-banner": "/article-heros/pikkit-promo-img.png",
+          "promo_code": "BULLSEYE52540"
+       },
+        "affiliate_disclaimer": "We may earn a commission if you sign up through our Pikkit link. Using our code BULLSEYE52540 supports our content and helps us keep delivering daily insights.",
+        "reference_urls": [
+          "https://www.mlb.com/news/mlb-players-in-the-2026-world-baseball-classic",
+          "https://www.reuters.com/sports/phillies-bryce-harper-play-team-usa-wbc--flm-2025-12-23/",
+          "https://www.espn.com/mlb/war/leaders/_/type/seasonal/year/2025",
+          "https://www.espn.com/mlb/player/_/id/33192/aaron-judge",
+          "https://www.espn.com/mlb/player/_/id/30951/bryce-harper",
+          "https://www.espn.com/mlb/player/_/id/42403/bobby-witt-jr",
+          "https://www.espn.com/mlb/player/_/id/42507/gunnar-henderson",
+          "https://www.espn.com/mlb/player/_/id/41292/cal-raleigh",
+          "https://www.espn.com/mlb/player/_/id/33712/kyle-schwarber",
+          "https://www.espn.com/mlb/player/_/id/42404/corbin-carroll",
+          "https://www.espn.com/mlb/player/_/id/4717833/pete-crow-armstrong",
+          "https://www.espn.com/mlb/player/_/id/41179/brice-turang",
+          "https://www.espn.com/mlb/player/_/id/4719507/paul-skenes",
+          "https://www.espn.com/mlb/player/_/id/42409/tarik-skubal",
+          "https://www.espn.com/mlb/player/_/id/41216/logan-webb",
+          "https://www.espn.com/mlb/player/_/id/42450/joe-ryan",
+          "https://www.baseballamerica.com/stories/competition/international/"
+        ],
+        "related_posts": [
+          "paul-skenes-cy-young-legend-in-the-making-2025",
+          "tarik-skubal-two-time-al-cy-young-journey-2025",
+          "dominican-republic-2026-wbc-lineup-favorites"
+        ]
+    },
+    {
       "id": 9,
       "title": "Team Dominican Republic-2026 WBC: A Lineup Built to Steamroll",
       "slug": "dominican-republic-2026-wbc-lineup-favorites",
