@@ -21,7 +21,7 @@ function Footer() {
                   <img src={logo} alt="Sandlot Picks chalk stats logo" className="footer-logo" />
                 </Link>
                 <div className="brand-text">
-                  <h3 className="footer-heading">Sandlot Picks</h3>
+                  <h3 className="footer-heading">Sandlot Picks Analytics</h3>
                   <p className="footer-tagline">Smart analytics for smarter picks. The smartest way to win.</p>
                 </div>
               </div>
