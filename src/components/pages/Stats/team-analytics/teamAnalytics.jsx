@@ -6,6 +6,7 @@ function TeamAnalytics() {
   const { teamName } = useParams();
   const navigate = useNavigate();
   const [selectedTeam, setSelectedTeam] = useState('LAD');
+  const [selectedSeason, setSelectedSeason] = useState('2025');
   const [timeframe, setTimeframe] = useState('season');
   const [chartFilter, setChartFilter] = useState('season');
   const [leadersToggle, setLeadersToggle] = useState('batting'); // 'batting' or 'pitching'
@@ -26,6 +27,10 @@ function TeamAnalytics() {
     { id: 'BOS', name: 'Boston Red Sox', urlName: 'boston-red-sox', logo: '⚾' },
     // Add more teams...
   ];
+
+  // Add seasons array
+  const seasons = ['2025', '2024', '2023', '2022', '2021', '2020'];
+
 
   // Helper function to convert team name to URL format
   const formatTeamNameForUrl = (teamName) => {
@@ -113,19 +118,35 @@ function TeamAnalytics() {
         <div className="container">
           <div className="header-content">
             <div className="team-selector-wrapper">
-              <h1>{currentTeamName}</h1>
-              <div className="team-selector">
-                <select 
-                  value={selectedTeam} 
-                  onChange={(e) => handleTeamChange(e.target.value)}
-                  className="team-dropdown"
-                >
-                  {teams.map(team => (
-                    <option key={team.id} value={team.id}>
-                      {team.name}
-                    </option>
-                  ))}
-                </select>
+             <h1>{currentTeamName}</h1>
+              <div className="selectors-row">
+                <div className="team-selector">
+                  <select 
+                    value={selectedTeam} 
+                    onChange={(e) => handleTeamChange(e.target.value)}
+                    className="team-dropdown"
+                  >
+                    {teams.map(team => (
+                      <option key={team.id} value={team.id}>
+                        {team.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className="analytics-header season-selector">
+                  <select 
+                    value={selectedSeason} 
+                    onChange={(e) => setSelectedSeason(e.target.value)}
+                    className="season-dropdown"
+                  >
+                    {seasons.map(season => (
+                      <option key={season} value={season}>
+                        {season} 
+                      </option>
+                    ))}
+                  </select>
+                </div>
               </div>
             </div>
 
