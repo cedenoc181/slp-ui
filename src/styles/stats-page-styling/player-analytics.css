@@ -32,7 +32,7 @@
 
 .team-selector-row {
   display: flex;
-  gap: 0.5rem;
+  gap: 1rem;
   align-items: flex-start;
   flex-wrap: nowrap;
 }
