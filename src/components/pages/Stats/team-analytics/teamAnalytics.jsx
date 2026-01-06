@@ -17,14 +17,14 @@ function TeamAnalytics() {
 
   // Mock data - will be replaced with API later
   const teams = [
-    { id: 'LAD', name: 'Los Angeles Dodgers', urlName: 'los-angeles-dodgers', logo: '⚾' },
-    { id: 'NYY', name: 'New York Yankees', urlName: 'new-york-yankees', logo: '⚾' },
-    { id: 'HOU', name: 'Houston Astros', urlName: 'houston-astros', logo: '⚾' },
-    { id: 'ATL', name: 'Atlanta Braves', urlName: 'atlanta-braves', logo: '⚾' },
-    { id: 'BAL', name: 'Baltimore Orioles', urlName: 'baltimore-orioles', logo: '⚾' },
-    { id: 'TBR', name: 'Tampa Bay Rays', urlName: 'tampa-bay-rays', logo: '⚾' },
-    { id: 'TOR', name: 'Toronto Blue Jays', urlName: 'toronto-blue-jays', logo: '⚾' },
-    { id: 'BOS', name: 'Boston Red Sox', urlName: 'boston-red-sox', logo: '⚾' },
+    { id: 'LAD', name: 'Los Angeles Dodgers', urlName: 'los-angeles-dodgers', logo: '⚾', team_id: 119 },
+    { id: 'NYY', name: 'New York Yankees', urlName: 'new-york-yankees', logo: '⚾', team_id: 147 },
+    { id: 'HOU', name: 'Houston Astros', urlName: 'houston-astros', logo: '⚾', team_id: 117 },
+    { id: 'ATL', name: 'Atlanta Braves', urlName: 'atlanta-braves', logo: '⚾', team_id: 144 },
+    { id: 'BAL', name: 'Baltimore Orioles', urlName: 'baltimore-orioles', logo: '⚾', team_id: 110 },
+    { id: 'TBR', name: 'Tampa Bay Rays', urlName: 'tampa-bay-rays', logo: '⚾', team_id: 139 },
+    { id: 'TOR', name: 'Toronto Blue Jays', urlName: 'toronto-blue-jays', logo: '⚾', team_id: 141 },
+    { id: 'BOS', name: 'Boston Red Sox', urlName: 'boston-red-sox', logo: '⚾', team_id: 111 },
     // Add more teams...
   ];
 
@@ -118,7 +118,14 @@ function TeamAnalytics() {
         <div className="container">
           <div className="header-content">
             <div className="team-selector-wrapper">
-             <h1>{currentTeamName}</h1>
+              <div className="team-header-inline">
+                <img 
+                  src={`https://www.mlbstatic.com/team-logos/${teams.find(t => t.id === selectedTeam)?.team_id}.svg`} 
+                  alt={`${currentTeamName} logo`}
+                  className="team-logo-image"
+                />
+                <h1>{currentTeamName}</h1>
+              </div>
               <div className="selectors-row">
                 <div className="team-selector">
                   <select 
