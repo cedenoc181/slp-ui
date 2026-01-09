@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0",
   "site": "sandlotpicks.com",
-  "generated_at": "2025-12-17",
+  "generated_at": "2026-01-09",
   "pagination": {
     "current_page": 1,
     "articles_per_page": 4,
@@ -9,6 +9,139 @@
     "has_more": true
   },
   "articles": [
+    {
+      "id": 11,
+      "title": "“If You Want to Add Talent, Boras Gets His Slice”: How Scott Boras Bent MLB Free Agency To His Will",
+      "slug": "scott-boras-mlb-free-agency-greatest-agent",
+      "author": "Sandlot Picks Team",
+      "date": "2026-01-09",
+      "status": "Final",
+      "tags": [
+        "MLB",
+        "Free Agency",
+        "Scott Boras",
+        "Player Contracts",
+        "Agent Market",
+        "Business of Baseball",
+        "Editorial"
+      ],
+      "summary": "For three decades Scott Boras has treated free agency like a leverage laboratory, delivering record deals for star clients and collecting his slice along the way. We break down the playbook, fee structure, owner sentiment, who he represents this winter, and the big question: is he the greatest sports agent ever?",
+      "read_time_minutes": 4,
+      "estimated_word_count": 875,
+      "hero_image": {
+        "url": "/article-heros/ScottB.png",
+        "alt": "Scott Boras MLB Free Agency Greatest Agent"
+      },
+      "content": [
+        {
+          "type": "paragraph",
+          "text": "In modern baseball, star hunting has a toll booth—and Scott Boras runs it. For three decades, the Boras Corporation has turned free agency into a yield farm for generational contracts, record AAVs, and leverage that often outmuscles even the richest clubs. The result: if you’re an owner or a GM trying to add premium talent, there’s a good chance Boras gets his slice."
+        },
+        {
+          "type": "heading",
+          "text": "The Playbook: Maximize the Marketplace, Then Redefine It"
+        },
+        {
+          "type": "paragraph",
+          "text": "Boras’ core strategy isn’t complicated, just relentless: widen the bidding pool, resist early discounts, and weaponize precedent. Each new landmark deal becomes the floor for the next superstar. Think mega-pacts for frontline pitchers and middle-of-the-order anchors—agreements that set the tone for the entire market and ripple for years."
+        },
+        {
+          "type": "paragraph",
+          "text": "He’s also mastered the calendar. Slow-playing winters, floating ‘mystery teams,’ and controlling the narrative keeps pressure on clubs that feel one piece away. When scarcity bites, numbers climb."
+        },
+        {
+          "type": "heading",
+          "text": "“His Slice”: How MLB Agent Fees Actually Work"
+        },
+        {
+          "type": "paragraph",
+          "text": "MLB doesn’t impose a hard cap on agent commissions. Fees are negotiated between player and agent (subject to MLBPA guidelines that protect the player’s minimum compensation). In practice, industry norms hover around roughly 4–5% on player contracts. On billion-dollar portfolios, even single-digit percentages compound into nine-figure career earnings."
+        },
+        {
+          "type": "paragraph",
+          "text": "That’s the Boras business model in a sentence: scale, patience, and leverage—applied deal after deal."
+        },
+        {
+          "type": "heading",
+          "text": "How Owners and Clubs Really Feel"
+        },
+        {
+          "type": "paragraph",
+          "text": "Two truths coexist: respect and resentment. Front offices privately concede Boras is the best in the business at extracting full value—he’s meticulously prepared and ruthless in comps. At the same time, some owners see his process as an annual hostage situation: if you need the star, you pay the toll. Complaints aside, those same clubs end up at the table whenever a championship window opens."
+        },
+        {
+          "type": "heading",
+          "text": "2025–26 Offseason: Who’s at Boras’ Table (and why it proves the slice thesis)"
+        },
+        {
+          "type": "paragraph",
+          "text": "• Cody Bellinger (OF/1B) — Still unsigned as his camp works the long-term lane. He’s a headline outfield bat and a classic case study in Boras’ slow-play approach: build demand, let scarcity set the price, and aim for both term and AAV that fit a star profile."
+        },
+        {
+          "type": "paragraph",
+          "text": "• Alex Bregman (3B) — A high-end third baseman back on the market seeking a multi-year anchor deal. He’s precisely the kind of middle-of-the-order/left-side profile that draws big-market attention and invites precedent-setting comps."
+        },
+        {
+          "type": "paragraph",
+          "text": "• Pete Alonso (1B) — **Signed: 5 years, $155 million with the Baltimore Orioles.** A middle-order masher landing $31M AAV with a contender is textbook Boras outcome: monetize premium power at scale and do it in a market hungry for impact bats."
+        },
+        {
+          "type": "paragraph",
+          "text": "In sum, the 2025–26 winter amplifies the thesis. Clubs that want instant offense or cornerstone bats find themselves navigating the same toll road—Boras in the booth, precedent on the placard."
+        },
+        {
+          "type": "heading",
+          "text": "What Boras Changed About Free Agency"
+        },
+        {
+          "type": "paragraph",
+          "text": "1) Pace & patience: He normalized waiting out the market to surpass ‘comfortable’ early offers. 2) Precedent as weapon: Every record deal becomes a ladder rung for the next client. 3) Narrative control: Strategic leaks, tailored comps, and media moments turn public perception into leverage."
+        },
+        {
+          "type": "heading",
+          "text": "Is Scott Boras the Greatest Sports Agent Ever?"
+        },
+        {
+          "type": "paragraph",
+          "text": "Across all sports, there are titans—Rich Paul in the NBA, Drew Rosenhaus in the NFL, Jorge Mendes in world football. But if the criteria are total guaranteed money negotiated and long-term market-shaping power, Boras is the clubhouse leader. Multiple all-time record deals, decades atop agent rankings, and a portfolio measured in billions paint a singular picture."
+        },
+        {
+          "type": "paragraph",
+          "text": "Verdict: In baseball, he’s the clear No. 1. In the broader sports world, it’s hard to find a stronger case for “greatest of all time.” If you want to add elite talent, history says Boras gets his slice—and his players get their bag."
+        }
+      ],
+      "seo": {
+        "title_tag": "Scott Boras, MLB Free Agency & the 5% Slice: Bellinger, Bregman, Alonso-to-Orioles | Sandlot Insider",
+        "meta_description": "How Scott Boras turned MLB free agency into a leverage machine: playbook, agent fee norms (~4–5%), owner sentiment, and the 2025–26 headline clients—Cody Bellinger, Alex Bregman, and Pete Alonso (5/$155M Orioles). Is Boras the greatest sports agent ever?",
+        "keywords": [
+          "Scott Boras",
+          "Scott Boras 5 percent commission",
+          "MLB agent fees",
+          "Boras clients 2025 2026",
+          "Cody Bellinger free agency",
+          "Alex Bregman free agency",
+          "Pete Alonso Orioles 155 million",
+          "largest MLB contracts",
+          "MLB free agency leverage",
+          "Boras Corporation"
+        ],
+        "canonical_url": "https://sandlotpicks.com/articles/scott-boras-mlb-free-agency-greatest-agent",
+        "og_image": "https://sandlotpicks.com/article-heros/ScottB.png"
+      },
+      "affiliate_cta": {
+        "enabled": true,
+        "platform": "Pikkit",
+        "context": "Effortlessly track all your sports bets in one convenient place — focus on what you do best: make winning picks.",
+        "link": "https://links.pikkit.com/invite/bullseye52540",
+        "hero-banner": "/article-heros/pikkit-promo-img.png",
+        "promo_code": "BULLSEYE52540"
+      },
+      "affiliate_disclaimer": "We may earn a commission if you sign up through our Pikkit link. Using our code BULLSEYE52540 supports our content and helps us keep delivering daily insights.",
+      "related_posts": [
+        "yankees-2026-four-offseason-pillars-closer-shortstop-or-second-base",
+        "aaron-judge-vs-cal-raleigh-2025-al-mvp-debate"
+      ]
+    },
     {
       "id": 10,
       "title": "AL & NL Cy Youngs Set to Dominate the World…Baseball Classic: Team USA’s 2026 WBC Super-Roster",
@@ -31,20 +164,16 @@
       "estimated_word_count": 1100,
       "hero_image": {
         "url": "/article-heros/team-USA.png",
-        "alt": "aaron judge, bryce harper, tarik skubal and cal raleigh in Team USA baseball uniforms" 
+        "alt": "aaron judge, bryce harper, tarik skubal and cal raleigh in Team USA baseball uniforms"
       },
       "content": [
-        {
-          "type": "heading",
-          "text": "“AL & NL Cy Youngs Set to Dominate the World…Baseball Classic”"
-        },
         {
           "type": "paragraph",
           "text": "Team USA’s 2026 WBC build reads like a superteam. With the reigning AL and NL Cy Young winners—Tarik Skubal and Paul Skenes—fronting the staff and an everyday group led by Aaron Judge, Bobby Witt Jr., Bryce Harper and more, the path to gold runs through the stars and stripes. Official commitments tracked by MLB.com already include Judge (captain), Witt Jr., Gunnar Henderson, Cal Raleigh, Kyle Schwarber, Corbin Carroll, Pete Crow-Armstrong, Will Smith, Brice Turang, and arms like Skenes, Skubal, Logan Webb, Joe Ryan, Mason Miller, Clay Holmes and Nolan McLean."
         },
         {
           "type": "paragraph",
-          "text": "Add Bryce Harper’s public commitment, and it’s clear the lineup depth is catching up to the headline pitching."
+          "text": "Add Bryce Harper’s public commitment, and it’s clear the lineup depth is catching up to the headline pitching. "
         },
         {
           "type": "heading",
@@ -52,11 +181,11 @@
         },
         {
           "type": "paragraph",
-          "text": "1) SS Bobby Witt Jr. — .295 AVG, 23 HR, 88 RBI, .852 OPS. "
+          "text": "1) SS Bobby Witt Jr. — .295 AVG, 23 HR, 88 RBI, .852 OPS."
         },
         {
           "type": "paragraph",
-          "text": "2) CF Pete Crow-Armstrong — .247, 31 HR, 95 RBI, .768 OPS. "
+          "text": "2) CF Pete Crow-Armstrong — .247, 31 HR, 95 RBI, .768 OPS."
         },
         {
           "type": "paragraph",
@@ -172,40 +301,40 @@
         ],
         "canonical_url": "https://sandlotpicks.com/articles/team-usa-wbc-roster",
         "og_image": "https://sandlotpicks.com/article-heros/team-USA.png"
-        },
-          "affiliate_cta": {
-          "enabled": true,
-          "platform": "Pikkit",
-          "context": "Effortlessly track all your sports bets in one convenient place — focus on what you do best: make winning picks.",
-          "link": "https://links.pikkit.com/invite/bullseye52540",
-          "hero-banner": "/article-heros/pikkit-promo-img.png",
-          "promo_code": "BULLSEYE52540"
-       },
-        "affiliate_disclaimer": "We may earn a commission if you sign up through our Pikkit link. Using our code BULLSEYE52540 supports our content and helps us keep delivering daily insights.",
-        "reference_urls": [
-          "https://www.mlb.com/news/mlb-players-in-the-2026-world-baseball-classic",
-          "https://www.reuters.com/sports/phillies-bryce-harper-play-team-usa-wbc--flm-2025-12-23/",
-          "https://www.espn.com/mlb/war/leaders/_/type/seasonal/year/2025",
-          "https://www.espn.com/mlb/player/_/id/33192/aaron-judge",
-          "https://www.espn.com/mlb/player/_/id/30951/bryce-harper",
-          "https://www.espn.com/mlb/player/_/id/42403/bobby-witt-jr",
-          "https://www.espn.com/mlb/player/_/id/42507/gunnar-henderson",
-          "https://www.espn.com/mlb/player/_/id/41292/cal-raleigh",
-          "https://www.espn.com/mlb/player/_/id/33712/kyle-schwarber",
-          "https://www.espn.com/mlb/player/_/id/42404/corbin-carroll",
-          "https://www.espn.com/mlb/player/_/id/4717833/pete-crow-armstrong",
-          "https://www.espn.com/mlb/player/_/id/41179/brice-turang",
-          "https://www.espn.com/mlb/player/_/id/4719507/paul-skenes",
-          "https://www.espn.com/mlb/player/_/id/42409/tarik-skubal",
-          "https://www.espn.com/mlb/player/_/id/41216/logan-webb",
-          "https://www.espn.com/mlb/player/_/id/42450/joe-ryan",
-          "https://www.baseballamerica.com/stories/competition/international/"
-        ],
-        "related_posts": [
-          "paul-skenes-cy-young-legend-in-the-making-2025",
-          "tarik-skubal-two-time-al-cy-young-journey-2025",
-          "dominican-republic-2026-wbc-lineup-favorites"
-        ]
+      },
+      "affiliate_cta": {
+        "enabled": true,
+        "platform": "Pikkit",
+        "context": "Effortlessly track all your sports bets in one convenient place — focus on what you do best: make winning picks.",
+        "link": "https://links.pikkit.com/invite/bullseye52540",
+        "hero-banner": "/article-heros/pikkit-promo-img.png",
+        "promo_code": "BULLSEYE52540"
+      },
+      "affiliate_disclaimer": "We may earn a commission if you sign up through our Pikkit link. Using our code BULLSEYE52540 supports our content and helps us keep delivering daily insights.",
+      "reference_urls": [
+        "https://www.mlb.com/news/mlb-players-in-the-2026-world-baseball-classic",
+        "https://www.reuters.com/sports/phillies-bryce-harper-play-team-usa-wbc--flm-2025-12-23/",
+        "https://www.espn.com/mlb/war/leaders/_/type/seasonal/year/2025",
+        "https://www.espn.com/mlb/player/_/id/33192/aaron-judge",
+        "https://www.espn.com/mlb/player/_/id/30951/bryce-harper",
+        "https://www.espn.com/mlb/player/_/id/42403/bobby-witt-jr",
+        "https://www.espn.com/mlb/player/_/id/42507/gunnar-henderson",
+        "https://www.espn.com/mlb/player/_/id/41292/cal-raleigh",
+        "https://www.espn.com/mlb/player/_/id/33712/kyle-schwarber",
+        "https://www.espn.com/mlb/player/_/id/42404/corbin-carroll",
+        "https://www.espn.com/mlb/player/_/id/4717833/pete-crow-armstrong",
+        "https://www.espn.com/mlb/player/_/id/41179/brice-turang",
+        "https://www.espn.com/mlb/player/_/id/4719507/paul-skenes",
+        "https://www.espn.com/mlb/player/_/id/42409/tarik-skubal",
+        "https://www.espn.com/mlb/player/_/id/41216/logan-webb",
+        "https://www.espn.com/mlb/player/_/id/42450/joe-ryan",
+        "https://www.baseballamerica.com/stories/competition/international/"
+      ],
+      "related_posts": [
+        "paul-skenes-cy-young-legend-in-the-making-2025",
+        "tarik-skubal-two-time-al-cy-young-journey-2025",
+        "dominican-republic-2026-wbc-lineup-favorites"
+      ]
     },
     {
       "id": 9,
@@ -529,302 +658,6 @@
       "related_posts": [
         "blue-jays-2025-turnaround-from-basement-to-brink",
         "aaron-judge-vs-cal-raleigh-2025-al-mvp-debate"
-      ]
-    },
-    {
-      "id": 7,
-      "title": "MVP Math: Why Aaron Judge Edged Cal Raleigh — And What Voters Valued",
-      "slug": "aaron-judge-vs-cal-raleigh-2025-al-mvp-debate",
-      "author": "Sandlot Picks Team",
-      "date": "2025-11-14",
-      "status": "Final",
-      "tags": [
-        "MLB",
-        "Awards",
-        "MVP Debate",
-        "Aaron Judge",
-        "Cal Raleigh",
-        "Yankees",
-        "Mariners"
-      ],
-      "summary": "Aaron Judge captured his third MVP behind a monstrous .331/53/114 line and a 1.144 OPS. But Cal Raleigh’s historic defensive season — including zero passed balls — plus 60 homers and 125 RBIs ignited a real debate about how much glove work should weigh against offensive dominance.",
-      "read_time_minutes": 6,
-      "estimated_word_count": 1001,
-      "hero_image": {
-        "url": "/article-heros/judge-vs-raleigh-mvp-hero.png",
-        "alt": "Aaron Judge swinging and Cal Raleigh framing a pitch in a split image"
-      },
-      "content": [
-        {
-          "type": "paragraph",
-          "text": "Some MVP races feel like coronations. This one felt like calculus. Aaron Judge claimed his third MVP with a thunderous offensive season — a .331 batting average, 53 home runs, 114 RBIs, and a 1.144 OPS — while Cal Raleigh mounted a compelling, two-way case that blended elite power with singular defense at the sport’s most demanding position. When the ballots were counted, the trophy landed in Judge’s hands — and the conversation lit up across baseball."
-        },
-        {
-          "type": "heading",
-          "text": "The Winner’s Case: Judge’s Bat Was the Best Player in Baseball"
-        },
-        {
-          "type": "paragraph",
-          "text": "Judge’s MVP resume screams value from every angle. A .331 average paired with 53 home runs is ultra-rare air in the modern game; stack on 114 RBIs and a 1.144 OPS and you get a season that bends game plans and scoreboards. Beyond the box score, his presence warps pitch selection for everyone behind him, stretches bullpens, and turns routine matchups into mismatches."
-        },
-        {
-          "type": "paragraph",
-          "text": "Even without quoting a wall of advanced metrics, it’s easy to see why voters leaned his way: Judge generated runs in bulk and in leverage, buoyed his club’s lineup every single series, and passed the eye test for an offense-first MVP profile with room to spare. The production wasn’t just loud; it was relentlessly consistent."
-        },
-        {
-          "type": "heading",
-          "text": "The Challenger: Cal Raleigh’s Two-Way Thunder"
-        },
-        {
-          "type": "paragraph",
-          "text": "Here’s where the debate gets real. Cal Raleigh didn’t just keep pace — he authored a season that would win most years: a .247 average with 147 hits, 60 home runs, 125 RBIs, and 110 runs. That’s a 60-homer catcher anchoring an offense from a position that demands daily physical and mental strain. Offensive catchers usually trade bat for bruises; Raleigh refused the bargain."
-        },
-        {
-          "type": "paragraph",
-          "text": "And then there’s the defense — the part many critics felt got undervalued. Raleigh posted **zero passed balls** in the regular season, becoming the first qualified catcher in modern MLB history to do so. That’s not trivia; that’s run prevention in its purest form. It reflects elite receiving, game-calling, and focus across thousands of high-stress pitches. For pitchers, that kind of certainty alters pitch selection, unlocks breaking balls in the dirt, and lengthens at-bats in ways that never show up as gaudy counting stats."
-        },
-        {
-          "type": "heading",
-          "text": "How Voters Typically Weigh Value"
-        },
-        {
-          "type": "paragraph",
-          "text": "MVP voting has always wrestled with the same question: how do you compare a hitter’s raw production to a catcher’s quieter — but constant — influence on run prevention? Corner sluggers tend to dominate rate and counting stats. Catchers spread value across framing, blocking, controlling the run game, shepherding pitching plans, and still need to hit enough to matter. On paper, Judge’s line makes the case in seconds. On the field, Raleigh’s value accumulates in inches: a smothered splitter here, a borderline strike there, a mound visit that changes a sequence."
-        },
-        {
-          "type": "paragraph",
-          "text": "In close years, the pendulum often swings toward the most dominant bat. It’s not anti-defense bias so much as a reflection of certainty: run creation is measured cleanly and comparably; catcher defense remains part science, part art — and voters vary in how much they trust the available models."
-        },
-        {
-          "type": "heading",
-          "text": "Judge vs. Raleigh: Where the Edges Lived"
-        },
-        {
-          "type": "paragraph",
-          "text": "• **Run Creation:** Judge’s 1.144 OPS paired with a .331 average delivered impact in every game state. His ability to damage mistakes and punish quality pitches alike likely drove the margin. \n• **Leverage:** Middle-of-the-order bats are judged (no pun intended) on how often they tilt games late. Judge’s line supports that narrative. \n• **Positional Scarcity & Durability:** Raleigh’s 60 HR from the catcher spot is historic-tier thunder. Add the physical tax of catching and you have an argument that his offense should be graded on a curve — which many critics felt voters didn’t fully apply. \n• **Run Prevention:** The zero passed balls milestone is more than neat — it’s strategic freedom for an entire pitching staff. That’s value, even if it’s not as visible as a three-run blast."
-        },
-        {
-          "type": "heading",
-          "text": "Why Judge Still Won"
-        },
-        {
-          "type": "paragraph",
-          "text": "The simplest answer: Judge’s bat cleared a bar that almost forces a voter’s hand. When a hitter posts both a top-shelf batting average and apex power with elite on-base and slugging, he doesn’t just lead; he separates. Even a historically clean defensive season from a catcher — paired with 60 homers! — can struggle to overcome a line as complete and efficient as Judge’s from April to September."
-        },
-        {
-          "type": "paragraph",
-          "text": "Think of it this way: Raleigh may have combined rare power with unprecedented security behind the plate. Judge, however, authored the kind of offensive year that moves outfielders back before the anthem. In a most-valuable conversation that often defaults to run creation in a tie, Judge’s bat provided the final nudge."
-        },
-        {
-          "type": "heading",
-          "text": "Respecting the Glove: What Raleigh’s Year Should Change"
-        },
-        {
-          "type": "paragraph",
-          "text": "The takeaway shouldn’t be that defense doesn’t matter — it’s that our shared vocabulary for catcher value still lags. Zero passed balls for a qualified catcher should sit alongside 60 HR in the season’s headline. Pitchers expanding the zone in the dirt because they trust their backstop should be discussed with the same reverence as a 450-foot blast. The sport is getting better at quantifying framing, blocking, pop times, and sequencing value; the next step is letting those numbers speak as loudly as OPS in awards season."
-        },
-        {
-          "type": "heading",
-          "text": "Final Verdict"
-        },
-        {
-          "type": "paragraph",
-          "text": "Aaron Judge’s third MVP is earned: .331 with 53 homers, 114 RBIs, and a 1.144 OPS is a masterpiece. Cal Raleigh’s season is era-defining: 60 HR, 125 RBIs, 110 runs, a .247 average — and a defensive line capped by zero passed balls that should reset how we talk about excellence at catcher. If the MVP is the player who most changes outcomes, Judge’s bat carried the vote. If the MVP is the player who most expands what’s possible at his position, Raleigh’s claim will echo for years."
-        },
-        {
-          "type": "paragraph",
-          "text": "The good news for baseball fans? We didn’t have a right answer so much as two great ones. Judge won the award. Raleigh won the argument that defense, when it’s perfect, belongs at the center of any MVP debate."
-        }
-      ],
-      "seo": {
-        "title_tag": "Aaron Judge vs. Cal Raleigh: Why Judge Won MVP — And Why Raleigh’s Case Still Matters | Sandlot Insider",
-        "meta_description": "Aaron Judge’s .331/53/114 with a 1.144 OPS earned his third MVP, but Cal Raleigh’s 60 HR and a historic zero passed balls season raised a major question: how much should elite catcher defense weigh in MVP voting?",
-        "keywords": [
-          "Aaron Judge MVP",
-          "Cal Raleigh MVP case",
-          "zero passed balls catcher",
-          "Yankees MVP 2025",
-          "Mariners catcher defense",
-          "MLB awards debate"
-        ],
-        "canonical_url": "https://sandlotpicks.com/articles/aaron-judge-vs-cal-raleigh-2025-al-mvp-debate",
-        "og_image": "https://sandlotpicks.com/article-heros/judge-vs-raleigh-mvp-hero.png"
-      },
-      "affiliate_cta": {
-        "enabled": true,
-        "platform": "Pikkit",
-        "context": "Effortlessly track all your sports bets in one convenient place — focus on what you do best: make winning picks.",
-        "link": "https://links.pikkit.com/invite/bullseye52540",
-        "hero-banner": "/article-heros/pikkit-promo-img.png"
-      },
-      "affiliate_disclaimer": "We may earn a commission if you sign up through our Pikkit link. Using our code BULLSEYE52540 supports our content and helps us keep delivering daily insights.",
-      "related_posts": [
-        "shohei-ohtani-greatest-sho-man-of-all-time-4-mvp-seasons",
-        "tarik-skubal-two-time-al-cy-young-journey-2025"
-      ]
-    },
-    {
-      "id": 6,
-      "title": "Shohei Ohtani: The Greatest Sho-Man of His Era — And Maybe of All Time",
-      "slug": "shohei-ohtani-greatest-sho-man-of-all-time-4-mvp-seasons",
-      "author": "Sandlot Picks Team",
-      "date": "2025-11-15",
-      "status": "Final",
-      "tags": [
-        "MLB",
-        "Shohei Ohtani",
-        "Los Angeles Dodgers",
-        "MVP",
-        "Historic Seasons",
-        "Hall of Fame",
-        "Baseball Legends"
-      ],
-      "summary": "With four MVP awards across two leagues, two World Series championships, and a level of dominance the sport has never seen, Shohei Ohtani has transcended eras. From his historic 2021 MVP season to his back-to-back NL MVP campaigns with the Dodgers, we trace the growth of a once-in-a-century superstar who could retire today and be a unanimous Hall of Famer.",
-      "read_time_minutes": 5,
-      "estimated_word_count": 990,
-      "hero_image": {
-        "url": "/article-heros/ohtani-4x-mvp-hero.png",
-        "alt": "Shohei Ohtani sitting on his throne with his fourth MVP award"
-      },
-      "content": [
-        {
-          "type": "paragraph",
-          "text": "Baseball has seen legends. It has seen dominance. It has seen icons who shifted the very fabric of the sport. But it has never—ever—seen anyone like Shohei Ohtani. The greatest two-way player in history has now added a fourth MVP award to his résumé, splitting them evenly between the American League and National League. Two MVPs as an Angel. Two MVPs as a Dodger. Two World Series championships in his first two years with Los Angeles Dodgers. And a legacy that has already reached mythical proportions."
-        },
-        {
-          "type": "paragraph",
-          "text": "If Shohei Ohtani stepped away from the game today, he would be elected to the Hall of Fame unanimously. No debate. No hesitation. No comparison. Because there *is* no comparison. Each MVP season defined a new chapter, a new level, a new way of redefining what is possible in Major League Baseball."
-        },
-        {
-          "type": "heading",
-          "text": "2021 AL MVP: The Season That Redefined Baseball"
-        },
-        {
-          "type": "paragraph",
-          "text": "In 2021, Shohei Ohtani didn’t just win the MVP—he rewrote the rulebook. He became the first player in modern baseball to combine elite hitting and elite pitching at a superstar level, putting up numbers so absurd that they seemed pulled from a video game."
-        },
-        {
-          "type": "paragraph",
-          "text": "As a hitter, Ohtani slashed .257/.372/.592 with 46 home runs, 100 RBIs, 26 stolen bases, and a .965 OPS. He led the AL in triples, led all players in WAR, and became the first player in MLB history with 45+ HR, 25+ SB, and 20+ doubles while also making 20 starts on the mound."
-        },
-        {
-          "type": "paragraph",
-          "text": "As a pitcher, he posted a 3.18 ERA, 1.09 WHIP, and 156 strikeouts in 130.1 innings—elite numbers for a frontline starter, let alone someone simultaneously performing like Babe Ruth on offense."
-        },
-        {
-          "type": "paragraph",
-          "text": "The 2021 MVP season didn’t just elevate Ohtani into superstardom. It changed the sport. It opened the door to a new generation of two-way players. But it also created a new problem: how do you top the greatest season in modern baseball history?"
-        },
-        {
-          "type": "heading",
-          "text": "2023 AL MVP: The Evolution of a Juggernaut"
-        },
-        {
-          "type": "paragraph",
-          "text": "If 2021 was the revelation, 2023 was the mastery. Ohtani had become the undisputed best player on the planet, and he proved it by dominating on both sides of the ball even more efficiently."
-        },
-        {
-          "type": "paragraph",
-          "text": "At the plate, he slashed .304/.412/.654 with 44 home runs, 95 RBIs, and a 1.066 OPS—leading the AL in OBP, SLG, OPS, and WAR. His bat speed, plate discipline, and ability to hit velocity all reached career highs."
-        },
-        {
-          "type": "paragraph",
-          "text": "On the mound, before injury shut him down late in the year, Ohtani delivered a 3.14 ERA, 1.06 WHIP, and 167 strikeouts across 132 innings—again cementing himself as a top-five arm in baseball."
-        },
-        {
-          "type": "paragraph",
-          "text": "No player had ever led his league in home runs while simultaneously being one of the most dominant pitchers in baseball—until Ohtani did it twice."
-        },
-        {
-          "type": "heading",
-          "text": "2024 NL MVP: The Dodgers Era Begins With a Statement"
-        },
-        {
-          "type": "paragraph",
-          "text": "Ohtani’s long-awaited free-agency move to the Los Angeles Dodgers rewrote the structure of baseball economics. His presence alone changed television ratings, ticket sales, and the global audience. And his first season in Dodger blue didn’t disappoint—he put together an offensive masterclass that earned him his third MVP, his first in the National League."
-        },
-        {
-          "type": "paragraph",
-          "text": "His 2024 MVP line was staggering: 197 hits, 54 home runs, 130 RBIs, 59 stolen bases, a .310 batting average, .390 OBP, .646 SLG, and a monstrous 1.036 OPS. He became the first player in MLB history to hit 50+ home runs and steal 50+ bases in the same season. He led the NL in total bases, home runs, OPS, OPS+, and WAR."
-        },
-        {
-          "type": "paragraph",
-          "text": "With the bat alone, he was the most dangerous offensive force in baseball. And while recovering from elbow surgery limited his pitching, it didn’t stop him from rewriting offensive record books—and delivering the Dodgers a World Series title in his debut season."
-        },
-        {
-          "type": "heading",
-          "text": "2025 NL MVP: The Legend Grows"
-        },
-        {
-          "type": "paragraph",
-          "text": "If 2024 was dominance, 2025 was refinement. Ohtani didn’t need to steal 59 bases again. He didn’t need to hit over .300. He simply needed to be Shohei Ohtani—a player whose \"average\" season is still better than anything baseball has seen in a century."
-        },
-        {
-          "type": "paragraph",
-          "text": "His 2025 MVP line: 172 hits, 55 home runs, 102 RBIs, 20 stolen bases, a .282 batting average, .392 OBP, .622 SLG, and another 1.036 OPS season. It was raw power. Surgical patience. Ruthian production. And another World Series title for the Dodgers."
-        },
-        {
-          "type": "paragraph",
-          "text": "By season’s end, Ohtani became just the second player in baseball history to win MVP in both leagues multiple times—and the only player ever to win four MVPs while excelling as both a hitter and pitcher."
-        },
-        {
-          "type": "heading",
-          "text": "Four MVPs. Two Rings. One Legacy."
-        },
-        {
-          "type": "paragraph",
-          "text": "Ohtani’s four MVP seasons tell the story of a talent unlike anything the game has ever seen. 2021 was the shockwave. 2023 was the mastery. 2024 was the explosion. 2025 was the coronation."
-        },
-        {
-          "type": "paragraph",
-          "text": "Across four MVP campaigns, Ohtani totaled 199 home runs, 427 RBIs, 125 stolen bases, and over 1,100 total bases—with an OPS that never dipped below .965 in any of those seasons. He did all this while logging elite pitching performance in two of them."
-        },
-        {
-          "type": "paragraph",
-          "text": "There’s no argument left. No comparison left. No precedent left. Shohei Ohtani isn’t just the greatest Sho-Man of his era. He may be the greatest player the sport has ever seen."
-        },
-        {
-          "type": "heading",
-          "text": "Final Thoughts: A Hall of Famer Today, A Legend Forever"
-        },
-        {
-          "type": "paragraph",
-          "text": "If Shohei Ohtani retired this afternoon, he would walk into the Hall of Fame unanimously. Not because of hype, or fame, or international impact—but because of production. Because of dominance. Because he broke baseball and rebuilt it in his image."
-        },
-        {
-          "type": "paragraph",
-          "text": "And the scariest part? His story isn’t done. There are more MVPs ahead. More October moments. More history to carve into the fabric of the sport. But even if he never played another inning, Shohei Ohtani has already become what every kid in every ballpark dreams of: a legend, a champion, and the greatest Sho-Man baseball has ever known."
-        }
-      ],
-      "seo": {
-        "title_tag": "Shohei Ohtani: The Greatest Sho-Man of All Time | Sandlot Insider",
-        "meta_description": "A deep dive into Shohei Ohtani’s four MVP seasons—real stats, historic dominance, and a legacy that already makes him a unanimous Hall of Fame lock.",
-        "keywords": [
-          "Shohei Ohtani",
-          "Dodgers",
-          "Shohei Ohtani MVP",
-          "Shohei Ohtani Dodgers",
-          "Ohtani 2024 stats",
-          "Ohtani 2025 stats",
-          "4 MVP seasons",
-          "Dodgers World Series",
-          "Two-way superstar",
-          "Japan baseball"
-        ],
-        "canonical_url": "https://sandlotpicks.com/articles/shohei-ohtani-greatest-sho-man-of-all-time-4-mvp-seasons",
-        "og_image": "https://sandlotpicks.com/article-heros/ohtani-4x-mvp-hero.png"
-      },
-      "affiliate_cta": {
-        "enabled": true,
-        "platform": "DraftKings",
-        "context": "Join DraftKings today to place bets and cash in on exclusive promotions — all in one seamless app.",
-        "link": "https://sportsbook.draftkings.com/r/sb/cedenoc181/US-NY-SB/US-NY",
-        "hero-banner": "/article-heros/draftkings-promo-hero.jpg"
-      },
-      "affiliate_disclaimer": "We may earn a commission if you sign up through our DraftKings link. This supports our content and helps us keep delivering daily insights.",
-      "related_posts": [
-        "paul-skenes-cy-young-legend-in-the-making-2025",
-        "tarik-skubal-two-time-al-cy-young-journey-2025"
       ]
     }
   ]
