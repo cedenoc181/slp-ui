@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { Link } from 'react-router-dom';
-import articlesData from '../../../data/article.json';
-import moreArticlesData from '../../../data/moreArticles.json';
+import articlesData from '../../../data/contentData/article.json';
+import moreArticlesData from '../../../data/contentData/moreArticles.json';
 
 function Article() {
   const [searchParams] = useSearchParams();

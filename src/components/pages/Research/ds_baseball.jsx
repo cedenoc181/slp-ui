@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import dsData from '../../../data/ds_baseball.json';
+import dsData from '../../../data/staticData/ds_baseball.json';
 
 function DataScienceBaseball() {
   useEffect(() => {

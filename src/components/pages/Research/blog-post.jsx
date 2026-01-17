@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import blogsData from '../../../data/blogs.json';
+import blogsData from '../../../data/contentData/blogs.json';
 import '../../../styles/insights-page-styling/blog-post.css';
 
 function BlogPost() {

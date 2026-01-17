@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import articlesData from '../../../data/article.json';
-import moreArticlesData from '../../../data/moreArticles.json';
+import articlesData from '../../../data/contentData/article.json';
+import moreArticlesData from '../../../data/contentData/moreArticles.json';
 import '../../../styles/insights-page-styling/articles-post.css';
 
 function ArticlePost() {

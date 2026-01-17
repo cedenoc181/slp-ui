@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import faqData from '../../../data/faqs.json';
+import faqData from '../../../data/staticData/faqs.json';
 
 
 function FAQPage() {

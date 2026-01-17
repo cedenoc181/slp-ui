@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import '../../../../styles/stats-page-styling/mlb-standings-springtraining.css';
-import springTrainingDataJSON from '../../../../data/mlbStandingsSpringTraining.json';
+import springTrainingDataJSON from '../../../../data/mockData/mlbStandingsSpringTraining.json';
 
 const teamAbbreviationMap = {
   'Los Angeles Dodgers': 'LAD',

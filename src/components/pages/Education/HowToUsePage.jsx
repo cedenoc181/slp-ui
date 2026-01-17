@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import howToUseData from '../../../data/howToUse.json';
+import howToUseData from '../../../data/staticData/howToUse.json';
 
 
 function HowToUsePage() {

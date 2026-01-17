@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import teamData from '../../../../data/teamData.json';
+import teamData from '../../../../data/mockData/teamData.json';
 
 function TeamAnalytics() {
   const { teamName } = useParams();

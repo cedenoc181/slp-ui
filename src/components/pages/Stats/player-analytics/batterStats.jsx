@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import batterData from '../../../../data/batterData.json';
+import batterData from '../../../../data/mockData/batterData.json';
 import '../../../../styles/stats-page-styling/batter-stats.css';
 
 function BatterStats({ teamId, season, teamName }) {
