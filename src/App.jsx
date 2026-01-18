@@ -2,6 +2,8 @@ import React, { useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
 import ReactGA from 'react-ga4';
 
+import ApiTestPage from './components/ApiTestPage';
+
 
 // Home page component imports//
 import Header from './components/Header';
@@ -111,7 +113,8 @@ function App() {
         <Header />
         <Routes>
           <Route path="/" element={<HomePage />} />
-
+          {/* test route */}
+          <Route path="/api-test" element={<ApiTestPage />} />
           {/* More routes */}
           <Route path="/about" element={<AboutPage />} />
           <Route path="/features" element={<FeaturesPage />} />
