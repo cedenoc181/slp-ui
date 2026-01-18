@@ -1,116 +1,288 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import teamData from '../../../../data/mockData/teamData.json';
+
+// Import API Services
+import teamsService from '../../../../data/services/teamsService';
+import teamStatsService from '../../../../data/services/teamStatsService';
+import teamLeadersService from '../../../../data/services/teamLeadersService';
+import gamesService from '../../../../data/services/gamesService';
+import rosterService from '../../../../data/services/rosterService';
+
+// Import Constants & Utilities
+import { 
+  TEAMS, 
+  SEASONS,
+  SEASON_TYPES, 
+  PLAYER_ROLES,
+  getTeamByAbbr,
+  getTeamByUrlName,
+  getTeamIdFromAbbr,
+} from '../../../../data/constants/apiConstants';
 
 function TeamAnalytics() {
   const { teamName } = useParams();
   const navigate = useNavigate();
+  
+  // ========== UI State ==========
   const [selectedTeam, setSelectedTeam] = useState('LAD');
   const [selectedSeason, setSelectedSeason] = useState('2025');
   const [timeframe, setTimeframe] = useState('season');
   const [chartFilter, setChartFilter] = useState('season');
-  const [leadersToggle, setLeadersToggle] = useState('batting'); // 'batting' or 'pitching'
-  const [teamStatsToggle, setTeamStatsToggle] = useState('batting'); // 'batting' or 'pitching'
+  const [leadersToggle, setLeadersToggle] = useState('batting');
+  const [teamStatsToggle, setTeamStatsToggle] = useState('batting');
   const [hideFloatingFilters, setHideFloatingFilters] = useState(false);
   const [isChartSectionVisible, setIsChartSectionVisible] = useState(false);
   const chartSectionRef = useRef(null);
 
-  // Mock data - will be replaced with API later
-  const teams = [
-    { id: 'LAD', name: 'Los Angeles Dodgers', urlName: 'los-angeles-dodgers', logo: '⚾', team_id: 119 },
-    { id: 'NYY', name: 'New York Yankees', urlName: 'new-york-yankees', logo: '⚾', team_id: 147 },
-    { id: 'HOU', name: 'Houston Astros', urlName: 'houston-astros', logo: '⚾', team_id: 117 },
-    { id: 'ATL', name: 'Atlanta Braves', urlName: 'atlanta-braves', logo: '⚾', team_id: 144 },
-    { id: 'BAL', name: 'Baltimore Orioles', urlName: 'baltimore-orioles', logo: '⚾', team_id: 110 },
-    { id: 'TBR', name: 'Tampa Bay Rays', urlName: 'tampa-bay-rays', logo: '⚾', team_id: 139 },
-    { id: 'TOR', name: 'Toronto Blue Jays', urlName: 'toronto-blue-jays', logo: '⚾', team_id: 141 },
-    { id: 'BOS', name: 'Boston Red Sox', urlName: 'boston-red-sox', logo: '⚾', team_id: 111 },
-    // Add more teams...
-  ];
+  // ========== API Data State ==========
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  
+  // Raw API Data
+  const [teamSeasonData, setTeamSeasonData] = useState(null);
+  const [teamMonthlyData, setTeamMonthlyData] = useState(null);
+  const [battingStats, setBattingStats] = useState(null);
+  const [pitchingStats, setPitchingStats] = useState(null);
+  const [battingLeaders, setBattingLeaders] = useState(null);
+  const [pitchingLeaders, setPitchingLeaders] = useState(null);
+  const [last10Games, setLast10Games] = useState(null);
+  const [homeGames, setHomeGames] = useState(null);
+  const [awayGames, setAwayGames] = useState(null);
+  const [roster, setRoster] = useState(null);
+  const [teamSplits, setTeamSplits] = useState(null);
 
-  // Add seasons array
-  const seasons = ['2025', '2024', '2023', '2022', '2021', '2020'];
+  // ========== Fetch All Team Data ==========
+  const fetchTeamData = async (teamId, season) => {
+    setLoading(true);
+    setError(null);
 
+    try {
+      console.log(`📡 Fetching data for team ${teamId}, season ${season}...`);
 
-  // Helper function to convert team name to URL format
-  const formatTeamNameForUrl = (teamName) => {
-    return teamName.toLowerCase().replace(/\s+/g, '-');
+      const [
+        seasonData,
+        monthlyData,
+        battingStatsData,
+        pitchingStatsData,
+        battingLeadersData,
+        pitchingLeadersData,
+        last10Data,
+        homeGamesData,
+        awayGamesData,
+        rosterData,
+        splitsData,
+      ] = await Promise.all([
+        teamsService.getTeamSeason(teamId, season).catch(err => { console.warn('Team season failed:', err); return null; }),
+        teamsService.getTeamMonthly(teamId, season).catch(err => { console.warn('Team monthly failed:', err); return null; }),
+        teamStatsService.getTeamBattingStats(teamId, season, SEASON_TYPES.REGULAR).catch(err => { console.warn('Batting stats failed:', err); return null; }),
+        teamStatsService.getTeamPitchingStats(teamId, season, SEASON_TYPES.REGULAR).catch(err => { console.warn('Pitching stats failed:', err); return null; }),
+        teamLeadersService.getTeamBattingLeaders(teamId, season, SEASON_TYPES.REGULAR).catch(err => { console.warn('Batting leaders failed:', err); return null; }),
+        teamLeadersService.getTeamPitchingLeaders(teamId, season, SEASON_TYPES.REGULAR).catch(err => { console.warn('Pitching leaders failed:', err); return null; }),
+        gamesService.getTeamLast10(teamId, season).catch(err => { console.warn('Last 10 failed:', err); return null; }),
+        gamesService.getTeamHomeGames(teamId, season).catch(err => { console.warn('Home games failed:', err); return null; }),
+        gamesService.getTeamAwayGames(teamId, season).catch(err => { console.warn('Away games failed:', err); return null; }),
+        rosterService.getTeamRoster(teamId, season).catch(err => { console.warn('Roster failed:', err); return null; }),
+        teamLeadersService.getTeamSplits(teamId, season, SEASON_TYPES.REGULAR, PLAYER_ROLES.BATTER).catch(err => { console.warn('Splits failed:', err); return null; }),
+      ]);
+
+      // Update state with raw data
+      setTeamSeasonData(seasonData);
+      setTeamMonthlyData(monthlyData);
+      setBattingStats(battingStatsData);
+      setPitchingStats(pitchingStatsData);
+      setBattingLeaders(battingLeadersData);
+      setPitchingLeaders(pitchingLeadersData);
+      setLast10Games(last10Data);
+      setHomeGames(homeGamesData);
+      setAwayGames(awayGamesData);
+      setRoster(rosterData);
+      setTeamSplits(splitsData);
+
+      console.log('✅ All data fetched successfully!');
+    } catch (err) {
+      console.error('❌ Error fetching team data:', err);
+      setError(err.message || 'Failed to load team data. Please try again.');
+    } finally {
+      setLoading(false);
+    }
   };
 
-  // Helper function to find team by URL name
-  const findTeamByUrlName = (urlName) => {
-    return teams.find(team => team.urlName === urlName);
-  };
-
-  // Set selected team based on URL parameter
+  // ========== Effects ==========
   useEffect(() => {
     if (teamName) {
-      const team = findTeamByUrlName(teamName);
+      const team = getTeamByUrlName(teamName);
       if (team) {
         setSelectedTeam(team.id);
       } else {
-        // Redirect to default team if not found
         navigate('/team-analytics/los-angeles-dodgers', { replace: true });
       }
     } else {
-      // Redirect to default team if no team in URL
       navigate('/team-analytics/los-angeles-dodgers', { replace: true });
     }
   }, [teamName, navigate]);
 
-  // Handle team change from dropdown
-  const handleTeamChange = (teamId) => {
-    const team = teams.find(t => t.id === teamId);
-    if (team) {
-      setSelectedTeam(teamId);
-      navigate(`/team-analytics/${team.urlName}`);
+  useEffect(() => {
+    const teamId = getTeamIdFromAbbr(selectedTeam);
+    if (teamId) {
+      fetchTeamData(teamId, selectedSeason);
     }
-  };
+  }, [selectedTeam, selectedSeason]);
 
-  // Hide floating filters when footer is in view
   useEffect(() => {
     const footer = document.querySelector('footer');
     if (!footer) return;
     const observer = new IntersectionObserver(
-      (entries) => {
-        const entry = entries[0];
-        setHideFloatingFilters(entry.isIntersecting);
-      },
+      (entries) => setHideFloatingFilters(entries[0].isIntersecting),
       { root: null, threshold: 0 }
     );
     observer.observe(footer);
     return () => observer.disconnect();
   }, []);
 
-  // Reveal floating filters once the chart section enters view
   useEffect(() => {
     const target = chartSectionRef.current;
     if (!target) return;
-
     const observer = new IntersectionObserver(
-      (entries) => {
-        const entry = entries[0];
-        setIsChartSectionVisible(entry.isIntersecting);
-      },
-      {
-        root: null,
-        threshold: 0.15
-      }
+      (entries) => setIsChartSectionVisible(entries[0].isIntersecting),
+      { root: null, threshold: 0.15 }
     );
-
     observer.observe(target);
     return () => observer.disconnect();
   }, []);
 
-  const currentTimeframeData = teamData[timeframe];
-  const currentChartData = currentTimeframeData.trends[chartFilter];
-  const currentSplitsData = currentTimeframeData.splits[chartFilter];
-  const currentLast10Data = currentTimeframeData.last10[chartFilter];
+  // ========== Handlers ==========
+  const handleTeamChange = (teamId) => {
+    const team = getTeamByAbbr(teamId);
+    if (team) {
+      setSelectedTeam(teamId);
+      navigate(`/team-analytics/${team.urlName}`);
+    }
+  };
 
-  // Get current team display name
-  const currentTeamName = teams.find(t => t.id === selectedTeam)?.name || 'Team';
+  // ========== Data Helpers ==========
+  
+  // Get the correct season data based on timeframe
+  // Structure: { record: {...}, runs: {...}, streak: {...}, home: {...}, away: {...} }
+  const getSeasonData = () => {
+    if (!teamSeasonData) return null;
+    
+    switch (timeframe) {
+      case 'first-half':
+        return teamSeasonData.first_half;
+      case 'second-half':
+        return teamSeasonData.second_half;
+      default:
+        return teamSeasonData.regular_season;
+    }
+  };
+
+  // Helper to safely get streak string from streak object
+  // streak: { streak_code: "W5", streak_type: "wins", streak_number: 5 }
+  const getStreakString = (streak) => {
+    if (!streak) return null;
+    if (typeof streak === 'string') return streak;
+    if (typeof streak === 'object') {
+      return streak.streak_code || `${streak.streak_type?.[0]?.toUpperCase() || ''}${streak.streak_number || ''}`;
+    }
+    return String(streak);
+  };
+
+  // Helper to check if streak is winning
+  const isWinningStreak = (streak) => {
+    if (!streak) return false;
+    if (typeof streak === 'string') return streak.toUpperCase().startsWith('W');
+    if (typeof streak === 'object') {
+      return streak.streak_type === 'wins' || streak.streak_code?.toUpperCase().startsWith('W');
+    }
+    return false;
+  };
+
+  // Get batting stats (it's an array, so get first item)
+  const getBattingStats = () => {
+    if (!battingStats || !Array.isArray(battingStats) || battingStats.length === 0) return null;
+    return battingStats[0];
+  };
+
+  // Get pitching stats (it's an array, so get first item)
+  const getPitchingStats = () => {
+    if (!pitchingStats || !Array.isArray(pitchingStats) || pitchingStats.length === 0) return null;
+    return pitchingStats[0];
+  };
+
+  // Calculate last 10 stats from games array
+  const getLast10Stats = () => {
+    const games = chartFilter === 'home' ? homeGames : chartFilter === 'away' ? awayGames : last10Games;
+    
+    if (!games || !Array.isArray(games) || games.length === 0) return null;
+    
+    // Take last 10 games
+    const recentGames = games.slice(0, 10);
+    
+    let wins = 0;
+    let losses = 0;
+    let runsScored = 0;
+    let runsAllowed = 0;
+    
+    recentGames.forEach(game => {
+      if (game.result === 'W' || game.win) {
+        wins++;
+      } else {
+        losses++;
+      }
+      runsScored += game.runs_scored || game.runsScored || game.runs || 0;
+      runsAllowed += game.runs_allowed || game.runsAllowed || game.opponent_runs || 0;
+    });
+    
+    return { wins, losses, runsScored, runsAllowed };
+  };
+
+  // ========== Computed Values ==========
+  const currentTeam = getTeamByAbbr(selectedTeam);
+  const currentTeamName = currentTeam?.name || 'Team';
   const shouldHideFloatingFilters = hideFloatingFilters || !isChartSectionVisible;
+  
+  const seasonData = getSeasonData();
+  const currentBattingStats = getBattingStats();
+  const currentPitchingStats = getPitchingStats();
+  const last10Stats = getLast10Stats();
 
+  // Extract nested data for easier access
+  const record = seasonData?.record;
+  const runs = seasonData?.runs;
+  const streak = seasonData?.streak;
+  const ranks = teamSeasonData?.regular_season?.ranks;
+  const last10Record = teamSeasonData?.regular_season?.last_10;
+  const recordSplits = teamSeasonData?.record_splits;
+
+  // ========== Loading State ==========
+  if (loading) {
+    return (
+      <div className="team-analytics-page">
+        <div className="loading-container">
+          <div className="loading-spinner"></div>
+          <p>Loading {currentTeamName} data...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // ========== Error State ==========
+  if (error) {
+    return (
+      <div className="team-analytics-page">
+        <div className="error-container">
+          <div className="error-icon">⚠️</div>
+          <h2>Error Loading Data</h2>
+          <p className="error-message">{error}</p>
+          <button onClick={() => fetchTeamData(getTeamIdFromAbbr(selectedTeam), selectedSeason)} className="retry-button">
+            🔄 Retry
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  // ========== Render ==========
   return (
     <div className="team-analytics-page">
       {/* Header Section */}
@@ -120,7 +292,7 @@ function TeamAnalytics() {
             <div className="team-selector-wrapper">
               <div className="team-header-inline">
                 <img 
-                  src={`https://www.mlbstatic.com/team-logos/${teams.find(t => t.id === selectedTeam)?.team_id}.svg`} 
+                  src={`https://www.mlbstatic.com/team-logos/${currentTeam?.mlbId}.svg`} 
                   alt={`${currentTeamName} logo`}
                   className="team-logo-image"
                 />
@@ -133,10 +305,8 @@ function TeamAnalytics() {
                     onChange={(e) => handleTeamChange(e.target.value)}
                     className="team-dropdown"
                   >
-                    {teams.map(team => (
-                      <option key={team.id} value={team.id}>
-                        {team.name}
-                      </option>
+                    {TEAMS.map(team => (
+                      <option key={team.id} value={team.id}>{team.name}</option>
                     ))}
                   </select>
                 </div>
@@ -147,10 +317,8 @@ function TeamAnalytics() {
                     onChange={(e) => setSelectedSeason(e.target.value)}
                     className="season-dropdown"
                   >
-                    {seasons.map(season => (
-                      <option key={season} value={season}>
-                        {season} 
-                      </option>
+                    {SEASONS.map(season => (
+                      <option key={season} value={season}>{season}</option>
                     ))}
                   </select>
                 </div>
@@ -158,24 +326,9 @@ function TeamAnalytics() {
             </div>
 
             <div className="timeframe-tabs">
-              <button 
-                className={`tab ${timeframe === 'season' ? 'active' : ''}`}
-                onClick={() => setTimeframe('season')}
-              >
-                Season
-              </button>
-              <button 
-                className={`tab ${timeframe === 'first-half' ? 'active' : ''}`}
-                onClick={() => setTimeframe('first-half')}
-              >
-                1st Half
-              </button>
-              <button 
-                className={`tab ${timeframe === 'second-half' ? 'active' : ''}`}
-                onClick={() => setTimeframe('second-half')}
-              >
-                2nd Half
-              </button>
+              <button className={`tab ${timeframe === 'season' ? 'active' : ''}`} onClick={() => setTimeframe('season')}>Season</button>
+              <button className={`tab ${timeframe === 'first-half' ? 'active' : ''}`} onClick={() => setTimeframe('first-half')}>1st Half</button>
+              <button className={`tab ${timeframe === 'second-half' ? 'active' : ''}`} onClick={() => setTimeframe('second-half')}>2nd Half</button>
             </div>
           </div>
         </div>
@@ -183,20 +336,22 @@ function TeamAnalytics() {
 
       {/* Main Content */}
       <div className="analytics-content container">
-        {/* Season Overview Cards for Record, Home Record, Away Record, Run diff, */}
+        {/* Season Overview Cards */}
         <div className="overview-section">
           <div className="stat-card highlight">
             <div className="stat-header">
               <span className="stat-label">Record</span>
-              <span className={`trend-badge ${currentTimeframeData.overall.streak.startsWith('W') ? 'positive' : 'negative'}`}>
-                {currentTimeframeData.overall.streak}
-              </span>
+              {streak && (
+                <span className={`trend-badge ${isWinningStreak(streak) ? 'positive' : 'negative'}`}>
+                  {getStreakString(streak)}
+                </span>
+              )}
             </div>
             <div className="stat-value">
-              {currentTimeframeData.overall.wins}-{currentTimeframeData.overall.losses}
+              {record?.wins || 0}-{record?.losses || 0}
             </div>
             <div className="stat-detail">
-              Win % {(currentTimeframeData.overall.winPct * 100).toFixed(1)}%
+              Win % {record?.pct ? (record.pct * 100).toFixed(1) : '0.0'}%
             </div>
           </div>
 
@@ -204,11 +359,11 @@ function TeamAnalytics() {
             <div className="stat-header">
               <span className="stat-label">Run Differential</span>
             </div>
-            <div className="stat-value positive">
-              +{currentTimeframeData.overall.runDiff}
+            <div className={`stat-value ${(runs?.run_differential ?? runs?.run_diff ?? 0) > 0 ? 'positive' : (runs?.run_differential ?? runs?.run_diff ?? 0) < 0 ? 'negative' : ''}`}>
+              {(runs?.run_differential ?? runs?.run_diff ?? 0) > 0 ? '+' : ''}{runs?.run_differential ?? runs?.run_diff ?? 0}
             </div>
             <div className="stat-detail">
-              {currentTimeframeData.overall.runsScored} RS / {currentTimeframeData.overall.runsAllowed} RA
+              {runs?.runs_scored || 0} RS / {runs?.runs_allowed || 0} RA
             </div>
           </div>
 
@@ -217,10 +372,10 @@ function TeamAnalytics() {
               <span className="stat-label">Home Record</span>
             </div>
             <div className="stat-value">
-              {currentTimeframeData.overviewSplits.home.wins}-{currentTimeframeData.overviewSplits.home.losses}
+              {seasonData?.home?.wins || recordSplits?.home?.wins || 0}-{seasonData?.home?.losses || recordSplits?.home?.losses || 0}
             </div>
             <div className="stat-detail">
-              {(currentTimeframeData.overviewSplits.home.winPct * 100).toFixed(1)}% win rate
+              {((seasonData?.home?.pct || recordSplits?.home?.pct || 0) * 100).toFixed(1)}% win rate
             </div>
           </div>
 
@@ -229,89 +384,68 @@ function TeamAnalytics() {
               <span className="stat-label">Away Record</span>
             </div>
             <div className="stat-value">
-              {currentTimeframeData.overviewSplits.away.wins}-{currentTimeframeData.overviewSplits.away.losses}
+              {seasonData?.away?.wins || recordSplits?.away?.wins || 0}-{seasonData?.away?.losses || recordSplits?.away?.losses || 0}
             </div>
             <div className="stat-detail">
-              {(currentTimeframeData.overviewSplits.away.winPct * 100).toFixed(1)}% win rate
+              {((seasonData?.away?.pct || recordSplits?.away?.pct || 0) * 100).toFixed(1)}% win rate
             </div>
           </div>
         </div>
 
-        {/* ...rest of the existing code remains the same... */}
-        
         {/* Monthly Performance Trends Chart */}
         <div className="chart-section" ref={chartSectionRef}>
           <div className="section-card">
             <div className="card-header">
-               <div>
+              <div>
                 <h3>Monthly Performance Trends</h3>
                 <p className="card-subtitle">Track performance across the season</p>
-               </div>
+              </div>
               <div className="chart-legend">
-                <span className="legend-item">
-                  <span className="legend-dot wins"></span> Wins
-                </span>
-                <span className="legend-item">
-                  <span className="legend-dot losses"></span> Losses
-                </span>
+                <span className="legend-item"><span className="legend-dot wins"></span> Wins</span>
+                <span className="legend-item"><span className="legend-dot losses"></span> Losses</span>
               </div>
             </div>
 
             <div className="chart-container">
               <div className="bar-chart">
-                {currentChartData.map((month, idx) => {
-                  const totalGames = month.wins + month.losses;
-                  const winPct = totalGames > 0 ? (month.wins / totalGames * 100).toFixed(1) : 0;
-                
-                  return (
-                    <div key={idx} className="bar-group">
-                      <div className="bar-wrapper">
-                        {/* Win Bar */}
-                        <div 
-                          className="bar wins" 
-                          style={{ height: `${(month.wins / 30) * 100}%` }}
-                        >
-                          <span className="bar-label">{month.wins}</span>
+                {teamMonthlyData && Array.isArray(teamMonthlyData) && teamMonthlyData.length > 0 ? (
+                  teamMonthlyData.map((month, idx) => {
+                    const wins = month.wins || month.w || 0;
+                    const losses = month.losses || month.l || 0;
+                    const totalGames = wins + losses;
+                    const winPct = totalGames > 0 ? ((wins / totalGames) * 100).toFixed(1) : 0;
+                  
+                    return (
+                      <div key={idx} className="bar-group">
+                        <div className="bar-wrapper">
+                          <div className="bar wins" style={{ height: `${(wins / 30) * 100}%` }}>
+                            <span className="bar-label">{wins}</span>
+                          </div>
+                          <div className="bar losses" style={{ height: `${(losses / 30) * 100}%` }}>
+                            <span className="bar-label">{losses}</span>
+                          </div>
                         </div>
-                        {/* Loss Bar */}
-                        <div 
-                          className="bar losses" 
-                          style={{ height: `${(month.losses / 30) * 100}%` }}
-                        >
-                          <span className="bar-label">{month.losses}</span>
-                        </div>
+                        <div className="bar-month">{month.month || month.month_name || `Month ${idx + 1}`}</div>
+                        <div className="bar-win-pct" style={{ 
+                          color: winPct >= 60 ? '#4CAF50' : winPct >= 50 ? '#FF9800' : '#F44336' 
+                        }}>{winPct}%</div>
                       </div>
-                      <div className="bar-month">{month.date}</div>
-                      <div className="bar-win-pct" style={{ 
-                         color: winPct >= 60 ? '#4CAF50' : winPct >= 50 ? '#FF9800' : '#F44336' 
-                            }}>{winPct}%</div>
-                    </div>
-                  );
-                })}
+                    );
+                  })
+                ) : (
+                  <div className="no-data-message">No monthly data available</div>
+                )}
               </div>
 
-              {/* Chart Filter Buttons for Season, Home and Away*/}
-              <div className={`chart-filters floating-remote ${shouldHideFloatingFilters ? 'floating-hidden' : ''}`} aria-label="Toggle season/home/away stats">
-                <button 
-                  className={`chart-filter-btn ${chartFilter === 'season' ? 'active' : ''}`}
-                  onClick={() => setChartFilter('season')}
-                >
-                  <span className="filter-icon">📊</span>
-                  Combined
+              <div className={`chart-filters floating-remote ${shouldHideFloatingFilters ? 'floating-hidden' : ''}`}>
+                <button className={`chart-filter-btn ${chartFilter === 'season' ? 'active' : ''}`} onClick={() => setChartFilter('season')}>
+                  <span className="filter-icon">📊</span> Combined
                 </button>
-                <button 
-                  className={`chart-filter-btn ${chartFilter === 'home' ? 'active' : ''}`}
-                  onClick={() => setChartFilter('home')}
-                >
-                  <span className="filter-icon">🏠</span>
-                  Home
+                <button className={`chart-filter-btn ${chartFilter === 'home' ? 'active' : ''}`} onClick={() => setChartFilter('home')}>
+                  <span className="filter-icon">🏠</span> Home
                 </button>
-                <button 
-                  className={`chart-filter-btn ${chartFilter === 'away' ? 'active' : ''}`}
-                  onClick={() => setChartFilter('away')}
-                >
-                  <span className="filter-icon">✈️</span>
-                  Away
+                <button className={`chart-filter-btn ${chartFilter === 'away' ? 'active' : ''}`} onClick={() => setChartFilter('away')}>
+                  <span className="filter-icon">✈️</span> Away
                 </button>
               </div>
             </div>
@@ -323,199 +457,188 @@ function TeamAnalytics() {
           <div className="section-card">
             <div className="card-header">
               <h3>Performance Splits</h3>
-                <p className="card-subtitle">
-                  {chartFilter === 'season' && <><span className="subtitle-bold">📊 Combined</span> performance breakdown</>}
-                  {chartFilter === 'home' && <><span className="subtitle-bold">🏠 Home</span> game performance breakdown</>}
-                  {chartFilter === 'away' && <><span className="subtitle-bold">✈️ Away</span> game performance breakdown</>}
-                </p>
+              <p className="card-subtitle">
+                {chartFilter === 'season' && <><span className="subtitle-bold">📊 Combined</span> performance breakdown</>}
+                {chartFilter === 'home' && <><span className="subtitle-bold">🏠 Home</span> game performance breakdown</>}
+                {chartFilter === 'away' && <><span className="subtitle-bold">✈️ Away</span> game performance breakdown</>}
+              </p>
             </div>
             <div className="splits-grid">
-              <div className="split-row">
-                <div className="split-label">vs Left-Handed Pitching</div>
-                <div className="split-stats">
-                  <span className="split-record">
-                    {currentSplitsData.vsLHP.wins}-{currentSplitsData.vsLHP.losses}
-                  </span>
-                  <span 
-                    className="split-pct"
-                    style={{
-                      color: (currentSplitsData.vsLHP.winPct * 100) >= 60 ? '#4CAF50' : 
-                             (currentSplitsData.vsLHP.winPct * 100) >= 50 ? '#FF9800' : '#F44336'
-                    }}
-                  >
-                    {(currentSplitsData.vsLHP.winPct * 100).toFixed(1)}%
-                  </span>
-                  <div className="progress-bar">
-                  <div 
-                    className="progress-fill" 
-                    style={{ 
-                      width: `${currentSplitsData.vsLHP.winPct * 100}%`,
-                      backgroundColor: (currentSplitsData.vsLHP.winPct * 100) >= 60 ? '#4CAF50' : 
-                                       (currentSplitsData.vsLHP.winPct * 100) >= 50 ? '#FF9800' : '#F44336'
-                    }}
-                  ></div>
+              {recordSplits ? (
+                <>
+                  <div className="split-row">
+                    <div className="split-label">vs Left-Handed Pitching</div>
+                    <div className="split-stats">
+                      <span className="split-record">
+                        {recordSplits.vs_left?.wins || 0}-{recordSplits.vs_left?.losses || 0}
+                      </span>
+                      <span className="split-pct" style={{
+                        color: (recordSplits.vs_left?.pct || 0) >= 0.6 ? '#4CAF50' : 
+                               (recordSplits.vs_left?.pct || 0) >= 0.5 ? '#FF9800' : '#F44336'
+                      }}>
+                        {((recordSplits.vs_left?.pct || 0) * 100).toFixed(1)}%
+                      </span>
+                      <div className="progress-bar">
+                        <div className="progress-fill" style={{ 
+                          width: `${(recordSplits.vs_left?.pct || 0) * 100}%`,
+                          backgroundColor: (recordSplits.vs_left?.pct || 0) >= 0.6 ? '#4CAF50' : 
+                                           (recordSplits.vs_left?.pct || 0) >= 0.5 ? '#FF9800' : '#F44336'
+                        }}></div>
+                      </div>
+                    </div>
                   </div>
-                </div>
-              </div>
 
-              <div className="split-row">
-                <div className="split-label">vs Right-Handed Pitching</div>
-                <div className="split-stats">
-                  <span className="split-record">
-                    {currentSplitsData.vsRHP.wins}-{currentSplitsData.vsRHP.losses}
-                  </span>
-                  <span 
-                    className="split-pct"
-                    style={{
-                      color: (currentSplitsData.vsRHP.winPct * 100) >= 60 ? '#4CAF50' : 
-                             (currentSplitsData.vsRHP.winPct * 100) >= 50 ? '#FF9800' : '#F44336'
-                    }}
-                  >
-                    {(currentSplitsData.vsRHP.winPct * 100).toFixed(1)}%
-                  </span>
-                  <div className="progress-bar">
-                  <div 
-                    className="progress-fill" 
-                    style={{ 
-                      width: `${currentSplitsData.vsRHP.winPct * 100}%`,
-                      backgroundColor: (currentSplitsData.vsRHP.winPct * 100) >= 60 ? '#4CAF50' : 
-                                       (currentSplitsData.vsRHP.winPct * 100) >= 50 ? '#FF9800' : '#F44336'
-                    }}
-                  ></div>
+                  <div className="split-row">
+                    <div className="split-label">vs Right-Handed Pitching</div>
+                    <div className="split-stats">
+                      <span className="split-record">
+                        {recordSplits.vs_right?.wins || 0}-{recordSplits.vs_right?.losses || 0}
+                      </span>
+                      <span className="split-pct" style={{
+                        color: (recordSplits.vs_right?.pct || 0) >= 0.6 ? '#4CAF50' : 
+                               (recordSplits.vs_right?.pct || 0) >= 0.5 ? '#FF9800' : '#F44336'
+                      }}>
+                        {((recordSplits.vs_right?.pct || 0) * 100).toFixed(1)}%
+                      </span>
+                      <div className="progress-bar">
+                        <div className="progress-fill" style={{ 
+                          width: `${(recordSplits.vs_right?.pct || 0) * 100}%`,
+                          backgroundColor: (recordSplits.vs_right?.pct || 0) >= 0.6 ? '#4CAF50' : 
+                                           (recordSplits.vs_right?.pct || 0) >= 0.5 ? '#FF9800' : '#F44336'
+                        }}></div>
+                      </div>
+                    </div>
                   </div>
-                </div>
-              </div>
 
-              <div className="split-row">
-                <div className="split-label">Day Games</div>
-                <div className="split-stats">
-                  <span className="split-record">
-                    {currentSplitsData.day.wins}-{currentSplitsData.day.losses}
-                  </span>
-                  <span 
-                    className="split-pct"
-                    style={{
-                      color: (currentSplitsData.day.winPct * 100) >= 60 ? '#4CAF50' : 
-                             (currentSplitsData.day.winPct * 100) >= 50 ? '#FF9800' : '#F44336'
-                    }}
-                  >
-                    {(currentSplitsData.day.winPct * 100).toFixed(1)}%
-                  </span>
-                  <div className="progress-bar">
-                  <div 
-                    className="progress-fill" 
-                    style={{ 
-                      width: `${currentSplitsData.day.winPct * 100}%`,
-                      backgroundColor: (currentSplitsData.day.winPct * 100) >= 60 ? '#4CAF50' : 
-                                       (currentSplitsData.day.winPct * 100) >= 50 ? '#FF9800' : '#F44336'
-                    }}
-                  ></div>
+                  <div className="split-row">
+                    <div className="split-label">Day Games</div>
+                    <div className="split-stats">
+                      <span className="split-record">
+                        {recordSplits.day?.wins || 0}-{recordSplits.day?.losses || 0}
+                      </span>
+                      <span className="split-pct" style={{
+                        color: (recordSplits.day?.pct || 0) >= 0.6 ? '#4CAF50' : 
+                               (recordSplits.day?.pct || 0) >= 0.5 ? '#FF9800' : '#F44336'
+                      }}>
+                        {((recordSplits.day?.pct || 0) * 100).toFixed(1)}%
+                      </span>
+                      <div className="progress-bar">
+                        <div className="progress-fill" style={{ 
+                          width: `${(recordSplits.day?.pct || 0) * 100}%`,
+                          backgroundColor: (recordSplits.day?.pct || 0) >= 0.6 ? '#4CAF50' : 
+                                           (recordSplits.day?.pct || 0) >= 0.5 ? '#FF9800' : '#F44336'
+                        }}></div>
+                      </div>
+                    </div>
                   </div>
-                </div>
-              </div>
 
-             <div className="split-row">
-               <div className="split-label">Night Games</div>
-               <div className="split-stats">
-                 <span className="split-record">
-                   {currentSplitsData.night.wins}-{currentSplitsData.night.losses}
-                 </span>
-                 <span 
-                   className="split-pct"
-                   style={{
-                     color: (currentSplitsData.night.winPct * 100) >= 60 ? '#4CAF50' : 
-                            (currentSplitsData.night.winPct * 100) >= 50 ? '#FF9800' : '#F44336'
-                   }}
-                 >
-                   {(currentSplitsData.night.winPct * 100).toFixed(1)}%
-                 </span>
-                 <div className="progress-bar">
-                  <div 
-                    className="progress-fill" 
-                    style={{ 
-                      width: `${currentSplitsData.night.winPct * 100}%`,
-                      backgroundColor: (currentSplitsData.night.winPct * 100) >= 60 ? '#4CAF50' : 
-                                       (currentSplitsData.night.winPct * 100) >= 50 ? '#FF9800' : '#F44336'
-                    }}
-                  ></div>
-                 </div>
-               </div>
-             </div>
-           </div>
-         </div>
+                  <div className="split-row">
+                    <div className="split-label">Night Games</div>
+                    <div className="split-stats">
+                      <span className="split-record">
+                        {recordSplits.night?.wins || 0}-{recordSplits.night?.losses || 0}
+                      </span>
+                      <span className="split-pct" style={{
+                        color: (recordSplits.night?.pct || 0) >= 0.6 ? '#4CAF50' : 
+                               (recordSplits.night?.pct || 0) >= 0.5 ? '#FF9800' : '#F44336'
+                      }}>
+                        {((recordSplits.night?.pct || 0) * 100).toFixed(1)}%
+                      </span>
+                      <div className="progress-bar">
+                        <div className="progress-fill" style={{ 
+                          width: `${(recordSplits.night?.pct || 0) * 100}%`,
+                          backgroundColor: (recordSplits.night?.pct || 0) >= 0.6 ? '#4CAF50' : 
+                                           (recordSplits.night?.pct || 0) >= 0.5 ? '#FF9800' : '#F44336'
+                        }}></div>
+                      </div>
+                    </div>
+                  </div>
+                </>
+              ) : (
+                <div className="no-data-message">No splits data available</div>
+              )}
+            </div>
+          </div>
 
           {/* Last 10 Games */}
           <div className="section-card">
             <div className="card-header">
-                <div>
-                    <h3>Last 10 Games</h3>
-                     <p className="card-subtitle">
-                       {chartFilter === 'season' && <><strong>📊 Combined: </strong> last 10 games performance</>}
-                       {chartFilter === 'home' && <><strong>🏠 Home: </strong> last 10 games performance</>}
-                       {chartFilter === 'away' && <><strong>✈️ Away: </strong> last 10 games performance</>}
-                     </p>
-                </div>
-            </div>
-            <div className="last-10-stats">
-              <div className="last-10-item">
-                <div className="last-10-label">Record</div>
-                <div className="last-10-value">
-                  {currentLast10Data.wins}-{currentLast10Data.losses}
-                </div>
-              </div>
-              <div className="last-10-item">
-                <div className="last-10-label">Runs Scored</div>
-                <div className="last-10-value">{currentLast10Data.runsScored}</div>
-              </div>
-              <div className="last-10-item">
-                <div className="last-10-label">Runs Allowed</div>
-                <div className="last-10-value">{currentLast10Data.runsAllowed}</div>
-              </div>
-              <div className="last-10-item">
-                <div className="last-10-label">Run Differential</div>
-                <div className={`last-10-value ${currentLast10Data.runsScored - currentLast10Data.runsAllowed > 0 ? 'positive' : currentLast10Data.runsScored - currentLast10Data.runsAllowed < 0 ? 'negative' : ''}`}>
-                  {currentLast10Data.runsScored - currentLast10Data.runsAllowed > 0 ? '+' : ''}{currentLast10Data.runsScored - currentLast10Data.runsAllowed}
-                </div>
+              <div>
+                <h3>Last 10 Games</h3>
+                <p className="card-subtitle">
+                  {chartFilter === 'season' && <><strong>📊 Combined: </strong> last 10 games performance</>}
+                  {chartFilter === 'home' && <><strong>🏠 Home: </strong> last 10 home games performance</>}
+                  {chartFilter === 'away' && <><strong>✈️ Away: </strong> last 10 away games performance</>}
+                </p>
               </div>
             </div>
+            {/* Use API last_10 data if available, otherwise calculated */}
+            {last10Record || last10Stats ? (
+              <div className="last-10-stats">
+                <div className="last-10-item">
+                  <div className="last-10-label">Record</div>
+                  <div className="last-10-value">
+                    {last10Record?.wins ?? last10Stats?.wins ?? 0}-{last10Record?.losses ?? last10Stats?.losses ?? 0}
+                  </div>
+                </div>
+                <div className="last-10-item">
+                  <div className="last-10-label">Runs Scored</div>
+                  <div className="last-10-value">{last10Stats?.runsScored || '-'}</div>
+                </div>
+                <div className="last-10-item">
+                  <div className="last-10-label">Runs Allowed</div>
+                  <div className="last-10-value">{last10Stats?.runsAllowed || '-'}</div>
+                </div>
+                <div className="last-10-item">
+                  <div className="last-10-label">Run Differential</div>
+                  <div className={`last-10-value ${last10Stats ? ((last10Stats.runsScored - last10Stats.runsAllowed) > 0 ? 'positive' : (last10Stats.runsScored - last10Stats.runsAllowed) < 0 ? 'negative' : '') : ''}`}>
+                    {last10Stats ? `${(last10Stats.runsScored - last10Stats.runsAllowed) > 0 ? '+' : ''}${last10Stats.runsScored - last10Stats.runsAllowed}` : '-'}
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <div className="no-data-message">No last 10 games data available</div>
+            )}
           </div>
         </div>
 
-        {/* 1. Team Standings */}
+        {/* Team Info Grid: Standings, Leaders, Stats */}
         <div className="team-info-grid">
-          {/* 1. Team Standings */}
+          {/* Team Standings */}
           <div className="section-card">
             <div className="card-header">
               <h3>Team Standings</h3>
-              <p className="card-subtitle">{currentTimeframeData.standings.divisionRank}</p>
+              <p className="card-subtitle">
+                {ranks?.division_rank ? `#${ranks.division_rank} in Division` : teamSeasonData?.team?.division || 'N/A'}
+              </p>
             </div>
             <div className="standings-content">
               <div className="standings-row">
                 <span className="standings-label">Wins</span>
-                <span className="standings-value">{currentTimeframeData.standings.wins}</span>
+                <span className="standings-value">{record?.wins || 0}</span>
               </div>
               <div className="standings-row">
                 <span className="standings-label">Losses</span>
-                <span className="standings-value">{currentTimeframeData.standings.losses}</span>
+                <span className="standings-value">{record?.losses || 0}</span>
               </div>
               <div className="standings-row">
                 <span className="standings-label">Win %</span>
-                <span className="standings-value">{currentTimeframeData.standings.winPct.toFixed(3)}</span>
+                <span className="standings-value">{record?.pct?.toFixed(3) || '.000'}</span>
               </div>
               <div className="standings-row">
                 <span className="standings-label">Games Back</span>
-                <span className="standings-value">{currentTimeframeData.standings.gamesBack === 0 ? '-' : currentTimeframeData.standings.gamesBack}</span>
+                <span className="standings-value">{record?.games_back === null || record?.games_back === 0 ? '-' : record?.games_back}</span>
               </div>
               <div className="standings-row highlight">
                 <span className="standings-label">Streak</span>
-                <span className={`standings-value streak-badge ${currentTimeframeData.standings.streak.startsWith('W') ? 'positive' : 'negative'}`}>
-                  {currentTimeframeData.standings.streak}
+                <span className={`standings-value streak-badge ${isWinningStreak(streak) ? 'positive' : 'negative'}`}>
+                  {getStreakString(streak) || 'N/A'}
                 </span>
               </div>
             </div>
           </div>
 
-          {/* 2. Team Leaders */}
+          {/* Team Leaders */}
           <div className="section-card">
             <div className="card-header">
               <div>
@@ -523,73 +646,71 @@ function TeamAnalytics() {
                 <p className="card-subtitle">Top performers</p>
               </div>
               <div className="toggle-buttons">
-                <button 
-                  className={`toggle-btn ${leadersToggle === 'batting' ? 'active' : ''}`}
-                  onClick={() => setLeadersToggle('batting')}
-                >
-                  Batting
-                </button>
-                <button 
-                  className={`toggle-btn ${leadersToggle === 'pitching' ? 'active' : ''}`}
-                  onClick={() => setLeadersToggle('pitching')}
-                >
-                  Pitching
-                </button>
+                <button className={`toggle-btn ${leadersToggle === 'batting' ? 'active' : ''}`} onClick={() => setLeadersToggle('batting')}>Batting</button>
+                <button className={`toggle-btn ${leadersToggle === 'pitching' ? 'active' : ''}`} onClick={() => setLeadersToggle('pitching')}>Pitching</button>
               </div>
             </div>
             
             {leadersToggle === 'batting' ? (
-              <div className="leaders-content">
-                <div className="leader-row">
-                  <div className="leader-stat-label">Home Runs</div>
-                  <div className="leader-info">
-                    <span className="leader-player">{currentTimeframeData.leaders.batting.homeRuns.player}</span>
-                    <span className="leader-value">{currentTimeframeData.leaders.batting.homeRuns.value}</span>
+              battingLeaders ? (
+                <div className="leaders-content">
+                  <div className="leader-row">
+                    <div className="leader-stat-label">Home Runs</div>
+                    <div className="leader-info">
+                      <span className="leader-player">{battingLeaders.home_runs?.player_name || battingLeaders.home_runs?.player || 'N/A'}</span>
+                      <span className="leader-value">{battingLeaders.home_runs?.value || battingLeaders.home_runs?.stat || 0}</span>
+                    </div>
+                  </div>
+                  <div className="leader-row">
+                    <div className="leader-stat-label">Batting Average</div>
+                    <div className="leader-info">
+                      <span className="leader-player">{battingLeaders.avg?.player_name || battingLeaders.batting_avg?.player_name || 'N/A'}</span>
+                      <span className="leader-value">{battingLeaders.avg?.value || battingLeaders.batting_avg?.value || '.000'}</span>
+                    </div>
+                  </div>
+                  <div className="leader-row">
+                    <div className="leader-stat-label">RBI</div>
+                    <div className="leader-info">
+                      <span className="leader-player">{battingLeaders.rbis?.player_name || battingLeaders.rbi?.player_name || 'N/A'}</span>
+                      <span className="leader-value">{battingLeaders.rbis?.value || battingLeaders.rbi?.value || 0}</span>
+                    </div>
                   </div>
                 </div>
-                <div className="leader-row">
-                  <div className="leader-stat-label">Batting Average</div>
-                  <div className="leader-info">
-                    <span className="leader-player">{currentTimeframeData.leaders.batting.average.player}</span>
-                    <span className="leader-value">{currentTimeframeData.leaders.batting.average.value.toFixed(3)}</span>
-                  </div>
-                </div>
-                <div className="leader-row">
-                  <div className="leader-stat-label">RBI</div>
-                  <div className="leader-info">
-                    <span className="leader-player">{currentTimeframeData.leaders.batting.rbi.player}</span>
-                    <span className="leader-value">{currentTimeframeData.leaders.batting.rbi.value}</span>
-                  </div>
-                </div>
-              </div>
+              ) : (
+                <div className="no-data-message">No batting leaders data available</div>
+              )
             ) : (
-              <div className="leaders-content">
-                <div className="leader-row">
-                  <div className="leader-stat-label">Strikeouts</div>
-                  <div className="leader-info">
-                    <span className="leader-player">{currentTimeframeData.leaders.pitching.strikeouts.player}</span>
-                    <span className="leader-value">{currentTimeframeData.leaders.pitching.strikeouts.value}</span>
+              pitchingLeaders ? (
+                <div className="leaders-content">
+                  <div className="leader-row">
+                    <div className="leader-stat-label">Strikeouts</div>
+                    <div className="leader-info">
+                      <span className="leader-player">{pitchingLeaders.strikeouts?.player_name || 'N/A'}</span>
+                      <span className="leader-value">{pitchingLeaders.strikeouts?.value || 0}</span>
+                    </div>
+                  </div>
+                  <div className="leader-row">
+                    <div className="leader-stat-label">ERA</div>
+                    <div className="leader-info">
+                      <span className="leader-player">{pitchingLeaders.era?.player_name || 'N/A'}</span>
+                      <span className="leader-value">{pitchingLeaders.era?.value || '0.00'}</span>
+                    </div>
+                  </div>
+                  <div className="leader-row">
+                    <div className="leader-stat-label">Wins</div>
+                    <div className="leader-info">
+                      <span className="leader-player">{pitchingLeaders.wins?.player_name || 'N/A'}</span>
+                      <span className="leader-value">{pitchingLeaders.wins?.value || 0}</span>
+                    </div>
                   </div>
                 </div>
-                <div className="leader-row">
-                  <div className="leader-stat-label">ERA</div>
-                  <div className="leader-info">
-                    <span className="leader-player">{currentTimeframeData.leaders.pitching.era.player}</span>
-                    <span className="leader-value">{currentTimeframeData.leaders.pitching.era.value.toFixed(2)}</span>
-                  </div>
-                </div>
-                <div className="leader-row">
-                  <div className="leader-stat-label">Wins</div>
-                  <div className="leader-info">
-                    <span className="leader-player">{currentTimeframeData.leaders.pitching.wins.player}</span>
-                    <span className="leader-value">{currentTimeframeData.leaders.pitching.wins.value}</span>
-                  </div>
-                </div>
-              </div>
+              ) : (
+                <div className="no-data-message">No pitching leaders data available</div>
+              )
             )}
           </div>
 
-          {/* 3. Team Stats */}
+          {/* Team Stats */}
           <div className="section-card">
             <div className="card-header">
               <div>
@@ -597,59 +718,57 @@ function TeamAnalytics() {
                 <p className="card-subtitle">Overall performance</p>
               </div>
               <div className="toggle-buttons">
-                <button 
-                  className={`toggle-btn ${teamStatsToggle === 'batting' ? 'active' : ''}`}
-                  onClick={() => setTeamStatsToggle('batting')}
-                >
-                  Batting
-                </button>
-                <button 
-                  className={`toggle-btn ${teamStatsToggle === 'pitching' ? 'active' : ''}`}
-                  onClick={() => setTeamStatsToggle('pitching')}
-                >
-                  Pitching
-                </button>
+                <button className={`toggle-btn ${teamStatsToggle === 'batting' ? 'active' : ''}`} onClick={() => setTeamStatsToggle('batting')}>Batting</button>
+                <button className={`toggle-btn ${teamStatsToggle === 'pitching' ? 'active' : ''}`} onClick={() => setTeamStatsToggle('pitching')}>Pitching</button>
               </div>
             </div>
             
             {teamStatsToggle === 'batting' ? (
-              <div className="team-stats-content">
-                <div className="team-stat-row">
-                  <span className="team-stat-label">Team AVG</span>
-                  <span className="team-stat-value">{currentTimeframeData.teamStats.batting.average.toFixed(3)}</span>
+              currentBattingStats ? (
+                <div className="team-stats-content">
+                  <div className="team-stat-row">
+                    <span className="team-stat-label">Team AVG</span>
+                    <span className="team-stat-value">{currentBattingStats.avg || currentBattingStats.batting_avg || '.000'}</span>
+                  </div>
+                  <div className="team-stat-row">
+                    <span className="team-stat-label">OPS</span>
+                    <span className="team-stat-value">{currentBattingStats.ops || '.000'}</span>
+                  </div>
+                  <div className="team-stat-row">
+                    <span className="team-stat-label">Home Runs</span>
+                    <span className="team-stat-value">{currentBattingStats.home_runs || currentBattingStats.hr || 0}</span>
+                  </div>
+                  <div className="team-stat-row highlight">
+                    <span className="team-stat-label">Runs Scored</span>
+                    <span className="team-stat-value">{currentBattingStats.runs || currentBattingStats.r || 0}</span>
+                  </div>
                 </div>
-                <div className="team-stat-row">
-                  <span className="team-stat-label">OPS</span>
-                  <span className="team-stat-value">{currentTimeframeData.teamStats.batting.ops.toFixed(3)}</span>
-                </div>
-                <div className="team-stat-row">
-                  <span className="team-stat-label">K Rate</span>
-                  <span className="team-stat-value">{currentTimeframeData.teamStats.batting.strikeoutRate.toFixed(1)}%</span>
-                </div>
-                <div className="team-stat-row highlight">
-                  <span className="team-stat-label">Offense Rank</span>
-                  <span className="team-stat-value rank">#{currentTimeframeData.teamStats.batting.offenseRank}</span>
-                </div>
-              </div>
+              ) : (
+                <div className="no-data-message">No batting stats available</div>
+              )
             ) : (
-              <div className="team-stats-content">
-                <div className="team-stat-row">
-                  <span className="team-stat-label">Team ERA</span>
-                  <span className="team-stat-value">{currentTimeframeData.teamStats.pitching.era.toFixed(2)}</span>
+              currentPitchingStats ? (
+                <div className="team-stats-content">
+                  <div className="team-stat-row">
+                    <span className="team-stat-label">Team ERA</span>
+                    <span className="team-stat-value">{currentPitchingStats.era || '0.00'}</span>
+                  </div>
+                  <div className="team-stat-row">
+                    <span className="team-stat-label">WHIP</span>
+                    <span className="team-stat-value">{currentPitchingStats.whip || '0.00'}</span>
+                  </div>
+                  <div className="team-stat-row">
+                    <span className="team-stat-label">Strikeouts</span>
+                    <span className="team-stat-value">{currentPitchingStats.strikeouts || currentPitchingStats.so || 0}</span>
+                  </div>
+                  <div className="team-stat-row highlight">
+                    <span className="team-stat-label">Opp AVG</span>
+                    <span className="team-stat-value">{currentPitchingStats.opp_avg || currentPitchingStats.avg || '.000'}</span>
+                  </div>
                 </div>
-                <div className="team-stat-row">
-                  <span className="team-stat-label">WHIP</span>
-                  <span className="team-stat-value">{currentTimeframeData.teamStats.pitching.whip.toFixed(2)}</span>
-                </div>
-                <div className="team-stat-row">
-                  <span className="team-stat-label">Quality Starts</span>
-                  <span className="team-stat-value">{currentTimeframeData.teamStats.pitching.qualityStarts}</span>
-                </div>
-                <div className="team-stat-row highlight">
-                  <span className="team-stat-label">Opp AVG</span>
-                  <span className="team-stat-value">{currentTimeframeData.teamStats.pitching.oppAvg.toFixed(3)}</span>
-                </div>
-              </div>
+              ) : (
+                <div className="no-data-message">No pitching stats available</div>
+              )
             )}
           </div>
         </div>
@@ -660,31 +779,37 @@ function TeamAnalytics() {
           <div className="section-card roster-card">
             <div className="card-header">
               <h3>Team Roster</h3>
-              <p className="card-subtitle">{currentTimeframeData.roster.length} Active Players</p>
+              <p className="card-subtitle">{roster?.length || 0} Active Players</p>
             </div>
             <div className="roster-table-container">
-              <table className="roster-table">
-                <thead>
-                  <tr>
-                    <th>#</th>
-                    <th>Player</th>
-                    <th>Position</th>
-                    <th>B/T</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {currentTimeframeData.roster.map((player, idx) => (
-                    <tr key={idx}>
-                      <td className="player-number">{player.number}</td>
-                      <td className="player-name">{player.name}</td>
-                      <td className="player-position">
-                        <span className="position-badge">{player.position}</span>
-                      </td>
-                      <td className="player-hands">{player.battingHand}/{player.throwingHand}</td>
+              {roster && roster.length > 0 ? (
+                <table className="roster-table">
+                  <thead>
+                    <tr>
+                      <th>#</th>
+                      <th>Player</th>
+                      <th>Position</th>
+                      <th>B/T</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody>
+                    {roster.map((player, idx) => (
+                      <tr key={idx}>
+                        <td className="player-number">{player.jersey_number || player.number || '-'}</td>
+                        <td className="player-name">{player.full_name || player.name || player.player_name || 'Unknown'}</td>
+                        <td className="player-position">
+                          <span className="position-badge">{player.primary_position || player.position || '-'}</span>
+                        </td>
+                        <td className="player-hands">
+                          {player.bat_side || player.bats || '-'}/{player.pitch_hand || player.throws || '-'}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              ) : (
+                <div className="no-data-message">No roster data available</div>
+              )}
             </div>
           </div>
 
@@ -693,24 +818,24 @@ function TeamAnalytics() {
             <div className="card-header">
               <h3>Injury Report</h3>
               <p className="card-subtitle">
-                {currentTimeframeData.injuries.length} {currentTimeframeData.injuries.length === 1 ? 'Player' : 'Players'} Injured
+                {teamSeasonData?.injuries?.length || 0} {(teamSeasonData?.injuries?.length || 0) === 1 ? 'Player' : 'Players'} Injured
               </p>
             </div>
             <div className="injury-list">
-              {currentTimeframeData.injuries.length > 0 ? (
-                currentTimeframeData.injuries.map((injury, idx) => (
+              {teamSeasonData?.injuries && teamSeasonData.injuries.length > 0 ? (
+                teamSeasonData.injuries.map((injury, idx) => (
                   <div key={idx} className="injury-item">
                     <div className="injury-player-info">
-                      <div className="injury-player-name">{injury.name}</div>
+                      <div className="injury-player-name">{injury.name || injury.player_name}</div>
                       <div className="injury-position">{injury.position}</div>
                     </div>
                     <div className="injury-details">
-                      <div className="injury-type">{injury.injury}</div>
+                      <div className="injury-type">{injury.injury || injury.description}</div>
                       <div className="injury-status-row">
-                        <span className={`injury-status ${injury.status.includes('60') ? 'long-term' : 'short-term'}`}>
+                        <span className={`injury-status ${injury.status?.includes('60') ? 'long-term' : 'short-term'}`}>
                           {injury.status}
                         </span>
-                        <span className="injury-return">Return: {injury.expectedReturn}</span>
+                        <span className="injury-return">Return: {injury.expected_return || injury.expectedReturn || 'TBD'}</span>
                       </div>
                     </div>
                   </div>
@@ -721,44 +846,6 @@ function TeamAnalytics() {
                   <p>No players currently on injured list</p>
                 </div>
               )}
-            </div>
-          </div>
-        </div>
-
-        {/* Upcoming Games */}
-        <div className="upcoming-section">
-          <div className="section-card">
-            <div className="card-header">
-              <h3>Upcoming Games</h3>
-            </div>
-            <div className="upcoming-games-table">
-              <table>
-                <thead>
-                  <tr>
-                    <th>Date</th>
-                    <th>Opponent</th>
-                    <th>Location</th>
-                    <th>Pitching Matchup</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {teamData.upcoming.map((game, idx) => (
-                    <tr key={idx}>
-                      <td>{game.date}</td>
-                      <td className="opponent-cell">
-                        <span className="team-logo">⚾</span>
-                        {game.opponent}
-                      </td>
-                      <td>
-                        <span className={`location-badge ${game.location.toLowerCase()}`}>
-                          {game.location}
-                        </span>
-                      </td>
-                      <td className="matchup-cell">{game.pitchMatchup}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
             </div>
           </div>
         </div>
