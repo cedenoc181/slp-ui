@@ -128,27 +128,39 @@ function TeamAnalytics() {
     }
   }, [selectedTeam, selectedSeason]);
 
+  // Footer intersection observer - hide when footer is visible
   useEffect(() => {
     const footer = document.querySelector('footer');
-    if (!footer) return;
+    if (!footer) {
+      console.warn('Footer element not found for intersection observer');
+      return;
+    }
     const observer = new IntersectionObserver(
-      (entries) => setHideFloatingFilters(entries[0].isIntersecting),
+      (entries) => {
+        setHideFloatingFilters(entries[0].isIntersecting);
+      },
       { root: null, threshold: 0 }
     );
     observer.observe(footer);
     return () => observer.disconnect();
   }, []);
 
+  // Chart section intersection observer - show only when chart is visible
   useEffect(() => {
     const target = chartSectionRef.current;
-    if (!target) return;
+    if (!target) {
+      console.warn('Chart section ref not found for intersection observer');
+      return;
+    }
     const observer = new IntersectionObserver(
-      (entries) => setIsChartSectionVisible(entries[0].isIntersecting),
-      { root: null, threshold: 0.15 }
+      (entries) => {
+        setIsChartSectionVisible(entries[0].isIntersecting);
+      },
+      { root: null, threshold: 0.1 } // Show when at least 10% of chart is visible
     );
     observer.observe(target);
     return () => observer.disconnect();
-  }, []);
+  }, [loading]); // Re-run when loading changes to ensure ref is attached
 
   // ========== Handlers ==========
   const handleTeamChange = (teamId) => {
@@ -311,7 +323,7 @@ function TeamAnalytics() {
                   </select>
                 </div>
 
-                <div className="analytics-header season-selector">
+                <div className="season-selector">
                   <select 
                     value={selectedSeason} 
                     onChange={(e) => setSelectedSeason(e.target.value)}
@@ -398,7 +410,11 @@ function TeamAnalytics() {
             <div className="card-header">
               <div>
                 <h3>Monthly Performance Trends</h3>
-                <p className="card-subtitle">Track performance across the season</p>
+                <p className="card-subtitle">
+                  {timeframe === 'season' && 'Full season performance'}
+                  {timeframe === 'first-half' && 'First half performance (Feb - Jun)'}
+                  {timeframe === 'second-half' && 'Second half performance (Jul - Nov)'}
+                </p>
               </div>
               <div className="chart-legend">
                 <span className="legend-item"><span className="legend-dot wins"></span> Wins</span>
@@ -409,47 +425,171 @@ function TeamAnalytics() {
             <div className="chart-container">
               <div className="bar-chart">
                 {teamMonthlyData && Array.isArray(teamMonthlyData) && teamMonthlyData.length > 0 ? (
-                  teamMonthlyData.map((month, idx) => {
-                    const wins = month.wins || month.w || 0;
-                    const losses = month.losses || month.l || 0;
-                    const totalGames = wins + losses;
-                    const winPct = totalGames > 0 ? ((wins / totalGames) * 100).toFixed(1) : 0;
-                  
-                    return (
-                      <div key={idx} className="bar-group">
-                        <div className="bar-wrapper">
-                          <div className="bar wins" style={{ height: `${(wins / 30) * 100}%` }}>
-                            <span className="bar-label">{wins}</span>
+                  (() => {
+                    // Filter months first
+                    const filteredMonths = teamMonthlyData.filter(month => {
+                      const firstHalfMonths = ['February', 'March', 'April', 'May', 'June'];
+                      const secondHalfMonths = ['July', 'August', 'September', 'October', 'November'];
+                      
+                      if (timeframe === 'first-half' && !firstHalfMonths.includes(month.month)) {
+                        return false;
+                      }
+                      if (timeframe === 'second-half' && !secondHalfMonths.includes(month.month)) {
+                        return false;
+                      }
+
+                      if (chartFilter === 'home') {
+                        return (month.home_monthly_wins || 0) + (month.home_monthly_losses || 0) > 0;
+                      } else if (chartFilter === 'away') {
+                        return (month.away_monthly_wins || 0) + (month.away_monthly_losses || 0) > 0;
+                      } else {
+                        return (month.monthly_wins || 0) + (month.monthly_losses || 0) > 0;
+                      }
+                    });
+
+                    // Define season phases
+                    const getSeasonPhase = (monthName) => {
+                      if (['February', 'March'].includes(monthName)) return 'spring';
+                      if (['April', 'May', 'June', 'July', 'August', 'September'].includes(monthName)) return 'regular';
+                      if (['October', 'November'].includes(monthName)) return 'postseason';
+                      return null;
+                    };
+
+                    // Check if we should show a divider after this month
+                    const shouldShowDivider = (currentMonth, nextMonth) => {
+                      if (!nextMonth) return false;
+                      const currentPhase = getSeasonPhase(currentMonth);
+                      const nextPhase = getSeasonPhase(nextMonth);
+                      return currentPhase !== nextPhase;
+                    };
+
+                    // Get divider label
+                    const getDividerLabel = (nextMonth) => {
+                      const phase = getSeasonPhase(nextMonth);
+                      if (phase === 'regular') return 'Regular Season';
+                      if (phase === 'postseason') return 'Postseason';
+                      return '';
+                    };
+
+                    return filteredMonths.map((month, idx) => {
+                      let wins, losses, winPct;
+                      
+                      if (chartFilter === 'home') {
+                        wins = month.home_monthly_wins || 0;
+                        losses = month.home_monthly_losses || 0;
+                        winPct = month.home_monthly_pct;
+                      } else if (chartFilter === 'away') {
+                        wins = month.away_monthly_wins || 0;
+                        losses = month.away_monthly_losses || 0;
+                        winPct = month.away_monthly_pct;
+                      } else {
+                        wins = month.monthly_wins || 0;
+                        losses = month.monthly_losses || 0;
+                        winPct = month.monthly_pct;
+                      }
+
+                      const totalGames = wins + losses;
+                      const displayPct = winPct !== null ? (winPct * 100).toFixed(1) : (totalGames > 0 ? ((wins / totalGames) * 100).toFixed(1) : '0.0');
+                      const monthAbbr = month.month?.substring(0, 3) || `M${idx + 1}`;
+                      const maxGames = 20;
+                      const winsHeight = Math.min((wins / maxGames) * 100, 100);
+                      const lossesHeight = Math.min((losses / maxGames) * 100, 100);
+
+                      // Check if divider should appear after this month
+                      const nextMonth = filteredMonths[idx + 1];
+                      const showDivider = shouldShowDivider(month.month, nextMonth?.month);
+                      const dividerLabel = showDivider ? getDividerLabel(nextMonth?.month) : '';
+
+                      // Check if this is the first month and needs a phase label
+                      const isFirstMonth = idx === 0;
+                      const firstPhaseLabel = isFirstMonth ? (
+                        getSeasonPhase(month.month) === 'spring' ? 'Spring Training' :
+                        getSeasonPhase(month.month) === 'regular' ? 'Regular Season' :
+                        getSeasonPhase(month.month) === 'postseason' ? 'Postseason' : ''
+                      ) : '';
+
+                      return (
+                        <React.Fragment key={month.month || idx}>
+                          {/* First month phase label - now with same divider styling */}
+                          {isFirstMonth && firstPhaseLabel && (
+                            <div className="season-phase-divider first">
+                              <div className="divider-line"></div>
+                              <span className="phase-text">{firstPhaseLabel}</span>
+                              <div className="divider-line"></div>
+                            </div>
+                          )}
+
+                          <div className="bar-group">
+                            <div className="bar-wrapper">
+                              <div 
+                                className="bar wins" 
+                                style={{ height: `${winsHeight}%` }}
+                                title={`${wins} wins`}
+                              >
+                                {wins > 0 && <span className="bar-label">{wins}</span>}
+                              </div>
+                              <div 
+                                className="bar losses" 
+                                style={{ height: `${lossesHeight}%` }}
+                                title={`${losses} losses`}
+                              >
+                                {losses > 0 && <span className="bar-label">{losses}</span>}
+                              </div>
+                            </div>
+                            <div className="bar-month">{monthAbbr}</div>
+                            <div className="bar-record">{wins}-{losses}</div>
+                            <div 
+                              className="bar-win-pct" 
+                              style={{ 
+                                color: parseFloat(displayPct) >= 60 ? '#4CAF50' : 
+                                       parseFloat(displayPct) >= 50 ? '#FF9800' : 
+                                       parseFloat(displayPct) > 0 ? '#F44336' : '#888'
+                              }}
+                            >
+                              {totalGames > 0 ? `${displayPct}%` : '-'}
+                            </div>
                           </div>
-                          <div className="bar losses" style={{ height: `${(losses / 30) * 100}%` }}>
-                            <span className="bar-label">{losses}</span>
-                          </div>
-                        </div>
-                        <div className="bar-month">{month.month || month.month_name || `Month ${idx + 1}`}</div>
-                        <div className="bar-win-pct" style={{ 
-                          color: winPct >= 60 ? '#4CAF50' : winPct >= 50 ? '#FF9800' : '#F44336' 
-                        }}>{winPct}%</div>
-                      </div>
-                    );
-                  })
+
+                          {/* Season phase divider */}
+                          {showDivider && (
+                            <div className="season-phase-divider">
+                              <div className="divider-line"></div>
+                              <span className="phase-text">{dividerLabel}</span>
+                              <div className="divider-line"></div>
+                            </div>
+                          )}
+                        </React.Fragment>
+                      );
+                    });
+                  })()
                 ) : (
                   <div className="no-data-message">No monthly data available</div>
                 )}
               </div>
-
-              <div className={`chart-filters floating-remote ${shouldHideFloatingFilters ? 'floating-hidden' : ''}`}>
-                <button className={`chart-filter-btn ${chartFilter === 'season' ? 'active' : ''}`} onClick={() => setChartFilter('season')}>
-                  <span className="filter-icon">📊</span> Combined
-                </button>
-                <button className={`chart-filter-btn ${chartFilter === 'home' ? 'active' : ''}`} onClick={() => setChartFilter('home')}>
-                  <span className="filter-icon">🏠</span> Home
-                </button>
-                <button className={`chart-filter-btn ${chartFilter === 'away' ? 'active' : ''}`} onClick={() => setChartFilter('away')}>
-                  <span className="filter-icon">✈️</span> Away
-                </button>
-              </div>
             </div>
           </div>
+        </div>
+
+        {/* Floating Chart Filter Remote - Moved outside chart-container */}
+        <div className={`chart-filters floating-remote ${shouldHideFloatingFilters ? 'floating-hidden' : ''}`}>
+          <button 
+            className={`chart-filter-btn ${chartFilter === 'season' ? 'active' : ''}`} 
+            onClick={() => setChartFilter('season')}
+          >
+            <span className="filter-icon">📊</span> Combined
+          </button>
+          <button 
+            className={`chart-filter-btn ${chartFilter === 'home' ? 'active' : ''}`} 
+            onClick={() => setChartFilter('home')}
+          >
+            <span className="filter-icon">🏠</span> Home
+          </button>
+          <button 
+            className={`chart-filter-btn ${chartFilter === 'away' ? 'active' : ''}`} 
+            onClick={() => setChartFilter('away')}
+          >
+            <span className="filter-icon">✈️</span> Away
+          </button>
         </div>
 
         {/* Split Stats Grid */}
@@ -470,19 +610,19 @@ function TeamAnalytics() {
                     <div className="split-label">vs Left-Handed Pitching</div>
                     <div className="split-stats">
                       <span className="split-record">
-                        {recordSplits.vs_left?.wins || 0}-{recordSplits.vs_left?.losses || 0}
+                        {recordSplits.vs_left_sp?.wins || 0}-{recordSplits.vs_left_sp?.losses || 0}
                       </span>
                       <span className="split-pct" style={{
-                        color: (recordSplits.vs_left?.pct || 0) >= 0.6 ? '#4CAF50' : 
-                               (recordSplits.vs_left?.pct || 0) >= 0.5 ? '#FF9800' : '#F44336'
+                        color: (recordSplits.vs_left_sp?.pct || 0) >= 0.6 ? '#4CAF50' : 
+                               (recordSplits.vs_left_sp?.pct || 0) >= 0.5 ? '#FF9800' : '#F44336'
                       }}>
-                        {((recordSplits.vs_left?.pct || 0) * 100).toFixed(1)}%
+                        {((recordSplits.vs_left_sp?.pct || 0) * 100).toFixed(1)}%
                       </span>
                       <div className="progress-bar">
                         <div className="progress-fill" style={{ 
-                          width: `${(recordSplits.vs_left?.pct || 0) * 100}%`,
-                          backgroundColor: (recordSplits.vs_left?.pct || 0) >= 0.6 ? '#4CAF50' : 
-                                           (recordSplits.vs_left?.pct || 0) >= 0.5 ? '#FF9800' : '#F44336'
+                          width: `${(recordSplits.vs_left_sp?.pct || 0) * 100}%`,
+                          backgroundColor: (recordSplits.vs_left_sp?.pct || 0) >= 0.6 ? '#4CAF50' : 
+                                           (recordSplits.vs_left_sp?.pct || 0) >= 0.5 ? '#FF9800' : '#F44336'
                         }}></div>
                       </div>
                     </div>
@@ -492,19 +632,19 @@ function TeamAnalytics() {
                     <div className="split-label">vs Right-Handed Pitching</div>
                     <div className="split-stats">
                       <span className="split-record">
-                        {recordSplits.vs_right?.wins || 0}-{recordSplits.vs_right?.losses || 0}
+                        {recordSplits.vs_right_sp?.wins || 0}-{recordSplits.vs_right_sp?.losses || 0}
                       </span>
                       <span className="split-pct" style={{
-                        color: (recordSplits.vs_right?.pct || 0) >= 0.6 ? '#4CAF50' : 
-                               (recordSplits.vs_right?.pct || 0) >= 0.5 ? '#FF9800' : '#F44336'
+                        color: (recordSplits.vs_right_sp?.pct || 0) >= 0.6 ? '#4CAF50' : 
+                               (recordSplits.vs_right_sp?.pct || 0) >= 0.5 ? '#FF9800' : '#F44336'
                       }}>
-                        {((recordSplits.vs_right?.pct || 0) * 100).toFixed(1)}%
+                        {((recordSplits.vs_right_sp?.pct || 0) * 100).toFixed(1)}%
                       </span>
                       <div className="progress-bar">
                         <div className="progress-fill" style={{ 
-                          width: `${(recordSplits.vs_right?.pct || 0) * 100}%`,
-                          backgroundColor: (recordSplits.vs_right?.pct || 0) >= 0.6 ? '#4CAF50' : 
-                                           (recordSplits.vs_right?.pct || 0) >= 0.5 ? '#FF9800' : '#F44336'
+                          width: `${(recordSplits.vs_right_sp?.pct || 0) * 100}%`,
+                          backgroundColor: (recordSplits.vs_right_sp?.pct || 0) >= 0.6 ? '#4CAF50' : 
+                                           (recordSplits.vs_right_sp?.pct || 0) >= 0.5 ? '#FF9800' : '#F44336'
                         }}></div>
                       </div>
                     </div>
@@ -560,7 +700,7 @@ function TeamAnalytics() {
             </div>
           </div>
 
-          {/* Last 10 Games */}
+          {/* Last 10 Games - Updated to use home/away toggle */}
           <div className="section-card">
             <div className="card-header">
               <div>
@@ -572,33 +712,93 @@ function TeamAnalytics() {
                 </p>
               </div>
             </div>
-            {/* Use API last_10 data if available, otherwise calculated */}
-            {last10Record || last10Stats ? (
-              <div className="last-10-stats">
-                <div className="last-10-item">
-                  <div className="last-10-label">Record</div>
-                  <div className="last-10-value">
-                    {last10Record?.wins ?? last10Stats?.wins ?? 0}-{last10Record?.losses ?? last10Stats?.losses ?? 0}
+            {(() => {
+              let wins, losses, runsScored, runsAllowed, runDiff;
+
+              if (chartFilter === 'home') {
+                const homeData = recordSplits?.last_10_home_w_postseason;
+                wins = homeData?.wins ?? 0;
+                losses = homeData?.losses ?? 0;
+                runsScored = homeData?.runs_scored ?? homeData?.runsScored ?? '-';
+                runsAllowed = homeData?.runs_allowed ?? homeData?.runsAllowed ?? '-';
+                runDiff = homeData?.run_diff ?? homeData?.runDiff ?? (runsScored !== '-' && runsAllowed !== '-' ? runsScored - runsAllowed : '-');
+              } else if (chartFilter === 'away') {
+                const awayData = recordSplits?.last_10_away_w_postseason;
+                wins = awayData?.wins ?? 0;
+                losses = awayData?.losses ?? 0;
+                runsScored = awayData?.runs_scored ?? awayData?.runsScored ?? '-';
+                runsAllowed = awayData?.runs_allowed ?? awayData?.runsAllowed ?? '-';
+                runDiff = awayData?.run_diff ?? awayData?.runDiff ?? (runsScored !== '-' && runsAllowed !== '-' ? runsScored - runsAllowed : '-');
+              } else {
+                // Combined - calculate from home + away data or use existing last10 data
+                const homeData = recordSplits?.last_10_home_w_postseason;
+                const awayData = recordSplits?.last_10_away_w_postseason;
+                
+                // Try to use last10Record first, then last10Stats, then calculate from home+away
+                if (last10Record?.runs_scored !== undefined || last10Record?.runsScored !== undefined) {
+                  wins = last10Record?.wins ?? 0;
+                  losses = last10Record?.losses ?? 0;
+                  runsScored = last10Record?.runs_scored ?? last10Record?.runsScored ?? '-';
+                  runsAllowed = last10Record?.runs_allowed ?? last10Record?.runsAllowed ?? '-';
+                  runDiff = last10Record?.run_diff ?? last10Record?.runDiff ?? '-';
+                } else if (last10Stats?.runs_scored !== undefined || last10Stats?.runsScored !== undefined) {
+                  wins = last10Stats?.wins ?? 0;
+                  losses = last10Stats?.losses ?? 0;
+                  runsScored = last10Stats?.runs_scored ?? last10Stats?.runsScored ?? '-';
+                  runsAllowed = last10Stats?.runs_allowed ?? last10Stats?.runsAllowed ?? '-';
+                  runDiff = last10Stats?.run_diff ?? last10Stats?.runDiff ?? '-';
+                } else if (homeData && awayData) {
+                  // Calculate combined from home + away (average or sum depending on context)
+                  wins = (last10Record?.wins ?? last10Stats?.wins ?? 0);
+                  losses = (last10Record?.losses ?? last10Stats?.losses ?? 0);
+                  
+                  // Sum the runs from both home and away last 10
+                  const homeRS = homeData?.runs_scored ?? homeData?.runsScored ?? 0;
+                  const awayRS = awayData?.runs_scored ?? awayData?.runsScored ?? 0;
+                  const homeRA = homeData?.runs_allowed ?? homeData?.runsAllowed ?? 0;
+                  const awayRA = awayData?.runs_allowed ?? awayData?.runsAllowed ?? 0;
+                  
+                  runsScored = homeRS + awayRS;
+                  runsAllowed = homeRA + awayRA;
+                  runDiff = runsScored - runsAllowed;
+                } else {
+                  // Fallback to just wins/losses
+                  wins = last10Record?.wins ?? last10Stats?.wins ?? 0;
+                  losses = last10Record?.losses ?? last10Stats?.losses ?? 0;
+                  runsScored = '-';
+                  runsAllowed = '-';
+                  runDiff = '-';
+                }
+              }
+
+              // If we still don't have valid data
+              if (wins === undefined && losses === undefined) {
+                return <div className="no-data-message">No last 10 games data available</div>;
+              }
+
+              return (
+                <div className="last-10-stats">
+                  <div className="last-10-item">
+                    <div className="last-10-label">Record</div>
+                    <div className="last-10-value">{wins}-{losses}</div>
+                  </div>
+                  <div className="last-10-item">
+                    <div className="last-10-label">Runs Scored</div>
+                    <div className="last-10-value">{runsScored}</div>
+                  </div>
+                  <div className="last-10-item">
+                    <div className="last-10-label">Runs Allowed</div>
+                    <div className="last-10-value">{runsAllowed}</div>
+                  </div>
+                  <div className="last-10-item">
+                    <div className="last-10-label">Run Diff</div>
+                    <div className={`last-10-value ${runDiff > 0 ? 'positive' : runDiff < 0 ? 'negative' : ''}`}>
+                      {runDiff !== '-' ? `${runDiff > 0 ? '+' : ''}${runDiff}` : '-'}
+                    </div>
                   </div>
                 </div>
-                <div className="last-10-item">
-                  <div className="last-10-label">Runs Scored</div>
-                  <div className="last-10-value">{last10Stats?.runsScored || '-'}</div>
-                </div>
-                <div className="last-10-item">
-                  <div className="last-10-label">Runs Allowed</div>
-                  <div className="last-10-value">{last10Stats?.runsAllowed || '-'}</div>
-                </div>
-                <div className="last-10-item">
-                  <div className="last-10-label">Run Differential</div>
-                  <div className={`last-10-value ${last10Stats ? ((last10Stats.runsScored - last10Stats.runsAllowed) > 0 ? 'positive' : (last10Stats.runsScored - last10Stats.runsAllowed) < 0 ? 'negative' : '') : ''}`}>
-                    {last10Stats ? `${(last10Stats.runsScored - last10Stats.runsAllowed) > 0 ? '+' : ''}${last10Stats.runsScored - last10Stats.runsAllowed}` : '-'}
-                  </div>
-                </div>
-              </div>
-            ) : (
-              <div className="no-data-message">No last 10 games data available</div>
-            )}
+              );
+            })()}
           </div>
         </div>
 
@@ -736,7 +936,7 @@ function TeamAnalytics() {
                   </div>
                   <div className="team-stat-row">
                     <span className="team-stat-label">Home Runs</span>
-                    <span className="team-stat-value">{currentBattingStats.home_runs || currentBattingStats.hr || 0}</span>
+                    <span className="team-stat-value">{currentBattingStats.homeruns || currentBattingStats.hr || 0}</span>
                   </div>
                   <div className="team-stat-row highlight">
                     <span className="team-stat-label">Runs Scored</span>

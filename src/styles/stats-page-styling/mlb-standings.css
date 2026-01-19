@@ -27,9 +27,9 @@
 }
 
 /* Season Selector */
-.season-selector {
+/* .season-selector {
   margin-bottom: 2rem;
-}
+} */
 
 .season-tabs {
   display: flex;
@@ -128,9 +128,9 @@
   border-color: rgba(200, 16, 46, 0.5);
 }
 
-.season-dropdown {
+/* .season-dropdown {
   margin-top: 0.75rem;
-}
+} */
 
 /* League Toggle */
 .league-toggle {
