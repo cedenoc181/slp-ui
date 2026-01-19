@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 
 // Import API Services
@@ -28,11 +28,13 @@ function TeamAnalytics() {
   const [selectedSeason, setSelectedSeason] = useState('2025');
   const [timeframe, setTimeframe] = useState('season');
   const [chartFilter, setChartFilter] = useState('season');
+  const [isFilterChanging, setIsFilterChanging] = useState(false); // NEW: Track if filter is changing
   const [leadersToggle, setLeadersToggle] = useState('batting');
   const [teamStatsToggle, setTeamStatsToggle] = useState('batting');
   const [hideFloatingFilters, setHideFloatingFilters] = useState(false);
   const [isChartSectionVisible, setIsChartSectionVisible] = useState(false);
   const chartSectionRef = useRef(null);
+  const filterChangeTimeoutRef = useRef(null); // NEW: Ref for debounce timeout
 
   // ========== API Data State ==========
   const [loading, setLoading] = useState(true);
@@ -170,6 +172,37 @@ function TeamAnalytics() {
       navigate(`/team-analytics/${team.urlName}`);
     }
   };
+
+  // NEW: Debounced chart filter handler to prevent rapid clicks
+  const handleChartFilterChange = useCallback((newFilter) => {
+    // Ignore if already changing or same filter
+    if (isFilterChanging || newFilter === chartFilter) return;
+
+    // Set changing state to disable buttons
+    setIsFilterChanging(true);
+
+    // Clear any existing timeout
+    if (filterChangeTimeoutRef.current) {
+      clearTimeout(filterChangeTimeoutRef.current);
+    }
+
+    // Update the filter
+    setChartFilter(newFilter);
+
+    // Re-enable buttons after a short delay
+    filterChangeTimeoutRef.current = setTimeout(() => {
+      setIsFilterChanging(false);
+    }, 300); // 300ms debounce
+  }, [chartFilter, isFilterChanging]);
+
+  // Cleanup timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (filterChangeTimeoutRef.current) {
+        clearTimeout(filterChangeTimeoutRef.current);
+      }
+    };
+  }, []);
 
   // ========== Data Helpers ==========
   
@@ -571,22 +604,28 @@ function TeamAnalytics() {
         </div>
 
         {/* Floating Chart Filter Remote - Moved outside chart-container */}
-        <div className={`chart-filters floating-remote ${shouldHideFloatingFilters ? 'floating-hidden' : ''}`}>
+        <div className={`chart-filters floating-remote ${shouldHideFloatingFilters ? 'floating-hidden' : ''} ${isFilterChanging ? 'changing' : ''}`}>
           <button 
             className={`chart-filter-btn ${chartFilter === 'season' ? 'active' : ''}`} 
-            onClick={() => setChartFilter('season')}
+            onClick={() => handleChartFilterChange('season')}
+            disabled={isFilterChanging}
+            aria-disabled={isFilterChanging}
           >
             <span className="filter-icon">📊</span> Combined
           </button>
           <button 
             className={`chart-filter-btn ${chartFilter === 'home' ? 'active' : ''}`} 
-            onClick={() => setChartFilter('home')}
+            onClick={() => handleChartFilterChange('home')}
+            disabled={isFilterChanging}
+            aria-disabled={isFilterChanging}
           >
             <span className="filter-icon">🏠</span> Home
           </button>
           <button 
             className={`chart-filter-btn ${chartFilter === 'away' ? 'active' : ''}`} 
-            onClick={() => setChartFilter('away')}
+            onClick={() => handleChartFilterChange('away')}
+            disabled={isFilterChanging}
+            aria-disabled={isFilterChanging}
           >
             <span className="filter-icon">✈️</span> Away
           </button>
@@ -605,95 +644,162 @@ function TeamAnalytics() {
             </div>
             <div className="splits-grid">
               {recordSplits ? (
-                <>
-                  <div className="split-row">
-                    <div className="split-label">vs Left-Handed Pitching</div>
-                    <div className="split-stats">
-                      <span className="split-record">
-                        {recordSplits.vs_left_sp?.wins || 0}-{recordSplits.vs_left_sp?.losses || 0}
-                      </span>
-                      <span className="split-pct" style={{
-                        color: (recordSplits.vs_left_sp?.pct || 0) >= 0.6 ? '#4CAF50' : 
-                               (recordSplits.vs_left_sp?.pct || 0) >= 0.5 ? '#FF9800' : '#F44336'
-                      }}>
-                        {((recordSplits.vs_left_sp?.pct || 0) * 100).toFixed(1)}%
-                      </span>
-                      <div className="progress-bar">
-                        <div className="progress-fill" style={{ 
-                          width: `${(recordSplits.vs_left_sp?.pct || 0) * 100}%`,
-                          backgroundColor: (recordSplits.vs_left_sp?.pct || 0) >= 0.6 ? '#4CAF50' : 
-                                           (recordSplits.vs_left_sp?.pct || 0) >= 0.5 ? '#FF9800' : '#F44336'
-                        }}></div>
-                      </div>
-                    </div>
-                  </div>
+                (() => {
+                  // Determine which data to show based on chartFilter
+                  let vsLeftData, vsRightData;
 
-                  <div className="split-row">
-                    <div className="split-label">vs Right-Handed Pitching</div>
-                    <div className="split-stats">
-                      <span className="split-record">
-                        {recordSplits.vs_right_sp?.wins || 0}-{recordSplits.vs_right_sp?.losses || 0}
-                      </span>
-                      <span className="split-pct" style={{
-                        color: (recordSplits.vs_right_sp?.pct || 0) >= 0.6 ? '#4CAF50' : 
-                               (recordSplits.vs_right_sp?.pct || 0) >= 0.5 ? '#FF9800' : '#F44336'
-                      }}>
-                        {((recordSplits.vs_right_sp?.pct || 0) * 100).toFixed(1)}%
-                      </span>
-                      <div className="progress-bar">
-                        <div className="progress-fill" style={{ 
-                          width: `${(recordSplits.vs_right_sp?.pct || 0) * 100}%`,
-                          backgroundColor: (recordSplits.vs_right_sp?.pct || 0) >= 0.6 ? '#4CAF50' : 
-                                           (recordSplits.vs_right_sp?.pct || 0) >= 0.5 ? '#FF9800' : '#F44336'
-                        }}></div>
-                      </div>
-                    </div>
-                  </div>
+                  if (chartFilter === 'home') {
+                    vsLeftData = recordSplits.vs_left_sp_home || { wins: 0, losses: 0, pct: 0 };
+                    vsRightData = recordSplits.vs_right_sp_home || { wins: 0, losses: 0, pct: 0 };
+                  } else if (chartFilter === 'away') {
+                    vsLeftData = recordSplits.vs_left_sp_away || { wins: 0, losses: 0, pct: 0 };
+                    vsRightData = recordSplits.vs_right_sp_away || { wins: 0, losses: 0, pct: 0 };
+                  } else {
+                    // Combined (season)
+                    vsLeftData = recordSplits.vs_left_sp || { wins: 0, losses: 0, pct: 0 };
+                    vsRightData = recordSplits.vs_right_sp || { wins: 0, losses: 0, pct: 0 };
+                  }
 
-                  <div className="split-row">
-                    <div className="split-label">Day Games</div>
-                    <div className="split-stats">
-                      <span className="split-record">
-                        {recordSplits.day?.wins || 0}-{recordSplits.day?.losses || 0}
-                      </span>
-                      <span className="split-pct" style={{
-                        color: (recordSplits.day?.pct || 0) >= 0.6 ? '#4CAF50' : 
-                               (recordSplits.day?.pct || 0) >= 0.5 ? '#FF9800' : '#F44336'
-                      }}>
-                        {((recordSplits.day?.pct || 0) * 100).toFixed(1)}%
-                      </span>
-                      <div className="progress-bar">
-                        <div className="progress-fill" style={{ 
-                          width: `${(recordSplits.day?.pct || 0) * 100}%`,
-                          backgroundColor: (recordSplits.day?.pct || 0) >= 0.6 ? '#4CAF50' : 
-                                           (recordSplits.day?.pct || 0) >= 0.5 ? '#FF9800' : '#F44336'
-                        }}></div>
-                      </div>
-                    </div>
-                  </div>
+                  // Determine team's league and get division data
+                  const teamLeague = currentTeam?.league || teamSeasonData?.team?.league;
+                  const isAL = teamLeague === 'AL' || teamLeague === 'American League' || teamSeasonData?.team?.league_name?.includes('American');
+                  
+                  // Get the opposing league's division data (teams play more against their own league)
+                  const divisionData = isAL 
+                    ? recordSplits.vs_american_league_division 
+                    : recordSplits.vs_national_league_division;
+                  
+                  const leagueAbbr = isAL ? 'AL' : 'NL';
 
-                  <div className="split-row">
-                    <div className="split-label">Night Games</div>
-                    <div className="split-stats">
-                      <span className="split-record">
-                        {recordSplits.night?.wins || 0}-{recordSplits.night?.losses || 0}
-                      </span>
-                      <span className="split-pct" style={{
-                        color: (recordSplits.night?.pct || 0) >= 0.6 ? '#4CAF50' : 
-                               (recordSplits.night?.pct || 0) >= 0.5 ? '#FF9800' : '#F44336'
-                      }}>
-                        {((recordSplits.night?.pct || 0) * 100).toFixed(1)}%
-                      </span>
-                      <div className="progress-bar">
-                        <div className="progress-fill" style={{ 
-                          width: `${(recordSplits.night?.pct || 0) * 100}%`,
-                          backgroundColor: (recordSplits.night?.pct || 0) >= 0.6 ? '#4CAF50' : 
-                                           (recordSplits.night?.pct || 0) >= 0.5 ? '#FF9800' : '#F44336'
-                        }}></div>
+                  return (
+                    <>
+                      <div className="split-row">
+                        <div className="split-label">
+                          vs Left-Handed Pitching
+                          {chartFilter !== 'season' && (
+                            <span className="split-location-badge">
+                              {chartFilter === 'home' ? '🏠' : '✈️'}
+                            </span>
+                          )}
+                        </div>
+                        <div className="split-stats">
+                          <span className="split-record">
+                            {vsLeftData.wins || 0}-{vsLeftData.losses || 0}
+                          </span>
+                          <span className="split-pct" style={{
+                            color: (vsLeftData.pct || 0) >= 0.6 ? '#4CAF50' : 
+                                   (vsLeftData.pct || 0) >= 0.5 ? '#FF9800' : '#F44336'
+                          }}>
+                            {((vsLeftData.pct || 0) * 100).toFixed(1)}%
+                          </span>
+                          <div className="progress-bar">
+                            <div className="progress-fill" style={{ 
+                              width: `${(vsLeftData.pct || 0) * 100}%`,
+                              backgroundColor: (vsLeftData.pct || 0) >= 0.6 ? '#4CAF50' : 
+                                               (vsLeftData.pct || 0) >= 0.5 ? '#FF9800' : '#F44336'
+                            }}></div>
+                          </div>
+                        </div>
                       </div>
-                    </div>
-                  </div>
-                </>
+
+                      <div className="split-row">
+                        <div className="split-label">
+                          vs Right-Handed Pitching
+                          {chartFilter !== 'season' && (
+                            <span className="split-location-badge">
+                              {chartFilter === 'home' ? '🏠' : '✈️'}
+                            </span>
+                          )}
+                        </div>
+                        <div className="split-stats">
+                          <span className="split-record">
+                            {vsRightData.wins || 0}-{vsRightData.losses || 0}
+                          </span>
+                          <span className="split-pct" style={{
+                            color: (vsRightData.pct || 0) >= 0.6 ? '#4CAF50' : 
+                                   (vsRightData.pct || 0) >= 0.5 ? '#FF9800' : '#F44336'
+                          }}>
+                            {((vsRightData.pct || 0) * 100).toFixed(1)}%
+                          </span>
+                          <div className="progress-bar">
+                            <div className="progress-fill" style={{ 
+                              width: `${(vsRightData.pct || 0) * 100}%`,
+                              backgroundColor: (vsRightData.pct || 0) >= 0.6 ? '#4CAF50' : 
+                                               (vsRightData.pct || 0) >= 0.5 ? '#FF9800' : '#F44336'
+                            }}></div>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Division Splits */}
+                      <div className="split-row">
+                        <div className="split-label">vs {leagueAbbr} East</div>
+                        <div className="split-stats">
+                          <span className="split-record">
+                            {divisionData?.east_wins ?? 0}-{divisionData?.east_losses ?? 0}
+                          </span>
+                          <span className="split-pct" style={{
+                            color: (divisionData?.east_pct || 0) >= 0.6 ? '#4CAF50' : 
+                                   (divisionData?.east_pct || 0) >= 0.5 ? '#FF9800' : '#F44336'
+                          }}>
+                            {((divisionData?.east_pct || 0) * 100).toFixed(1)}%
+                          </span>
+                          <div className="progress-bar">
+                            <div className="progress-fill" style={{ 
+                              width: `${(divisionData?.east_pct || 0) * 100}%`,
+                              backgroundColor: (divisionData?.east_pct || 0) >= 0.6 ? '#4CAF50' : 
+                                               (divisionData?.east_pct || 0) >= 0.5 ? '#FF9800' : '#F44336'
+                            }}></div>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="split-row">
+                        <div className="split-label">vs {leagueAbbr} Central</div>
+                        <div className="split-stats">
+                          <span className="split-record">
+                            {divisionData?.central_wins ?? 0}-{divisionData?.central_losses ?? 0}
+                          </span>
+                          <span className="split-pct" style={{
+                            color: (divisionData?.central_pct || 0) >= 0.6 ? '#4CAF50' : 
+                                   (divisionData?.central_pct || 0) >= 0.5 ? '#FF9800' : '#F44336'
+                          }}>
+                            {((divisionData?.central_pct || 0) * 100).toFixed(1)}%
+                          </span>
+                          <div className="progress-bar">
+                            <div className="progress-fill" style={{ 
+                              width: `${(divisionData?.central_pct || 0) * 100}%`,
+                              backgroundColor: (divisionData?.central_pct || 0) >= 0.6 ? '#4CAF50' : 
+                                               (divisionData?.central_pct || 0) >= 0.5 ? '#FF9800' : '#F44336'
+                            }}></div>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="split-row">
+                        <div className="split-label">vs {leagueAbbr} West</div>
+                        <div className="split-stats">
+                          <span className="split-record">
+                            {divisionData?.west_wins ?? 0}-{divisionData?.west_losses ?? 0}
+                          </span>
+                          <span className="split-pct" style={{
+                            color: (divisionData?.west_pct || 0) >= 0.6 ? '#4CAF50' : 
+                                   (divisionData?.west_pct || 0) >= 0.5 ? '#FF9800' : '#F44336'
+                          }}>
+                            {((divisionData?.west_pct || 0) * 100).toFixed(1)}%
+                          </span>
+                          <div className="progress-bar">
+                            <div className="progress-fill" style={{ 
+                              width: `${(divisionData?.west_pct || 0) * 100}%`,
+                              backgroundColor: (divisionData?.west_pct || 0) >= 0.6 ? '#4CAF50' : 
+                                               (divisionData?.west_pct || 0) >= 0.5 ? '#FF9800' : '#F44336'
+                            }}></div>
+                          </div>
+                        </div>
+                      </div>
+                    </>
+                  );
+                })()
               ) : (
                 <div className="no-data-message">No splits data available</div>
               )}
@@ -730,41 +836,21 @@ function TeamAnalytics() {
                 runsAllowed = awayData?.runs_allowed ?? awayData?.runsAllowed ?? '-';
                 runDiff = awayData?.run_diff ?? awayData?.runDiff ?? (runsScored !== '-' && runsAllowed !== '-' ? runsScored - runsAllowed : '-');
               } else {
-                // Combined - calculate from home + away data or use existing last10 data
-                const homeData = recordSplits?.last_10_home_w_postseason;
-                const awayData = recordSplits?.last_10_away_w_postseason;
+                // Combined - use last10Games data from gamesService.getTeamLast10
+                // The API returns an array where first object has the summary stats
+                const combinedData = Array.isArray(last10Games) && last10Games.length > 0 ? last10Games[0] : null;
                 
-                // Try to use last10Record first, then last10Stats, then calculate from home+away
-                if (last10Record?.runs_scored !== undefined || last10Record?.runsScored !== undefined) {
+                if (combinedData) {
+                  wins = combinedData.last_ten_wins ?? combinedData.wins ?? 0;
+                  losses = combinedData.last_ten_losses ?? combinedData.losses ?? 0;
+                  runsScored = combinedData.runs_scored ?? '-';
+                  runsAllowed = combinedData.runs_allowed ?? '-';
+                  runDiff = combinedData.run_differential ?? combinedData.run_diff ?? 
+                    (runsScored !== '-' && runsAllowed !== '-' ? runsScored - runsAllowed : '-');
+                } else {
+                  // Fallback to last10Record if last10Games not available
                   wins = last10Record?.wins ?? 0;
                   losses = last10Record?.losses ?? 0;
-                  runsScored = last10Record?.runs_scored ?? last10Record?.runsScored ?? '-';
-                  runsAllowed = last10Record?.runs_allowed ?? last10Record?.runsAllowed ?? '-';
-                  runDiff = last10Record?.run_diff ?? last10Record?.runDiff ?? '-';
-                } else if (last10Stats?.runs_scored !== undefined || last10Stats?.runsScored !== undefined) {
-                  wins = last10Stats?.wins ?? 0;
-                  losses = last10Stats?.losses ?? 0;
-                  runsScored = last10Stats?.runs_scored ?? last10Stats?.runsScored ?? '-';
-                  runsAllowed = last10Stats?.runs_allowed ?? last10Stats?.runsAllowed ?? '-';
-                  runDiff = last10Stats?.run_diff ?? last10Stats?.runDiff ?? '-';
-                } else if (homeData && awayData) {
-                  // Calculate combined from home + away (average or sum depending on context)
-                  wins = (last10Record?.wins ?? last10Stats?.wins ?? 0);
-                  losses = (last10Record?.losses ?? last10Stats?.losses ?? 0);
-                  
-                  // Sum the runs from both home and away last 10
-                  const homeRS = homeData?.runs_scored ?? homeData?.runsScored ?? 0;
-                  const awayRS = awayData?.runs_scored ?? awayData?.runsScored ?? 0;
-                  const homeRA = homeData?.runs_allowed ?? homeData?.runsAllowed ?? 0;
-                  const awayRA = awayData?.runs_allowed ?? awayData?.runsAllowed ?? 0;
-                  
-                  runsScored = homeRS + awayRS;
-                  runsAllowed = homeRA + awayRA;
-                  runDiff = runsScored - runsAllowed;
-                } else {
-                  // Fallback to just wins/losses
-                  wins = last10Record?.wins ?? last10Stats?.wins ?? 0;
-                  losses = last10Record?.losses ?? last10Stats?.losses ?? 0;
                   runsScored = '-';
                   runsAllowed = '-';
                   runDiff = '-';
