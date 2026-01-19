@@ -1,54 +1,103 @@
+/* ============================================
+   Batter Stats Component - Dark Theme
+   ============================================ */
+
+/* ============================================
+   Section Container
+   ============================================ */
 .batter-stats-section {
-  padding: 1.5rem 1.5rem 2rem;
+  padding: 2rem 1.5rem 3rem;
+  background: var(--pa-bg-primary, #0a0a0a);
+  min-height: calc(100vh - 200px);
+}
+
+/* ============================================
+   Header
+   ============================================ */
+.batter-header {
+  margin-bottom: 1.5rem;
+}
+
+.batter-header .eyebrow {
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  font-size: 0.75rem;
+  color: var(--pa-text-muted, #666666);
+  margin: 0 0 0.5rem 0;
+  font-weight: 700;
 }
 
 .batter-header h2 {
   margin: 0.3rem 0 1rem;
-  color: #041e42;
-  font-size: 1.5rem;
+  color: var(--pa-text-primary, #ffffff);
+  font-size: 1.75rem;
   font-weight: 700;
+  letter-spacing: -0.02em;
 }
 
+/* ============================================
+   Leader Cards Grid
+   ============================================ */
 .batter-leader-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-  gap: 1rem;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 1.25rem;
 }
 
 .batter-card {
-  background: #fff;
-  border: 1px solid #e4e9f1;
-  border-radius: 12px;
-  padding: 1rem;
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.05);
+  background: var(--pa-bg-card, #1a1a1a);
+  border: 1px solid var(--pa-border-color, rgba(255, 255, 255, 0.08));
+  border-radius: 14px;
+  padding: 1.25rem;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  gap: 0.75rem;
   transition: transform 0.2s ease, background 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
 }
 
 .batter-card:nth-of-type(1) {
-  background: linear-gradient(135deg, #041e42 0%, #0e2f5f 100%);
-  color: white;
-  border: none;
+  background: linear-gradient(135deg, rgba(25, 118, 210, 0.15) 0%, rgba(25, 118, 210, 0.05) 100%);
+  border: 1px solid rgba(25, 118, 210, 0.3);
+  box-shadow: 0 4px 20px rgba(25, 118, 210, 0.15);
 }
 
-.batter-card:nth-of-type(1) .batter-category,
-.batter-card:nth-of-type(1) .batter-stat-label,
-.batter-card:nth-of-type(1) .batter-player,
-.batter-card:nth-of-type(1) .batter-team,
-.batter-card:nth-of-type(1) .batter-value {
-  color: white;
+.batter-card:nth-of-type(1) .batter-category {
+  color: var(--pa-text-primary, #ffffff);
 }
 
 .batter-card:nth-of-type(1) .batter-stat-label {
-  background: rgba(255, 255, 255, 0.2);
-  border: 1px solid rgba(255, 255, 255, 0.3);
+  background: rgba(25, 118, 210, 0.2);
+  border: 1px solid rgba(25, 118, 210, 0.4);
+  color: #64B5F6;
+}
+
+.batter-card:nth-of-type(1) .batter-player {
+  color: var(--pa-text-primary, #ffffff);
+}
+
+.batter-card:nth-of-type(1) .batter-team {
+  color: var(--pa-text-secondary, #a0a0a0);
+}
+
+.batter-card:nth-of-type(1) .batter-value {
+  color: #64B5F6;
+}
+
+.batter-card:nth-of-type(1):hover {
+  background: linear-gradient(135deg, rgba(25, 118, 210, 0.2) 0%, rgba(25, 118, 210, 0.08) 100%);
+  border-color: rgba(25, 118, 210, 0.4);
+  box-shadow: 0 8px 28px rgba(25, 118, 210, 0.25);
 }
 
 .batter-card:hover {
-  transform: scale(1.04);
-  box-shadow: 0 14px 30px rgba(0, 0, 0, 0.18);
+  transform: translateY(-4px);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.3);
+  border-color: rgba(255, 255, 255, 0.15);
+}
+
+.batter-card:nth-of-type(1):hover {
+  box-shadow: 0 12px 32px rgba(25, 118, 210, 0.4);
 }
 
 .batter-card-top {
@@ -59,14 +108,16 @@
 
 .batter-category {
   font-weight: 700;
-  color: #041e42;
+  color: var(--pa-text-primary, #ffffff);
+  font-size: 0.95rem;
 }
 
 .batter-stat-label {
-  padding: 0.3rem 0.65rem;
+  padding: 0.35rem 0.75rem;
   border-radius: 999px;
-  background: #e9eef5;
-  color: #1f2a44;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: var(--pa-text-secondary, #a0a0a0);
   font-weight: 700;
   font-size: 0.8rem;
 }
@@ -74,43 +125,49 @@
 .batter-card-body {
   display: flex;
   flex-direction: column;
-  gap: 0.2rem;
+  gap: 0.25rem;
 }
 
 .batter-player {
-  font-size: 1.05rem;
+  font-size: 1.1rem;
   font-weight: 700;
-  color: #041e42;
+  color: var(--pa-text-primary, #ffffff);
 }
 
 .batter-team {
   font-weight: 600;
-  color: #4b5875;
+  color: var(--pa-text-secondary, #a0a0a0);
+  font-size: 0.9rem;
 }
 
 .batter-value {
-  font-size: 1.3rem;
+  font-size: 1.5rem;
   font-weight: 700;
-  color: #041e42;
+  color: var(--pa-text-primary, #ffffff);
+  margin-top: 0.25rem;
 }
 
 .batter-empty {
   grid-column: 1 / -1;
   text-align: center;
-  padding: 1rem;
-  border: 1px dashed #d5dde8;
-  border-radius: 12px;
-  background: #fff;
-  color: #4b5875;
+  padding: 2rem 1.5rem;
+  border: 1px dashed rgba(255, 255, 255, 0.15);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.02);
+  color: var(--pa-text-muted, #666666);
+  font-weight: 500;
 }
 
+/* ============================================
+   Hot Bats Card
+   ============================================ */
 .hot-bats-card {
-  margin-top: 1.5rem;
-  background: #fff;
-  border: 1px solid #e4e9f1;
-  border-radius: 12px;
-  padding: 1rem;
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.05);
+  margin-top: 2rem;
+  background: var(--pa-bg-card, #1a1a1a);
+  border: 1px solid var(--pa-border-color, rgba(255, 255, 255, 0.08));
+  border-radius: 16px;
+  padding: 1.5rem;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
 }
 
 .hot-bats-header {
@@ -119,66 +176,84 @@
   align-items: center;
   gap: 1rem;
   flex-wrap: wrap;
-  padding-bottom: 0.75rem;
-  margin-bottom: 0.75rem;
-  border-bottom: 1px solid #d5dde8;
+  padding-bottom: 1rem;
+  margin-bottom: 1rem;
+  border-bottom: 1px solid var(--pa-border-color, rgba(255, 255, 255, 0.08));
+}
+
+.hot-bats-header .eyebrow {
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  font-size: 0.75rem;
+  color: var(--pa-text-muted, #666666);
+  margin: 0 0 0.25rem 0;
+  font-weight: 700;
 }
 
 .hot-bats-header h3 {
   margin: 0.2rem 0 0;
-  color: #041e42;
-  font-size: 1.2rem;
+  color: var(--pa-text-primary, #ffffff);
+  font-size: 1.25rem;
   font-weight: 700;
 }
 
 .hot-bats-subtitle {
-  margin: 0.1rem 0 0;
-  color: #4b5875;
-  font-weight: 700;
+  margin: 0.25rem 0 0;
+  color: var(--pa-text-secondary, #a0a0a0);
+  font-weight: 600;
   font-size: 0.95rem;
 }
 
+/* ============================================
+   Hot Toggle Buttons
+   ============================================ */
 .hot-bats-toggle {
   display: flex;
   gap: 0.5rem;
   position: relative;
+  flex-wrap: wrap;
+}
+
+.hot-toggle {
+  padding: 0.55rem 0.9rem;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--pa-text-secondary, #a0a0a0);
+  font-weight: 700;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.hot-toggle:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.2);
+  color: var(--pa-text-primary, #ffffff);
+}
+
+.hot-toggle.active {
+  background: var(--pa-primary-color, #1976D2);
+  color: #fff;
+  border-color: var(--pa-primary-color, #1976D2);
+  box-shadow: 0 4px 12px rgba(25, 118, 210, 0.4);
 }
 
 .hot-toggle-tooltip {
   position: absolute;
   top: 100%;
   left: 0;
-  margin-top: 0.4rem;
-  padding: 0.55rem 0.75rem;
-  background: #041e42;
-  color: #fff;
-  border-radius: 8px;
-  font-size: 0.9rem;
-  font-weight: 700;
-  box-shadow: 0 10px 24px rgba(4, 30, 66, 0.18);
-  z-index: 5;
-  min-width: 190px;
-}
-
-.hot-toggle {
-  padding: 0.5rem 0.85rem;
+  margin-top: 0.5rem;
+  padding: 0.65rem 0.85rem;
+  background: var(--pa-bg-card, #1a1a1a);
+  color: var(--pa-text-primary, #ffffff);
+  border: 1px solid rgba(255, 255, 255, 0.15);
   border-radius: 10px;
-  border: 1px solid #d5dde8;
-  background: #f8fafc;
-  color: #041e42;
-  font-weight: 700;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.hot-toggle:hover {
-  background: #e9eef5;
-}
-
-.hot-toggle.active {
-  background: linear-gradient(135deg, #041e42 0%, #0e2f5f 100%);
-  color: #fff;
-  border-color: #041e42;
+  font-size: 0.85rem;
+  font-weight: 600;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+  z-index: 10;
+  min-width: 200px;
 }
 
 @media (max-width: 390px) {
@@ -193,20 +268,24 @@
   }
 }
 
+/* ============================================
+   Hot Bats Chart
+   ============================================ */
 .hot-bats-chart {
   display: grid;
   grid-template-columns: repeat(7, minmax(0, 1fr));
   gap: 0.75rem;
-  margin-top: 0.5rem;
+  margin-top: 1rem;
   align-items: end;
-  min-height: 260px;
+  min-height: 280px;
+  padding: 1rem 0;
 }
 
 .hot-bar {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 0.2rem;
+  gap: 0.35rem;
   justify-content: flex-end;
 }
 
@@ -214,35 +293,38 @@
   width: 100%;
   max-width: 50px;
   border-radius: 8px 8px 4px 4px;
-  background: linear-gradient(180deg, #ffd700 0%, #f39c12 100%);
+  background: linear-gradient(180deg, #FFD700 0%, #F39C12 50%, #E67E22 100%);
   min-height: 20px;
-  transition: height 0.2s ease;
+  transition: height 0.3s ease;
+  box-shadow: 0 4px 12px rgba(243, 156, 18, 0.3);
 }
 
 .hot-bar-value {
   font-weight: 700;
-  color: #041e42;
-  font-size: 0.9rem;
+  color: var(--pa-text-primary, #ffffff);
+  font-size: 0.95rem;
 }
 
 .hot-bar-label {
   font-size: 0.8rem;
-  color: #4b5875;
+  color: var(--pa-text-muted, #666666);
+  font-weight: 500;
 }
 
 .hot-bar-underline {
   width: 100%;
   height: 1px;
-  background: #d5dde8;
+  background: rgba(255, 255, 255, 0.1);
   display: none;
   margin: 2px 0;
 }
 
 .hot-bats-month-label {
   text-align: center;
-  margin-top: 0.5rem;
-  color: #4b5875;
+  margin-top: 0.75rem;
+  color: var(--pa-text-secondary, #a0a0a0);
   font-weight: 700;
+  font-size: 0.9rem;
 }
 
 @media (max-width: 430px) {
@@ -251,12 +333,27 @@
   }
 }
 
+/* ============================================
+   Performance Splits Layout
+   ============================================ */
+.batter-splits-layout {
+  margin-top: 2rem;
+  margin-bottom: 2rem;
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 1.5rem;
+  align-items: stretch;
+}
+
+/* ============================================
+   Splits Card
+   ============================================ */
 .batter-splits-card {
-  background: #fff;
-  border: 1px solid #e4e9f1;
-  border-radius: 12px;
-  padding: 1.25rem;
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.05);
+  background: var(--pa-bg-card, #1a1a1a);
+  border: 1px solid var(--pa-border-color, rgba(255, 255, 255, 0.08));
+  border-radius: 16px;
+  padding: 1.5rem;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
   min-height: 320px;
   height: 100%;
 }
@@ -266,9 +363,23 @@
   grid-template-columns: 1fr auto;
   align-items: center;
   gap: 1rem;
-  padding-bottom: 0.75rem;
-  margin-bottom: 2.5rem;
-  border-bottom: 1px solid #d5dde8;
+  padding-bottom: 1rem;
+  margin-bottom: 1.5rem;
+  border-bottom: 1px solid var(--pa-border-color, rgba(255, 255, 255, 0.08));
+}
+
+.batter-splits-title {
+  margin: 0;
+  color: var(--pa-text-primary, #ffffff);
+  font-size: 1.35rem;
+  font-weight: 700;
+}
+
+.batter-split-subtitle {
+  margin: 0.25rem 0 0;
+  color: var(--pa-text-secondary, #a0a0a0);
+  font-weight: 600;
+  font-size: 0.9rem;
 }
 
 .batter-splits-main {
@@ -277,51 +388,9 @@
   gap: 1rem;
 }
 
-.batter-splits-layout {
-  margin-top: 1.5rem;
-  margin-bottom: 2rem;
-  display: grid;
-  grid-template-columns: 2fr 1fr;
-  gap: 2rem;
-  align-items: stretch;
-}
-
-.batter-splits-header h3 {
-  margin: 0.2rem 0 0;
-  color: #041e42;
-  font-size: 1.2rem;
-  font-weight: 700;
-}
-
-.batter-splits-title {
-  margin: 0.1rem 0 0.2rem;
-  color: #041e42;
-  font-size: 1.5rem;
-  font-weight: 700;
-}
-
-.batter-split-subtitle {
-  margin: 0.1rem 0 0;
-  color: #4b5875;
-  font-weight: 700;
-  font-size: 0.95rem;
-}
-
-.batter-splits-secondary {
-  margin: 0;
-  color: #041e42;
-  font-size: 1.1rem;
-  font-weight: 700;
-}
-
-.batter-splits-col.align-end {
-  text-align: right;
-}
-
 .batter-splits-grid {
   display: grid;
   gap: 0.75rem;
-  margin-top: 1rem;
 }
 
 .batter-split-row {
@@ -329,36 +398,37 @@
   grid-template-columns: 1.2fr 1fr;
   gap: 1rem;
   align-items: center;
-  padding: 1rem 1rem;
-  border: 1px solid #e4e9f1;
+  padding: 1rem 1.25rem;
+  border: 1px solid var(--pa-border-color, rgba(255, 255, 255, 0.08));
   border-radius: 12px;
-  background: #f8fafc;
-  transition: background 0.18s ease, border-color 0.18s ease;
+  background: rgba(255, 255, 255, 0.02);
+  transition: background 0.2s ease, border-color 0.2s ease;
 }
 
 .batter-split-row:hover {
-  background: #eef2f7;
-  border-color: #d7deea;
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 255, 255, 0.15);
 }
 
 .batter-split-label {
   display: flex;
   flex-direction: column;
-  gap: 0.2rem;
+  gap: 0.25rem;
   font-weight: 700;
-  color: #041e42;
+  color: var(--pa-text-primary, #ffffff);
+  font-size: 0.95rem;
 }
 
 .batter-split-player {
-  font-weight: 700;
-  color: #4b5875;
-  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--pa-text-secondary, #a0a0a0);
+  font-size: 0.9rem;
 }
 
 .batter-split-stats {
   display: flex;
   flex-direction: column;
-  gap: 0.35rem;
+  gap: 0.5rem;
 }
 
 .batter-split-topline {
@@ -369,7 +439,8 @@
 
 .batter-split-record {
   font-weight: 700;
-  color: #041e42;
+  color: var(--pa-text-primary, #ffffff);
+  font-size: 0.9rem;
 }
 
 .batter-split-pct {
@@ -379,8 +450,8 @@
 
 .batter-progress-bar {
   width: 100%;
-  height: 12px;
-  background: #e9eef5;
+  height: 8px;
+  background: rgba(255, 255, 255, 0.1);
   border-radius: 8px;
   overflow: hidden;
 }
@@ -388,35 +459,53 @@
 .batter-progress-fill {
   height: 100%;
   border-radius: 8px;
-  transition: width 0.25s ease, background-color 0.25s ease;
+  transition: width 0.3s ease, background-color 0.3s ease;
 }
 
+/* ============================================
+   Top Batters Card
+   ============================================ */
 .batter-top-card {
-  background: #fff;
-  border: 1px solid #e4e9f1;
-  border-radius: 12px;
-  padding: 1rem 0.9rem;
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.05);
+  background: var(--pa-bg-card, #1a1a1a);
+  border: 1px solid var(--pa-border-color, rgba(255, 255, 255, 0.08));
+  border-radius: 16px;
+  padding: 1.25rem;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
   min-height: 320px;
   height: 100%;
   display: flex;
   flex-direction: column;
   gap: 0.75rem;
 }
-.batter-top-list-header h4 {
-  margin: 0.1rem 0 0;
-  color: #041e42;
-  font-size: 1.05rem;
+
+.batter-top-list-header {
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid var(--pa-border-color, rgba(255, 255, 255, 0.08));
+}
+
+.batter-top-list-header h2 {
+  margin: 0;
+  color: var(--pa-text-primary, #ffffff);
+  font-size: 1.15rem;
+  font-weight: 700;
+}
+
+.batter-top-list-header .eyebrow {
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  font-size: 0.7rem;
+  color: var(--pa-text-muted, #666666);
+  margin: 0.35rem 0 0 0;
   font-weight: 700;
 }
 
 .batter-top-list-items {
   list-style: none;
   padding: 0;
-  margin: 1.25rem 0 0;
+  margin: 0.75rem 0 0;
   display: flex;
   flex-direction: column;
-  gap: 0.6rem;
+  gap: 0.5rem;
   flex: 1;
   overflow-y: auto;
 }
@@ -424,26 +513,27 @@
 .batter-top-list-item {
   display: grid;
   grid-template-columns: auto 1fr auto;
-  gap: 0.6rem;
+  gap: 0.75rem;
   align-items: center;
-  padding: 0.6rem 0.7rem;
-  border: 1px solid #e4e9f1;
+  padding: 0.7rem 0.85rem;
+  border: 1px solid var(--pa-border-color, rgba(255, 255, 255, 0.08));
   border-radius: 10px;
-  background: #fff;
-  transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
-  width: 95%;
-  margin: 0 auto;
+  background: rgba(255, 255, 255, 0.02);
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease, background 0.2s ease;
 }
 
 .batter-top-list-item:hover {
-  transform: scale(1.005);
-  border-color: #c7d2e5;
-  box-shadow: 0 10px 24px rgba(4, 30, 66, 0.12);
+  transform: translateX(4px);
+  border-color: rgba(255, 255, 255, 0.15);
+  background: rgba(255, 255, 255, 0.05);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
 }
 
 .batter-top-rank {
   font-weight: 700;
-  color: #041e42;
+  color: var(--pa-primary-color, #1976D2);
+  font-size: 0.9rem;
+  min-width: 28px;
 }
 
 .batter-top-info {
@@ -454,45 +544,67 @@
 
 .batter-top-name {
   font-weight: 700;
-  color: #041e42;
+  color: var(--pa-text-primary, #ffffff);
+  font-size: 0.95rem;
 }
 
 .batter-top-team {
-  font-weight: 700;
-  color: #4b5875;
-  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--pa-text-secondary, #a0a0a0);
+  font-size: 0.8rem;
 }
 
 .batter-top-stats {
   display: flex;
-  gap: 0.65rem;
+  gap: 0.75rem;
   font-weight: 700;
-  color: #041e42;
-  font-size: 0.9rem;
+  color: var(--pa-text-secondary, #a0a0a0);
+  font-size: 0.8rem;
+}
+
+.batter-top-stats span {
+  white-space: nowrap;
 }
 
 .batter-top-actions {
-  margin-top: 0.5rem;
+  margin-top: 0.75rem;
   display: flex;
   justify-content: flex-end;
 }
 
 .batter-top-toggle {
-  border: 1px solid #041e42;
-  background: #0b2253;
+  border: 1px solid var(--pa-primary-color, #1976D2);
+  background: var(--pa-primary-color, #1976D2);
   color: #fff;
-  padding: 0.5rem 0.9rem;
+  padding: 0.55rem 1rem;
   border-radius: 10px;
   font-weight: 700;
+  font-size: 0.85rem;
   cursor: pointer;
   transition: all 0.2s ease;
 }
 
 .batter-top-toggle:hover {
-  background: #041e42;
+  background: var(--pa-primary-hover, #1565C0);
+  border-color: var(--pa-primary-hover, #1565C0);
+  box-shadow: 0 4px 12px rgba(25, 118, 210, 0.3);
+}
+
+/* ============================================
+   Responsive Design
+   ============================================ */
+@media (max-width: 1024px) {
+  .batter-splits-layout {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+  }
 }
 
 @media (max-width: 768px) {
+  .batter-stats-section {
+    padding: 1.5rem 1rem 2rem;
+  }
+
   .batter-splits-header {
     grid-template-columns: 1fr;
     text-align: left;
@@ -505,5 +617,39 @@
   .batter-split-row {
     grid-template-columns: 1fr;
     align-items: flex-start;
+    gap: 0.75rem;
+  }
+
+  .batter-header h2 {
+    font-size: 1.5rem;
+  }
+
+  .hot-bats-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .hot-bats-toggle {
+    width: 100%;
+    justify-content: flex-start;
+  }
+}
+
+@media (max-width: 480px) {
+  .batter-stats-section {
+    padding: 1.25rem 0.75rem 2rem;
+  }
+
+  .batter-leader-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .hot-bats-chart {
+    gap: 0.5rem;
+  }
+
+  .batter-top-stats {
+    flex-direction: column;
+    gap: 0.25rem;
   }
 }

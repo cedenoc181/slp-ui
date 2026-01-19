@@ -4,6 +4,19 @@ import BatterStats from './batterStats';
 import PitcherStats from './pitcherStats';
 import '../../../../styles/stats-page-styling/player-analytics.css';
 
+// MLB Team IDs for logos
+const TEAM_MLB_IDS = {
+  'ALL': null,
+  'LAD': 119,
+  'NYY': 147,
+  'HOU': 117,
+  'ATL': 144,
+  'BAL': 110,
+  'TBR': 139,
+  'TOR': 141,
+  'BOS': 111,
+};
+
 function PlayerAnalytics() {
   const [metricType, setMetricType] = useState('batting');
   const [selectedTeam, setSelectedTeam] = useState('ALL');
@@ -44,21 +57,44 @@ function PlayerAnalytics() {
     }
   }, [searchParams, teams, seasons]);
 
-  const currentTeamName = teams.find((t) => t.id === selectedTeam)?.name || 'Team';
+  // Get current team object
+  const currentTeam = useMemo(() => {
+    const team = teams.find((t) => t.id === selectedTeam);
+    if (team) {
+      return {
+        ...team,
+        mlbId: TEAM_MLB_IDS[team.id]
+      };
+    }
+    return null;
+  }, [selectedTeam, teams]);
 
   return (
     <div className="player-analytics-page">
-      <div className="analytics-header player-analytics-header">
+      {/* Header - Mirrored from Team Analytics */}
+      <div className="analytics-header">
         <div className="container">
           <div className="header-content">
             <div className="team-selector-wrapper">
-              <h1>{currentTeamName}</h1>
-              <div className="team-selector-row">
+              <div className="team-header-inline">
+                {currentTeam?.mlbId && (
+                  <img
+                    src={`https://www.mlbstatic.com/team-logos/${currentTeam.mlbId}.svg`}
+                    alt={`${currentTeam.name} logo`}
+                    className="team-logo-image"
+                    onError={(e) => {
+                      e.target.style.display = 'none';
+                    }}
+                  />
+                )}
+                <h1>Player Analytics</h1>
+              </div>
+              <div className="selectors-row">
                 <div className="team-selector">
                   <select
                     value={selectedTeam}
                     onChange={(e) => setSelectedTeam(e.target.value)}
-                    className="team-dropdown player-team-dropdown"
+                    className="team-dropdown"
                   >
                     {teams.map((team) => (
                       <option key={team.id} value={team.id}>
@@ -67,11 +103,12 @@ function PlayerAnalytics() {
                     ))}
                   </select>
                 </div>
+
                 <div className="season-selector">
                   <select
                     value={selectedSeason}
                     onChange={(e) => setSelectedSeason(e.target.value)}
-                    className="pa-season-dropdown"
+                    className="season-dropdown"
                   >
                     {seasons.map((season) => (
                       <option key={season} value={season}>
@@ -82,28 +119,33 @@ function PlayerAnalytics() {
                 </div>
               </div>
             </div>
-            <div className="timeframe-tabs" aria-label="Toggle batting or pitching leaders">
+
+            <div className="timeframe-tabs">
               <button
                 className={`tab ${metricType === 'batting' ? 'active' : ''}`}
                 onClick={() => setMetricType('batting')}
               >
-                Batting Metrics
+                Batting
               </button>
               <button
                 className={`tab ${metricType === 'pitching' ? 'active' : ''}`}
                 onClick={() => setMetricType('pitching')}
               >
-                Pitching Metrics
+                Pitching
               </button>
             </div>
           </div>
         </div>
       </div>
-      {metricType === 'batting' ? (
-        <BatterStats teamId={selectedTeam} season={selectedSeason} teamName={currentTeamName} />
-      ) : (
-        <PitcherStats teamId={selectedTeam} season={selectedSeason} teamName={currentTeamName} />
-      )}
+
+      {/* Content */}
+      <div className="analytics-content container">
+        {metricType === 'batting' ? (
+          <BatterStats teamId={selectedTeam} season={selectedSeason} />
+        ) : (
+          <PitcherStats teamId={selectedTeam} season={selectedSeason} />
+        )}
+      </div>
     </div>
   );
 }
