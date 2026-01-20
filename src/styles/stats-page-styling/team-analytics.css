@@ -310,6 +310,12 @@
   color: #F44336;
 }
 
+/* MLB Rank Value - Optional enhanced styling */
+.team-stat-value.rank-value {
+  font-weight: 800;
+  color: #64B5F6;
+}
+
 .stat-detail {
   font-size: 13px;
   color: var(--text-secondary, #aaa);

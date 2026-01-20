@@ -28,9 +28,10 @@ function TeamAnalytics() {
   const [selectedSeason, setSelectedSeason] = useState('2025');
   const [timeframe, setTimeframe] = useState('season');
   const [chartFilter, setChartFilter] = useState('season');
-  const [isFilterChanging, setIsFilterChanging] = useState(false); // NEW: Track if filter is changing
+  const [isFilterChanging, setIsFilterChanging] = useState(false);
   const [leadersToggle, setLeadersToggle] = useState('batting');
   const [teamStatsToggle, setTeamStatsToggle] = useState('batting');
+  const [rosterFilter, setRosterFilter] = useState('all'); // NEW: 'all', 'pitchers', 'position'
   const [hideFloatingFilters, setHideFloatingFilters] = useState(false);
   const [isChartSectionVisible, setIsChartSectionVisible] = useState(false);
   const chartSectionRef = useRef(null);
@@ -206,6 +207,42 @@ function TeamAnalytics() {
 
   // ========== Data Helpers ==========
   
+  // NEW: Filter roster based on toggle
+  const getFilteredRoster = () => {
+    if (!roster || !Array.isArray(roster)) return [];
+    
+    switch (rosterFilter) {
+      case 'pitchers':
+        return roster.filter(player => {
+          const pos = (player.position_abbreviation || player.position || '').toUpperCase();
+          return pos === 'P' || pos === 'SP' || pos === 'RP' || pos === 'CL';
+        });
+      case 'position':
+        return roster.filter(player => {
+          const pos = (player.position_abbreviation || player.position || '').toUpperCase();
+          return pos !== 'P' && pos !== 'SP' && pos !== 'RP' && pos !== 'CL';
+        });
+      default:
+        return roster;
+    }
+  };
+
+  // Get roster counts for subtitle
+  const getRosterCounts = () => {
+    if (!roster || !Array.isArray(roster)) return { total: 0, pitchers: 0, position: 0 };
+    
+    const pitchers = roster.filter(player => {
+      const pos = (player.position_abbreviation || player.position || '').toUpperCase();
+      return pos === 'P' || pos === 'SP' || pos === 'RP' || pos === 'CL';
+    });
+    
+    return {
+      total: roster.length,
+      pitchers: pitchers.length,
+      position: roster.length - pitchers.length
+    };
+  };
+
   // Get the correct season data based on timeframe
   // Structure: { record: {...}, runs: {...}, streak: {...}, home: {...}, away: {...} }
   const getSeasonData = () => {
@@ -290,6 +327,10 @@ function TeamAnalytics() {
   const currentBattingStats = getBattingStats();
   const currentPitchingStats = getPitchingStats();
   const last10Stats = getLast10Stats();
+  
+  // Roster filtered data
+  const filteredRoster = getFilteredRoster();
+  const rosterCounts = getRosterCounts();
 
   // Extract nested data for easier access
   const record = seasonData?.record;
@@ -943,22 +984,48 @@ function TeamAnalytics() {
                   <div className="leader-row">
                     <div className="leader-stat-label">Home Runs</div>
                     <div className="leader-info">
-                      <span className="leader-player">{battingLeaders.home_runs?.player_name || battingLeaders.home_runs?.player || 'N/A'}</span>
-                      <span className="leader-value">{battingLeaders.home_runs?.value || battingLeaders.home_runs?.stat || 0}</span>
-                    </div>
-                  </div>
-                  <div className="leader-row">
-                    <div className="leader-stat-label">Batting Average</div>
-                    <div className="leader-info">
-                      <span className="leader-player">{battingLeaders.avg?.player_name || battingLeaders.batting_avg?.player_name || 'N/A'}</span>
-                      <span className="leader-value">{battingLeaders.avg?.value || battingLeaders.batting_avg?.value || '.000'}</span>
+                      <span className="leader-player">{battingLeaders.home_runs?.player_name || 'N/A'}</span>
+                      <span className="leader-value">{battingLeaders.home_runs?.value ?? 0}</span>
                     </div>
                   </div>
                   <div className="leader-row">
                     <div className="leader-stat-label">RBI</div>
                     <div className="leader-info">
-                      <span className="leader-player">{battingLeaders.rbis?.player_name || battingLeaders.rbi?.player_name || 'N/A'}</span>
-                      <span className="leader-value">{battingLeaders.rbis?.value || battingLeaders.rbi?.value || 0}</span>
+                      <span className="leader-player">{battingLeaders.rbis?.player_name || 'N/A'}</span>
+                      <span className="leader-value">{battingLeaders.rbis?.value ?? 0}</span>
+                    </div>
+                  </div>
+                  <div className="leader-row">
+                    <div className="leader-stat-label">Batting Average</div>
+                    <div className="leader-info">
+                      <span className="leader-player">{battingLeaders.avg?.player_name || 'N/A'}</span>
+                      <span className="leader-value">
+                        {battingLeaders.avg?.value 
+                          ? (typeof battingLeaders.avg.value === 'number' && battingLeaders.avg.value < 1 
+                              ? battingLeaders.avg.value.toFixed(3) 
+                              : battingLeaders.avg.value)
+                          : '.000'}
+                      </span>
+                    </div>
+                  </div>
+                  <div className="leader-row">
+                    <div className="leader-stat-label">OPS</div>
+                    <div className="leader-info">
+                      <span className="leader-player">{battingLeaders.ops?.player_name || 'N/A'}</span>
+                      <span className="leader-value">
+                        {battingLeaders.ops?.value 
+                          ? (typeof battingLeaders.ops.value === 'number' 
+                              ? battingLeaders.ops.value.toFixed(3) 
+                              : battingLeaders.ops.value)
+                          : '.000'}
+                      </span>
+                    </div>
+                  </div>
+                  <div className="leader-row">
+                    <div className="leader-stat-label">Stolen Bases</div>
+                    <div className="leader-info">
+                      <span className="leader-player">{battingLeaders.stolen_bases?.player_name || 'N/A'}</span>
+                      <span className="leader-value">{battingLeaders.stolen_bases?.value ?? 0}</span>
                     </div>
                   </div>
                 </div>
@@ -969,24 +1036,56 @@ function TeamAnalytics() {
               pitchingLeaders ? (
                 <div className="leaders-content">
                   <div className="leader-row">
-                    <div className="leader-stat-label">Strikeouts</div>
-                    <div className="leader-info">
-                      <span className="leader-player">{pitchingLeaders.strikeouts?.player_name || 'N/A'}</span>
-                      <span className="leader-value">{pitchingLeaders.strikeouts?.value || 0}</span>
-                    </div>
-                  </div>
-                  <div className="leader-row">
                     <div className="leader-stat-label">ERA</div>
                     <div className="leader-info">
                       <span className="leader-player">{pitchingLeaders.era?.player_name || 'N/A'}</span>
-                      <span className="leader-value">{pitchingLeaders.era?.value || '0.00'}</span>
+                      <span className="leader-value">
+                        {pitchingLeaders.era?.value 
+                          ? (typeof pitchingLeaders.era.value === 'number' 
+                              ? pitchingLeaders.era.value.toFixed(2) 
+                              : pitchingLeaders.era.value)
+                          : '0.00'}
+                      </span>
+                    </div>
+                  </div>
+                  <div className="leader-row">
+                    <div className="leader-stat-label">Strikeouts</div>
+                    <div className="leader-info">
+                      <span className="leader-player">{pitchingLeaders.strikeouts?.player_name || 'N/A'}</span>
+                      <span className="leader-value">{pitchingLeaders.strikeouts?.value ?? 0}</span>
                     </div>
                   </div>
                   <div className="leader-row">
                     <div className="leader-stat-label">Wins</div>
                     <div className="leader-info">
                       <span className="leader-player">{pitchingLeaders.wins?.player_name || 'N/A'}</span>
-                      <span className="leader-value">{pitchingLeaders.wins?.value || 0}</span>
+                      <span className="leader-value">{pitchingLeaders.wins?.value ?? 0}</span>
+                    </div>
+                  </div>
+                  <div className="leader-row">
+                    <div className="leader-stat-label">WHIP</div>
+                    <div className="leader-info">
+                      <span className="leader-player">{pitchingLeaders.whip?.player_name || 'N/A'}</span>
+                      <span className="leader-value">
+                        {pitchingLeaders.whip?.value 
+                          ? (typeof pitchingLeaders.whip.value === 'number' 
+                              ? pitchingLeaders.whip.value.toFixed(2) 
+                              : pitchingLeaders.whip.value)
+                          : '0.00'}
+                      </span>
+                    </div>
+                  </div>
+                  <div className="leader-row">
+                    <div className="leader-stat-label">Opponent AVG</div>
+                    <div className="leader-info">
+                      <span className="leader-player">{pitchingLeaders.opponent_avg?.player_name || 'N/A'}</span>
+                      <span className="leader-value">
+                        {pitchingLeaders.opponent_avg?.value 
+                          ? (typeof pitchingLeaders.opponent_avg.value === 'number' 
+                              ? pitchingLeaders.opponent_avg.value.toFixed(3) 
+                              : pitchingLeaders.opponent_avg.value)
+                          : '.000'}
+                      </span>
                     </div>
                   </div>
                 </div>
@@ -1024,9 +1123,15 @@ function TeamAnalytics() {
                     <span className="team-stat-label">Home Runs</span>
                     <span className="team-stat-value">{currentBattingStats.homeruns || currentBattingStats.hr || 0}</span>
                   </div>
-                  <div className="team-stat-row highlight">
+                  <div className="team-stat-row">
                     <span className="team-stat-label">Runs Scored</span>
                     <span className="team-stat-value">{currentBattingStats.runs || currentBattingStats.r || 0}</span>
+                  </div>
+                  <div className="team-stat-row highlight">
+                    <span className="team-stat-label">MLB Hitting Rank</span>
+                    <span className="team-stat-value rank-value">
+                      #{currentBattingStats.mlb_hitting_rank || '-'}
+                    </span>
                   </div>
                 </div>
               ) : (
@@ -1064,11 +1169,37 @@ function TeamAnalytics() {
           {/* Team Roster */}
           <div className="section-card roster-card">
             <div className="card-header">
-              <h3>Team Roster</h3>
-              <p className="card-subtitle">{roster?.length || 0} Active Players</p>
+              <div>
+                <h3>Team Roster</h3>
+                <p className="card-subtitle">
+                  {rosterFilter === 'all' && `${rosterCounts.total} Active Players`}
+                  {rosterFilter === 'pitchers' && `${rosterCounts.pitchers} Pitchers`}
+                  {rosterFilter === 'position' && `${rosterCounts.position} Position Players`}
+                </p>
+              </div>
+              <div className="toggle-buttons">
+                <button 
+                  className={`toggle-btn ${rosterFilter === 'all' ? 'active' : ''}`} 
+                  onClick={() => setRosterFilter('all')}
+                >
+                  All
+                </button>
+                <button 
+                  className={`toggle-btn ${rosterFilter === 'pitchers' ? 'active' : ''}`} 
+                  onClick={() => setRosterFilter('pitchers')}
+                >
+                  Pitchers
+                </button>
+                <button 
+                  className={`toggle-btn ${rosterFilter === 'position' ? 'active' : ''}`} 
+                  onClick={() => setRosterFilter('position')}
+                >
+                  Position
+                </button>
+              </div>
             </div>
             <div className="roster-table-container">
-              {roster && roster.length > 0 ? (
+              {filteredRoster && filteredRoster.length > 0 ? (
                 <table className="roster-table">
                   <thead>
                     <tr>
@@ -1079,22 +1210,26 @@ function TeamAnalytics() {
                     </tr>
                   </thead>
                   <tbody>
-                    {roster.map((player, idx) => (
+                    {filteredRoster.map((player, idx) => (
                       <tr key={idx}>
-                        <td className="player-number">{player.jersey_number || player.number || '-'}</td>
-                        <td className="player-name">{player.full_name || player.name || player.player_name || 'Unknown'}</td>
+                        <td className="player-number">{player.jersey_number || '-'}</td>
+                        <td className="player-name">{player.full_name || 'Unknown'}</td>
                         <td className="player-position">
-                          <span className="position-badge">{player.primary_position || player.position || '-'}</span>
+                          <span className="position-badge">{player.position_abbreviation || '-'}</span>
                         </td>
                         <td className="player-hands">
-                          {player.bat_side || player.bats || '-'}/{player.pitch_hand || player.throws || '-'}
+                          {player.bats || '-'}/{player.throws || '-'}
                         </td>
                       </tr>
                     ))}
                   </tbody>
                 </table>
               ) : (
-                <div className="no-data-message">No roster data available</div>
+                <div className="no-data-message">
+                  {rosterFilter === 'all' && 'No roster data available'}
+                  {rosterFilter === 'pitchers' && 'No pitchers found'}
+                  {rosterFilter === 'position' && 'No position players found'}
+                </div>
               )}
             </div>
           </div>
