@@ -1,373 +1,260 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import teamLeadersService from '../../../../data/services/teamLeadersService';
 import batterData from '../../../../data/mockData/batterData.json';
 import '../../../../styles/stats-page-styling/batter-stats.css';
 
 function BatterStats({ teamId, season, teamName }) {
   const [hotMetric, setHotMetric] = useState('HR');
-  const teamAbbreviationMap = {
-    'New York Yankees': 'NYY',
-    'Los Angeles Dodgers': 'LAD',
-    'Houston Astros': 'HOU',
-    'Miami Marlins': 'MIA',
-    'Boston Red Sox': 'BOS',
-    'Toronto Blue Jays': 'TOR',
-    'Atlanta Braves': 'ATL',
-    'Baltimore Orioles': 'BAL',
-    'Tampa Bay Rays': 'TBR',
-    'Arizona Diamondbacks': 'ARI',
-    'Chicago Cubs': 'CHC',
-    'Chicago White Sox': 'CWS',
-    'Cincinnati Reds': 'CIN',
-    'Cleveland Guardians': 'CLE',
-    'Colorado Rockies': 'COL',
-    'Detroit Tigers': 'DET',
-    'Kansas City Royals': 'KCR',
-    'Los Angeles Angels': 'LAA',
-    'Milwaukee Brewers': 'MIL',
-    'Minnesota Twins': 'MIN',
-    'New York Mets': 'NYM',
-    'Oakland Athletics': 'OAK',
-    'Philadelphia Phillies': 'PHI',
-    'Pittsburgh Pirates': 'PIT',
-    'San Diego Padres': 'SDP',
-    'San Francisco Giants': 'SFG',
-    'Seattle Mariners': 'SEA',
-    'St. Louis Cardinals': 'STL',
-    'Texas Rangers': 'TEX',
-    'Washington Nationals': 'WSH',
-  };
-
+  const [topBattersData, setTopBattersData] = useState([]);
+  const [topBattersLoading, setTopBattersLoading] = useState(false);
+  const [topBattersError, setTopBattersError] = useState(null);
+  const [showAllTopBatters, setShowAllTopBatters] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
-  const [isSmallMobile, setIsSmallMobile] = useState(false);
-  const [isXSmallMobile, setIsXSmallMobile] = useState(false);
-  const [hoverMetric, setHoverMetric] = useState(null);
-  const [showTooltip, setShowTooltip] = useState(false);
-  const hoverTimerRef = useRef(null);
 
+  // Fetch top batters from API
+  useEffect(() => {
+    const fetchTopBatters = async () => {
+      if (!season) return;
+      
+      setTopBattersLoading(true);
+      setTopBattersError(null);
+      
+      try {
+        const data = await teamLeadersService.getTopBattingLeaders(season, 'R', 10);
+        setTopBattersData(Array.isArray(data) ? data : []);
+      } catch (error) {
+        console.error('Error fetching top batters:', error);
+        setTopBattersError('Failed to load top batters');
+        setTopBattersData([]);
+      } finally {
+        setTopBattersLoading(false);
+      }
+    };
+
+    fetchTopBatters();
+  }, [season]);
+
+  // Mobile detection
   useEffect(() => {
     const updateIsMobile = () => {
-      const width = window.innerWidth;
-      setIsMobile(width <= 768);
-      setIsSmallMobile(width <= 540);
-      setIsXSmallMobile(width <= 390);
+      setIsMobile(window.innerWidth <= 768);
     };
     updateIsMobile();
     window.addEventListener('resize', updateIsMobile);
     return () => window.removeEventListener('resize', updateIsMobile);
   }, []);
 
-  useEffect(() => {
-    return () => {
-      if (hoverTimerRef.current) clearTimeout(hoverTimerRef.current);
-    };
+  // Safe toggle handler
+  const handleToggleShowAll = useCallback(() => {
+    setShowAllTopBatters(prev => !prev);
   }, []);
 
-  const formatDateLabel = useCallback((dateStr) => {
-    if (!dateStr || dateStr.startsWith('G')) return dateStr;
-    const parts = dateStr.split('-');
-    if (parts.length === 3) {
-      const [year, month, day] = parts;
-      if (isXSmallMobile) return day;
-      if (isSmallMobile) return `${month}-${day}`;
-      const yearPart = isMobile ? year.slice(-2) : year;
-      return `${month}-${day}-${yearPart}`;
+  // Safe format helpers
+  const formatAvg = useCallback((value) => {
+    if (value === null || value === undefined) return '.000';
+    if (typeof value === 'number') {
+      return value.toFixed(3).replace(/^0/, '');
     }
-    return dateStr;
-  }, [isMobile, isSmallMobile, isXSmallMobile]);
+    return String(value);
+  }, []);
 
-  const formatTeamShort = (team) => {
-    if (!team) return '';
-    if (teamAbbreviationMap[team]) return teamAbbreviationMap[team];
-    const parts = team.trim().split(' ').filter(Boolean);
-    return parts.length > 1 ? parts[parts.length - 1] : team;
-  };
+  const formatOps = useCallback((value) => {
+    if (value === null || value === undefined) return '.000';
+    if (typeof value === 'number') {
+      return value.toFixed(3);
+    }
+    return String(value);
+  }, []);
 
-  const leaders = useMemo(() => {
-    if (!season) return [];
-    const seasonData = batterData[season] || {};
-    const teamLeaders = seasonData[teamId] || seasonData.ALL || [];
-    return teamLeaders;
-  }, [teamId, season]);
+  // Memoized visible batters - always return safe array
+  const visibleTopBatters = useMemo(() => {
+    if (!topBattersData || !Array.isArray(topBattersData)) return [];
+    const safeData = topBattersData.filter(Boolean); // Remove any null/undefined entries
+    return showAllTopBatters ? safeData : safeData.slice(0, 7);
+  }, [showAllTopBatters, topBattersData]);
 
-  const hotBats = useMemo(() => {
-    if (!season) return null;
-    const seasonHot = (batterData.hotBats && batterData.hotBats[season]) || {};
-    return seasonHot[teamId] || seasonHot.ALL || null;
-  }, [teamId, season]);
+  const topListTitle = `${season || '2025'} MLB`;
 
-  const hotBatsDates = useMemo(() => {
-    if (!season) return [];
-    const seasonDates = batterData.hotBatsDates && batterData.hotBatsDates[season];
-    return (seasonDates && (seasonDates[teamId] || seasonDates.ALL)) || [];
-  }, [season, teamId]);
+  // Get mock data for other sections
+  const leaderCategories = batterData?.leaderCategories || [];
+  const hotBatsData = batterData?.hotBats || [];
+  const splitsData = batterData?.splits || [];
 
-  const hotBatLeader = useMemo(() => {
-    if (!season) return null;
-    const seasonLeaders = batterData.hotBatsLeaders && batterData.hotBatsLeaders[season];
-    const teamLeaders = (seasonLeaders && (seasonLeaders[teamId] || seasonLeaders.ALL)) || null;
-    if (!teamLeaders) return null;
-    return teamLeaders[hotMetric] || null;
-  }, [hotMetric, season, teamId]);
+  // Render individual batter item - extracted for safety
+  const renderBatterItem = useCallback((batter, idx) => {
+    if (!batter) return null;
+    
+    const playerId = batter.player_id;
+    const playerName = batter.player_name || 'Unknown';
+    const homeRuns = batter.home_runs ?? 0;
+    const avg = formatAvg(batter.avg);
+    const ops = formatOps(batter.ops);
+    const key = playerId ? `batter-${playerId}` : `batter-idx-${idx}`;
 
-  const titleText = useMemo(() => {
-    const yearText = season || 'Season';
-    const teamText = teamName || 'MLB';
-    const isAllTeams = teamId === 'ALL';
-    return isAllTeams ? `${yearText} MLB Leaders` : `${yearText} ${teamText} Leaders`;
-  }, [teamName, season, teamId]);
-
-  const hotBatsValues = useMemo(
-    () => (hotBats ? hotBats[hotMetric] || [] : []),
-    [hotBats, hotMetric]
-  );
-  const hotCategories = ['HR', 'HITS', 'RBI', 'RUNS', 'SB', 'BB'];
-  const hotCategoryDescriptions = {
-    HR: 'Home runs in the last 7 games',
-    HITS: 'Hits in the last 7 games',
-    RBI: 'Runs batted in during last 7 games',
-    RUNS: 'Runs scored in the last 7 games',
-    SB: 'Stolen bases in the last 7 games',
-    BB: 'Walks drawn in the last 7 games',
-  };
-
-  const hotBars = useMemo(() => {
-    return hotBatsValues.map((val, idx) => {
-      const gameDate = hotBatsDates[idx] || `G${idx + 1}`;
-      return { val, gameDate: formatDateLabel(gameDate), idx };
-    }).reverse();
-  }, [hotBatsDates, hotBatsValues, formatDateLabel]);
-
-  const hotBarsMonthLabel = useMemo(() => {
-    const rawDate = hotBatsDates.find((d) => d && d.includes('-'));
-    if (!rawDate) return '';
-    const parts = rawDate.split('-');
-    if (parts.length < 3) return '';
-    const monthNum = Number(parts[1]);
-    const monthNames = [
-      'January', 'February', 'March', 'April', 'May', 'June',
-      'July', 'August', 'September', 'October', 'November', 'December',
-    ];
-    const monthAbbr = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-    const monthLabel = isXSmallMobile ? monthNames[monthNum - 1] : monthAbbr[monthNum - 1];
-    return monthLabel || '';
-  }, [hotBatsDates, isXSmallMobile]);
-
-  const performanceSplits = useMemo(() => {
-    if (!season) return null;
-    const seasonSplits = batterData.performanceSplits && batterData.performanceSplits[season];
-    return (seasonSplits && (seasonSplits[teamId] || seasonSplits.ALL)) || null;
-  }, [season, teamId]);
-
-  const splitCategories = [
-    { key: 'vsLHP', label: 'vs Left-Handed Pitching' },
-    { key: 'vsRHP', label: 'vs Right-Handed Pitching' },
-    { key: 'home', label: 'Home Games' },
-    { key: 'away', label: 'Away Games' },
-    { key: 'risp', label: 'With RISP' },
-    { key: 'basesEmpty', label: 'Bases Empty' },
-  ];
-
-  const splitRows = splitCategories
-    .map((cat) => {
-      const data = performanceSplits ? performanceSplits[cat.key] : null;
-      if (!data) return null;
-      const avg = data.atBats ? data.hits / data.atBats : 0;
-      const color = avg >= 0.3 ? '#4CAF50' : avg >= 0.24 ? '#FF9800' : '#F44336';
-      return { ...cat, data, avg, color };
-    })
-    .filter(Boolean);
-
-  const topBatters = useMemo(() => {
-    if (!season) return [];
-    const seasonTop = batterData.topBatters && batterData.topBatters[season];
-    return (seasonTop && (seasonTop[teamId] || seasonTop.ALL)) || [];
-  }, [season, teamId]);
-
-  const [showAllTopBatters, setShowAllTopBatters] = useState(false);
-  const visibleTopBatters = useMemo(
-    () => (showAllTopBatters ? topBatters : topBatters.slice(0, 7)),
-    [showAllTopBatters, topBatters]
-  );
-
-  const topListTitle =
-    teamId === 'ALL'
-      ? `${season} MLB Leaders`
-      : `${season} ${teamName || 'Team'}`;
-  const topCardClass = `batter-top-card${showAllTopBatters ? ' expanded' : ''}`;
+    return (
+      <li key={key} className="batter-top-list-item">
+        <div className="batter-top-rank">#{idx + 1}</div>
+        <div className="batter-top-info">
+          <div className="batter-top-name">{playerName}</div>
+        </div>
+        <div className="batter-top-stats">
+          <span>HR {homeRuns}</span>
+          <span>AVG {avg}</span>
+          <span>OPS {ops}</span>
+        </div>
+      </li>
+    );
+  }, [formatAvg, formatOps]);
 
   return (
     <section className="batter-stats-section container">
+      {/* Header */}
       <div className="batter-header">
-        <p className="eyebrow">Batting Leaders</p>
-        <h2>{titleText}</h2>
+        <p className="eyebrow">Team Batting</p>
+        <h2>{teamName || 'Team'} Batters</h2>
       </div>
+
+      {/* Leader Cards Grid */}
       <div className="batter-leader-grid">
-        {leaders.map((item, idx) => (
-          <div className="batter-card" key={`${item.category}-${idx}`}>
-            <div className="batter-card-top">
-              <span className="batter-category">
-                {item.category.replace(/^(Most|Best)\s+/i, '')}
-              </span>
-              <span className="batter-stat-label">{item.statLabel}</span>
+        {leaderCategories.length > 0 ? (
+          leaderCategories.map((cat, idx) => (
+            <div key={idx} className="batter-card">
+              <div className="batter-card-top">
+                <span className="batter-category">{cat.category}</span>
+                <span className="batter-stat-label">{cat.statLabel}</span>
+              </div>
+              <div className="batter-card-body">
+                <span className="batter-player">{cat.player}</span>
+                <span className="batter-team">{cat.team}</span>
+                <span className="batter-value">{cat.value}</span>
+              </div>
             </div>
-            <div className="batter-card-body">
-              <div className="batter-player">{item.player}</div>
-              <div className="batter-team">{item.team}</div>
-            </div>
-            <div className="batter-value">{item.statLabel === 'AVG' ? item.value.toFixed(3) : item.value}</div>
-          </div>
-        ))}
-        {leaders.length === 0 && (
-          <div className="batter-empty">
-            No batting leaders available for this selection.
-          </div>
+          ))
+        ) : (
+          <div className="batter-empty">No leader data available.</div>
         )}
       </div>
 
+      {/* Hot Bats Card */}
       <div className="hot-bats-card">
         <div className="hot-bats-header">
           <div>
-            <p className="eyebrow">Hot Bats</p>
-            <h3>Last 7 Games</h3>
-            {hotBatLeader && (
-              <p className="hot-bats-subtitle">
-                {hotBatLeader.player} - {hotBatLeader.team}
-              </p>
-            )}
+            <p className="eyebrow">Performance</p>
+            <h3>Hot Bats</h3>
+            <p className="hot-bats-subtitle">Last 7 days performance</p>
           </div>
           <div className="hot-bats-toggle">
-            {hotCategories.map((cat) => (
+            {['HR', 'AVG', 'RBI', 'OPS'].map((metric) => (
               <button
-                key={cat}
-                className={`hot-toggle ${cat === 'BB' ? 'hot-toggle-bb' : ''} ${hotMetric === cat ? 'active' : ''}`}
-                onClick={() => setHotMetric(cat)}
-                onMouseEnter={() => {
-                  setHoverMetric(cat);
-                  if (hoverTimerRef.current) clearTimeout(hoverTimerRef.current);
-                  hoverTimerRef.current = setTimeout(() => setShowTooltip(true), 1000);
-                }}
-                onMouseLeave={() => {
-                  if (hoverTimerRef.current) clearTimeout(hoverTimerRef.current);
-                  setShowTooltip(false);
-                  setHoverMetric(null);
-                }}
+                key={metric}
+                type="button"
+                className={`hot-toggle${hotMetric === metric ? ' active' : ''}`}
+                onClick={() => setHotMetric(metric)}
               >
-                {cat}
+                {metric}
               </button>
             ))}
-            {showTooltip && hoverMetric && (
-              <div className="hot-toggle-tooltip">
-                {hotCategoryDescriptions[hoverMetric] || hoverMetric}
-              </div>
-            )}
           </div>
         </div>
         <div className="hot-bats-chart">
-          {hotBatsValues.length === 0 && (
-            <div className="batter-empty">No recent game data for this selection.</div>
+          {hotBatsData.length > 0 ? (
+            hotBatsData.slice(0, 7).map((day, idx) => {
+              const value = day[hotMetric.toLowerCase()] || day[hotMetric] || 0;
+              const maxValue = Math.max(...hotBatsData.map(d => d[hotMetric.toLowerCase()] || d[hotMetric] || 0), 1);
+              const height = Math.max((value / maxValue) * 200, 20);
+              return (
+                <div key={idx} className="hot-bar">
+                  <div className="hot-bar-value">{value}</div>
+                  <div className="hot-bar-fill" style={{ height: `${height}px` }} />
+                  <div className="hot-bar-label">{day.label || `Day ${idx + 1}`}</div>
+                </div>
+              );
+            })
+          ) : (
+            <div className="batter-empty">No hot bats data available.</div>
           )}
-          {hotBars.map(({ val, gameDate, idx }) => {
-            const height = Math.min(220, hotMetric === 'RUNS' ? val * 30 + 30 : val * 45 + 30);
-            return (
-              <div className="hot-bar" key={`${hotMetric}-${idx}`}>
-                <div
-                  className="hot-bar-fill"
-                  style={{ height: `${height}px` }}
-                  aria-label={`${gameDate} ${hotMetric} ${val}`}
-                />
-                <span className="hot-bar-value">
-                  {val}
-                </span>
-                <span className="hot-bar-underline" aria-hidden="true" />
-                <span className="hot-bar-label">{gameDate}</span>
-              </div>
-            );
-          })}
         </div>
-        {isXSmallMobile && hotBarsMonthLabel && (
-          <div className="hot-bats-month-label">
-            {hotBarsMonthLabel}
-          </div>
-        )}
       </div>
 
+      {/* Splits Layout */}
       <div className="batter-splits-layout">
+        {/* Splits Card */}
         <div className="batter-splits-card">
           <div className="batter-splits-header">
-            <div className="batter-splits-col">
-              <h1 className="batter-splits-title">Performance Split</h1>
-              {performanceSplits && (
-                <p className="batter-split-subtitle">
-                  {season} {teamId === 'ALL' ? 'MLB' : teamName || 'Team'} splits
-                </p>
-              )}
+            <div>
+              <h3 className="batter-splits-title">Performance Splits</h3>
+              <p className="batter-split-subtitle">Batting performance breakdown</p>
             </div>
           </div>
           <div className="batter-splits-main">
-            {(!performanceSplits || splitRows.length === 0) && (
-              <div className="batter-empty">No performance split data for this selection.</div>
-            )}
-            {splitRows.length > 0 && (
-              <div className="batter-splits-grid">
-                {splitRows.map(({ key, label, data, avg, color }) => (
-                  <div className="batter-split-row" key={key}>
+            <div className="batter-splits-grid">
+              {splitsData.length > 0 ? (
+                splitsData.map((split, idx) => (
+                  <div key={idx} className="batter-split-row">
                     <div className="batter-split-label">
-                      <span>{label}</span>
-                      <span className="batter-split-player">
-                        {data.player} - {formatTeamShort(data.team)}
-                      </span>
+                      <span>{split.label}</span>
+                      <span className="batter-split-player">{split.topPlayer || 'N/A'}</span>
                     </div>
                     <div className="batter-split-stats">
                       <div className="batter-split-topline">
-                        <span className="batter-split-record">
-                          {data.hits} / {data.atBats} AB
-                        </span>
-                        <span className="batter-split-pct" style={{ color }}>
-                          {avg.toFixed(3).replace(/^0/, '')} AVG
+                        <span className="batter-split-record">{split.record || '0-0'}</span>
+                        <span className="batter-split-pct" style={{ color: (split.pct || 0) >= 0.5 ? '#4CAF50' : '#F44336' }}>
+                          {((split.pct || 0) * 100).toFixed(1)}%
                         </span>
                       </div>
                       <div className="batter-progress-bar">
-                        <div className="batter-progress-fill" style={{ width: `${Math.min(avg * 100, 100)}%`, backgroundColor: color }} />
+                        <div
+                          className="batter-progress-fill"
+                          style={{
+                            width: `${(split.pct || 0) * 100}%`,
+                            backgroundColor: (split.pct || 0) >= 0.5 ? '#4CAF50' : '#F44336'
+                          }}
+                        />
                       </div>
                     </div>
                   </div>
-                ))}
-              </div>
-            )}
+                ))
+              ) : (
+                <div className="batter-empty">No splits data available.</div>
+              )}
+            </div>
           </div>
         </div>
 
-        <div className={topCardClass}>
+        {/* Top Batters Card */}
+        <div className={`batter-top-card${showAllTopBatters ? ' expanded' : ''}`}>
           <div className="batter-top-list-header">
             <h2>{topListTitle}</h2>
-             <p className="eyebrow">Top 10 Batters</p>
+            <p className="eyebrow">Top 10 Batters</p>
           </div>
-          {topBatters.length === 0 && (
+          
+          {topBattersLoading && (
+            <div className="batter-loading">
+              <div className="loading-spinner"></div>
+              <span>Loading top batters...</span>
+            </div>
+          )}
+          
+          {topBattersError && !topBattersLoading && (
+            <div className="batter-empty">{topBattersError}</div>
+          )}
+          
+          {!topBattersLoading && !topBattersError && topBattersData.length === 0 && (
             <div className="batter-empty">No batter leaderboard data.</div>
           )}
-          {topBatters.length > 0 && (
+          
+          {!topBattersLoading && !topBattersError && visibleTopBatters.length > 0 && (
             <ol className="batter-top-list-items">
-              {visibleTopBatters.map((batter, idx) => (
-                <li key={`${batter.player}-${idx}`} className="batter-top-list-item">
-                  <div className="batter-top-rank">#{idx + 1}</div>
-                    <div className="batter-top-info">
-                      <div className="batter-top-name">{batter.player}</div>
-                      <div className="batter-top-team">{formatTeamShort(batter.team)}</div>
-                    </div>
-                  <div className="batter-top-stats">
-                    <span>HR {batter.hr}</span>
-                    <span>AVG {batter.avg.toFixed(3).replace(/^0/, '')}</span>
-                    <span>OPS {batter.ops.toFixed(3)}</span>
-                  </div>
-                </li>
-              ))}
+              {visibleTopBatters.map(renderBatterItem)}
             </ol>
           )}
-          {topBatters.length > 7 && (
+          
+          {!topBattersLoading && !topBattersError && topBattersData.length > 7 && (
             <div className="batter-top-actions">
               <button
+                type="button"
                 className="batter-top-toggle"
-                onClick={() => setShowAllTopBatters((prev) => !prev)}
+                onClick={handleToggleShowAll}
               >
                 {showAllTopBatters ? 'Show Less' : 'Show More'}
               </button>

@@ -465,17 +465,51 @@
 /* ============================================
    Top Batters Card
    ============================================ */
+/* Top Batters Card - Remove problematic transitions */
 .batter-top-card {
-  background: var(--pa-bg-card, #1a1a1a);
-  border: 1px solid var(--pa-border-color, rgba(255, 255, 255, 0.08));
+  background: var(--pa-card-bg, rgba(30, 30, 30, 0.95));
   border-radius: 16px;
   padding: 1.25rem;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
-  min-height: 320px;
-  height: 100%;
   display: flex;
   flex-direction: column;
+  min-width: 0;
+  border: 1px solid var(--pa-border-color, rgba(255, 255, 255, 0.08));
+  /* Remove height transitions that can cause issues */
+  overflow: hidden;
+}
+
+/* .batter-top-card.expanded {
+  No transition - instant change 
+} */
+
+.batter-top-list-items {
+  list-style: none;
+  padding: 0;
+  margin: 0.75rem 0 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  /* Remove any transitions on the list */
+}
+
+.batter-top-list-item {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
   gap: 0.75rem;
+  align-items: center;
+  padding: 0.7rem 0.85rem;
+  border: 1px solid var(--pa-border-color, rgba(255, 255, 255, 0.08));
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.02);
+  /* Simple hover without complex transitions */
+}
+
+.batter-top-list-item:hover {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 255, 255, 0.15);
 }
 
 .batter-top-list-header {
@@ -497,36 +531,6 @@
   color: var(--pa-text-muted, #666666);
   margin: 0.35rem 0 0 0;
   font-weight: 700;
-}
-
-.batter-top-list-items {
-  list-style: none;
-  padding: 0;
-  margin: 0.75rem 0 0;
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-  flex: 1;
-  overflow-y: auto;
-}
-
-.batter-top-list-item {
-  display: grid;
-  grid-template-columns: auto 1fr auto;
-  gap: 0.75rem;
-  align-items: center;
-  padding: 0.7rem 0.85rem;
-  border: 1px solid var(--pa-border-color, rgba(255, 255, 255, 0.08));
-  border-radius: 10px;
-  background: rgba(255, 255, 255, 0.02);
-  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease, background 0.2s ease;
-}
-
-.batter-top-list-item:hover {
-  transform: translateX(4px);
-  border-color: rgba(255, 255, 255, 0.15);
-  background: rgba(255, 255, 255, 0.05);
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
 }
 
 .batter-top-rank {
@@ -588,6 +592,34 @@
   background: var(--pa-primary-hover, #1565C0);
   border-color: var(--pa-primary-hover, #1565C0);
   box-shadow: 0 4px 12px rgba(25, 118, 210, 0.3);
+}
+
+/* ============================================
+   Loading State
+   ============================================ */
+.batter-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+  gap: 1rem;
+  color: var(--pa-text-secondary, #a0a0a0);
+}
+
+.batter-loading .loading-spinner {
+  width: 32px;
+  height: 32px;
+  border: 3px solid rgba(255, 255, 255, 0.1);
+  border-top-color: var(--pa-primary-color, #1976D2);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 /* ============================================
