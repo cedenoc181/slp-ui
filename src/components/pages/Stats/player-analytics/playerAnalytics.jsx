@@ -2,20 +2,13 @@ import React, { useState, useMemo, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import BatterStats from './batterStats';
 import PitcherStats from './pitcherStats';
+import { 
+  TEAMS, 
+  SEASONS,
+  getTeamByAbbr,
+  getTeamIdFromAbbr,
+} from '../../../../data/constants/apiConstants';
 import '../../../../styles/stats-page-styling/player-analytics.css';
-
-// MLB Team IDs for logos
-const TEAM_MLB_IDS = {
-  'ALL': null,
-  'LAD': 119,
-  'NYY': 147,
-  'HOU': 117,
-  'ATL': 144,
-  'BAL': 110,
-  'TBR': 139,
-  'TOR': 141,
-  'BOS': 111,
-};
 
 function PlayerAnalytics() {
   const [metricType, setMetricType] = useState('batting');
@@ -23,51 +16,49 @@ function PlayerAnalytics() {
   const [selectedSeason, setSelectedSeason] = useState('2025');
   const [searchParams] = useSearchParams();
 
-  const teams = useMemo(
-    () => [
-      { id: 'ALL', name: 'MLB (All Teams)' },
-      { id: 'LAD', name: 'Los Angeles Dodgers' },
-      { id: 'NYY', name: 'New York Yankees' },
-      { id: 'HOU', name: 'Houston Astros' },
-      { id: 'ATL', name: 'Atlanta Braves' },
-      { id: 'BAL', name: 'Baltimore Orioles' },
-      { id: 'TBR', name: 'Tampa Bay Rays' },
-      { id: 'TOR', name: 'Toronto Blue Jays' },
-      { id: 'BOS', name: 'Boston Red Sox' },
-    ],
-    []
-  );
-
-  const seasons = useMemo(
-    () => ['2025', '2024', '2023', '2022', '2021', '2020', '2019', '2018'],
-    []
-  );
+  // Add "All Teams" option to the teams list
+  const teamsWithAll = useMemo(() => {
+    return [
+      { id: 'ALL', name: 'MLB (All Teams)', mlbId: null, urlName: 'all-teams' },
+      ...TEAMS
+    ];
+  }, []);
 
   // Seed dropdowns from query params when present
   useEffect(() => {
     const teamParam = searchParams.get('team');
     const seasonParam = searchParams.get('season');
 
-    if (teamParam && teams.some((t) => t.id === teamParam)) {
-      setSelectedTeam(teamParam);
+    if (teamParam) {
+      // Check if it's a valid team abbreviation
+      const isValidTeam = teamParam === 'ALL' || TEAMS.some((t) => t.id === teamParam);
+      if (isValidTeam) {
+        setSelectedTeam(teamParam);
+      }
     }
 
-    if (seasonParam && seasons.includes(seasonParam)) {
+    if (seasonParam && SEASONS.includes(seasonParam)) {
       setSelectedSeason(seasonParam);
     }
-  }, [searchParams, teams, seasons]);
+  }, [searchParams]);
 
   // Get current team object
   const currentTeam = useMemo(() => {
-    const team = teams.find((t) => t.id === selectedTeam);
-    if (team) {
-      return {
-        ...team,
-        mlbId: TEAM_MLB_IDS[team.id]
-      };
+    if (selectedTeam === 'ALL') {
+      return { id: 'ALL', name: 'MLB (All Teams)', mlbId: null };
     }
-    return null;
-  }, [selectedTeam, teams]);
+    const team = getTeamByAbbr(selectedTeam);
+    return team || null;
+  }, [selectedTeam]);
+
+  // Get team ID for API calls (null for ALL)
+  const currentTeamId = useMemo(() => {
+    if (selectedTeam === 'ALL') return null;
+    return getTeamIdFromAbbr(selectedTeam);
+  }, [selectedTeam]);
+
+  // Get display name for child components
+  const currentTeamName = currentTeam?.name || 'MLB';
 
   return (
     <div className="player-analytics-page">
@@ -96,7 +87,7 @@ function PlayerAnalytics() {
                     onChange={(e) => setSelectedTeam(e.target.value)}
                     className="team-dropdown"
                   >
-                    {teams.map((team) => (
+                    {teamsWithAll.map((team) => (
                       <option key={team.id} value={team.id}>
                         {team.name}
                       </option>
@@ -110,7 +101,7 @@ function PlayerAnalytics() {
                     onChange={(e) => setSelectedSeason(e.target.value)}
                     className="season-dropdown"
                   >
-                    {seasons.map((season) => (
+                    {SEASONS.map((season) => (
                       <option key={season} value={season}>
                         {season}
                       </option>
@@ -122,12 +113,14 @@ function PlayerAnalytics() {
 
             <div className="timeframe-tabs">
               <button
+                type="button"
                 className={`tab ${metricType === 'batting' ? 'active' : ''}`}
                 onClick={() => setMetricType('batting')}
               >
                 Batting
               </button>
               <button
+                type="button"
                 className={`tab ${metricType === 'pitching' ? 'active' : ''}`}
                 onClick={() => setMetricType('pitching')}
               >
@@ -141,9 +134,19 @@ function PlayerAnalytics() {
       {/* Content */}
       <div className="analytics-content container">
         {metricType === 'batting' ? (
-          <BatterStats teamId={selectedTeam} season={selectedSeason} />
+          <BatterStats 
+            teamId={selectedTeam}
+            teamDbId={currentTeamId}
+            season={selectedSeason} 
+            teamName={currentTeamName}
+          />
         ) : (
-          <PitcherStats teamId={selectedTeam} season={selectedSeason} />
+          <PitcherStats 
+            teamId={selectedTeam}
+            teamDbId={currentTeamId}
+            season={selectedSeason} 
+            teamName={currentTeamName}
+          />
         )}
       </div>
     </div>

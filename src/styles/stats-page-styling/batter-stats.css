@@ -36,90 +36,72 @@
 }
 
 /* ============================================
-   Leader Cards Grid
+   LEADER GRID - Always visible
    ============================================ */
 .batter-leader-grid {
+  background: var(--pa-card-bg, rgba(30, 30, 30, 0.95));
+  border-radius: 16px;
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+  border: 1px solid var(--pa-border-color, rgba(255, 255, 255, 0.08));
+}
+
+.batter-leader-grid-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.25rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid var(--pa-border-color, rgba(255, 255, 255, 0.08));
+}
+
+.batter-leader-grid-header h3 {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #fff;
+  margin: 0;
+}
+
+.batter-leader-cards {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-  gap: 1.25rem;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 1rem;
 }
 
 .batter-card {
-  background: var(--pa-bg-card, #1a1a1a);
+  background: rgba(255, 255, 255, 0.03);
   border: 1px solid var(--pa-border-color, rgba(255, 255, 255, 0.08));
-  border-radius: 14px;
-  padding: 1.25rem;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-  transition: transform 0.2s ease, background 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
-}
-
-.batter-card:nth-of-type(1) {
-  background: linear-gradient(135deg, rgba(25, 118, 210, 0.15) 0%, rgba(25, 118, 210, 0.05) 100%);
-  border: 1px solid rgba(25, 118, 210, 0.3);
-  box-shadow: 0 4px 20px rgba(25, 118, 210, 0.15);
-}
-
-.batter-card:nth-of-type(1) .batter-category {
-  color: var(--pa-text-primary, #ffffff);
-}
-
-.batter-card:nth-of-type(1) .batter-stat-label {
-  background: rgba(25, 118, 210, 0.2);
-  border: 1px solid rgba(25, 118, 210, 0.4);
-  color: #64B5F6;
-}
-
-.batter-card:nth-of-type(1) .batter-player {
-  color: var(--pa-text-primary, #ffffff);
-}
-
-.batter-card:nth-of-type(1) .batter-team {
-  color: var(--pa-text-secondary, #a0a0a0);
-}
-
-.batter-card:nth-of-type(1) .batter-value {
-  color: #64B5F6;
-}
-
-.batter-card:nth-of-type(1):hover {
-  background: linear-gradient(135deg, rgba(25, 118, 210, 0.2) 0%, rgba(25, 118, 210, 0.08) 100%);
-  border-color: rgba(25, 118, 210, 0.4);
-  box-shadow: 0 8px 28px rgba(25, 118, 210, 0.25);
+  border-radius: 12px;
+  padding: 1rem;
+  transition: transform 0.2s ease, border-color 0.2s ease;
 }
 
 .batter-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.3);
+  transform: translateY(-2px);
   border-color: rgba(255, 255, 255, 0.15);
-}
-
-.batter-card:nth-of-type(1):hover {
-  box-shadow: 0 12px 32px rgba(25, 118, 210, 0.4);
 }
 
 .batter-card-top {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  margin-bottom: 0.75rem;
 }
 
 .batter-category {
-  font-weight: 700;
-  color: var(--pa-text-primary, #ffffff);
-  font-size: 0.95rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--pa-text-secondary, #a0a0a0);
+  text-transform: uppercase;
 }
 
 .batter-stat-label {
-  padding: 0.35rem 0.75rem;
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.08);
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  color: var(--pa-text-secondary, #a0a0a0);
+  font-size: 0.7rem;
   font-weight: 700;
-  font-size: 0.8rem;
+  color: var(--pa-primary-color, #1976D2);
+  background: rgba(25, 118, 210, 0.15);
+  padding: 0.2rem 0.5rem;
+  border-radius: 4px;
 }
 
 .batter-card-body {
@@ -129,143 +111,140 @@
 }
 
 .batter-player {
-  font-size: 1.1rem;
-  font-weight: 700;
-  color: var(--pa-text-primary, #ffffff);
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #fff;
 }
 
 .batter-team {
-  font-weight: 600;
+  font-size: 0.75rem;
   color: var(--pa-text-secondary, #a0a0a0);
-  font-size: 0.9rem;
 }
 
 .batter-value {
   font-size: 1.5rem;
   font-weight: 700;
-  color: var(--pa-text-primary, #ffffff);
-  margin-top: 0.25rem;
-}
-
-.batter-empty {
-  grid-column: 1 / -1;
-  text-align: center;
-  padding: 2rem 1.5rem;
-  border: 1px dashed rgba(255, 255, 255, 0.15);
-  border-radius: 14px;
-  background: rgba(255, 255, 255, 0.02);
-  color: var(--pa-text-muted, #666666);
-  font-weight: 500;
+  color: var(--pa-primary-color, #64B5F6);
+  margin-top: 0.5rem;
 }
 
 /* ============================================
    Hot Bats Card
    ============================================ */
 .hot-bats-card {
-  margin-top: 2rem;
-  background: var(--pa-bg-card, #1a1a1a);
-  border: 1px solid var(--pa-border-color, rgba(255, 255, 255, 0.08));
+  background: var(--pa-card-bg, rgba(30, 30, 30, 0.95));
   border-radius: 16px;
   padding: 1.5rem;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+  margin-bottom: 1.5rem;
+  border: 1px solid var(--pa-border-color, rgba(255, 255, 255, 0.08));
 }
 
 .hot-bats-header {
   display: flex;
   justify-content: space-between;
-  align-items: center;
-  gap: 1rem;
+  align-items: flex-start;
+  margin-bottom: 1.25rem;
   flex-wrap: wrap;
-  padding-bottom: 1rem;
-  margin-bottom: 1rem;
-  border-bottom: 1px solid var(--pa-border-color, rgba(255, 255, 255, 0.08));
-}
-
-.hot-bats-header .eyebrow {
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
-  font-size: 0.75rem;
-  color: var(--pa-text-muted, #666666);
-  margin: 0 0 0.25rem 0;
-  font-weight: 700;
+  gap: 1rem;
 }
 
 .hot-bats-header h3 {
-  margin: 0.2rem 0 0;
-  color: var(--pa-text-primary, #ffffff);
   font-size: 1.25rem;
   font-weight: 700;
+  color: #fff;
+  margin: 0.25rem 0;
 }
 
 .hot-bats-subtitle {
-  margin: 0.25rem 0 0;
+  font-size: 0.8rem;
   color: var(--pa-text-secondary, #a0a0a0);
-  font-weight: 600;
-  font-size: 0.95rem;
+  margin: 0;
 }
 
-/* ============================================
-   Hot Toggle Buttons
-   ============================================ */
 .hot-bats-toggle {
   display: flex;
   gap: 0.5rem;
-  position: relative;
-  flex-wrap: wrap;
 }
 
 .hot-toggle {
-  padding: 0.55rem 0.9rem;
-  border-radius: 10px;
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  background: rgba(255, 255, 255, 0.05);
+  padding: 0.4rem 0.85rem;
+  border-radius: 8px;
+  border: 1px solid var(--pa-border-color, rgba(255, 255, 255, 0.1));
+  background: transparent;
   color: var(--pa-text-secondary, #a0a0a0);
-  font-weight: 700;
-  font-size: 0.85rem;
+  font-size: 0.8rem;
+  font-weight: 600;
   cursor: pointer;
   transition: all 0.2s ease;
 }
 
 .hot-toggle:hover {
-  background: rgba(255, 255, 255, 0.1);
   border-color: rgba(255, 255, 255, 0.2);
-  color: var(--pa-text-primary, #ffffff);
+  color: #fff;
 }
 
 .hot-toggle.active {
   background: var(--pa-primary-color, #1976D2);
-  color: #fff;
   border-color: var(--pa-primary-color, #1976D2);
-  box-shadow: 0 4px 12px rgba(25, 118, 210, 0.4);
+  color: #fff;
 }
 
-.hot-toggle-tooltip {
-  position: absolute;
-  top: 100%;
-  left: 0;
-  margin-top: 0.5rem;
-  padding: 0.65rem 0.85rem;
-  background: var(--pa-bg-card, #1a1a1a);
-  color: var(--pa-text-primary, #ffffff);
-  border: 1px solid rgba(255, 255, 255, 0.15);
+.hot-bats-content {
+  min-height: 200px;
+}
+
+.hot-batters-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.hot-batter-item {
+  display: grid;
+  grid-template-columns: 40px 1fr auto;
+  gap: 0.75rem;
+  align-items: center;
+  padding: 0.75rem 1rem;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid var(--pa-border-color, rgba(255, 255, 255, 0.08));
   border-radius: 10px;
+  transition: background 0.2s ease, border-color 0.2s ease;
+}
+
+.hot-batter-item:hover {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 255, 255, 0.15);
+}
+
+.hot-batter-rank {
   font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--pa-primary-color, #1976D2);
+}
+
+.hot-batter-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+}
+
+.hot-batter-name {
+  font-size: 0.9rem;
   font-weight: 600;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
-  z-index: 10;
-  min-width: 200px;
+  color: #fff;
 }
 
-@media (max-width: 390px) {
-  .hot-toggle.hot-toggle-bb {
-    display: none;
-  }
+.hot-batter-team {
+  font-size: 0.75rem;
+  color: var(--pa-text-secondary, #a0a0a0);
 }
 
-@media (max-width: 414px) {
-  .hot-toggle.hot-toggle-bb {
-    display: none;
-  }
+.hot-batter-value {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--pa-primary-color, #64B5F6);
+  min-width: 50px;
+  text-align: right;
 }
 
 /* ============================================
