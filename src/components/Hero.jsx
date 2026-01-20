@@ -1,11 +1,13 @@
-import React, { useState } from 'react';
-import ReactGA from 'react-ga4';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import ReactGA from 'react-ga4';
+import '../styles/home-page-styling/hero.css';
 
 
 function Hero() {
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
   const [isHovering, setIsHovering] = useState(false);
+  const [email, setEmail] = useState('');
   const navigate = useNavigate();
 
   const handleTeamAnalyticsClick = () => {
@@ -27,8 +29,92 @@ function Hero() {
     });
   };
 
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    // Handle email signup
+    console.log('Email submitted:', email);
+    setEmail('');
+  };
+
   return (
     <section className="hero">
+      {/* NEW: Floating analytics background */}
+      <div className="hero-analytics-bg" aria-hidden="true">
+        <span className="floating-stat stat-1">.342 AVG</span>
+        <span className="floating-stat stat-2">12 K's</span>
+        <span className="floating-stat stat-3">+2.5 TB</span>
+        <span className="floating-stat stat-4">89%</span>
+        <span className="floating-stat stat-5">OVER</span>
+        <span className="floating-stat stat-6">1.82 RMSE</span>
+      </div>
+
+      <div className="container">
+        {/* NEW: Live badge */}
+        {/* <div className="hero-badge">
+          <span className="badge-pulse"></span>
+          2026 MLB Season Predictions Active
+        </div> */}
+
+        {/* KEEP: Your existing title structure */}
+        <h1 
+          className="chalk-heading hero-title"
+          onMouseMove={handleMouseMove}
+          onMouseEnter={() => setIsHovering(true)}
+          onMouseLeave={() => setIsHovering(false)}
+          style={{
+            position: 'relative',
+            overflow: 'hidden'
+          }}
+        >
+          {isHovering && (
+            <span
+              className="glow-spot"
+              style={{
+                left: `${mousePos.x}px`,
+                top: `${mousePos.y}px`
+              }}
+            />
+          )}
+          Sandlot Picks Analytics
+        </h1>
+        <p className="hero-subtitle">
+          Advanced player predictions, real-time statistics, and data-driven insights 
+          to help you make smarter decisions.
+        </p>
+
+        {/* NEW: Quick stats strip */}
+        <div className="hero-stats-strip">
+          <div className="hero-stat-item">
+            <span className="hero-stat-number">50+</span>
+            <span className="hero-stat-label">Player Metrics</span>
+          </div>
+          <div className="hero-stat-divider"></div>
+          <div className="hero-stat-item">
+            <span className="hero-stat-number">Multiple</span>
+            <span className="hero-stat-label">ML Models</span>
+          </div>
+          <div className="hero-stat-divider"></div>
+          <div className="hero-stat-item">
+            <span className="hero-stat-number">Daily</span>
+            <span className="hero-stat-label">Updated Stats</span>
+          </div>
+        </div>
+
+        {/* ENHANCED: CTA buttons - more prominent */}
+        <div className="hero-cta-group">
+          <button 
+            className="hero-cta-primary" 
+            onClick={() => navigate('/stats')}
+          >
+            <span>Explore Stats</span>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <line x1="5" y1="12" x2="19" y2="12"/>
+              <polyline points="12 5 19 12 12 19"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+
       <div className="hero-decorations">
         {/* Remove all inline styles - let CSS handle it */}
         <svg className="hero-chart-left" width="350" height="320">
@@ -73,34 +159,9 @@ function Hero() {
           <path d="M 55 62 L 60 60 L 65 62" stroke="#C62828" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round"/>
         </svg>
       </div>
-      
-      <div className="container">
-        <h1 
-          className="chalk-heading"
-          onMouseMove={handleMouseMove}
-          onMouseEnter={() => setIsHovering(true)}
-          onMouseLeave={() => setIsHovering(false)}
-          style={{
-            position: 'relative',
-            overflow: 'hidden'
-          }}
-        >
-          {isHovering && (
-            <span
-              className="glow-spot"
-              style={{
-                left: `${mousePos.x}px`,
-                top: `${mousePos.y}px`
-              }}
-            />
-          )}
-          Sandlot Picks Analytics
-        </h1>
-        <p className="hero-subtitle">Smart analytics for smarter picks</p>
-        <button className="cta-button" onClick={handleTeamAnalyticsClick}>
-          Explore Team Analytics
-        </button>
-      </div>
+
+      {/* KEEP: Any existing decorative elements */}
+      <div className="hero-gradient-overlay"></div>
     </section>
   );
 }

@@ -236,7 +236,256 @@
   color: var(--text-dark);
 }
 
-/* ...existing code above... */
+/* ============================================
+   NEW: Live Badge
+   ============================================ */
+.hero-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: rgba(34, 197, 94, 0.15);
+  border: 1px solid rgba(34, 197, 94, 0.3);
+  color: #22c55e;
+  padding: 0.5rem 1rem;
+  border-radius: 50px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  margin-bottom: 1.5rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.badge-pulse {
+  width: 8px;
+  height: 8px;
+  background: #22c55e;
+  border-radius: 50%;
+  animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.5;
+    transform: scale(1.2);
+  }
+}
+
+/* ============================================
+   NEW: Floating Analytics Background
+   ============================================ */
+.hero-analytics-bg {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.floating-stat {
+  position: absolute;
+  font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: rgba(100, 181, 246, 0.12);
+  animation: float 20s ease-in-out infinite;
+  white-space: nowrap;
+}
+
+.stat-1 { top: 15%; left: 8%; animation-delay: 0s; }
+.stat-2 { top: 25%; right: 12%; animation-delay: -3s; }
+.stat-3 { top: 60%; left: 5%; animation-delay: -6s; }
+.stat-4 { top: 70%; right: 8%; animation-delay: -9s; }
+.stat-5 { top: 40%; left: 15%; animation-delay: -12s; }
+.stat-6 { top: 80%; right: 15%; animation-delay: -15s; }
+
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0) rotate(0deg);
+    opacity: 0.1;
+  }
+  25% {
+    transform: translateY(-15px) rotate(1deg);
+    opacity: 0.15;
+  }
+  50% {
+    transform: translateY(-5px) rotate(-1deg);
+    opacity: 0.12;
+  }
+  75% {
+    transform: translateY(-20px) rotate(0.5deg);
+    opacity: 0.08;
+  }
+}
+
+/* ============================================
+   NEW: Stats Strip
+   ============================================ */
+.hero-stats-strip {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 2rem;
+  margin: 2rem 0;
+  padding: 1.25rem 2rem;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 16px;
+  backdrop-filter: blur(10px);
+}
+
+.hero-stat-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.hero-stat-number {
+  font-size: 1.75rem;
+  font-weight: 800;
+  color: #64B5F6;
+  font-family: 'SF Mono', 'Fira Code', monospace;
+  line-height: 1;
+}
+
+.hero-stat-label {
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--pa-text-secondary, #a0a0a0);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.hero-stat-divider {
+  width: 1px;
+  height: 40px;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+/* ============================================
+   ENHANCED: CTA Buttons
+   ============================================ */
+.hero-cta-group {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  margin-top: 2.5rem;  /* Add space above */
+  margin-bottom: 2rem;
+  flex-wrap: wrap;
+}
+
+.hero-cta-primary {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 1rem 2rem;
+  background: linear-gradient(135deg, #1976D2 0%, #1565C0 100%);
+  color: #fff;
+  border: none;
+  border-radius: 12px;
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 20px rgba(25, 118, 210, 0.4);
+}
+
+.hero-cta-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 30px rgba(25, 118, 210, 0.5);
+}
+
+.hero-cta-primary svg {
+  transition: transform 0.3s ease;
+}
+
+.hero-cta-primary:hover svg {
+  transform: translateX(4px);
+}
+
+.hero-cta-secondary {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 1rem 2rem;
+  background: transparent;
+  color: #fff;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 12px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.hero-cta-secondary:hover {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 255, 255, 0.3);
+}
+
+/* ============================================
+   NEW: Email Form
+   ============================================ */
+.hero-email-form {
+  max-width: 480px;
+  margin: 0 auto;
+}
+
+.email-input-wrapper {
+  display: flex;
+  gap: 0.5rem;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 0.35rem;
+  transition: border-color 0.3s ease;
+}
+
+.email-input-wrapper:focus-within {
+  border-color: rgba(100, 181, 246, 0.5);
+}
+
+.email-input-wrapper input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  padding: 0.75rem 1rem;
+  color: #fff;
+  font-size: 0.95rem;
+  outline: none;
+}
+
+.email-input-wrapper input::placeholder {
+  color: rgba(255, 255, 255, 0.4);
+}
+
+.email-submit-btn {
+  padding: 0.75rem 1.5rem;
+  background: #1976D2;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.3s ease;
+  white-space: nowrap;
+}
+
+.email-submit-btn:hover {
+  background: #1565C0;
+}
+
+.email-disclaimer {
+  font-size: 0.75rem;
+  color: var(--pa-text-secondary, #808080);
+  margin-top: 0.75rem;
+  text-align: center;
+}
 
 /* ============================================
    RESPONSIVE - BELOW IPAD PRO (1024px)
@@ -458,3 +707,292 @@
       display: none;
     }
   }
+
+  /* ============================================
+   NEW: Live Badge
+   ============================================ */
+.hero-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: rgba(34, 197, 94, 0.15);
+  border: 1px solid rgba(34, 197, 94, 0.3);
+  color: #22c55e;
+  padding: 0.5rem 1rem;
+  border-radius: 50px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  margin-bottom: 1.5rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.badge-pulse {
+  width: 8px;
+  height: 8px;
+  background: #22c55e;
+  border-radius: 50%;
+  animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.5;
+    transform: scale(1.2);
+  }
+}
+
+/* ============================================
+   NEW: Floating Analytics Background
+   ============================================ */
+.hero-analytics-bg {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.floating-stat {
+  position: absolute;
+  font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: rgba(100, 181, 246, 0.12);
+  animation: float 20s ease-in-out infinite;
+  white-space: nowrap;
+}
+
+.stat-1 { top: 15%; left: 8%; animation-delay: 0s; }
+.stat-2 { top: 25%; right: 12%; animation-delay: -3s; }
+.stat-3 { top: 60%; left: 5%; animation-delay: -6s; }
+.stat-4 { top: 70%; right: 8%; animation-delay: -9s; }
+.stat-5 { top: 40%; left: 15%; animation-delay: -12s; }
+.stat-6 { top: 80%; right: 15%; animation-delay: -15s; }
+
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0) rotate(0deg);
+    opacity: 0.1;
+  }
+  25% {
+    transform: translateY(-15px) rotate(1deg);
+    opacity: 0.15;
+  }
+  50% {
+    transform: translateY(-5px) rotate(-1deg);
+    opacity: 0.12;
+  }
+  75% {
+    transform: translateY(-20px) rotate(0.5deg);
+    opacity: 0.08;
+  }
+}
+
+/* ============================================
+   NEW: Stats Strip
+   ============================================ */
+.hero-stats-strip {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 2rem;
+  margin: 2rem 0;
+  padding: 1.25rem 2rem;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 16px;
+  backdrop-filter: blur(10px);
+}
+
+.hero-stat-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.hero-stat-number {
+  font-size: 1.75rem;
+  font-weight: 800;
+  color: #64B5F6;
+  font-family: 'SF Mono', 'Fira Code', monospace;
+  line-height: 1;
+}
+
+.hero-stat-label {
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--pa-text-secondary, #a0a0a0);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.hero-stat-divider {
+  width: 1px;
+  height: 40px;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+/* ============================================
+   ENHANCED: CTA Buttons
+   ============================================ */
+.hero-cta-group {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  margin-top: 2.5rem;  /* Add space above */
+  margin-bottom: 2rem;
+  flex-wrap: wrap;
+}
+
+.hero-cta-primary {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 1rem 2rem;
+  background: linear-gradient(135deg, #1976D2 0%, #1565C0 100%);
+  color: #fff;
+  border: none;
+  border-radius: 12px;
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 20px rgba(25, 118, 210, 0.4);
+}
+
+.hero-cta-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 30px rgba(25, 118, 210, 0.5);
+}
+
+.hero-cta-primary svg {
+  transition: transform 0.3s ease;
+}
+
+.hero-cta-primary:hover svg {
+  transform: translateX(4px);
+}
+
+.hero-cta-secondary {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 1rem 2rem;
+  background: transparent;
+  color: #fff;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 12px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.hero-cta-secondary:hover {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 255, 255, 0.3);
+}
+
+/* ============================================
+   NEW: Email Form
+   ============================================ */
+.hero-email-form {
+  max-width: 480px;
+  margin: 0 auto;
+}
+
+.email-input-wrapper {
+  display: flex;
+  gap: 0.5rem;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 0.35rem;
+  transition: border-color 0.3s ease;
+}
+
+.email-input-wrapper:focus-within {
+  border-color: rgba(100, 181, 246, 0.5);
+}
+
+.email-input-wrapper input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  padding: 0.75rem 1rem;
+  color: #fff;
+  font-size: 0.95rem;
+  outline: none;
+}
+
+.email-input-wrapper input::placeholder {
+  color: rgba(255, 255, 255, 0.4);
+}
+
+.email-submit-btn {
+  padding: 0.75rem 1.5rem;
+  background: #1976D2;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.3s ease;
+  white-space: nowrap;
+}
+
+.email-submit-btn:hover {
+  background: #1565C0;
+}
+
+.email-disclaimer {
+  font-size: 0.75rem;
+  color: var(--pa-text-secondary, #808080);
+  margin-top: 0.75rem;
+  text-align: center;
+}
+
+/* ============================================
+   RESPONSIVE
+   ============================================ */
+@media (max-width: 768px) {
+  .hero-stats-strip {
+    flex-direction: column;
+    gap: 1rem;
+    padding: 1rem;
+  }
+
+  .hero-stat-divider {
+    width: 60px;
+    height: 1px;
+  }
+
+  .hero-cta-group {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .hero-cta-primary,
+  .hero-cta-secondary {
+    justify-content: center;
+  }
+
+  .email-input-wrapper {
+    flex-direction: column;
+  }
+
+  .email-submit-btn {
+    width: 100%;
+  }
+
+  .floating-stat {
+    display: none;
+  }
+}
