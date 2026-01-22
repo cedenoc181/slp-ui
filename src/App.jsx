@@ -8,6 +8,9 @@ import ApiTestPage from './components/ApiTestPage';
 // Home page component imports//
 import Header from './components/Header';
 import Hero from './components/Hero';
+import StatsPreview from './components/statsPreview';
+import PredictionsTeaser from './components/PredictionsTeaser';
+import HowItWorks from './components/HowItWorks';
 import About from './components/About';
 import Features from './components/Features';
 import FeaturedArticle from './components/FeaturedArticles';
@@ -84,6 +87,9 @@ function HomePage() {
   return (
     <>
       <Hero />
+      <StatsPreview />
+      <PredictionsTeaser />
+      <HowItWorks />
       <FeaturedArticle />
       <About />
       <Features />

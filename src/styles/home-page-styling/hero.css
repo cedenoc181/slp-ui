@@ -14,9 +14,10 @@
 
 .hero {
   position: relative;
-  background-color: var(--primary);
+  background: linear-gradient(180deg, rgba(25, 118, 210, 0.15) 0%, transparent 100%), #0d1117;
   padding: 6rem 0;
   text-align: center;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .hero h1 {

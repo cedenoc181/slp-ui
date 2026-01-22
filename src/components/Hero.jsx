@@ -104,7 +104,7 @@ function Hero() {
         <div className="hero-cta-group">
           <button 
             className="hero-cta-primary" 
-            onClick={() => navigate('/stats')}
+            onClick={() => navigate('/team-analytics')}
           >
             <span>Explore Stats</span>
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
