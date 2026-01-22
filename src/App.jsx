@@ -11,6 +11,7 @@ import Hero from './components/Hero';
 import StatsPreview from './components/statsPreview';
 import PredictionsTeaser from './components/PredictionsTeaser';
 import HowItWorks from './components/HowItWorks';
+import TeamsCarousel from './components/TeamsCarousel';
 import About from './components/About';
 import Features from './components/Features';
 import FeaturedArticle from './components/FeaturedArticles';
@@ -88,11 +89,9 @@ function HomePage() {
     <>
       <Hero />
       <StatsPreview />
-      <PredictionsTeaser />
+      <TeamsCarousel />
       <HowItWorks />
-      <FeaturedArticle />
-      <About />
-      <Features />
+      <PredictionsTeaser />
     </>
   );
 }
