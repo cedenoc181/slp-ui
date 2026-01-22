@@ -995,23 +995,23 @@ function TeamAnalytics() {
               battingLeaders ? (
                 <div className="leaders-content">
                   <div className="leader-row">
-                    <div className="leader-stat-label">Home Runs</div>
+                    <span className="leader-player">{battingLeaders.home_runs?.player_name || 'N/A'}</span>
                     <div className="leader-info">
-                      <span className="leader-player">{battingLeaders.home_runs?.player_name || 'N/A'}</span>
+                      <span className="leader-stat-label">Home Runs</span>
                       <span className="leader-value">{battingLeaders.home_runs?.value ?? 0}</span>
                     </div>
                   </div>
                   <div className="leader-row">
-                    <div className="leader-stat-label">RBI</div>
+                    <span className="leader-player">{battingLeaders.rbis?.player_name || 'N/A'}</span>
                     <div className="leader-info">
-                      <span className="leader-player">{battingLeaders.rbis?.player_name || 'N/A'}</span>
+                      <span className="leader-stat-label">RBI</span>
                       <span className="leader-value">{battingLeaders.rbis?.value ?? 0}</span>
                     </div>
                   </div>
                   <div className="leader-row">
-                    <div className="leader-stat-label">Batting Average</div>
+                    <span className="leader-player">{battingLeaders.avg?.player_name || 'N/A'}</span>
                     <div className="leader-info">
-                      <span className="leader-player">{battingLeaders.avg?.player_name || 'N/A'}</span>
+                      <span className="leader-stat-label">Batting Avg</span>
                       <span className="leader-value">
                         {battingLeaders.avg?.value 
                           ? (typeof battingLeaders.avg.value === 'number' && battingLeaders.avg.value < 1 
@@ -1022,9 +1022,9 @@ function TeamAnalytics() {
                     </div>
                   </div>
                   <div className="leader-row">
-                    <div className="leader-stat-label">OPS</div>
+                    <span className="leader-player">{battingLeaders.ops?.player_name || 'N/A'}</span>
                     <div className="leader-info">
-                      <span className="leader-player">{battingLeaders.ops?.player_name || 'N/A'}</span>
+                      <span className="leader-stat-label">OPS</span>
                       <span className="leader-value">
                         {battingLeaders.ops?.value 
                           ? (typeof battingLeaders.ops.value === 'number' 
@@ -1035,9 +1035,9 @@ function TeamAnalytics() {
                     </div>
                   </div>
                   <div className="leader-row">
-                    <div className="leader-stat-label">Stolen Bases</div>
+                    <span className="leader-player">{battingLeaders.stolen_bases?.player_name || 'N/A'}</span>
                     <div className="leader-info">
-                      <span className="leader-player">{battingLeaders.stolen_bases?.player_name || 'N/A'}</span>
+                      <span className="leader-stat-label">Stolen Bases</span>
                       <span className="leader-value">{battingLeaders.stolen_bases?.value ?? 0}</span>
                     </div>
                   </div>
@@ -1049,9 +1049,9 @@ function TeamAnalytics() {
               pitchingLeaders ? (
                 <div className="leaders-content">
                   <div className="leader-row">
-                    <div className="leader-stat-label">ERA</div>
+                    <span className="leader-player">{pitchingLeaders.era?.player_name || 'N/A'}</span>
                     <div className="leader-info">
-                      <span className="leader-player">{pitchingLeaders.era?.player_name || 'N/A'}</span>
+                      <span className="leader-stat-label">ERA</span>
                       <span className="leader-value">
                         {pitchingLeaders.era?.value 
                           ? (typeof pitchingLeaders.era.value === 'number' 
@@ -1062,23 +1062,23 @@ function TeamAnalytics() {
                     </div>
                   </div>
                   <div className="leader-row">
-                    <div className="leader-stat-label">Strikeouts</div>
+                    <span className="leader-player">{pitchingLeaders.strikeouts?.player_name || 'N/A'}</span>
                     <div className="leader-info">
-                      <span className="leader-player">{pitchingLeaders.strikeouts?.player_name || 'N/A'}</span>
+                      <span className="leader-stat-label">Strikeouts</span>
                       <span className="leader-value">{pitchingLeaders.strikeouts?.value ?? 0}</span>
                     </div>
                   </div>
                   <div className="leader-row">
-                    <div className="leader-stat-label">Wins</div>
+                    <span className="leader-player">{pitchingLeaders.wins?.player_name || 'N/A'}</span>
                     <div className="leader-info">
-                      <span className="leader-player">{pitchingLeaders.wins?.player_name || 'N/A'}</span>
+                      <span className="leader-stat-label">Wins</span>
                       <span className="leader-value">{pitchingLeaders.wins?.value ?? 0}</span>
                     </div>
                   </div>
                   <div className="leader-row">
-                    <div className="leader-stat-label">WHIP</div>
+                    <span className="leader-player">{pitchingLeaders.whip?.player_name || 'N/A'}</span>
                     <div className="leader-info">
-                      <span className="leader-player">{pitchingLeaders.whip?.player_name || 'N/A'}</span>
+                      <span className="leader-stat-label">WHIP</span>
                       <span className="leader-value">
                         {pitchingLeaders.whip?.value 
                           ? (typeof pitchingLeaders.whip.value === 'number' 
@@ -1089,9 +1089,9 @@ function TeamAnalytics() {
                     </div>
                   </div>
                   <div className="leader-row">
-                    <div className="leader-stat-label">Opponent AVG</div>
+                    <span className="leader-player">{pitchingLeaders.opponent_avg?.player_name || 'N/A'}</span>
                     <div className="leader-info">
-                      <span className="leader-player">{pitchingLeaders.opponent_avg?.player_name || 'N/A'}</span>
+                      <span className="leader-stat-label">Opp AVG</span>
                       <span className="leader-value">
                         {pitchingLeaders.opponent_avg?.value 
                           ? (typeof pitchingLeaders.opponent_avg.value === 'number' 
