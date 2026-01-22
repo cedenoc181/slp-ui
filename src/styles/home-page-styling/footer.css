@@ -10,9 +10,9 @@
 }
 
 .footer {
-  background: var(--primary);
+  background: linear-gradient(180deg, #0d1117 0%, rgba(25, 118, 210, 0.15) 100%), #0d1117;
   padding: 3rem 0 2rem;
-  border-top: none;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
   box-shadow: none;
 }
 

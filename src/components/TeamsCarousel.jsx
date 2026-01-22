@@ -1,10 +1,62 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import teamsService from '../data/services/teamsService';
+import { TEAM_IDS, TEAM_METADATA } from '../data/constants/apiConstants';
 import '../styles/home-page-styling/teams-carousel.css';
+
+// Team colors mapping (not available from API)
+const TEAM_COLORS = {
+  ATH: '#003831',
+  PIT: '#27251F',
+  SD: '#2F241D',
+  SEA: '#0C2C56',
+  SF: '#FD5A1E',
+  STL: '#C41E3A',
+  TB: '#092C5C',
+  TEX: '#003278',
+  TOR: '#134A8E',
+  MIN: '#002B5C',
+  PHI: '#E81828',
+  ATL: '#CE1141',
+  CWS: '#27251F',
+  MIA: '#00A3E0',
+  NYY: '#003087',
+  MIL: '#12284B',
+  LAA: '#BA0021',
+  AZ: '#A71930',
+  BAL: '#DF4601',
+  BOS: '#BD3039',
+  CHC: '#0E3386',
+  CIN: '#C6011F',
+  CLE: '#00385D',
+  COL: '#33006F',
+  DET: '#0C2340',
+  HOU: '#002D62',
+  KC: '#004687',
+  LAD: '#005A9C',
+  WSH: '#AB0003',
+  NYM: '#002D72',
+};
+
+// Map API division names to division IDs
+const mapDivisionName = (divisionName) => {
+  const mapping = {
+    'American League East': 'al-east',
+    'American League Central': 'al-central',
+    'American League West': 'al-west',
+    'National League East': 'nl-east',
+    'National League Central': 'nl-central',
+    'National League West': 'nl-west',
+  };
+  return mapping[divisionName] || 'unknown';
+};
 
 function TeamsCarousel() {
   const navigate = useNavigate();
   const [activeDiv, setActiveDiv] = useState('all');
+  const [teams, setTeams] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const scrollRef = useRef(null);
 
   const divisions = [
@@ -17,44 +69,63 @@ function TeamsCarousel() {
     { id: 'nl-west', label: 'NL West' },
   ];
 
-  const teams = [
-    // AL East
-    { id: 'NYY', name: 'Yankees', city: 'New York', division: 'al-east', color: '#003087', urlName: 'new-york-yankees' },
-    { id: 'BOS', name: 'Red Sox', city: 'Boston', division: 'al-east', color: '#BD3039', urlName: 'boston-red-sox' },
-    { id: 'TOR', name: 'Blue Jays', city: 'Toronto', division: 'al-east', color: '#134A8E', urlName: 'toronto-blue-jays' },
-    { id: 'BAL', name: 'Orioles', city: 'Baltimore', division: 'al-east', color: '#DF4601', urlName: 'baltimore-orioles' },
-    { id: 'TBR', name: 'Rays', city: 'Tampa Bay', division: 'al-east', color: '#092C5C', urlName: 'tampa-bay-rays' },
-    // AL Central
-    { id: 'CLE', name: 'Guardians', city: 'Cleveland', division: 'al-central', color: '#00385D', urlName: 'cleveland-guardians' },
-    { id: 'MIN', name: 'Twins', city: 'Minnesota', division: 'al-central', color: '#002B5C', urlName: 'minnesota-twins' },
-    { id: 'DET', name: 'Tigers', city: 'Detroit', division: 'al-central', color: '#0C2340', urlName: 'detroit-tigers' },
-    { id: 'CHW', name: 'White Sox', city: 'Chicago', division: 'al-central', color: '#27251F', urlName: 'chicago-white-sox' },
-    { id: 'KCR', name: 'Royals', city: 'Kansas City', division: 'al-central', color: '#004687', urlName: 'kansas-city-royals' },
-    // AL West
-    { id: 'HOU', name: 'Astros', city: 'Houston', division: 'al-west', color: '#002D62', urlName: 'houston-astros' },
-    { id: 'TEX', name: 'Rangers', city: 'Texas', division: 'al-west', color: '#003278', urlName: 'texas-rangers' },
-    { id: 'SEA', name: 'Mariners', city: 'Seattle', division: 'al-west', color: '#0C2C56', urlName: 'seattle-mariners' },
-    { id: 'LAA', name: 'Angels', city: 'Los Angeles', division: 'al-west', color: '#BA0021', urlName: 'los-angeles-angels' },
-    { id: 'OAK', name: 'Athletics', city: 'Oakland', division: 'al-west', color: '#003831', urlName: 'oakland-athletics' },
-    // NL East
-    { id: 'ATL', name: 'Braves', city: 'Atlanta', division: 'nl-east', color: '#CE1141', urlName: 'atlanta-braves' },
-    { id: 'PHI', name: 'Phillies', city: 'Philadelphia', division: 'nl-east', color: '#E81828', urlName: 'philadelphia-phillies' },
-    { id: 'NYM', name: 'Mets', city: 'New York', division: 'nl-east', color: '#002D72', urlName: 'new-york-mets' },
-    { id: 'MIA', name: 'Marlins', city: 'Miami', division: 'nl-east', color: '#00A3E0', urlName: 'miami-marlins' },
-    { id: 'WSN', name: 'Nationals', city: 'Washington', division: 'nl-east', color: '#AB0003', urlName: 'washington-nationals' },
-    // NL Central
-    { id: 'MIL', name: 'Brewers', city: 'Milwaukee', division: 'nl-central', color: '#12284B', urlName: 'milwaukee-brewers' },
-    { id: 'CHC', name: 'Cubs', city: 'Chicago', division: 'nl-central', color: '#0E3386', urlName: 'chicago-cubs' },
-    { id: 'STL', name: 'Cardinals', city: 'St. Louis', division: 'nl-central', color: '#C41E3A', urlName: 'st-louis-cardinals' },
-    { id: 'PIT', name: 'Pirates', city: 'Pittsburgh', division: 'nl-central', color: '#27251F', urlName: 'pittsburgh-pirates' },
-    { id: 'CIN', name: 'Reds', city: 'Cincinnati', division: 'nl-central', color: '#C6011F', urlName: 'cincinnati-reds' },
-    // NL West
-    { id: 'LAD', name: 'Dodgers', city: 'Los Angeles', division: 'nl-west', color: '#005A9C', urlName: 'los-angeles-dodgers' },
-    { id: 'SDP', name: 'Padres', city: 'San Diego', division: 'nl-west', color: '#2F241D', urlName: 'san-diego-padres' },
-    { id: 'ARI', name: 'D-backs', city: 'Arizona', division: 'nl-west', color: '#A71930', urlName: 'arizona-diamondbacks' },
-    { id: 'SFG', name: 'Giants', city: 'San Francisco', division: 'nl-west', color: '#FD5A1E', urlName: 'san-francisco-giants' },
-    { id: 'COL', name: 'Rockies', city: 'Colorado', division: 'nl-west', color: '#33006F', urlName: 'colorado-rockies' },
-  ];
+  // Fetch all teams on mount
+  useEffect(() => {
+    const fetchAllTeams = async () => {
+      setLoading(true);
+      setError(null);
+      
+      try {
+        // Get all team IDs (1-30)
+        const teamIds = Object.values(TEAM_IDS);
+        
+        // Fetch all teams in parallel
+        const teamPromises = teamIds.map(teamId => 
+          teamsService.getTeamSeason(teamId).catch(err => {
+            console.warn(`Failed to fetch team ${teamId}:`, err);
+            return null;
+          })
+        );
+        
+        const results = await Promise.all(teamPromises);
+        
+        // Transform API data to carousel format
+        const transformedTeams = results
+          .filter(result => result?.team) // Filter out failed requests
+          .map(result => {
+            const team = result.team;
+            const abbr = team.team_abbreviation;
+            const metadata = TEAM_METADATA[abbr] || {};
+            
+            return {
+              id: abbr,
+              name: team.team_name,
+              city: team.team_location,
+              division: mapDivisionName(team.division_name),
+              color: TEAM_COLORS[abbr] || '#1976D2',
+              urlName: metadata.urlName || team.team_name.toLowerCase().replace(/\s+/g, '-'),
+              venue: team.venue_name,
+              league: team.league_name,
+              mlbId: team.mlb_team_id,
+            };
+          })
+          // Sort by division for better UX
+          .sort((a, b) => {
+            const divOrder = ['al-east', 'al-central', 'al-west', 'nl-east', 'nl-central', 'nl-west'];
+            return divOrder.indexOf(a.division) - divOrder.indexOf(b.division);
+          });
+        
+        setTeams(transformedTeams);
+      } catch (err) {
+        console.error('Error fetching teams:', err);
+        setError('Failed to load teams. Please try again.');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchAllTeams();
+  }, []);
 
   const filteredTeams = activeDiv === 'all' 
     ? teams 
@@ -108,42 +179,70 @@ function TeamsCarousel() {
             className="scroll-btn scroll-left"
             onClick={() => scroll('left')}
             aria-label="Scroll left"
+            disabled={loading}
           >
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <polyline points="15 18 9 12 15 6"/>
             </svg>
           </button>
 
-          <div className="teams-scroll" ref={scrollRef}>
-            {filteredTeams.map(team => (
-              <div 
-                key={team.id}
-                className="team-card"
-                onClick={() => handleTeamClick(team)}
-                style={{ '--team-color': team.color }}
-              >
-                <div className="team-logo-wrapper">
-                  <span className="team-abbr">{team.id}</span>
+          <div className={`teams-scroll ${filteredTeams.length > 6 ? 'scrollable' : ''}`} ref={scrollRef}>
+            {loading ? (
+              // Loading skeleton
+              Array.from({ length: 6 }).map((_, i) => (
+                <div key={i} className="team-card skeleton">
+                  <div className="team-logo-wrapper skeleton-pulse"></div>
+                  <div className="team-info">
+                    <span className="skeleton-text"></span>
+                    <span className="skeleton-text wide"></span>
+                  </div>
                 </div>
-                <div className="team-info">
-                  <span className="team-city">{team.city}</span>
-                  <span className="team-name">{team.name}</span>
-                </div>
-                <div className="team-hover-indicator">
-                  <span>View Stats</span>
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <line x1="5" y1="12" x2="19" y2="12"/>
-                    <polyline points="12 5 19 12 12 19"/>
-                  </svg>
-                </div>
+              ))
+            ) : error ? (
+              <div className="teams-error">
+                <span>⚠️ {error}</span>
               </div>
-            ))}
+            ) : (
+              filteredTeams.map(team => (
+                <div 
+                  key={team.id}
+                  className="team-card"
+                  onClick={() => handleTeamClick(team)}
+                  style={{ '--team-color': team.color }}
+                >
+                  <div className="team-logo-wrapper">
+                    <img 
+                      src={`https://www.mlbstatic.com/team-logos/${team.mlbId}.svg`}
+                      alt={`${team.name} logo`}
+                      className="team-logo-image"
+                      onError={(e) => {
+                        e.target.style.display = 'none';
+                        e.target.nextSibling.style.display = 'block';
+                      }}
+                    />
+                    <span className="team-abbr" style={{ display: 'none' }}>{team.id}</span>
+                  </div>
+                  <div className="team-info">
+                    <span className="team-city">{team.city}</span>
+                    <span className="team-name">{team.name}</span>
+                  </div>
+                  <div className="team-hover-indicator">
+                    <span>View Stats</span>
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <line x1="5" y1="12" x2="19" y2="12"/>
+                      <polyline points="12 5 19 12 12 19"/>
+                    </svg>
+                  </div>
+                </div>
+              ))
+            )}
           </div>
 
           <button 
             className="scroll-btn scroll-right"
             onClick={() => scroll('right')}
             aria-label="Scroll right"
+            disabled={loading}
           >
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <polyline points="9 18 15 12 9 6"/>
@@ -154,7 +253,7 @@ function TeamsCarousel() {
         {/* Quick Stats */}
         <div className="carousel-footer">
           <div className="footer-stat">
-            <span className="footer-stat-value">30</span>
+            <span className="footer-stat-value">{teams.length || 30}</span>
             <span className="footer-stat-label">Teams</span>
           </div>
           <div className="footer-divider"></div>

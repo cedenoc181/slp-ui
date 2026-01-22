@@ -89,9 +89,9 @@ function HomePage() {
     <>
       <Hero />
       <StatsPreview />
-      <TeamsCarousel />
-      <HowItWorks />
       <PredictionsTeaser />
+      <HowItWorks />
+      <TeamsCarousel />
     </>
   );
 }

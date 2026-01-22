@@ -145,6 +145,12 @@
   scrollbar-width: none;
   padding: 1rem 0.5rem;
   flex: 1;
+  justify-content: center;
+}
+
+/* When scrollable (many teams), align to start */
+.teams-scroll.scrollable {
+  justify-content: flex-start;
 }
 
 .teams-scroll::-webkit-scrollbar {
@@ -217,6 +223,17 @@
   transition: color 0.3s ease;
 }
 
+.team-logo-image {
+  width: 48px;
+  height: 48px;
+  object-fit: contain;
+  transition: transform 0.3s ease;
+}
+
+.team-card:hover .team-logo-image {
+  transform: scale(1.1);
+}
+
 .team-card:hover .team-abbr {
   color: #fff;
 }
@@ -257,6 +274,72 @@
 .team-card:hover .team-hover-indicator {
   opacity: 1;
   transform: translateY(0);
+}
+
+/* ============================================
+   LOADING SKELETON
+   ============================================ */
+.team-card.skeleton {
+  cursor: default;
+  pointer-events: none;
+}
+
+.team-card.skeleton .team-logo-wrapper {
+  background: rgba(255, 255, 255, 0.05);
+  animation: skeleton-pulse 1.5s ease-in-out infinite;
+}
+
+.skeleton-pulse {
+  animation: skeleton-pulse 1.5s ease-in-out infinite;
+}
+
+.skeleton-text {
+  display: block;
+  height: 12px;
+  width: 50px;
+  margin: 0 auto;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 4px;
+  animation: skeleton-pulse 1.5s ease-in-out infinite;
+}
+
+.skeleton-text.wide {
+  width: 70px;
+  height: 16px;
+  margin-top: 4px;
+}
+
+@keyframes skeleton-pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.4;
+  }
+}
+
+/* ============================================
+   ERROR STATE
+   ============================================ */
+.teams-error {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  padding: 2rem;
+  color: #f85149;
+  font-size: 0.95rem;
+}
+
+.scroll-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.scroll-btn:disabled:hover {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 255, 255, 0.1);
+  color: #8b949e;
 }
 
 /* ============================================
