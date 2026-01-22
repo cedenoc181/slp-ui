@@ -224,7 +224,7 @@ function StatsPreview() {
                   <div className="no-data">No pitching data available</div>
                 )}
               </div>
-              <Link to="/team-analytics" className="card-link">
+              <Link to="/player-analytics" className="card-link">
                 See all pitching stats →
               </Link>
             </div>

@@ -23,8 +23,17 @@ function TeamAnalytics() {
   const { teamName } = useParams();
   const navigate = useNavigate();
   
+  // Initialize selectedTeam from URL param to prevent race condition
+  const getInitialTeam = () => {
+    if (teamName) {
+      const team = getTeamByUrlName(teamName);
+      if (team) return team.id;
+    }
+    return 'LAD'; // Default fallback
+  };
+  
   // ========== UI State ==========
-  const [selectedTeam, setSelectedTeam] = useState('LAD');
+  const [selectedTeam, setSelectedTeam] = useState(getInitialTeam);
   const [selectedSeason, setSelectedSeason] = useState('2025');
   const [timeframe, setTimeframe] = useState('season');
   const [chartFilter, setChartFilter] = useState('season');
@@ -111,18 +120,22 @@ function TeamAnalytics() {
   };
 
   // ========== Effects ==========
+  // Sync selectedTeam when URL changes (e.g., user navigates via dropdown)
   useEffect(() => {
     if (teamName) {
       const team = getTeamByUrlName(teamName);
       if (team) {
-        setSelectedTeam(team.id);
+        // Only update if different to avoid unnecessary re-renders
+        if (team.id !== selectedTeam) {
+          setSelectedTeam(team.id);
+        }
       } else {
         navigate('/team-analytics/los-angeles-dodgers', { replace: true });
       }
     } else {
       navigate('/team-analytics/los-angeles-dodgers', { replace: true });
     }
-  }, [teamName, navigate]);
+  }, [teamName, navigate, selectedTeam]);
 
   useEffect(() => {
     const teamId = getTeamIdFromAbbr(selectedTeam);

@@ -12,9 +12,9 @@ import StatsPreview from './components/statsPreview';
 import PredictionsTeaser from './components/PredictionsTeaser';
 import HowItWorks from './components/HowItWorks';
 import TeamsCarousel from './components/TeamsCarousel';
-import About from './components/About';
-import Features from './components/Features';
-import FeaturedArticle from './components/FeaturedArticles';
+// import About from './components/About';
+// import Features from './components/Features';
+// import FeaturedArticle from './components/FeaturedArticles';
 import Footer from './components/Footer';
 import NotFound from './components/NotFound';
 
@@ -51,9 +51,9 @@ import './styles/chalkboard.css';
 // Home-page-styles//
 import './styles/home-page-styling/header.css';
 import './styles/home-page-styling/hero.css';
-import './styles/home-page-styling/featured-articles.css';
-import './styles/home-page-styling/about.css';
-import './styles/home-page-styling/features.css';
+// import './styles/home-page-styling/featured-articles.css';
+// import './styles/home-page-styling/about.css';
+// import './styles/home-page-styling/features.css';
 import './styles/home-page-styling/footer.css';
 
 // Stats-page-styles//

@@ -95,7 +95,13 @@ function TeamsCarousel() {
           .map(result => {
             const team = result.team;
             const abbr = team.team_abbreviation;
-            const metadata = TEAM_METADATA[abbr] || {};
+            const metadata = TEAM_METADATA[abbr];
+            
+            // Skip teams without matching metadata (abbreviation mismatch)
+            if (!metadata || !metadata.urlName) {
+              console.warn(`No metadata found for team abbreviation: ${abbr}`);
+              return null;
+            }
             
             return {
               id: abbr,
@@ -103,12 +109,13 @@ function TeamsCarousel() {
               city: team.team_location,
               division: mapDivisionName(team.division_name),
               color: TEAM_COLORS[abbr] || '#1976D2',
-              urlName: metadata.urlName || team.team_name.toLowerCase().replace(/\s+/g, '-'),
+              urlName: metadata.urlName, // Always use metadata urlName for consistency
               venue: team.venue_name,
               league: team.league_name,
               mlbId: team.mlb_team_id,
             };
           })
+          .filter(Boolean) // Remove null entries from skipped teams
           // Sort by division for better UX
           .sort((a, b) => {
             const divOrder = ['al-east', 'al-central', 'al-west', 'nl-east', 'nl-central', 'nl-west'];
