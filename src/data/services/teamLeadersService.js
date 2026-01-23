@@ -2,7 +2,7 @@ import api from './apiService';
 import { SEASON_TYPES, PLAYER_ROLES, DEFAULT_SEASON } from '../constants/apiConstants';
 
 class TeamLeadersService {
-  // ========== BASIC LEADERS ==========
+  // ========== TEAM BATTING/PITCHING LEADERS ==========
   
   /**
    * Get team batting leaders
@@ -24,28 +24,6 @@ class TeamLeadersService {
    */
   async getTeamPitchingLeaders(teamId, season = DEFAULT_SEASON, seasonType = SEASON_TYPES.REGULAR) {
     return await api.get(`/teams/leaders/pitching?team_id=${teamId}&season=${season}&season_type=${seasonType}`);
-  }
-
-  // ========== TOP LEADERS (League-wide) ==========
-  
-  /**
-   * Get top batting leaders across MLB
-   * @param {string} season - Season year (e.g., '2025')
-   * @param {string} seasonType - 'R', 'P', or 'S'
-   * @returns {Promise<Array>} Top MLB batting leaders
-   */
-  async getTopBattingLeaders(season = DEFAULT_SEASON, seasonType = SEASON_TYPES.REGULAR) {
-    return await api.get(`/teams/leaders/batting/top?season=${season}&season_type=${seasonType}`);
-  }
-
-  /**
-   * Get top pitching leaders across MLB
-   * @param {string} season - Season year (e.g., '2025')
-   * @param {string} seasonType - 'R', 'P', or 'S'
-   * @returns {Promise<Array>} Top MLB pitching leaders
-   */
-  async getTopPitchingLeaders(season = DEFAULT_SEASON, seasonType = SEASON_TYPES.REGULAR) {
-    return await api.get(`/teams/leaders/pitching/top?season=${season}&season_type=${seasonType}`);
   }
 
   // ========== TOP LEADERS (Team-specific) ==========
@@ -72,28 +50,6 @@ class TeamLeadersService {
     return await api.get(`/teams/leaders/pitching/team/top?team_id=${teamId}&season=${season}&season_type=${seasonType}`);
   }
 
-  // ========== HOT LEADERS (League-wide) ==========
-  
-  /**
-   * Get hot batting leaders across MLB (recent performance)
-   * @param {string} season - Season year (e.g., '2025')
-   * @param {string} seasonType - 'R', 'P', or 'S'
-   * @returns {Promise<Array>} Hot MLB batting leaders
-   */
-  async getHotBattingLeaders(season = DEFAULT_SEASON, seasonType = SEASON_TYPES.REGULAR) {
-    return await api.get(`/teams/leaders/batting/hot?season=${season}&season_type=${seasonType}`);
-  }
-
-  /**
-   * Get hot pitching leaders across MLB (recent performance)
-   * @param {string} season - Season year (e.g., '2025')
-   * @param {string} seasonType - 'R', 'P', or 'S'
-   * @returns {Promise<Array>} Hot MLB pitching leaders
-   */
-  async getHotPitchingLeaders(season = DEFAULT_SEASON, seasonType = SEASON_TYPES.REGULAR) {
-    return await api.get(`/teams/leaders/pitching/hot?season=${season}&season_type=${seasonType}`);
-  }
-
   // ========== HOT LEADERS (Team-specific) ==========
   
   /**
@@ -118,7 +74,7 @@ class TeamLeadersService {
     return await api.get(`/teams/leaders/pitching/hot/team?team_id=${teamId}&season=${season}&season_type=${seasonType}`);
   }
 
-  // ========== SPLITS ==========
+  // ========== TEAM SPLITS ==========
   
   /**
    * Get team performance splits (home/away, vs LHP/RHP, etc.)
@@ -130,17 +86,6 @@ class TeamLeadersService {
    */
   async getTeamSplits(teamId, season = DEFAULT_SEASON, seasonType = SEASON_TYPES.REGULAR, role = PLAYER_ROLES.BATTER) {
     return await api.get(`/teams/leaders/splits/team?team_id=${teamId}&season=${season}&season_type=${seasonType}&role=${role}`);
-  }
-
-  /**
-   * Get league-wide performance splits
-   * @param {string} season - Season year (e.g., '2025')
-   * @param {string} seasonType - 'R', 'P', or 'S'
-   * @param {string} role - 'batters' or 'pitcher'
-   * @returns {Promise<Object>} League splits data
-   */
-  async getLeagueSplits(season = DEFAULT_SEASON, seasonType = SEASON_TYPES.REGULAR, role = PLAYER_ROLES.BATTER) {
-    return await api.get(`/teams/leaders/splits/league?season=${season}&season_type=${seasonType}&role=${role}`);
   }
 }
 

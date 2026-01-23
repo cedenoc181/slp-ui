@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import teamLeadersService from '../data/services/teamLeadersService';
+import leagueLeadersService from '../data/services/leagueLeadersService';
 import '../styles/home-page-styling/stats-preview.css';
 
 function StatsPreview() {
@@ -19,8 +19,8 @@ function StatsPreview() {
       try {
         // Fetch league-wide leaders
         const [battingData, pitchingData] = await Promise.all([
-          teamLeadersService.getTopBattingLeaders(currentSeason, 'R'),
-          teamLeadersService.getTopPitchingLeaders(currentSeason, 'R'),
+          leagueLeadersService.getTopBattingLeaders(currentSeason, 'R'),
+          leagueLeadersService.getTopPitchingLeaders(currentSeason, 'R'),
         ]);
 
         setBattingLeaders(Array.isArray(battingData) ? battingData.slice(0, 10) : []);

@@ -1,9 +1,21 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import teamLeadersService from '../../../../data/services/teamLeadersService';
+import leagueLeadersService from '../../../../data/services/leagueLeadersService';
+import { TEAMS } from '../../../../data/constants/apiConstants';
 import '../../../../styles/stats-page-styling/batter-stats.css';
 
+// Hot metric options with display labels (defined outside component to avoid recreating)
+const HOT_METRIC_OPTIONS = [
+  { key: 'home_runs', label: 'HR' },
+  { key: 'hits', label: 'H' },
+  { key: 'rbis', label: 'RBI' },
+  { key: 'runs', label: 'R' },
+  { key: 'stolen_bases', label: 'SB' },
+  { key: 'walks', label: 'BB' },
+];
+
 function BatterStats({ teamId = 'ALL', teamDbId = null, season = '2025', teamName = 'MLB' }) {
-  const [hotMetric, setHotMetric] = useState('HR');
+  const [hotMetric, setHotMetric] = useState('home_runs');
   const [showAllTopBatters, setShowAllTopBatters] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
 
@@ -21,7 +33,7 @@ function BatterStats({ teamId = 'ALL', teamDbId = null, season = '2025', teamNam
   const [leadersLoading, setLeadersLoading] = useState(false);
 
   // Hot batters (league-wide or team-specific)
-  const [hotBattersData, setHotBattersData] = useState([]);
+  const [hotBattersData, setHotBattersData] = useState(null);
   const [hotBattersLoading, setHotBattersLoading] = useState(false);
 
   // Splits data (league-wide or team-specific)
@@ -43,7 +55,7 @@ function BatterStats({ teamId = 'ALL', teamDbId = null, season = '2025', teamNam
         if (isTeamSelected && teamDbId) {
           data = await teamLeadersService.getTopTeamBattingLeaders(teamDbId, season, 'R');
         } else {
-          data = await teamLeadersService.getTopBattingLeaders(season, 'R');
+          data = await leagueLeadersService.getTopBattingLeaders(season, 'R');
         }
         setTopBattersData(Array.isArray(data) ? data : []);
       } catch (error) {
@@ -70,8 +82,8 @@ function BatterStats({ teamId = 'ALL', teamDbId = null, season = '2025', teamNam
         if (isTeamSelected && teamDbId) {
           data = await teamLeadersService.getTeamBattingLeaders(teamDbId, season, 'R');
         } else {
-          // Use top batting leaders for league-wide leader cards
-          data = await teamLeadersService.getTopBattingLeaders(season, 'R');
+          // Use league batting leaders endpoint - returns object with each category's leader
+          data = await leagueLeadersService.getLeagueBattingLeaders(season, 'R');
         }
         setBattingLeaders(data);
       } catch (error) {
@@ -97,12 +109,12 @@ function BatterStats({ teamId = 'ALL', teamDbId = null, season = '2025', teamNam
         if (isTeamSelected && teamDbId) {
           data = await teamLeadersService.getHotTeamBattingLeaders(teamDbId, season, 'R');
         } else {
-          data = await teamLeadersService.getHotBattingLeaders(season, 'R');
+          data = await leagueLeadersService.getHotBattingLeaders(season, 'R');
         }
-        setHotBattersData(Array.isArray(data) ? data : []);
+        setHotBattersData(data);
       } catch (error) {
         console.error('Error fetching hot batters:', error);
-        setHotBattersData([]);
+        setHotBattersData(null);
       } finally {
         setHotBattersLoading(false);
       }
@@ -123,7 +135,7 @@ function BatterStats({ teamId = 'ALL', teamDbId = null, season = '2025', teamNam
         if (isTeamSelected && teamDbId) {
           data = await teamLeadersService.getTeamSplits(teamDbId, season, 'R', 'batters');
         } else {
-          data = await teamLeadersService.getLeagueSplits(season, 'R', 'batters');
+          data = await leagueLeadersService.getLeagueSplits(season, 'R', 'batters');
         }
         setSplitsData(data);
       } catch (error) {
@@ -257,7 +269,7 @@ function BatterStats({ teamId = 'ALL', teamDbId = null, season = '2025', teamNam
       return categories;
     }
 
-    // If it's an object (team-specific leaders), build from object
+    // If it's an object (team-specific or league-wide leaders), build from object
     const categories = [];
 
     if (battingLeaders.home_runs) {
@@ -265,7 +277,7 @@ function BatterStats({ teamId = 'ALL', teamDbId = null, season = '2025', teamNam
         category: 'Home Runs',
         statLabel: 'HR',
         player: battingLeaders.home_runs.player_name,
-        value: battingLeaders.home_runs.value,
+        value: battingLeaders.home_runs.home_runs ?? battingLeaders.home_runs.value ?? 0,
       });
     }
 
@@ -274,7 +286,7 @@ function BatterStats({ teamId = 'ALL', teamDbId = null, season = '2025', teamNam
         category: 'Batting Average',
         statLabel: 'AVG',
         player: battingLeaders.avg.player_name,
-        value: formatAvg(battingLeaders.avg.value),
+        value: formatAvg(battingLeaders.avg.avg ?? battingLeaders.avg.value),
       });
     }
 
@@ -283,7 +295,7 @@ function BatterStats({ teamId = 'ALL', teamDbId = null, season = '2025', teamNam
         category: 'RBI',
         statLabel: 'RBI',
         player: battingLeaders.rbis.player_name,
-        value: battingLeaders.rbis.value,
+        value: battingLeaders.rbis.rbis ?? battingLeaders.rbis.value ?? 0,
       });
     }
 
@@ -292,7 +304,7 @@ function BatterStats({ teamId = 'ALL', teamDbId = null, season = '2025', teamNam
         category: 'OPS',
         statLabel: 'OPS',
         player: battingLeaders.ops.player_name,
-        value: formatOps(battingLeaders.ops.value),
+        value: formatOps(battingLeaders.ops.ops ?? battingLeaders.ops.value),
       });
     }
 
@@ -301,7 +313,7 @@ function BatterStats({ teamId = 'ALL', teamDbId = null, season = '2025', teamNam
         category: 'Stolen Bases',
         statLabel: 'SB',
         player: battingLeaders.stolen_bases.player_name,
-        value: battingLeaders.stolen_bases.value,
+        value: battingLeaders.stolen_bases.stolen_bases ?? battingLeaders.stolen_bases.value ?? 0,
       });
     }
 
@@ -310,7 +322,7 @@ function BatterStats({ teamId = 'ALL', teamDbId = null, season = '2025', teamNam
         category: 'Hits',
         statLabel: 'H',
         player: battingLeaders.hits.player_name,
-        value: battingLeaders.hits.value,
+        value: battingLeaders.hits.hits ?? battingLeaders.hits.value ?? 0,
       });
     }
 
@@ -370,20 +382,18 @@ function BatterStats({ teamId = 'ALL', teamDbId = null, season = '2025', teamNam
     return splits;
   }, [splitsData, formatAvg, formatOps]);
 
-  // Filter hot batters by selected metric
+  // Get hot batters for selected metric category
   const filteredHotBatters = useMemo(() => {
-    if (!hotBattersData || !Array.isArray(hotBattersData)) return [];
+    if (!hotBattersData || typeof hotBattersData !== 'object') return [];
 
-    const metricKey = {
-      'HR': 'home_runs',
-      'AVG': 'avg',
-      'RBI': 'rbis',
-      'OPS': 'ops',
-    }[hotMetric] || 'home_runs';
+    // Get the array of players for the selected category
+    const categoryData = hotBattersData[hotMetric];
+    if (!categoryData || !Array.isArray(categoryData)) return [];
 
-    return [...hotBattersData]
+    // Sort by total and return top players
+    return [...categoryData]
       .filter(Boolean)
-      .sort((a, b) => (b[metricKey] || 0) - (a[metricKey] || 0))
+      .sort((a, b) => (b.total || 0) - (a.total || 0))
       .slice(0, 7);
   }, [hotBattersData, hotMetric]);
 
@@ -426,26 +436,90 @@ function BatterStats({ teamId = 'ALL', teamDbId = null, season = '2025', teamNam
     const teamNameDisplay = batter.team_name || batter.team || '';
     const key = playerId ? `hot-batter-${playerId}` : `hot-batter-idx-${idx}`;
 
-    const metricValue = {
-      'HR': batter.home_runs ?? 0,
-      'AVG': formatAvg(batter.avg),
-      'RBI': batter.rbis ?? batter.rbi ?? 0,
-      'OPS': formatOps(batter.ops),
-    }[hotMetric];
+    // Get the display label for the current metric
+    const metricLabel = HOT_METRIC_OPTIONS.find(opt => opt.key === hotMetric)?.label || 'Total';
+
+    // Get games data for bar chart (reverse to show oldest to newest left to right)
+    const games = batter.games ? [...batter.games].reverse() : [];
+    
+    // Calculate max value for scaling bars
+    const maxValue = Math.max(...games.map(g => g.value || 0), 1);
+
+    // Format date for display (e.g., "9/27")
+    const formatDate = (dateStr) => {
+      const date = new Date(dateStr);
+      return `${date.getMonth() + 1}/${date.getDate()}`;
+    };
+
+    // Find team's mlbId for logo - check multiple matching strategies
+    const teamNameLower = teamNameDisplay.toLowerCase();
+    const team = TEAMS.find(t => {
+      const nameLower = t.name.toLowerCase();
+      const urlNameLower = t.urlName.toLowerCase();
+      // Exact match
+      if (nameLower === teamNameLower) return true;
+      // URL name match (e.g., "los-angeles-angels")
+      if (urlNameLower === teamNameLower.replace(/\s+/g, '-')) return true;
+      // Abbreviation match (e.g., "LAA", "NYY")
+      if (t.id.toLowerCase() === teamNameLower) return true;
+      // Partial match - team name ends with API name (e.g., "Los Angeles Angels" ends with "Angels")
+      if (nameLower.endsWith(teamNameLower)) return true;
+      // Partial match - API name contains city or team name
+      if (nameLower.includes(teamNameLower) || teamNameLower.includes(nameLower.split(' ').pop())) return true;
+      return false;
+    });
+    const teamLogoUrl = team?.mlbId 
+      ? `https://www.mlbstatic.com/team-logos/${team.mlbId}.svg`
+      : null;
 
     return (
       <div key={key} className="hot-batter-item">
-        <div className="hot-batter-rank">#{idx + 1}</div>
-        <div className="hot-batter-info">
-          <span className="hot-batter-name">{playerName}</span>
-          {!isTeamSelected && teamNameDisplay && (
-            <span className="hot-batter-team">{teamNameDisplay}</span>
+        <div className="hot-batter-header">
+          <div className="hot-batter-rank">#{idx + 1}</div>
+          {teamLogoUrl && (
+            <div className="hot-batter-logo">
+              <img 
+                src={teamLogoUrl} 
+                alt={teamNameDisplay}
+                onError={(e) => { e.target.style.display = 'none'; }}
+              />
+            </div>
           )}
+          <div className="hot-batter-info">
+            <span className="hot-batter-name">{playerName}</span>
+            {!isTeamSelected && teamNameDisplay && (
+              <span className="hot-batter-team">{teamNameDisplay}</span>
+            )}
+          </div>
+          <div className="hot-batter-total">
+            <span className="hot-total-number">{batter.total ?? 0}</span>
+            <span className="hot-total-label">{metricLabel}</span>
+          </div>
         </div>
-        <div className="hot-batter-value">{metricValue}</div>
+        {games.length > 0 && (
+          <div className="hot-batter-chart">
+            <div className="chart-bars">
+              {games.map((game, gameIdx) => (
+                <div key={gameIdx} className="chart-bar-container">
+                  <div className="chart-bar-wrapper">
+                    <span className="chart-bar-value">{game.value}</span>
+                    <div 
+                      className="chart-bar"
+                      style={{ 
+                        height: `${Math.max((game.value / maxValue) * 100, 5)}%`,
+                        opacity: game.value === 0 ? 0.3 : 1
+                      }}
+                    />
+                  </div>
+                  <span className="chart-bar-date">{formatDate(game.date)}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
     );
-  }, [hotMetric, formatAvg, formatOps, isTeamSelected]);
+  }, [hotMetric, isTeamSelected]);
 
   return (
     <section className="batter-stats-section container">
@@ -498,14 +572,14 @@ function BatterStats({ teamId = 'ALL', teamDbId = null, season = '2025', teamNam
             <p className="hot-bats-subtitle">Last 7 days performance</p>
           </div>
           <div className="hot-bats-toggle">
-            {['HR', 'AVG', 'RBI', 'OPS'].map((metric) => (
+            {HOT_METRIC_OPTIONS.map((option) => (
               <button
-                key={metric}
+                key={option.key}
                 type="button"
-                className={`hot-toggle${hotMetric === metric ? ' active' : ''}`}
-                onClick={() => setHotMetric(metric)}
+                className={`hot-toggle${hotMetric === option.key ? ' active' : ''}`}
+                onClick={() => setHotMetric(option.key)}
               >
-                {metric}
+                {option.label}
               </button>
             ))}
           </div>

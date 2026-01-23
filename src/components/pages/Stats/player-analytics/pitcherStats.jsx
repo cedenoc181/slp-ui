@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import teamLeadersService from '../../../../data/services/teamLeadersService';
+import leagueLeadersService from '../../../../data/services/leagueLeadersService';
 import '../../../../styles/stats-page-styling/pitcher-stats.css';
 
 function PitcherStats({ teamId = 'ALL', teamDbId = null, season = '2025', teamName = 'MLB' }) {
@@ -43,7 +44,7 @@ function PitcherStats({ teamId = 'ALL', teamDbId = null, season = '2025', teamNa
         if (isTeamSelected && teamDbId) {
           data = await teamLeadersService.getTopTeamPitchingLeaders(teamDbId, season, 'R');
         } else {
-          data = await teamLeadersService.getTopPitchingLeaders(season, 'R');
+          data = await leagueLeadersService.getTopPitchingLeaders(season, 'R');
         }
         setTopPitchersData(Array.isArray(data) ? data : []);
       } catch (error) {
@@ -71,7 +72,7 @@ function PitcherStats({ teamId = 'ALL', teamDbId = null, season = '2025', teamNa
           data = await teamLeadersService.getTeamPitchingLeaders(teamDbId, season, 'R');
         } else {
           // Use top pitching leaders for league-wide leader cards
-          data = await teamLeadersService.getTopPitchingLeaders(season, 'R');
+          data = await leagueLeadersService.getTopPitchingLeaders(season, 'R');
         }
         setPitchingLeaders(data);
       } catch (error) {
@@ -97,7 +98,7 @@ function PitcherStats({ teamId = 'ALL', teamDbId = null, season = '2025', teamNa
         if (isTeamSelected && teamDbId) {
           data = await teamLeadersService.getHotTeamPitchingLeaders(teamDbId, season, 'R');
         } else {
-          data = await teamLeadersService.getHotPitchingLeaders(season, 'R');
+          data = await leagueLeadersService.getHotPitchingLeaders(season, 'R');
         }
         setHotPitchersData(Array.isArray(data) ? data : []);
       } catch (error) {
@@ -123,7 +124,7 @@ function PitcherStats({ teamId = 'ALL', teamDbId = null, season = '2025', teamNa
         if (isTeamSelected && teamDbId) {
           data = await teamLeadersService.getTeamSplits(teamDbId, season, 'R', 'pitcher');
         } else {
-          data = await teamLeadersService.getLeagueSplits(season, 'R', 'pitcher');
+          data = await leagueLeadersService.getLeagueSplits(season, 'R', 'pitcher');
         }
         setSplitsData(data);
       } catch (error) {
