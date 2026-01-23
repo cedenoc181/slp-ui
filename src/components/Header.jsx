@@ -2,6 +2,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import articlesData from '../data/contentData/article.json';
 import moreArticlesData from '../data/contentData/moreArticles.json';
+import { TEAMS } from '../data/constants/apiConstants';
 
 
 function Header() {
@@ -14,16 +15,31 @@ function Header() {
   const navigate = useNavigate();
   const location = useLocation();
 
-  const teamOptions = useMemo(() => ([
-    { id: 'LAD', name: 'Los Angeles Dodgers', urlName: 'los-angeles-dodgers' },
-    { id: 'NYY', name: 'New York Yankees', urlName: 'new-york-yankees' },
-    { id: 'HOU', name: 'Houston Astros', urlName: 'houston-astros' },
-    { id: 'ATL', name: 'Atlanta Braves', urlName: 'atlanta-braves' },
-    { id: 'BAL', name: 'Baltimore Orioles', urlName: 'baltimore-orioles' },
-    { id: 'TBR', name: 'Tampa Bay Rays', urlName: 'tampa-bay-rays' },
-    { id: 'TOR', name: 'Toronto Blue Jays', urlName: 'toronto-blue-jays' },
-    { id: 'BOS', name: 'Boston Red Sox', urlName: 'boston-red-sox' }
-  ]), []);
+  // Use all 30 MLB teams from apiConstants
+  const teamOptions = useMemo(() => 
+    TEAMS.map(team => ({
+      id: team.id,
+      name: team.name,
+      urlName: team.urlName
+    }))
+  , []);
+
+  // Quick access pages for search
+  const pageOptions = useMemo(() => [
+    { type: 'page', label: 'MLB Standings', path: '/mlb-standings', keywords: ['standings', 'rankings', 'division', 'wild card', 'leaderboard'] },
+    { type: 'page', label: 'Team Analytics', path: '/team-analytics', keywords: ['team', 'analytics', 'stats', 'statistics'] },
+    { type: 'page', label: 'Player Analytics', path: '/player-analytics', keywords: ['player', 'batter', 'pitcher', 'stats', 'analytics'] },
+    { type: 'page', label: 'Sandlot Insider', path: '/sandlot-insider', keywords: ['articles', 'news', 'insider', 'analysis', 'commentary'] },
+    { type: 'page', label: 'Strategy Blog', path: '/blogs', keywords: ['blog', 'strategy', 'tips', 'betting', 'advice'] },
+    { type: 'page', label: 'Data Science & Baseball', path: '/data-science', keywords: ['data', 'science', 'ml', 'machine learning', 'models', 'algorithm'] },
+    { type: 'page', label: 'How to Use', path: '/how-to-use', keywords: ['how', 'guide', 'tutorial', 'help', 'instructions'] },
+    { type: 'page', label: 'Glossary', path: '/glossary', keywords: ['glossary', 'terms', 'definitions', 'dictionary', 'meaning'] },
+    { type: 'page', label: 'FAQs', path: '/faqs', keywords: ['faq', 'questions', 'help', 'support'] },
+    { type: 'page', label: 'Responsible Gaming', path: '/responsible-gaming', keywords: ['responsible', 'gaming', 'safety', 'limits'] },
+    { type: 'page', label: 'Features', path: '/features', keywords: ['features', 'capabilities', 'tools'] },
+    { type: 'page', label: 'About Us', path: '/about', keywords: ['about', 'mission', 'team', 'story'] },
+    { type: 'page', label: 'Contact Us', path: '/contact', keywords: ['contact', 'email', 'support', 'feedback'] },
+  ], []);
 
   const articleTags = useMemo(() => {
     const articles = [
@@ -84,23 +100,35 @@ function Header() {
 
   const buildSuggestions = (value) => {
     const trimmed = value.trim();
+    if (!trimmed) {
+      setSearchSuggestions([]);
+      return;
+    }
+    
     const year = parseYearFromQuery(trimmed);
     const normalized = trimmed.replace(/\b20\d{2}\b/, '').trim().toLowerCase();
     const results = [];
 
-    if (normalized.length >= 2 || year) {
-      const teamMatches = teamOptions.filter(
-        (team) =>
-          team.name.toLowerCase().includes(normalized) ||
-          team.id.toLowerCase() === normalized ||
-          team.urlName.includes(normalized.replace(/\s+/g, '-'))
-      );
+    // 1. Search Teams (all 30 MLB teams)
+    if (normalized.length >= 2) {
+      const teamMatches = teamOptions.filter((team) => {
+        const searchTerms = [
+          team.name.toLowerCase(),
+          team.id.toLowerCase(),
+          team.urlName.replace(/-/g, ' ')
+        ];
+        return searchTerms.some(term => term.includes(normalized)) ||
+               normalized.split(/\s+/).every(word => 
+                 searchTerms.some(term => term.includes(word))
+               );
+      });
 
-      teamMatches.forEach((team) => {
-        // Team analytics suggestion
+      // Limit to top 3 team matches
+      teamMatches.slice(0, 3).forEach((team) => {
         results.push({
           type: 'team',
-          label: `${team.name}${year ? ` (${year})` : ''}`,
+          icon: '📊',
+          label: `${team.name} Analytics${year ? ` (${year})` : ''}`,
           onSelect: () => {
             closeMenu();
             navigate(`/team-analytics/${team.urlName}${year ? `?year=${year}` : ''}`);
@@ -110,10 +138,11 @@ function Header() {
           }
         });
 
-        // Player analytics suggestion for that team
+        // Add player analytics for the team
         results.push({
           type: 'players',
-          label: `${team.name} players${year ? ` (${year})` : ''}`,
+          icon: '⚾',
+          label: `${team.name} Players${year ? ` (${year})` : ''}`,
           onSelect: () => {
             closeMenu();
             const seasonParam = year ? `&season=${year}` : '';
@@ -126,31 +155,43 @@ function Header() {
       });
     }
 
-    if (normalized.includes('player') || trimmed.toLowerCase().includes('player')) {
-      results.push({
-        type: 'players',
-        label: 'Player Analytics',
-        onSelect: () => {
-          closeMenu();
-          navigate('/player-analytics');
-          window.scrollTo({ top: 0, behavior: 'smooth' });
-          setSearchQuery('');
-          setSearchSuggestions([]);
-        }
-      });
-    }
+    // 2. Search Pages by keywords
+    const pageMatches = pageOptions.filter((page) => {
+      const labelMatch = page.label.toLowerCase().includes(normalized);
+      const keywordMatch = page.keywords.some(kw => kw.includes(normalized) || normalized.includes(kw));
+      return labelMatch || keywordMatch;
+    });
 
+    pageMatches.slice(0, 2).forEach((page) => {
+      // Avoid duplicate suggestions
+      if (!results.some(r => r.label.includes(page.label))) {
+        results.push({
+          type: 'page',
+          icon: getPageIcon(page.path),
+          label: page.label,
+          onSelect: () => {
+            closeMenu();
+            navigate(page.path);
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+            setSearchQuery('');
+            setSearchSuggestions([]);
+          }
+        });
+      }
+    });
+
+    // 3. Search Articles by tags
     const lowerTokens = normalized.split(/\s+/).filter(Boolean);
     const articleMatches = articleTags.filter((tag) => {
       const lowerTag = tag.toLowerCase();
-      if (normalized && lowerTag.includes(normalized)) return true;
-      if (lowerTokens.length === 0) return false;
-      return lowerTokens.some((token) => lowerTag.includes(token));
+      if (lowerTag.includes(normalized)) return true;
+      return lowerTokens.some((token) => lowerTag.includes(token) || token.includes(lowerTag));
     });
 
-    articleMatches.slice(0, 3).forEach((tag) => {
+    articleMatches.slice(0, 2).forEach((tag) => {
       results.push({
-        type: 'articles',
+        type: 'article',
+        icon: '📰',
         label: `Sandlot Insider: ${tag}`,
         onSelect: () => {
           closeMenu();
@@ -162,7 +203,28 @@ function Header() {
       });
     });
 
-    setSearchSuggestions(results.slice(0, 5));
+    // Limit total suggestions to 6
+    setSearchSuggestions(results.slice(0, 6));
+  };
+
+  // Helper function to get icon for page type
+  const getPageIcon = (path) => {
+    const icons = {
+      '/mlb-standings': '🏅',
+      '/team-analytics': '📊',
+      '/player-analytics': '⚾',
+      '/sandlot-insider': '📰',
+      '/blogs': '✍️',
+      '/data-science': '👨‍🔬',
+      '/how-to-use': '🎯',
+      '/glossary': '📖',
+      '/faqs': '❓',
+      '/responsible-gaming': '🛡️',
+      '/features': '⚡',
+      '/about': 'ℹ️',
+      '/contact': '📧',
+    };
+    return icons[path] || '🔗';
   };
 
   const handleSearchChange = (e) => {
@@ -215,8 +277,11 @@ function Header() {
                   className="search-suggestion"
                   onClick={item.onSelect}
                 >
-                  <span className="suggestion-type">{item.type}</span>
-                  <span className="suggestion-label">{item.label}</span>
+                  <span className="suggestion-icon">{item.icon}</span>
+                  <div className="suggestion-content">
+                    <span className="suggestion-label">{item.label}</span>
+                    <span className="suggestion-type">{item.type}</span>
+                  </div>
                 </button>
               ))}
             </div>
