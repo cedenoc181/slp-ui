@@ -68,7 +68,14 @@ function PlayerAnalytics() {
           <div className="header-content">
             <div className="team-selector-wrapper">
               <div className="team-header-inline">
-                {currentTeam?.mlbId && (
+                {selectedTeam === 'ALL' && (
+                  <img
+                    src="/mlb_logo-spa.png"
+                    alt="MLB logo"
+                    className="team-logo-image"
+                  />
+                )}
+                {selectedTeam !== 'ALL' && currentTeam?.mlbId && (
                   <img
                     src={`https://www.mlbstatic.com/team-logos/${currentTeam.mlbId}.svg`}
                     alt={`${currentTeam.name} logo`}

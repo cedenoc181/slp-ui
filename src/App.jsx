@@ -8,7 +8,7 @@ import ApiTestPage from './components/ApiTestPage';
 // Home page component imports//
 import Header from './components/Header';
 import Hero from './components/Hero';
-import StatsPreview from './components/statsPreview';
+import StatsPreview from './components/StatsPreview';
 import PredictionsTeaser from './components/PredictionsTeaser';
 import HowItWorks from './components/HowItWorks';
 import TeamsCarousel from './components/TeamsCarousel';

@@ -14,9 +14,18 @@ const HOT_METRIC_OPTIONS = [
   { key: 'walks', label: 'BB' },
 ];
 
+// Splits categories to display (6 key metrics)
+const SPLITS_CATEGORIES = [
+  { key: 'ops_vs_rhp', label: 'OPS vs RHP', format: 'ops' },
+  { key: 'ops_vs_lhp', label: 'OPS vs LHP', format: 'ops' },
+  { key: 'hr_vs_rhp', label: 'HR vs RHP', format: 'int' },
+  { key: 'hr_vs_lhp', label: 'HR vs LHP', format: 'int' },
+  { key: 'avg_at_home', label: 'AVG at Home', format: 'avg' },
+  { key: 'avg_on_road', label: 'AVG on Road', format: 'avg' },
+];
+
 function BatterStats({ teamId = 'ALL', teamDbId = null, season = '2025', teamName = 'MLB' }) {
   const [hotMetric, setHotMetric] = useState('home_runs');
-  const [showAllTopBatters, setShowAllTopBatters] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
 
   const isTeamSelected = teamId !== 'ALL';
@@ -159,11 +168,6 @@ function BatterStats({ teamId = 'ALL', teamDbId = null, season = '2025', teamNam
     return () => window.removeEventListener('resize', updateIsMobile);
   }, []);
 
-  // ========== HANDLERS ==========
-  const handleToggleShowAll = useCallback(() => {
-    setShowAllTopBatters(prev => !prev);
-  }, []);
-
   // ========== FORMAT HELPERS ==========
   const formatAvg = useCallback((value) => {
     if (value === null || value === undefined) return '.000';
@@ -186,9 +190,8 @@ function BatterStats({ teamId = 'ALL', teamDbId = null, season = '2025', teamNam
   // Visible top batters
   const visibleTopBatters = useMemo(() => {
     if (!topBattersData || !Array.isArray(topBattersData)) return [];
-    const safeData = topBattersData.filter(Boolean);
-    return showAllTopBatters ? safeData : safeData.slice(0, 7);
-  }, [showAllTopBatters, topBattersData]);
+    return topBattersData.filter(Boolean);
+  }, [topBattersData]);
 
   // Build leader categories from team data OR league data
   const leaderCategories = useMemo(() => {
@@ -329,58 +332,36 @@ function BatterStats({ teamId = 'ALL', teamDbId = null, season = '2025', teamNam
     return categories;
   }, [battingLeaders, formatAvg, formatOps]);
 
-  // Build splits display data
+  // Build splits display data from array-based API response
   const splitsDisplayData = useMemo(() => {
-    if (!splitsData) return [];
+    if (!splitsData || !Array.isArray(splitsData)) return [];
 
-    const splits = [];
+    // Map API data by category for quick lookup
+    const dataByCategory = {};
+    splitsData.forEach(item => {
+      if (item.category) {
+        dataByCategory[item.category] = item;
+      }
+    });
 
-    // Home/Away splits
-    if (splitsData.home) {
-      splits.push({
-        label: 'Home',
-        avg: formatAvg(splitsData.home.avg),
-        ops: formatOps(splitsData.home.ops),
-        hr: splitsData.home.homeruns || splitsData.home.home_runs || 0,
-        rbi: splitsData.home.rbis || splitsData.home.rbi || 0,
-      });
-    }
+    // Build display data for configured categories
+    return SPLITS_CATEGORIES
+      .map(cat => {
+        const data = dataByCategory[cat.key];
+        if (!data) return null;
 
-    if (splitsData.away) {
-      splits.push({
-        label: 'Away',
-        avg: formatAvg(splitsData.away.avg),
-        ops: formatOps(splitsData.away.ops),
-        hr: splitsData.away.homeruns || splitsData.away.home_runs || 0,
-        rbi: splitsData.away.rbis || splitsData.away.rbi || 0,
-      });
-    }
-
-    // vs LHP/RHP splits
-    if (splitsData.vs_left_handed_pitching || splitsData.vs_lhp) {
-      const vsLHP = splitsData.vs_left_handed_pitching || splitsData.vs_lhp;
-      splits.push({
-        label: 'vs LHP',
-        avg: formatAvg(vsLHP.avg),
-        ops: formatOps(vsLHP.ops),
-        hr: vsLHP.homeruns || vsLHP.home_runs || 0,
-        rbi: vsLHP.rbis || vsLHP.rbi || 0,
-      });
-    }
-
-    if (splitsData.vs_right_handed_pitching || splitsData.vs_rhp) {
-      const vsRHP = splitsData.vs_right_handed_pitching || splitsData.vs_rhp;
-      splits.push({
-        label: 'vs RHP',
-        avg: formatAvg(vsRHP.avg),
-        ops: formatOps(vsRHP.ops),
-        hr: vsRHP.homeruns || vsRHP.home_runs || 0,
-        rbi: vsRHP.rbis || vsRHP.rbi || 0,
-      });
-    }
-
-    return splits;
-  }, [splitsData, formatAvg, formatOps]);
+        return {
+          key: cat.key,
+          label: cat.label,
+          format: cat.format,
+          playerName: data.player_name || 'Unknown',
+          teamName: data.team_name || '',
+          value: data.value ?? 0,
+          leagueAvg: data.league_avg ?? 0,
+        };
+      })
+      .filter(Boolean);
+  }, [splitsData]);
 
   // Get hot batters for selected metric category
   const filteredHotBatters = useMemo(() => {
@@ -481,6 +462,7 @@ function BatterStats({ teamId = 'ALL', teamDbId = null, season = '2025', teamNam
               <img 
                 src={teamLogoUrl} 
                 alt={teamNameDisplay}
+                title={teamNameDisplay}
                 onError={(e) => { e.target.style.display = 'none'; }}
               />
             </div>
@@ -520,6 +502,79 @@ function BatterStats({ teamId = 'ALL', teamDbId = null, season = '2025', teamNam
       </div>
     );
   }, [hotMetric, isTeamSelected]);
+
+  // Render split item with horizontal bar chart
+  const renderSplitItem = useCallback((split) => {
+    const { key, label, format, playerName, teamName, value, leagueAvg } = split;
+
+    // Format value based on type
+    const formatValue = (val, fmt) => {
+      if (fmt === 'avg') return val.toFixed(3).replace(/^0/, '');
+      if (fmt === 'ops') return val.toFixed(3);
+      return Math.round(val);
+    };
+
+    const displayValue = formatValue(value, format);
+    const displayAvg = formatValue(leagueAvg, format);
+
+    // Calculate bar widths (player value as percentage of max scale)
+    const maxScale = Math.max(value, leagueAvg) * 1.2; // 20% padding
+    const playerPercent = maxScale > 0 ? (value / maxScale) * 100 : 0;
+    const avgPercent = maxScale > 0 ? (leagueAvg / maxScale) * 100 : 0;
+
+    // Determine if player is above or below average
+    const isAboveAvg = value > leagueAvg;
+
+    // Find team logo
+    const teamNameLower = teamName.toLowerCase();
+    const team = TEAMS.find(t => {
+      const nameLower = t.name.toLowerCase();
+      if (nameLower === teamNameLower) return true;
+      if (nameLower.endsWith(teamNameLower)) return true;
+      if (t.id.toLowerCase() === teamNameLower) return true;
+      return false;
+    });
+    const teamLogoUrl = team?.mlbId
+      ? `https://www.mlbstatic.com/team-logos/${team.mlbId}.svg`
+      : null;
+
+    return (
+      <div key={key} className="split-bar-item">
+        <div className="split-bar-header">
+          <span className="split-bar-label">{label}</span>
+          <div className="split-bar-player">
+            {teamLogoUrl && (
+              <img
+                src={teamLogoUrl}
+                alt={teamName}
+                className="split-bar-logo"
+                title={teamName}
+                onError={(e) => { e.target.style.display = 'none'; }}
+              />
+            )}
+            <span className="split-bar-name">{playerName}</span>
+          </div>
+        </div>
+        <div className="split-bar-chart">
+          <div className="split-bar-track">
+            <div
+              className={`split-bar-fill${isAboveAvg ? ' above-avg' : ' below-avg'}`}
+              style={{ width: `${playerPercent}%` }}
+            />
+            <div
+              className="split-bar-avg-marker"
+              style={{ left: `${avgPercent}%` }}
+              title={`League Avg: ${displayAvg}`}
+            />
+          </div>
+          <div className="split-bar-values">
+            <span className="split-bar-value">{displayValue}</span>
+            <span className="split-bar-avg">Avg: {displayAvg}</span>
+          </div>
+        </div>
+      </div>
+    );
+  }, []);
 
   return (
     <section className="batter-stats-section container">
@@ -606,9 +661,9 @@ function BatterStats({ teamId = 'ALL', teamDbId = null, season = '2025', teamNam
         <div className="batter-splits-card">
           <div className="batter-splits-header">
             <div>
-              <h3 className="batter-splits-title">Performance Splits</h3>
+              <h3 className="batter-splits-title">{isTeamSelected ? 'Team Leaders by Split' : 'League Leaders by Split'}</h3>
               <p className="batter-split-subtitle">
-                {isTeamSelected ? `${teamName} batting splits` : 'MLB batting breakdown'}
+                {isTeamSelected ? `${teamName} top splits vs league avarage` : 'MLB top performers vs league average'}
               </p>
             </div>
           </div>
@@ -619,23 +674,8 @@ function BatterStats({ teamId = 'ALL', teamDbId = null, season = '2025', teamNam
                 <span>Loading splits...</span>
               </div>
             ) : splitsDisplayData.length > 0 ? (
-              <div className="batter-splits-grid">
-                <div className="splits-header-row">
-                  <span className="split-col-label">Split</span>
-                  <span className="split-col-stat">AVG</span>
-                  <span className="split-col-stat">OPS</span>
-                  <span className="split-col-stat">HR</span>
-                  <span className="split-col-stat">RBI</span>
-                </div>
-                {splitsDisplayData.map((split, idx) => (
-                  <div key={idx} className="batter-split-row">
-                    <span className="split-label">{split.label}</span>
-                    <span className="split-stat">{split.avg}</span>
-                    <span className="split-stat">{split.ops}</span>
-                    <span className="split-stat">{split.hr}</span>
-                    <span className="split-stat">{split.rbi}</span>
-                  </div>
-                ))}
+              <div className="split-bars-container">
+                {splitsDisplayData.map(renderSplitItem)}
               </div>
             ) : (
               <div className="batter-empty">
@@ -646,7 +686,7 @@ function BatterStats({ teamId = 'ALL', teamDbId = null, season = '2025', teamNam
         </div>
 
         {/* Top Batters Card - Team or MLB based on selection */}
-        <div className={`batter-top-card${showAllTopBatters ? ' expanded' : ''}`}>
+        <div className="batter-top-card">
           <div className="batter-top-list-header">
             <h2>{topListTitle}</h2>
             <p className="eyebrow">
@@ -673,18 +713,6 @@ function BatterStats({ teamId = 'ALL', teamDbId = null, season = '2025', teamNam
             <ol className="batter-top-list-items">
               {visibleTopBatters.map(renderBatterItem)}
             </ol>
-          )}
-
-          {!topBattersLoading && !topBattersError && topBattersData.length > 7 && (
-            <div className="batter-top-actions">
-              <button
-                type="button"
-                className="batter-top-toggle"
-                onClick={handleToggleShowAll}
-              >
-                {showAllTopBatters ? 'Show Less' : 'Show More'}
-              </button>
-            </div>
           )}
         </div>
       </div>
