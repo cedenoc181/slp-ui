@@ -426,10 +426,10 @@ function BatterStats({ teamId = 'ALL', teamDbId = null, season = '2025', teamNam
     // Calculate max value for scaling bars
     const maxValue = Math.max(...games.map(g => g.value || 0), 1);
 
-    // Format date for display (e.g., "9/27")
+    // Format date for display (e.g., "9/27") - use UTC to avoid timezone offset issues
     const formatDate = (dateStr) => {
       const date = new Date(dateStr);
-      return `${date.getMonth() + 1}/${date.getDate()}`;
+      return `${date.getUTCMonth() + 1}/${date.getUTCDate()}`;
     };
 
     // Find team's mlbId for logo - check multiple matching strategies
