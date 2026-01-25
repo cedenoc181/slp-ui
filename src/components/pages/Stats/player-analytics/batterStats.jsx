@@ -214,6 +214,7 @@ function BatterStats({ teamId = 'ALL', teamDbId = null, season = '2025', teamNam
           category: 'Home Runs',
           statLabel: 'HR',
           player: hrLeader.player_name,
+          playerId: hrLeader.player_mlb_id || hrLeader.player_id,
           team: hrLeader.team_name || hrLeader.team,
           value: hrLeader.home_runs || 0,
         });
@@ -224,6 +225,7 @@ function BatterStats({ teamId = 'ALL', teamDbId = null, season = '2025', teamNam
           category: 'Batting Average',
           statLabel: 'AVG',
           player: avgLeader.player_name,
+          playerId: avgLeader.player_mlb_id || avgLeader.player_id,
           team: avgLeader.team_name || avgLeader.team,
           value: formatAvg(avgLeader.avg),
         });
@@ -234,6 +236,7 @@ function BatterStats({ teamId = 'ALL', teamDbId = null, season = '2025', teamNam
           category: 'RBI',
           statLabel: 'RBI',
           player: rbiLeader.player_name,
+          playerId: rbiLeader.player_mlb_id || rbiLeader.player_id,
           team: rbiLeader.team_name || rbiLeader.team,
           value: rbiLeader.rbis || rbiLeader.rbi || 0,
         });
@@ -244,6 +247,7 @@ function BatterStats({ teamId = 'ALL', teamDbId = null, season = '2025', teamNam
           category: 'OPS',
           statLabel: 'OPS',
           player: opsLeader.player_name,
+          playerId: opsLeader.player_mlb_id || opsLeader.player_id,
           team: opsLeader.team_name || opsLeader.team,
           value: formatOps(opsLeader.ops),
         });
@@ -254,6 +258,7 @@ function BatterStats({ teamId = 'ALL', teamDbId = null, season = '2025', teamNam
           category: 'Stolen Bases',
           statLabel: 'SB',
           player: sbLeader.player_name,
+          playerId: sbLeader.player_mlb_id || sbLeader.player_id,
           team: sbLeader.team_name || sbLeader.team,
           value: sbLeader.stolen_bases || sbLeader.sb || 0,
         });
@@ -264,6 +269,7 @@ function BatterStats({ teamId = 'ALL', teamDbId = null, season = '2025', teamNam
           category: 'Hits',
           statLabel: 'H',
           player: hitsLeader.player_name,
+          playerId: hitsLeader.player_mlb_id || hitsLeader.player_id,
           team: hitsLeader.team_name || hitsLeader.team,
           value: hitsLeader.hits || hitsLeader.h || 0,
         });
@@ -280,6 +286,7 @@ function BatterStats({ teamId = 'ALL', teamDbId = null, season = '2025', teamNam
         category: 'Home Runs',
         statLabel: 'HR',
         player: battingLeaders.home_runs.player_name,
+        playerId: battingLeaders.home_runs.player_mlb_id || battingLeaders.home_runs.player_id,
         value: battingLeaders.home_runs.home_runs ?? battingLeaders.home_runs.value ?? 0,
       });
     }
@@ -289,6 +296,7 @@ function BatterStats({ teamId = 'ALL', teamDbId = null, season = '2025', teamNam
         category: 'Batting Average',
         statLabel: 'AVG',
         player: battingLeaders.avg.player_name,
+        playerId: battingLeaders.avg.player_mlb_id || battingLeaders.avg.player_id,
         value: formatAvg(battingLeaders.avg.avg ?? battingLeaders.avg.value),
       });
     }
@@ -298,6 +306,7 @@ function BatterStats({ teamId = 'ALL', teamDbId = null, season = '2025', teamNam
         category: 'RBI',
         statLabel: 'RBI',
         player: battingLeaders.rbis.player_name,
+        playerId: battingLeaders.rbis.player_mlb_id || battingLeaders.rbis.player_id,
         value: battingLeaders.rbis.rbis ?? battingLeaders.rbis.value ?? 0,
       });
     }
@@ -307,6 +316,7 @@ function BatterStats({ teamId = 'ALL', teamDbId = null, season = '2025', teamNam
         category: 'OPS',
         statLabel: 'OPS',
         player: battingLeaders.ops.player_name,
+        playerId: battingLeaders.ops.player_mlb_id || battingLeaders.ops.player_id,
         value: formatOps(battingLeaders.ops.ops ?? battingLeaders.ops.value),
       });
     }
@@ -316,6 +326,7 @@ function BatterStats({ teamId = 'ALL', teamDbId = null, season = '2025', teamNam
         category: 'Stolen Bases',
         statLabel: 'SB',
         player: battingLeaders.stolen_bases.player_name,
+        playerId: battingLeaders.stolen_bases.player_mlb_id || battingLeaders.stolen_bases.player_id,
         value: battingLeaders.stolen_bases.stolen_bases ?? battingLeaders.stolen_bases.value ?? 0,
       });
     }
@@ -325,6 +336,7 @@ function BatterStats({ teamId = 'ALL', teamDbId = null, season = '2025', teamNam
         category: 'Hits',
         statLabel: 'H',
         player: battingLeaders.hits.player_name,
+        playerId: battingLeaders.hits.player_mlb_id || battingLeaders.hits.player_id,
         value: battingLeaders.hits.hits ?? battingLeaders.hits.value ?? 0,
       });
     }
@@ -604,6 +616,15 @@ function BatterStats({ teamId = 'ALL', teamDbId = null, season = '2025', teamNam
                   <span className="batter-stat-label">{cat.statLabel}</span>
                 </div>
                 <div className="batter-card-body">
+                  {cat.playerId && (
+                    <div className="batter-card-photo">
+                      <img
+                        src={`https://img.mlbstatic.com/mlb-photos/image/upload/w_213,q_100/v1/people/${cat.playerId}/headshot/67/current`}
+                        alt={cat.player}
+                        onError={(e) => { e.target.style.display = 'none'; }}
+                      />
+                    </div>
+                  )}
                   <span className="batter-player">{cat.player}</span>
                   {!isTeamSelected && cat.team && (
                     <span className="batter-team">{cat.team}</span>
