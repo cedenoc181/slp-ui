@@ -711,7 +711,7 @@ function BatterStats({ teamId = 'ALL', teamDbId = null, season = '2025', teamNam
           <div className="batter-top-list-header">
             <h2>{topListTitle}</h2>
             <p className="eyebrow">
-              {isTeamSelected ? 'Top 10 Team Batters' : 'Top 10 MLB Batters'}
+              {isTeamSelected ? 'Batters' : 'Top 10 MLB Batters'}
             </p>
           </div>
 

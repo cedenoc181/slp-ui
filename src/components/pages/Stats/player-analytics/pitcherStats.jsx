@@ -14,8 +14,8 @@ const HOT_METRIC_OPTIONS = [
   { key: 'walks', label: 'BB' },
 ];
 
-// Best performers splits - higher values are better (inverse: false)
-const BEST_SPLITS_CATEGORIES = [
+// Splits categories configuration
+const SPLITS_CATEGORIES = [
   { key: 'strikeouts_at_home', label: "K's at Home", format: 'integer', inverse: false },
   { key: 'strikeouts_on_road', label: "K's on Road", format: 'integer', inverse: false },
   { key: 'wins_at_home', label: 'Wins at Home', format: 'integer', inverse: false },
@@ -24,19 +24,8 @@ const BEST_SPLITS_CATEGORIES = [
   { key: 'so_9_on_road', label: 'K/9 on Road', format: 'decimal', inverse: false },
 ];
 
-// Worst performers splits - higher values are worse (inverse: true)
-const WORST_SPLITS_CATEGORIES = [
-  { key: 'whip_at_home', label: 'WHIP at Home', format: 'whip', inverse: true },
-  { key: 'whip_on_road', label: 'WHIP on Road', format: 'whip', inverse: true },
-  { key: 'era_at_home', label: 'ERA at Home', format: 'era', inverse: true },
-  { key: 'era_on_road', label: 'ERA on Road', format: 'era', inverse: true },
-  { key: 'hr_9_at_home', label: 'HR/9 at Home', format: 'decimal', inverse: true },
-  { key: 'hr_9_on_road', label: 'HR/9 on Road', format: 'decimal', inverse: true },
-];
-
 function PitcherStats({ teamId = 'ALL', teamDbId = null, season = '2025', teamName = 'MLB' }) {
   const [hotMetric, setHotMetric] = useState('strikeouts');
-  const [splitMode, setSplitMode] = useState('best'); // 'best' or 'worst'
   const [isMobile, setIsMobile] = useState(false);
 
   const isTeamSelected = teamId !== 'ALL';
@@ -396,11 +385,8 @@ function PitcherStats({ teamId = 'ALL', teamDbId = null, season = '2025', teamNa
       }
     });
 
-    // Select categories based on split mode
-    const categories = splitMode === 'best' ? BEST_SPLITS_CATEGORIES : WORST_SPLITS_CATEGORIES;
-
     // Build display data for configured categories
-    return categories
+    return SPLITS_CATEGORIES
       .map(cat => {
         const data = dataByCategory[cat.key];
         if (!data) return null;
@@ -410,7 +396,6 @@ function PitcherStats({ teamId = 'ALL', teamDbId = null, season = '2025', teamNa
           label: cat.label,
           format: cat.format,
           inverse: cat.inverse, // true if lower is better (e.g., ERA)
-          isWorstMode: splitMode === 'worst', // flag to indicate worst performers mode
           playerName: data.player_name || 'Unknown',
           teamName: data.team_name || '',
           value: data.value ?? 0,
@@ -418,7 +403,7 @@ function PitcherStats({ teamId = 'ALL', teamDbId = null, season = '2025', teamNa
         };
       })
       .filter(Boolean);
-  }, [splitsData, splitMode]);
+  }, [splitsData]);
 
   // Get hot pitchers for selected metric category
   const filteredHotPitchers = useMemo(() => {
@@ -562,7 +547,7 @@ function PitcherStats({ teamId = 'ALL', teamDbId = null, season = '2025', teamNa
 
   // Render split item with horizontal bar chart
   const renderSplitItem = useCallback((split) => {
-    const { key, label, format, inverse, isWorstMode, playerName, teamName, value, leagueAvg } = split;
+    const { key, label, format, inverse, playerName, teamName, value, leagueAvg } = split;
 
     // Format value based on type
     const formatValue = (val, fmt) => {
@@ -579,19 +564,17 @@ function PitcherStats({ teamId = 'ALL', teamDbId = null, season = '2025', teamNa
 
     // Calculate bar widths (player value as percentage of max scale)
     const maxScale = Math.max(value, leagueAvg) * 1.2; // 20% padding
-    const playerPercent = maxScale > 0 ? (value / maxScale) * 100 : 0;
+    let playerPercent = maxScale > 0 ? (value / maxScale) * 100 : 0;
     const avgPercent = maxScale > 0 ? (leagueAvg / maxScale) * 100 : 0;
 
-    // Determine if player is above or below average
-    // For inverse metrics (ERA, WHIP), lower is better
-    // For worst mode, we flip the logic since we're showing the worst performers
-    let isAboveAvg;
-    if (isWorstMode) {
-      // In worst mode, these are bad performers - value is worse than average
-      isAboveAvg = false; // Always show as below average (red) for worst performers
-    } else {
-      isAboveAvg = inverse ? value < leagueAvg : value > leagueAvg;
+    // Snap bar to threshold when values are equal or very close
+    if (Math.abs(playerPercent - avgPercent) < 0.5 || value === leagueAvg) {
+      playerPercent = avgPercent;
     }
+
+    // Determine if player is above or below average
+    // For inverse metrics (ERA, WHIP, HR/9), lower is better
+    const isAboveAvg = inverse ? value < leagueAvg : value > leagueAvg;
 
     // Find team logo
     const teamNameLower = teamName.toLowerCase();
@@ -741,25 +724,9 @@ function PitcherStats({ teamId = 'ALL', teamDbId = null, season = '2025', teamNa
               <h3 className="pitcher-splits-title">{isTeamSelected ? 'Team Leaders by Split' : 'League Leaders by Split'}</h3>
               <p className="pitcher-split-subtitle">
                 {isTeamSelected 
-                  ? `${teamName} ${splitMode === 'best' ? 'best' : 'worst'} performers vs league average` 
-                  : `MLB ${splitMode === 'best' ? 'best' : 'worst'} performers vs league average`}
+                  ? `${teamName} best performers vs league average` 
+                  : 'MLB best performers vs league average'}
               </p>
-            </div>
-            <div className="pitcher-splits-toggle">
-              <button
-                type="button"
-                className={`split-toggle${splitMode === 'best' ? ' active' : ''}`}
-                onClick={() => setSplitMode('best')}
-              >
-                Best
-              </button>
-              <button
-                type="button"
-                className={`split-toggle${splitMode === 'worst' ? ' active' : ''}`}
-                onClick={() => setSplitMode('worst')}
-              >
-                Worst
-              </button>
             </div>
           </div>
           <div className="pitcher-splits-main">
@@ -785,7 +752,7 @@ function PitcherStats({ teamId = 'ALL', teamDbId = null, season = '2025', teamNa
           <div className="pitcher-top-list-header">
             <h2>{topListTitle}</h2>
             <p className="eyebrow">
-              {isTeamSelected ? 'Top 10 Team Pitchers' : 'Top 10 MLB Pitchers'}
+              {isTeamSelected ? 'Starting Pitchers' : 'Top 10 MLB Pitchers'}
             </p>
           </div>
 

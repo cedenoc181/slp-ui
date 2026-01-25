@@ -390,35 +390,6 @@
   font-size: 0.9rem;
 }
 
-.pitcher-splits-toggle {
-  display: flex;
-  gap: 0.5rem;
-  flex-shrink: 0;
-}
-
-.split-toggle {
-  padding: 0.4rem 0.85rem;
-  border-radius: 8px;
-  border: 1px solid var(--pa-border-color, rgba(255, 255, 255, 0.1));
-  background: transparent;
-  color: var(--pa-text-secondary, #a0a0a0);
-  font-size: 0.8rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.split-toggle:hover {
-  border-color: rgba(255, 255, 255, 0.2);
-  color: #fff;
-}
-
-.split-toggle.active {
-  background: var(--pa-primary-color, #1976D2);
-  border-color: var(--pa-primary-color, #1976D2);
-  color: #fff;
-}
-
 /* ============================================
    Horizontal Bar Chart Splits (League Leaders)
    ============================================ */
@@ -783,11 +754,6 @@
   .pitcher-splits-header {
     flex-direction: column;
     align-items: flex-start;
-  }
-
-  .pitcher-splits-toggle {
-    width: 100%;
-    justify-content: flex-start;
   }
 }
 
