@@ -76,7 +76,7 @@
   font-size: 1rem;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: background-color 0.15s ease-out, border-color 0.15s ease-out, color 0.15s ease-out;
   min-width: 80px;
 }
 
@@ -111,7 +111,7 @@
   font-size: 1rem;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: background-color 0.15s ease-out, border-color 0.15s ease-out;
   min-width: 150px;
   appearance: none;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23aaa' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
@@ -235,7 +235,7 @@
   font-size: 1rem;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: background-color 0.15s ease-out, border-color 0.15s ease-out, color 0.15s ease-out;
 }
 
 .league-btn:hover {
@@ -266,6 +266,7 @@
   grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
   gap: 1.5rem;
   margin-bottom: 2rem;
+  contain: layout style;
 }
 
 /* ============================================
@@ -277,12 +278,11 @@
   border-radius: 16px;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
   overflow: hidden;
-  transition: all 0.2s ease;
+  contain: layout style;
 }
 
 .division-card:hover {
   border-color: rgba(255, 255, 255, 0.12);
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
 }
 
 .division-header {
@@ -321,6 +321,7 @@
 .standings-table-container {
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
+  contain: layout style;
 }
 
 .standings-table {
@@ -345,7 +346,8 @@
 
 .standings-table tbody tr {
   border-bottom: 1px solid var(--standings-border-color);
-  transition: background-color 0.2s;
+  transition: background-color 0.15s ease-out;
+  contain: layout style;
 }
 
 .standings-table tbody tr:hover {
@@ -450,11 +452,6 @@
    ============================================ */
 .clickable-row {
   cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.clickable-row:active {
-  transform: scale(0.99);
 }
 
 .clickable-power-item {
@@ -462,12 +459,7 @@
 }
 
 .clickable-power-item:hover {
-  transform: translateX(4px);
   background: rgba(255, 255, 255, 0.08) !important;
-}
-
-.clickable-power-item:active {
-  transform: translateX(6px) !important;
 }
 
 /* ============================================
@@ -527,13 +519,13 @@
   border: 1px solid var(--standings-border-color);
   border-radius: 10px;
   margin-bottom: 0.75rem;
-  transition: all 0.2s ease;
   border-left: 4px solid #C8102E;
+  transition: background-color 0.15s ease-out;
+  contain: layout style;
 }
 
 .league-power-item:hover {
   background: rgba(255, 255, 255, 0.06);
-  border-color: rgba(255, 255, 255, 0.15);
 }
 
 .league-power-rank {
@@ -623,12 +615,12 @@
   border: 1px solid var(--standings-border-color);
   border-radius: 10px;
   margin-bottom: 0.75rem;
-  transition: all 0.2s;
+  transition: background-color 0.15s ease-out;
+  contain: layout style;
 }
 
 .power-ranking-item:hover {
   background: rgba(255, 255, 255, 0.06);
-  border-color: rgba(255, 255, 255, 0.15);
 }
 
 .power-rank {
@@ -857,4 +849,83 @@
   .season-tabs {
     width: 300px;
   }
+}
+
+/* ============================================
+   Team Logo Image Styles
+   ============================================ */
+.team-logo-img {
+  width: 24px;
+  height: 24px;
+  margin-right: 0.5rem;
+  vertical-align: middle;
+  object-fit: contain;
+}
+
+.power-team-name .team-logo-img,
+.league-power-team-name .team-logo-img {
+  width: 28px;
+  height: 28px;
+}
+
+/* ============================================
+   Loading & Error States
+   ============================================ */
+.standings-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem 1rem;
+  color: var(--standings-text-secondary);
+  gap: 1rem;
+}
+
+.standings-loading .loading-spinner {
+  width: 40px;
+  height: 40px;
+  border: 3px solid rgba(255, 255, 255, 0.1);
+  border-top-color: var(--standings-primary-color);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.standings-error {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem 1rem;
+  color: var(--standings-danger);
+  background: rgba(244, 67, 54, 0.1);
+  border-radius: 8px;
+  margin: 1rem 0;
+}
+
+/* ============================================
+   Run Differential Styles
+   ============================================ */
+.positive-diff {
+  color: var(--standings-success) !important;
+  font-weight: 600;
+}
+
+.negative-diff {
+  color: var(--standings-danger) !important;
+  font-weight: 600;
+}
+
+.run-diff.positive {
+  color: var(--standings-success);
+  font-weight: 700;
+}
+
+.run-diff.negative {
+  color: var(--standings-danger);
+  font-weight: 700;
 }

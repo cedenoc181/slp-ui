@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import '../../../../styles/stats-page-styling/mlb-standings.css';
-import standingsData from '../../../../data/mockData/mlbStandingsData.json';
+import teamsService from '../../../../data/services/teamsService';
 import MLBStandingsPostseason from './mlbStandingsPostseason';
 import MLBStandingsSpringTraining from './mlbStandingsSpringTraning';
 
@@ -9,19 +9,236 @@ function MLBStandings() {
   const [selectedLeague, setSelectedLeague] = useState('AL'); // 'AL' or 'NL' for regular, 'Cactus' or 'Grapefruit' for spring
   const [selectedSeason, setSelectedSeason] = useState('2025');
   const [seasonType, setSeasonType] = useState('regular'); // 'regular', 'postseason', 'spring'
+  const [standingsData, setStandingsData] = useState(null);
+  const [standingsLoading, setStandingsLoading] = useState(false);
+  const [standingsError, setStandingsError] = useState(null);
   const navigate = useNavigate();
 
-  // Available seasons - 2025 back to 2015 (10 year span)
-  const availableSeasons = ['2025', '2024', '2023', '2022', '2021', '2020', '2019', '2018', '2017', '2016', '2015'];
+  // Available seasons - 2025 back to 2010
+  const availableSeasons = ['2025', '2024', '2023', '2022', '2021', '2020', '2019', '2018', '2017', '2016', '2015', '2014', '2013', '2012', '2011', '2010'];
 
-  const currentLeagueData = standingsData[selectedSeason]?.[selectedLeague] || standingsData['2023'][selectedLeague];
-  const powerRankings = standingsData[selectedSeason]?.powerRankings || standingsData['2023'].powerRankings;
+  // LocalStorage key for storing previous rankings
+  const getStorageKey = (season) => `mlb-power-rankings-${season}`;
+  const WEEK_IN_MS = 7 * 24 * 60 * 60 * 1000; // 7 days in milliseconds
+
+  // Load previous rankings from localStorage
+  const loadPreviousRankings = (season) => {
+    try {
+      const stored = localStorage.getItem(getStorageKey(season));
+      if (stored) {
+        const data = JSON.parse(stored);
+        // Check if data has the new format with timestamp
+        if (data.timestamp && data.rankings) {
+          return data;
+        }
+        // Legacy format - just rankings array, treat as expired
+        return { rankings: data, timestamp: 0 };
+      }
+    } catch (error) {
+      console.error('Error loading previous rankings:', error);
+    }
+    return null;
+  };
+
+  // Save current rankings to localStorage with timestamp
+  const saveCurrentRankings = (season, rankings) => {
+    try {
+      const data = {
+        rankings: rankings,
+        timestamp: Date.now(),
+      };
+      localStorage.setItem(getStorageKey(season), JSON.stringify(data));
+    } catch (error) {
+      console.error('Error saving rankings:', error);
+    }
+  };
+
+  // Check if stored rankings are older than a week
+  const isSnapshotExpired = (timestamp) => {
+    return Date.now() - timestamp > WEEK_IN_MS;
+  };
+
+  // Fetch standings data when season changes
+  useEffect(() => {
+    const fetchStandings = async () => {
+      if (seasonType !== 'regular') return; // Only fetch for regular season
+
+      setStandingsLoading(true);
+      setStandingsError(null);
+
+      try {
+        const data = await teamsService.getTeamRegularSeasonStandings(selectedSeason);
+        
+        // Before setting new data, check if we should update the "last week" snapshot
+        const storedData = loadPreviousRankings(selectedSeason);
+        
+        if (data) {
+          const newRankings = Object.values(data).flat();
+          const rankingsToSave = newRankings.map(team => ({
+            mlbTeamId: team.mlb_team_id,
+            rank: team.mlb_rank,
+            leagueRank: team.league_rank,
+          }));
+
+          if (!storedData) {
+            // First time loading - save initial snapshot
+            saveCurrentRankings(selectedSeason, rankingsToSave);
+          } else if (isSnapshotExpired(storedData.timestamp)) {
+            // Snapshot is older than a week - update to current as new baseline
+            saveCurrentRankings(selectedSeason, rankingsToSave);
+          }
+          // If snapshot exists and is less than a week old, keep it as "last week" reference
+        }
+        
+        setStandingsData(data);
+      } catch (error) {
+        console.error('Error fetching standings:', error);
+        setStandingsError('Failed to load standings data');
+        setStandingsData(null);
+      } finally {
+        setStandingsLoading(false);
+      }
+    };
+
+    fetchStandings();
+  }, [selectedSeason, seasonType]);
+
+  // Transform API data to display format for a league
+  const currentLeagueData = useMemo(() => {
+    if (!standingsData) return null;
+
+    const leaguePrefix = selectedLeague === 'AL' ? 'AL' : 'NL';
+
+    // Get division data
+    const eastData = standingsData[`${leaguePrefix} East`] || [];
+    const centralData = standingsData[`${leaguePrefix} Central`] || [];
+    const westData = standingsData[`${leaguePrefix} West`] || [];
+
+    // Transform team data to match expected format
+    const transformTeam = (team) => ({
+      rank: team.division_rank,
+      team: team.team_name,
+      teamAbbreviation: team.team_abbreviation,
+      mlbTeamId: team.mlb_team_id,
+      wins: team.wins,
+      losses: team.losses,
+      pct: team.w_l_pct,
+      gb: team.games_back === null ? '-' : team.games_back.toString(),
+      streak: team.streak_code,
+      home: '-', // API doesn't provide home/away records
+      away: '-',
+      last10: `${team.last_ten_wins}-${team.last_ten_losses}`,
+      clinchIndicator: team.clinch_indicator,
+      wildCardRank: team.wild_card_rank,
+      wcgb: team.wc_games_back,
+      runDifferential: team.run_differential,
+    });
+
+    // Build wild card standings from all teams in the league
+    const allLeagueTeams = [...eastData, ...centralData, ...westData]
+      .map(transformTeam)
+      .filter(team => team.wildCardRank !== null) // Only teams with wild card rank
+      .sort((a, b) => a.wildCardRank - b.wildCardRank);
+
+    // Format wild card GB display
+    const wildCardTeams = allLeagueTeams.map((team, index) => ({
+      ...team,
+      rank: index + 1,
+      wcgb: team.wcgb === null 
+        ? (index < 3 ? '+0' : '-') 
+        : (team.wcgb > 0 ? `-${team.wcgb}` : `+${Math.abs(team.wcgb)}`)
+    }));
+
+    return {
+      East: eastData.map(transformTeam).sort((a, b) => a.rank - b.rank),
+      Central: centralData.map(transformTeam).sort((a, b) => a.rank - b.rank),
+      West: westData.map(transformTeam).sort((a, b) => a.rank - b.rank),
+      wildCard: wildCardTeams.slice(0, 8), // Show top 8 wild card contenders
+    };
+  }, [standingsData, selectedLeague]);
+
+  // Build power rankings from all teams sorted by MLB rank
+  const powerRankings = useMemo(() => {
+    if (!standingsData) return [];
+
+    // Load previous rankings from localStorage
+    const storedData = loadPreviousRankings(selectedSeason);
+    const previousRankings = storedData?.rankings || null;
+
+    const allTeams = Object.values(standingsData)
+      .flat()
+      .map(team => {
+        const currentRank = team.mlb_rank;
+        // Look up previous rank for this team
+        const previousData = previousRankings?.find(
+          t => t.mlbTeamId === team.mlb_team_id
+        );
+        const lastWeek = previousData?.rank ?? currentRank;
+        
+        // Determine trend: up if rank improved (lower number), down if worse
+        let trend = '→';
+        if (lastWeek > currentRank) trend = '↑'; // Moved up (rank decreased)
+        else if (lastWeek < currentRank) trend = '↓'; // Moved down (rank increased)
+
+        return {
+          rank: currentRank,
+          team: team.team_name,
+          teamAbbreviation: team.team_abbreviation,
+          mlbTeamId: team.mlb_team_id,
+          league: team.league_name === 'American League' ? 'AL' : 'NL',
+          record: `${team.wins}-${team.losses}`,
+          lastWeek: lastWeek,
+          trend: trend,
+          runDifferential: team.run_differential,
+        };
+      })
+      .sort((a, b) => a.rank - b.rank)
+      .slice(0, 10);
+
+    return allTeams;
+  }, [standingsData, selectedSeason]);
 
   // Filter power rankings by selected league and get top 5 with sequential 1-5 ranking
-  const leaguePowerRankings = powerRankings
-    .filter(team => team.league === selectedLeague)
-    .slice(0, 5)
-    .map((team, index) => ({ ...team, leagueRank: index + 1 }));
+  // Uses league_rank from API which ranks teams within their respective league (AL or NL)
+  const leaguePowerRankings = useMemo(() => {
+    if (!standingsData) return [];
+
+    // Load previous rankings from localStorage
+    const storedData = loadPreviousRankings(selectedSeason);
+    const previousRankings = storedData?.rankings || null;
+
+    return Object.values(standingsData)
+      .flat()
+      .filter(team => {
+        const league = team.league_name === 'American League' ? 'AL' : 'NL';
+        return league === selectedLeague;
+      })
+      .sort((a, b) => a.league_rank - b.league_rank)
+      .slice(0, 5)
+      .map((team) => {
+        const previousData = previousRankings?.find(
+          t => t.mlbTeamId === team.mlb_team_id
+        );
+        const lastWeekLeagueRank = previousData?.leagueRank ?? team.league_rank;
+        
+        let trend = '→';
+        if (lastWeekLeagueRank > team.league_rank) trend = '↑';
+        else if (lastWeekLeagueRank < team.league_rank) trend = '↓';
+
+        return {
+          leagueRank: team.league_rank,
+          rank: team.mlb_rank,
+          team: team.team_name,
+          teamAbbreviation: team.team_abbreviation,
+          mlbTeamId: team.mlb_team_id,
+          league: selectedLeague,
+          record: `${team.wins}-${team.losses}`,
+          lastWeek: lastWeekLeagueRank,
+          trend: trend,
+          runDifferential: team.run_differential,
+        };
+      });
+  }, [standingsData, selectedSeason, selectedLeague]);
 
   // Helper function to convert team name to URL-friendly format
   const formatTeamNameForUrl = (teamName) => {
@@ -172,7 +389,23 @@ function MLBStandings() {
               </span>
             </div>
 
+            {/* Loading State */}
+            {standingsLoading && (
+              <div className="standings-loading">
+                <div className="loading-spinner"></div>
+                <span>Loading standings...</span>
+              </div>
+            )}
+
+            {/* Error State */}
+            {standingsError && !standingsLoading && (
+              <div className="standings-error">
+                <span>{standingsError}</span>
+              </div>
+            )}
+
             {/* Division Standings Grid */}
+            {!standingsLoading && !standingsError && currentLeagueData && (
             <div className="divisions-grid">
               {/* East Division */}
               <div className="division-card">
@@ -191,9 +424,8 @@ function MLBStandings() {
                         <th>PCT</th>
                         <th>GB</th>
                         <th>STRK</th>
-                        <th className="hide-mobile">Home</th>
-                        <th className="hide-mobile">Away</th>
                         <th className="hide-mobile">L10</th>
+                        <th className="hide-mobile">DIFF</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -205,9 +437,16 @@ function MLBStandings() {
                         >
                           <td className="rank-col">{team.rank}</td>
                           <td className="team-col">
-                            <span className="team-logo">⚾</span>
+                            <img 
+                              src={`https://www.mlbstatic.com/team-logos/${team.mlbTeamId}.svg`}
+                              alt={team.team}
+                              className="team-logo-img"
+                              onError={(e) => { e.target.style.display = 'none'; }}
+                            />
                             {team.team}
-                            {team.rank === 1 && <span className="clinch-badge">x</span>}
+                            {team.clinchIndicator && team.clinchIndicator !== 'false' && (
+                              <span className="clinch-badge">{team.clinchIndicator}</span>
+                            )}
                           </td>
                           <td className="wins">{team.wins}</td>
                           <td className="losses">{team.losses}</td>
@@ -216,9 +455,10 @@ function MLBStandings() {
                           <td className={`streak ${team.streak.startsWith('W') ? 'win-streak' : 'loss-streak'}`}>
                             {team.streak}
                           </td>
-                          <td className="hide-mobile">{team.home}</td>
-                          <td className="hide-mobile">{team.away}</td>
                           <td className="hide-mobile">{team.last10}</td>
+                          <td className={`hide-mobile ${team.runDifferential >= 0 ? 'positive-diff' : 'negative-diff'}`}>
+                            {team.runDifferential >= 0 ? '+' : ''}{team.runDifferential}
+                          </td>
                         </tr>
                       ))}
                     </tbody>
@@ -243,9 +483,8 @@ function MLBStandings() {
                         <th>PCT</th>
                         <th>GB</th>
                         <th>STRK</th>
-                        <th className="hide-mobile">Home</th>
-                        <th className="hide-mobile">Away</th>
                         <th className="hide-mobile">L10</th>
+                        <th className="hide-mobile">DIFF</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -257,9 +496,16 @@ function MLBStandings() {
                         >
                           <td className="rank-col">{team.rank}</td>
                           <td className="team-col">
-                            <span className="team-logo">⚾</span>
+                            <img 
+                              src={`https://www.mlbstatic.com/team-logos/${team.mlbTeamId}.svg`}
+                              alt={team.team}
+                              className="team-logo-img"
+                              onError={(e) => { e.target.style.display = 'none'; }}
+                            />
                             {team.team}
-                            {team.rank === 1 && <span className="clinch-badge">x</span>}
+                            {team.clinchIndicator && team.clinchIndicator !== 'false' && (
+                              <span className="clinch-badge">{team.clinchIndicator}</span>
+                            )}
                           </td>
                           <td className="wins">{team.wins}</td>
                           <td className="losses">{team.losses}</td>
@@ -268,9 +514,10 @@ function MLBStandings() {
                           <td className={`streak ${team.streak.startsWith('W') ? 'win-streak' : 'loss-streak'}`}>
                             {team.streak}
                           </td>
-                          <td className="hide-mobile">{team.home}</td>
-                          <td className="hide-mobile">{team.away}</td>
                           <td className="hide-mobile">{team.last10}</td>
+                          <td className={`hide-mobile ${team.runDifferential >= 0 ? 'positive-diff' : 'negative-diff'}`}>
+                            {team.runDifferential >= 0 ? '+' : ''}{team.runDifferential}
+                          </td>
                         </tr>
                       ))}
                     </tbody>
@@ -295,9 +542,8 @@ function MLBStandings() {
                         <th>PCT</th>
                         <th>GB</th>
                         <th>STRK</th>
-                        <th className="hide-mobile">Home</th>
-                        <th className="hide-mobile">Away</th>
                         <th className="hide-mobile">L10</th>
+                        <th className="hide-mobile">DIFF</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -309,9 +555,16 @@ function MLBStandings() {
                         >
                           <td className="rank-col">{team.rank}</td>
                           <td className="team-col">
-                            <span className="team-logo">⚾</span>
+                            <img 
+                              src={`https://www.mlbstatic.com/team-logos/${team.mlbTeamId}.svg`}
+                              alt={team.team}
+                              className="team-logo-img"
+                              onError={(e) => { e.target.style.display = 'none'; }}
+                            />
                             {team.team}
-                            {team.rank === 1 && <span className="clinch-badge">x</span>}
+                            {team.clinchIndicator && team.clinchIndicator !== 'false' && (
+                              <span className="clinch-badge">{team.clinchIndicator}</span>
+                            )}
                           </td>
                           <td className="wins">{team.wins}</td>
                           <td className="losses">{team.losses}</td>
@@ -320,9 +573,10 @@ function MLBStandings() {
                           <td className={`streak ${team.streak.startsWith('W') ? 'win-streak' : 'loss-streak'}`}>
                             {team.streak}
                           </td>
-                          <td className="hide-mobile">{team.home}</td>
-                          <td className="hide-mobile">{team.away}</td>
                           <td className="hide-mobile">{team.last10}</td>
+                          <td className={`hide-mobile ${team.runDifferential >= 0 ? 'positive-diff' : 'negative-diff'}`}>
+                            {team.runDifferential >= 0 ? '+' : ''}{team.runDifferential}
+                          </td>
                         </tr>
                       ))}
                     </tbody>
@@ -330,8 +584,10 @@ function MLBStandings() {
                 </div>
               </div>
             </div>
+            )}
 
             {/* Wild Card and League Power Rankings Grid */}
+            {!standingsLoading && !standingsError && currentLeagueData && (
             <div className="wildcard-power-grid">
               {/* Wild Card Standings */}
               <div className="division-card wildcard-card">
@@ -361,7 +617,12 @@ function MLBStandings() {
                         >
                           <td className="rank-col">{team.rank}</td>
                           <td className="team-col">
-                            <span className="team-logo">⚾</span>
+                            <img 
+                              src={`https://www.mlbstatic.com/team-logos/${team.mlbTeamId}.svg`}
+                              alt={team.team}
+                              className="team-logo-img"
+                              onError={(e) => { e.target.style.display = 'none'; }}
+                            />
                             {team.team}
                             {team.rank <= 3 && <span className="wildcard-clinch">WC</span>}
                           </td>
@@ -395,7 +656,12 @@ function MLBStandings() {
                       <div className="league-power-rank">{team.leagueRank}</div>
                       <div className="league-power-team-info">
                         <div className="league-power-team-name">
-                          <span className="team-logo">⚾</span>
+                          <img 
+                            src={`https://www.mlbstatic.com/team-logos/${team.mlbTeamId}.svg`}
+                            alt={team.team}
+                            className="team-logo-img"
+                            onError={(e) => { e.target.style.display = 'none'; }}
+                          />
                           {team.team}
                         </div>
                         <div className="league-power-team-record">{team.record}</div>
@@ -411,8 +677,10 @@ function MLBStandings() {
                 </div>
               </div>
             </div>
+            )}
 
             {/* Overall Power Rankings */}
+            {!standingsLoading && !standingsError && powerRankings.length > 0 && (
             <div className="power-rankings-section">
               <div className="division-card power-rankings-card">
                 <div className="division-header">
@@ -429,16 +697,20 @@ function MLBStandings() {
                       <div className="power-rank">{team.rank}</div>
                       <div className="power-team-info">
                         <div className="power-team-name">
-                          <span className="team-logo">⚾</span>
+                          <img 
+                            src={`https://www.mlbstatic.com/team-logos/${team.mlbTeamId}.svg`}
+                            alt={team.team}
+                            className="team-logo-img"
+                            onError={(e) => { e.target.style.display = 'none'; }}
+                          />
                           {team.team}
                           <span className={`league-badge ${team.league}`}>{team.league}</span>
                         </div>
                         <div className="power-team-record">{team.record}</div>
                       </div>
                       <div className="power-movement">
-                        <span className="last-week">Last Week: #{team.lastWeek}</span>
-                        <span className={`trend-arrow ${team.trend === '↑' ? 'up' : team.trend === '↓' ? 'down' : 'same'}`}>
-                          {team.trend}
+                        <span className={`run-diff ${team.runDifferential >= 0 ? 'positive' : 'negative'}`}>
+                          {team.runDifferential >= 0 ? '+' : ''}{team.runDifferential}
                         </span>
                       </div>
                     </div>
@@ -446,6 +718,7 @@ function MLBStandings() {
                 </div>
               </div>
             </div>
+            )}
           </>
         )}
       </div>
