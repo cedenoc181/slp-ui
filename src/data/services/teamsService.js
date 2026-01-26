@@ -25,10 +25,19 @@ class TeamsService {
   /**
    * Get regular season standings for all teams
    * @param {string} season - Season year (e.g., '2025')
-   * @returns {Promise<Array>} Team standings data
+   * @returns {Promise<Object>} Team standings data grouped by division
    */
   async getTeamRegularSeasonStandings(season = DEFAULT_SEASON) {
     return await api.get(`/teams/standings?season=${season}`);
+  }
+
+  /**
+   * Get spring training standings for all teams
+   * @param {string} season - Season year (e.g., '2025')
+   * @returns {Promise<Object>} Spring training standings data
+   */
+  async getTeamSpringTrainingStandings(season = DEFAULT_SEASON) {
+    return await api.get(`/teams/standings/spring?season=${season}`);
   }
 }
 
