@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import '../../../../styles/stats-page-styling/mlb-standings-postseason.css';
 import teamsService from '../../../../data/services/teamsService';
 import gamesService from '../../../../data/services/gamesService';
@@ -24,6 +24,9 @@ function MLBStandingsPostseason({ selectedSeason }) {
   const [teamSeasonData, setTeamSeasonData] = useState({});
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  
+  // Ref to scroll container to center on mount
+  const bracketContainerRef = useRef(null);
 
   // Fetch postseason bracket and games data
   useEffect(() => {
@@ -94,6 +97,22 @@ function MLBStandingsPostseason({ selectedSeason }) {
     };
     fetchData();
   }, [selectedSeason]);
+
+  // Scroll to center (World Series column) when bracket loads
+  useEffect(() => {
+    if (!loading && bracketData && bracketContainerRef.current) {
+      // Small delay to ensure DOM is fully rendered
+      const timer = setTimeout(() => {
+        const container = bracketContainerRef.current;
+        if (container) {
+          // Calculate center position: (total scrollable width - visible width) / 2
+          const scrollCenter = (container.scrollWidth - container.clientWidth) / 2;
+          container.scrollLeft = scrollCenter;
+        }
+      }, 100);
+      return () => clearTimeout(timer);
+    }
+  }, [loading, bracketData]);
 
   // Build matchups from games data with consistent bracket lanes
   const matchupsByRound = useMemo(() => {
@@ -825,7 +844,7 @@ function MLBStandingsPostseason({ selectedSeason }) {
   }
 
   return (
-    <div className="playoff-bracket-container">
+    <div className="playoff-bracket-container" ref={bracketContainerRef}>
       <div>
         <div className="bracket-grid">
           <div className={`round-column al wild-card${isSingleWildCard ? ' single-matchup' : ''}${is2020ExpandedPlayoffs ? ' expanded-playoffs' : ''}`}>

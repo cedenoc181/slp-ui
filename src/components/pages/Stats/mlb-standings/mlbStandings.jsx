@@ -2,6 +2,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import '../../../../styles/stats-page-styling/mlb-standings.css';
 import teamsService from '../../../../data/services/teamsService';
+import { TEAM_METADATA } from '../../../../data/constants/apiConstants';
 import MLBStandingsPostseason from './mlbStandingsPostseason';
 import MLBStandingsSpringTraining from './mlbStandingsSpringTraning';
 
@@ -240,15 +241,15 @@ function MLBStandings() {
       });
   }, [standingsData, selectedSeason, selectedLeague]);
 
-  // Helper function to convert team name to URL-friendly format
-  const formatTeamNameForUrl = (teamName) => {
-    return teamName.toLowerCase().replace(/\s+/g, '-');
+  // Helper function to get URL-friendly team name from abbreviation
+  const getTeamUrlFromAbbr = (teamAbbreviation) => {
+    return TEAM_METADATA[teamAbbreviation]?.urlName || teamAbbreviation.toLowerCase();
   };
 
-  // Handle team click navigation
-  const handleTeamClick = (teamName) => {
-    const formattedName = formatTeamNameForUrl(teamName);
-    navigate(`/team-analytics/${formattedName}`);
+  // Handle team click navigation - includes season as query parameter
+  const handleTeamClick = (teamAbbreviation) => {
+    const urlName = getTeamUrlFromAbbr(teamAbbreviation);
+    navigate(`/team-analytics/${urlName}?season=${selectedSeason}`);
   };
 
   // Handle season type change
@@ -433,7 +434,7 @@ function MLBStandings() {
                         <tr 
                           key={team.rank} 
                           className={`${team.rank === 1 ? 'division-leader' : ''} clickable-row`}
-                          onClick={() => handleTeamClick(team.team)}
+                          onClick={() => handleTeamClick(team.teamAbbreviation)}
                         >
                           <td className="rank-col">{team.rank}</td>
                           <td className="team-col">
@@ -492,7 +493,7 @@ function MLBStandings() {
                         <tr 
                           key={team.rank} 
                           className={`${team.rank === 1 ? 'division-leader' : ''} clickable-row`}
-                          onClick={() => handleTeamClick(team.team)}
+                          onClick={() => handleTeamClick(team.teamAbbreviation)}
                         >
                           <td className="rank-col">{team.rank}</td>
                           <td className="team-col">
@@ -551,7 +552,7 @@ function MLBStandings() {
                         <tr 
                           key={team.rank} 
                           className={`${team.rank === 1 ? 'division-leader' : ''} clickable-row`}
-                          onClick={() => handleTeamClick(team.team)}
+                          onClick={() => handleTeamClick(team.teamAbbreviation)}
                         >
                           <td className="rank-col">{team.rank}</td>
                           <td className="team-col">
@@ -613,7 +614,7 @@ function MLBStandings() {
                         <tr 
                           key={team.rank} 
                           className={`${team.rank <= 3 ? 'wildcard-position' : ''} clickable-row`}
-                          onClick={() => handleTeamClick(team.team)}
+                          onClick={() => handleTeamClick(team.teamAbbreviation)}
                         >
                           <td className="rank-col">{team.rank}</td>
                           <td className="team-col">
@@ -651,7 +652,7 @@ function MLBStandings() {
                     <div 
                       key={team.leagueRank} 
                       className="league-power-item clickable-power-item"
-                      onClick={() => handleTeamClick(team.team)}
+                      onClick={() => handleTeamClick(team.teamAbbreviation)}
                     >
                       <div className="league-power-rank">{team.leagueRank}</div>
                       <div className="league-power-team-info">
@@ -692,7 +693,7 @@ function MLBStandings() {
                     <div 
                       key={team.rank} 
                       className="power-ranking-item clickable-power-item"
-                      onClick={() => handleTeamClick(team.team)}
+                      onClick={() => handleTeamClick(team.teamAbbreviation)}
                     >
                       <div className="power-rank">{team.rank}</div>
                       <div className="power-team-info">

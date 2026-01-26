@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 
 // Import API Services
 import teamsService from '../../../../data/services/teamsService';
@@ -22,6 +22,7 @@ import {
 function TeamAnalytics() {
   const { teamName } = useParams();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   
   // Initialize selectedTeam from URL param to prevent race condition
   const getInitialTeam = () => {
@@ -31,10 +32,19 @@ function TeamAnalytics() {
     }
     return 'LAD'; // Default fallback
   };
+
+  // Initialize season from URL query param or default to current year
+  const getInitialSeason = () => {
+    const seasonParam = searchParams.get('season');
+    if (seasonParam && SEASONS.includes(seasonParam)) {
+      return seasonParam;
+    }
+    return '2025'; // Default fallback
+  };
   
   // ========== UI State ==========
   const [selectedTeam, setSelectedTeam] = useState(getInitialTeam);
-  const [selectedSeason, setSelectedSeason] = useState('2025');
+  const [selectedSeason, setSelectedSeason] = useState(getInitialSeason);
   const [timeframe, setTimeframe] = useState('season');
   const [chartFilter, setChartFilter] = useState('season');
   const [isFilterChanging, setIsFilterChanging] = useState(false);
@@ -136,6 +146,14 @@ function TeamAnalytics() {
       navigate('/team-analytics/los-angeles-dodgers', { replace: true });
     }
   }, [teamName, navigate, selectedTeam]);
+
+  // Sync selectedSeason when URL query param changes (e.g., user navigates from standings page)
+  useEffect(() => {
+    const seasonParam = searchParams.get('season');
+    if (seasonParam && SEASONS.includes(seasonParam) && seasonParam !== selectedSeason) {
+      setSelectedSeason(seasonParam);
+    }
+  }, [searchParams, selectedSeason]);
 
   useEffect(() => {
     const teamId = getTeamIdFromAbbr(selectedTeam);
