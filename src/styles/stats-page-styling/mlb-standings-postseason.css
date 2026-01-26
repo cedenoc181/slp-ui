@@ -148,6 +148,71 @@
   align-items: flex-end;
 }
 
+/* Single Wild Card matchup styling (2012-2021, excluding 2020) */
+.round-column.wild-card.single-matchup .round-matchups {
+  justify-content: center;
+  align-items: center;
+  flex: 1;
+}
+
+.round-column.al.wild-card.single-matchup .round-matchups {
+  align-items: flex-start;
+}
+
+.round-column.nl.wild-card.single-matchup .round-matchups {
+  align-items: flex-end;
+}
+
+.round-column.wild-card.single-matchup .round-title {
+  margin-bottom: auto;
+}
+
+/* 2020 Expanded Playoffs styling (4 matchups per league: 2 top, logo, 2 bottom) */
+.round-column.wild-card.expanded-playoffs .round-matchups {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  flex: 1;
+  gap: 0;
+}
+
+.expanded-wc-group {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.expanded-wc-group.top {
+  align-items: flex-start;
+}
+
+.expanded-wc-group.bottom {
+  align-items: flex-start;
+}
+
+.round-column.nl.wild-card.expanded-playoffs .expanded-wc-group.top,
+.round-column.nl.wild-card.expanded-playoffs .expanded-wc-group.bottom {
+  align-items: flex-end;
+}
+
+.wildcard-icon.expanded {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex: 1;
+  max-height: 200px;
+}
+
+.wildcard-icon.expanded img {
+  width: 100%;
+  max-width: 300px;
+  min-width: 180px;
+  height: 150px;
+  object-fit: contain;
+  filter: drop-shadow(0 6px 14px rgba(0, 0, 0, 0.3)) brightness(0.9);
+  opacity: 0.7;
+}
+
 .wildcard-icon {
   display: flex;
   justify-content: center;
@@ -490,6 +555,121 @@
 .round-column.world {
   align-items: center;
   margin-top: calc(var(--round-step) * 0.3);
+}
+
+/* ============================================
+   World Series Champion Banner
+   ============================================ */
+.champion-banner {
+  margin-top: 16px;
+  padding: 16px 24px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, 
+    rgba(255, 215, 0, 0.15) 0%, 
+    rgba(255, 215, 0, 0.05) 50%,
+    rgba(255, 215, 0, 0.15) 100%);
+  border: 2px solid rgba(255, 215, 0, 0.4);
+  box-shadow: 
+    0 4px 20px rgba(255, 215, 0, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  position: relative;
+  overflow: hidden;
+  width: 100%;
+  max-width: 320px;
+}
+
+.champion-banner::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 200%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 215, 0, 0.1) 50%,
+    transparent 100%
+  );
+  animation: shimmer 3s infinite;
+}
+
+@keyframes shimmer {
+  0% { transform: translateX(-50%); }
+  100% { transform: translateX(50%); }
+}
+
+.champion-banner.al {
+  border-color: rgba(25, 118, 210, 0.5);
+  background: linear-gradient(135deg, 
+    rgba(25, 118, 210, 0.2) 0%, 
+    rgba(255, 215, 0, 0.1) 50%,
+    rgba(25, 118, 210, 0.2) 100%);
+}
+
+.champion-banner.nl {
+  border-color: rgba(200, 16, 46, 0.5);
+  background: linear-gradient(135deg, 
+    rgba(200, 16, 46, 0.2) 0%, 
+    rgba(255, 215, 0, 0.1) 50%,
+    rgba(200, 16, 46, 0.2) 100%);
+}
+
+.champion-banner-content {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  position: relative;
+  z-index: 1;
+}
+
+.champion-trophy {
+  font-size: 28px;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
+  animation: trophy-glow 2s ease-in-out infinite alternate;
+}
+
+@keyframes trophy-glow {
+  0% { transform: scale(1); }
+  100% { transform: scale(1.1); }
+}
+
+.champion-info {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+
+.champion-label {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: rgba(255, 215, 0, 0.9);
+  font-weight: 600;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+}
+
+.champion-team {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.champion-logo {
+  width: 32px;
+  height: 32px;
+  object-fit: contain;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
+}
+
+.champion-name {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text-main);
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
+  letter-spacing: 0.02em;
 }
 
 /* ============================================

@@ -39,6 +39,15 @@ class TeamsService {
   async getTeamSpringTrainingStandings(season = DEFAULT_SEASON) {
     return await api.get(`/teams/standings/spring?season=${season}`);
   }
+
+  /**
+   * Get postseason bracket for all teams
+   * @param {string} season - Season year (e.g., '2025')
+   * @returns {Promise<Object>} Postseason bracket data
+   */
+  async getTeamPostseasonBracket(season = DEFAULT_SEASON) {
+    return await api.get(`/teams/standings/postseason?season=${season}`);
+  }
 }
 
 export default new TeamsService();
