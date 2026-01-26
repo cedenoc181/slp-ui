@@ -1,8 +1,9 @@
 import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import '../../../../styles/stats-page-styling/mlb-standings-postseason.css';
 import teamsService from '../../../../data/services/teamsService';
 import gamesService from '../../../../data/services/gamesService';
-import { SEASON_TYPES } from '../../../../data/constants/apiConstants';
+import { SEASON_TYPES, TEAM_METADATA } from '../../../../data/constants/apiConstants';
 import alIcon from '../../../../assets/images/AL-icon.png';
 import nlIcon from '../../../../assets/images/NL-icon.png';
 import wsIcon from '../../../../assets/images/world-series-logo.png';
@@ -19,6 +20,7 @@ const ROUND_MAP = {
 const ROUND_ORDER = ['wildCard', 'divisionSeries', 'championshipSeries', 'worldSeries'];
 
 function MLBStandingsPostseason({ selectedSeason }) {
+  const navigate = useNavigate();
   const [bracketData, setBracketData] = useState(null);
   const [gamesData, setGamesData] = useState([]);
   const [teamSeasonData, setTeamSeasonData] = useState({});
@@ -27,6 +29,18 @@ function MLBStandingsPostseason({ selectedSeason }) {
   
   // Ref to scroll container to center on mount
   const bracketContainerRef = useRef(null);
+
+  // Helper function to get URL-friendly team name from abbreviation
+  const getTeamUrlFromAbbr = (teamAbbreviation) => {
+    return TEAM_METADATA[teamAbbreviation]?.urlName || teamAbbreviation?.toLowerCase();
+  };
+
+  // Handle team click navigation - includes season as query parameter
+  const handleTeamClick = (teamAbbreviation) => {
+    if (!teamAbbreviation) return;
+    const urlName = getTeamUrlFromAbbr(teamAbbreviation);
+    navigate(`/team-analytics/${urlName}?season=${selectedSeason}`);
+  };
 
   // Fetch postseason bracket and games data
   useEffect(() => {
@@ -635,7 +649,10 @@ function MLBStandingsPostseason({ selectedSeason }) {
     );
 
     return (
-      <div className={`team-row ${isWinner ? 'winner' : ''} ${isNL ? 'nl' : ''}`}>
+      <div 
+        className={`team-row ${isWinner ? 'winner' : ''} ${isNL ? 'nl' : ''} clickable-team`}
+        onClick={() => handleTeamClick(team.abbreviation)}
+      >
         {isNL ? (
           <>
             <span className="team-score">{team.score}</span>

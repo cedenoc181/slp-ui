@@ -403,6 +403,17 @@
   background: rgba(255, 255, 255, 0.08);
 }
 
+.team-row.clickable-team {
+  cursor: pointer;
+}
+
+.team-row.clickable-team:hover {
+  background: rgba(255, 255, 255, 0.12);
+  border-color: rgba(255, 255, 255, 0.2);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.3);
+}
+
 .series-info-pop {
   position: absolute;
   top: 10px;
