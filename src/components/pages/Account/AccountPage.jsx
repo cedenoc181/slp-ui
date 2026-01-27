@@ -127,7 +127,7 @@ function AccountPage() {
                 <li>✓ Player Analytics</li>
                 <li>✓ Team Analytics</li>
                 <li>✓ Advanced Filters</li>
-                <li>✓ Save Favorites</li>
+                <li>✓ Historical Data</li>
               </ul>
             </div>
             <div className="tier-card premium">
@@ -137,7 +137,7 @@ function AccountPage() {
                 <li>✓ Everything in Free</li>
                 <li>✓ Game Predictions</li>
                 <li>✓ Advanced Analytics</li>
-                <li>✓ Historical Data</li>
+                <li>✓ Save Favorites</li>
                 <li>✓ Priority Support</li>
               </ul>
             </div>
