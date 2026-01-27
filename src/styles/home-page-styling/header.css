@@ -320,6 +320,47 @@
   color: #B8C5D6;
 }
 
+/* Account Icon */
+.account-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  background: transparent;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-radius: 50%;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  padding: 0;
+  margin-left: 0.5rem;
+}
+
+.account-icon svg {
+  width: 18px;
+  height: 18px;
+  stroke: #E6EDF5;
+  transition: all 0.3s ease;
+}
+
+.account-icon:hover {
+  border-color: var(--cta-color);
+  background: rgba(200, 16, 46, 0.1);
+}
+
+.account-icon:hover svg {
+  stroke: var(--cta-color);
+}
+
+.account-icon.active {
+  border-color: var(--cta-color);
+  background: rgba(200, 16, 46, 0.15);
+}
+
+.account-icon.active svg {
+  stroke: var(--cta-color);
+}
+
 
 /* ============================================
    RESPONSIVE - LARGE TABLETS & BELOW (1024px and below)

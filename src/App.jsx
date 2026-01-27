@@ -23,6 +23,9 @@ import AboutPage from './components/pages/About-Us/AboutPage';
 import FeaturesPage from './components/pages/About-Us/FeaturesPage';
 import ContactPage from './components/pages/About-Us/ContactPage';
 
+// Account page imports//
+import AccountPage from './components/pages/Account/AccountPage';
+
 // Education page imports//
 import Glossary from './components/pages/Education/GlossaryPage';
 import FAQPage from './components/pages/Education/FAQPage';
@@ -79,6 +82,9 @@ import './styles/more-page-styling/about-page.css';
 import './styles/more-page-styling/features-page.css';
 import './styles/more-page-styling/contact-page.css';
 
+//Account-page-styles//
+import './styles/account-page-styling/account-page.css';
+
 // Legal-page-styles//
 import './styles/legal-page-styling/legal.css';
 
@@ -124,6 +130,9 @@ function App() {
           <Route path="/about" element={<AboutPage />} />
           <Route path="/features" element={<FeaturesPage />} />
           <Route path="/contact" element={<ContactPage />} />
+
+          {/* Account route */}
+          <Route path="/account" element={<AccountPage />} />
 
           {/* Stats routes */}
           <Route path="/mlb-standings" element={<MLBStandings />} />

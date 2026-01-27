@@ -436,46 +436,19 @@ function Header() {
             </div>
           </div>
 
-          {/* More Dropdown */}
-          <div 
-            className="nav-dropdown"
-            onMouseEnter={() => setActiveDropdown('more')}
-            onMouseLeave={() => setActiveDropdown(null)}
+          {/* Account/Login Icon */}
+          <button 
+            type="button" 
+            onClick={() => handleNavClick('/account')} 
+            className={`account-icon ${location.pathname.startsWith('/account') ? 'active' : ''}`}
+            aria-label="Account"
+            title="Login / Sign Up"
           >
-            <button 
-              type="button" 
-              className={`nav-button ${location.pathname.startsWith('/features') || location.pathname.startsWith('/contact') || location.pathname.startsWith('/about') ? 'active' : ''}`}
-              onClick={() => toggleDropdown('more')}
-            >
-              More
-              <svg className="dropdown-arrow" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                <polyline points="6 9 12 15 18 9"/>
-              </svg>
-            </button>
-            <div className={`dropdown-menu ${activeDropdown === 'more' ? 'show' : ''}`}>
-              <button onClick={() => handleNavClick('/features')} className="dropdown-item">
-                <span className="dropdown-icon">⚡</span>
-                <div>
-                  <div className="dropdown-title">Features</div>
-                  <div className="dropdown-desc">Platform capabilities</div>
-                </div>
-              </button>
-              <button onClick={() => handleNavClick('/contact')} className="dropdown-item">
-                <span className="dropdown-icon">📧</span>
-                <div>
-                  <div className="dropdown-title">Contact Us</div>
-                  <div className="dropdown-desc">Get in touch</div>
-                </div>
-              </button>
-              <button onClick={() => handleNavClick('/about')} className="dropdown-item">
-                <span className="dropdown-icon">ℹ️</span>
-                <div>
-                  <div className="dropdown-title">About Sandlot Picks</div>
-                  <div className="dropdown-desc">Our story & mission</div>
-                </div>
-              </button>
-            </div>
-          </div>
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <circle cx="12" cy="8" r="4"/>
+              <path d="M4 21v-2a4 4 0 0 1 4-4h8a4 4 0 0 1 4 4v2"/>
+            </svg>
+          </button>
         </nav>
       </div>
     </header>
