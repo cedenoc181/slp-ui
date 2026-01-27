@@ -35,7 +35,12 @@ function HowToUsePage() {
                     ))}
                   </ul>
                   {step.links && step.links.map((link, idx) => (
-                    <Link key={idx} to={link.url} className="inline-link">
+                    <Link 
+                      key={idx} 
+                      to={link.url} 
+                      className="inline-link"
+                      onClick={() => window.scrollTo(0, 0)}
+                    >
                       {link.text}
                     </Link>
                   ))}
