@@ -173,6 +173,33 @@ function ApiTestPage() {
           result = await testEndpoint('leagueLeaders', 'getLeagueSplits', selectedSeason, SEASON_TYPES.REGULAR, PLAYER_ROLES.PITCHER);
           break;
 
+        // ========== INJURY SERVICE ==========
+        case 'getTeamInjuriesFirstHalf':
+          result = await testEndpoint('injury', 'getTeamInjuriesFirstHalf', selectedTeam, selectedSeason);
+          break;
+        case 'getTeamInjuriesSecondHalf':
+          result = await testEndpoint('injury', 'getTeamInjuriesSecondHalf', selectedTeam, selectedSeason);
+          break;
+        case 'getTeamInjuriesFullSeason':
+          result = await testEndpoint('injury', 'getTeamInjuriesFullSeason', selectedTeam, selectedSeason);
+          break;
+        case 'getTeamCurrentInjuries':
+          result = await testEndpoint('injury', 'getTeamCurrentInjuries', selectedTeam);
+          break;
+        case 'getPlayerInjuryHistory':
+          result = await testEndpoint('injury', 'getPlayerInjuryHistory', 123, selectedSeason);
+          break;
+        case 'getInjurySummary':
+          result = await testEndpoint('injury', 'getInjurySummary', selectedSeason);
+          break;
+        case 'getTeamInjuriesCustomRange':
+          result = await testEndpoint('injury', 'getTeamInjuriesCustomRange', selectedTeam, selectedSeason, {
+            startDate: '2025-04-01',
+            endDate: '2025-06-30',
+            onlyActive: false
+          });
+          break;
+
         default:
           await testAllEndpoints();
       }
@@ -332,6 +359,16 @@ function ApiTestPage() {
               <option value="getLeagueSplitsBattersService">Get League Splits Batters (Service)</option>
               <option value="getLeagueSplitsPitchersService">Get League Splits Pitchers (Service)</option>
             </optgroup>
+
+            <optgroup label="🏥 Injury Service">
+              <option value="getTeamInjuriesFirstHalf">Get Team Injuries (First Half)</option>
+              <option value="getTeamInjuriesSecondHalf">Get Team Injuries (Second Half)</option>
+              <option value="getTeamInjuriesFullSeason">Get Team Injuries (Full Season)</option>
+              <option value="getTeamCurrentInjuries">Get Team Current IL</option>
+              <option value="getPlayerInjuryHistory">Get Player Injury History</option>
+              <option value="getInjurySummary">Get League Injury Summary</option>
+              <option value="getTeamInjuriesCustomRange">Get Team Injuries (Custom Range)</option>
+            </optgroup>
           </select>
 
           <button 
@@ -416,6 +453,16 @@ function ApiTestPage() {
               <code>/teams/leaders/batting/top?season=Y&season_type=R</code>
               <code>/teams/leaders/batting/hot?season=Y&season_type=R</code>
               <code>/teams/leaders/splits/league?season=Y&role=batters</code>
+            </div>
+            <div className="endpoint-category">
+              <strong>Injuries</strong>
+              <code>/players/injuries/team/first-half?team_id=X&season=Y</code>
+              <code>/players/injuries/team/second-half?team_id=X&season=Y</code>
+              <code>/players/injuries/team/full-season?team_id=X&season=Y</code>
+              <code>/players/injuries/team/current?team_id=X</code>
+              <code>/players/injuries/player?player_id=X&season=Y</code>
+              <code>/players/injuries/summary?season=Y</code>
+              <code>/players/injuries/team?team_id=X&season=Y&start_date=...&end_date=...</code>
             </div>
           </div>
         </div>

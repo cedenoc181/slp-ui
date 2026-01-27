@@ -4,6 +4,7 @@ import teamStatsService from '../services/teamStatsService';
 import rosterService from '../services/rosterService';
 import teamLeadersService from '../services/teamLeadersService';
 import leagueLeadersService from '../services/leagueLeadersService';
+import injuryService from '../services/injuryService';
 import { TEAM_IDS, SEASON_TYPES, PLAYER_ROLES } from '../constants/apiConstants';
 
 /**
@@ -236,6 +237,90 @@ class ApiTester {
     }
   }
 
+  // ========== INJURY SERVICE TESTS ==========
+
+  async testGetTeamInjuriesFirstHalf() {
+    try {
+      const data = await injuryService.getTeamInjuriesFirstHalf(this.testTeamId, this.testSeason);
+      this.logResult('getTeamInjuriesFirstHalf', true, data);
+      return data;
+    } catch (error) {
+      this.logResult('getTeamInjuriesFirstHalf', false, null, error);
+      return null;
+    }
+  }
+
+  async testGetTeamInjuriesSecondHalf() {
+    try {
+      const data = await injuryService.getTeamInjuriesSecondHalf(this.testTeamId, this.testSeason);
+      this.logResult('getTeamInjuriesSecondHalf', true, data);
+      return data;
+    } catch (error) {
+      this.logResult('getTeamInjuriesSecondHalf', false, null, error);
+      return null;
+    }
+  }
+
+  async testGetTeamInjuriesFullSeason() {
+    try {
+      const data = await injuryService.getTeamInjuriesFullSeason(this.testTeamId, this.testSeason);
+      this.logResult('getTeamInjuriesFullSeason', true, data);
+      return data;
+    } catch (error) {
+      this.logResult('getTeamInjuriesFullSeason', false, null, error);
+      return null;
+    }
+  }
+
+  async testGetTeamCurrentInjuries() {
+    try {
+      const data = await injuryService.getTeamCurrentInjuries(this.testTeamId);
+      this.logResult('getTeamCurrentInjuries', true, data);
+      return data;
+    } catch (error) {
+      this.logResult('getTeamCurrentInjuries', false, null, error);
+      return null;
+    }
+  }
+
+  async testGetPlayerInjuryHistory() {
+    try {
+      // Using a sample player ID - this would need a real player ID in production
+      const data = await injuryService.getPlayerInjuryHistory(123, this.testSeason);
+      this.logResult('getPlayerInjuryHistory', true, data);
+      return data;
+    } catch (error) {
+      this.logResult('getPlayerInjuryHistory', false, null, error);
+      return null;
+    }
+  }
+
+  async testGetInjurySummary() {
+    try {
+      const data = await injuryService.getInjurySummary(this.testSeason);
+      this.logResult('getInjurySummary', true, data);
+      return data;
+    } catch (error) {
+      this.logResult('getInjurySummary', false, null, error);
+      return null;
+    }
+  }
+
+  async testGetTeamInjuriesCustomRange() {
+    try {
+      const data = await injuryService.getTeamInjuriesCustomRange(this.testTeamId, this.testSeason, {
+        startDate: '2025-04-01',
+        endDate: '2025-06-30',
+        onlyActive: false
+      });
+      this.logResult('getTeamInjuriesCustomRange', true, data);
+      return data;
+    } catch (error) {
+      this.logResult('getTeamInjuriesCustomRange', false, null, error);
+      return null;
+    }
+  }
+
   // ========== RUN ALL TESTS ==========
 
   async runAllTests() {
@@ -276,6 +361,16 @@ class ApiTester {
     await this.testGetHotTeamBattingLeaders();
     await this.testGetTeamSplits();
 
+    // Injury Service Tests
+    console.log('\n📋 TESTING INJURY SERVICE');
+    await this.testGetTeamInjuriesFirstHalf();
+    await this.testGetTeamInjuriesSecondHalf();
+    await this.testGetTeamInjuriesFullSeason();
+    await this.testGetTeamCurrentInjuries();
+    await this.testGetPlayerInjuryHistory();
+    await this.testGetInjurySummary();
+    await this.testGetTeamInjuriesCustomRange();
+
     // Summary
     this.printSummary();
   }
@@ -314,6 +409,7 @@ class ApiTester {
       roster: rosterService,
       teamLeaders: teamLeadersService,
       leagueLeaders: leagueLeadersService,
+      injury: injuryService,
     };
 
     try {
