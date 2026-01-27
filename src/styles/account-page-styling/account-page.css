@@ -41,10 +41,67 @@
   text-align: center;
   font-size: 1.2rem;
   color: #546A7B;
-  margin-bottom: 3rem;
+  margin-bottom: 1.5rem;
   max-width: 600px;
   margin-left: auto;
   margin-right: auto;
+}
+
+/* Auth Error Message */
+.auth-error {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.875rem 1.25rem;
+  background: rgba(229, 62, 62, 0.08);
+  border: 1px solid rgba(229, 62, 62, 0.2);
+  border-radius: 8px;
+  color: #C53030;
+  font-weight: 500;
+  font-size: 0.95rem;
+  max-width: 500px;
+  margin: 0 auto 2rem;
+}
+
+.auth-error svg {
+  stroke: #C53030;
+  flex-shrink: 0;
+}
+
+/* Settings Link */
+.settings-link-container {
+  text-align: center;
+  margin-bottom: 3rem;
+}
+
+.settings-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.625rem 1.25rem;
+  background: #FFFFFF;
+  border: 2px solid #E2E8F0;
+  border-radius: 8px;
+  color: #4A5568;
+  font-weight: 600;
+  font-size: 0.95rem;
+  text-decoration: none;
+  transition: all 0.2s ease;
+}
+
+.settings-link svg {
+  stroke: #718096;
+  transition: stroke 0.2s ease;
+}
+
+.settings-link:hover {
+  border-color: #C8102E;
+  color: #C8102E;
+}
+
+.settings-link:hover svg {
+  stroke: #C8102E;
 }
 
 /* Auth Container */

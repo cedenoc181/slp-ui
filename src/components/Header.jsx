@@ -3,6 +3,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import articlesData from '../data/contentData/article.json';
 import moreArticlesData from '../data/contentData/moreArticles.json';
 import { TEAMS } from '../data/constants/apiConstants';
+import { useAuth } from '../context/AuthContext';
 
 
 function Header() {
@@ -14,6 +15,7 @@ function Header() {
   const [isSearchFocused, setIsSearchFocused] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
+  const { isAuthenticated } = useAuth();
 
   // Use all 30 MLB teams from apiConstants
   const teamOptions = useMemo(() => 
@@ -439,10 +441,10 @@ function Header() {
           {/* Account/Login Icon */}
           <button 
             type="button" 
-            onClick={() => handleNavClick('/account')} 
+            onClick={() => handleNavClick(isAuthenticated ? '/account/settings' : '/account')} 
             className={`account-icon ${location.pathname.startsWith('/account') ? 'active' : ''}`}
-            aria-label="Account"
-            title="Login / Sign Up"
+            aria-label={isAuthenticated ? 'Settings' : 'Account'}
+            title={isAuthenticated ? 'Account Settings' : 'Login / Sign Up'}
           >
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <circle cx="12" cy="8" r="4"/>

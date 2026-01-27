@@ -1,10 +1,62 @@
-import { useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { useEffect, useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { useAuth } from '../../../context/AuthContext';
 
 function AccountPage() {
+  const { isAuthenticated, login } = useAuth();
+  const navigate = useNavigate();
+  
+  // Form states
+  const [loginEmail, setLoginEmail] = useState('');
+  const [loginPassword, setLoginPassword] = useState('');
+  const [registerEmail, setRegisterEmail] = useState('');
+  const [registerPassword, setRegisterPassword] = useState('');
+  const [registerConfirm, setRegisterConfirm] = useState('');
+  const [error, setError] = useState('');
+
   useEffect(() => {
     window.scrollTo(0, 0);
-  }, []);
+    // If already authenticated, redirect to settings
+    if (isAuthenticated) {
+      navigate('/account/settings');
+    }
+  }, [isAuthenticated, navigate]);
+
+  const handleLogin = (e) => {
+    e.preventDefault();
+    setError('');
+    
+    if (!loginEmail || !loginPassword) {
+      setError('Please enter both email and password');
+      return;
+    }
+    
+    // Mock login - in production, this would call an API
+    login(loginEmail);
+  };
+
+  const handleRegister = (e) => {
+    e.preventDefault();
+    setError('');
+    
+    if (!registerEmail || !registerPassword || !registerConfirm) {
+      setError('Please fill in all fields');
+      return;
+    }
+    
+    if (registerPassword !== registerConfirm) {
+      setError('Passwords do not match');
+      return;
+    }
+    
+    if (registerPassword.length < 6) {
+      setError('Password must be at least 6 characters');
+      return;
+    }
+    
+    // Mock registration - in production, this would call an API
+    login(registerEmail);
+  };
 
   return (
     <section className="account-page">
@@ -13,6 +65,17 @@ function AccountPage() {
         <p className="page-subtitle">
           Sign in to access full analytics or create a free account to unlock more features
         </p>
+
+        {error && (
+          <div className="auth-error">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <circle cx="12" cy="12" r="10"/>
+              <line x1="12" y1="8" x2="12" y2="12"/>
+              <line x1="12" y1="16" x2="12.01" y2="16"/>
+            </svg>
+            {error}
+          </div>
+        )}
 
         <div className="auth-container">
           {/* Login Card */}
@@ -27,14 +90,15 @@ function AccountPage() {
             <h2>Sign In</h2>
             <p>Already have an account? Sign in to access your personalized dashboard and saved analytics.</p>
             
-            <form className="auth-form">
+            <form className="auth-form" onSubmit={handleLogin}>
               <div className="form-group">
                 <label htmlFor="login-email">Email</label>
                 <input 
                   type="email" 
                   id="login-email" 
                   placeholder="your.email@example.com"
-                  disabled
+                  value={loginEmail}
+                  onChange={(e) => setLoginEmail(e.target.value)}
                 />
               </div>
               <div className="form-group">
@@ -43,15 +107,14 @@ function AccountPage() {
                   type="password" 
                   id="login-password" 
                   placeholder="••••••••"
-                  disabled
+                  value={loginPassword}
+                  onChange={(e) => setLoginPassword(e.target.value)}
                 />
               </div>
-              <button type="button" className="auth-btn primary" disabled>
+              <button type="submit" className="auth-btn primary">
                 Sign In
               </button>
             </form>
-            
-            <p className="auth-note">Coming Soon</p>
           </div>
 
           {/* Register Card */}
@@ -67,14 +130,15 @@ function AccountPage() {
             <h2>Create Account</h2>
             <p>Sign up for free to unlock Player Analytics, Team Analytics, and personalized features.</p>
             
-            <form className="auth-form">
+            <form className="auth-form" onSubmit={handleRegister}>
               <div className="form-group">
                 <label htmlFor="register-email">Email</label>
                 <input 
                   type="email" 
                   id="register-email" 
                   placeholder="your.email@example.com"
-                  disabled
+                  value={registerEmail}
+                  onChange={(e) => setRegisterEmail(e.target.value)}
                 />
               </div>
               <div className="form-group">
@@ -83,7 +147,8 @@ function AccountPage() {
                   type="password" 
                   id="register-password" 
                   placeholder="••••••••"
-                  disabled
+                  value={registerPassword}
+                  onChange={(e) => setRegisterPassword(e.target.value)}
                 />
               </div>
               <div className="form-group">
@@ -92,15 +157,14 @@ function AccountPage() {
                   type="password" 
                   id="register-confirm" 
                   placeholder="••••••••"
-                  disabled
+                  value={registerConfirm}
+                  onChange={(e) => setRegisterConfirm(e.target.value)}
                 />
               </div>
-              <button type="button" className="auth-btn secondary" disabled>
+              <button type="submit" className="auth-btn secondary">
                 Create Free Account
               </button>
             </form>
-            
-            <p className="auth-note">Coming Soon</p>
           </div>
         </div>
 

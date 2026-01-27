@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
 import ReactGA from 'react-ga4';
+import { AuthProvider } from './context/AuthContext';
 
 import ApiTestPage from './components/ApiTestPage';
 
@@ -25,6 +26,7 @@ import ContactPage from './components/pages/About-Us/ContactPage';
 
 // Account page imports//
 import AccountPage from './components/pages/Account/AccountPage';
+import SettingsPage from './components/pages/Account/SettingsPage';
 
 // Education page imports//
 import Glossary from './components/pages/Education/GlossaryPage';
@@ -84,6 +86,7 @@ import './styles/more-page-styling/contact-page.css';
 
 //Account-page-styles//
 import './styles/account-page-styling/account-page.css';
+import './styles/account-page-styling/settings-page.css';
 
 // Legal-page-styles//
 import './styles/legal-page-styling/legal.css';
@@ -119,11 +122,12 @@ function AnalyticsTracker() {
 function App() {
   return (
     <Router>
-      <div className="App">
-        <AnalyticsTracker />
-        <Header />
-        <Routes>
-          <Route path="/" element={<HomePage />} />
+      <AuthProvider>
+        <div className="App">
+          <AnalyticsTracker />
+          <Header />
+          <Routes>
+            <Route path="/" element={<HomePage />} />
           {/* test route */}
           <Route path="/api-test" element={<ApiTestPage />} />
           {/* More routes */}
@@ -133,6 +137,7 @@ function App() {
 
           {/* Account route */}
           <Route path="/account" element={<AccountPage />} />
+          <Route path="/account/settings" element={<SettingsPage />} />
 
           {/* Stats routes */}
           <Route path="/mlb-standings" element={<MLBStandings />} />
@@ -162,6 +167,7 @@ function App() {
         </Routes>
         <Footer />
       </div>
+      </AuthProvider>
     </Router>
   );
 }
