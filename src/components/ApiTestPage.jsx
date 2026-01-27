@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { testAllEndpoints, testEndpoint } from '../data/testing/apiTest';
 import { TEAM_IDS, SEASON_TYPES, PLAYER_ROLES } from '../data/constants/apiConstants';
+import '../styles/stats-page-styling/api-test-page.css';
 
 function ApiTestPage() {
   const [testing, setTesting] = useState(false);
@@ -51,6 +52,15 @@ function ApiTestPage() {
         case 'getTeamMonthly':
           result = await testEndpoint('teams', 'getTeamMonthly', selectedTeam, selectedSeason);
           break;
+        case 'getTeamRegularSeasonStandings':
+          result = await testEndpoint('teams', 'getTeamRegularSeasonStandings', selectedSeason);
+          break;
+        case 'getTeamSpringTrainingStandings':
+          result = await testEndpoint('teams', 'getTeamSpringTrainingStandings', selectedSeason);
+          break;
+        case 'getTeamPostseasonBracket':
+          result = await testEndpoint('teams', 'getTeamPostseasonBracket', selectedSeason);
+          break;
 
         // ========== TEAM STATS SERVICE ==========
         case 'getTeamBattingStats':
@@ -58,6 +68,18 @@ function ApiTestPage() {
           break;
         case 'getTeamPitchingStats':
           result = await testEndpoint('teamStats', 'getTeamPitchingStats', selectedTeam, selectedSeason, SEASON_TYPES.REGULAR);
+          break;
+        case 'getTeamBattingStatsSpring':
+          result = await testEndpoint('teamStats', 'getTeamBattingStats', selectedTeam, selectedSeason, SEASON_TYPES.SPRING_TRAINING);
+          break;
+        case 'getTeamPitchingStatsSpring':
+          result = await testEndpoint('teamStats', 'getTeamPitchingStats', selectedTeam, selectedSeason, SEASON_TYPES.SPRING_TRAINING);
+          break;
+        case 'getTeamBattingStatsPostseason':
+          result = await testEndpoint('teamStats', 'getTeamBattingStats', selectedTeam, selectedSeason, SEASON_TYPES.POSTSEASON);
+          break;
+        case 'getTeamPitchingStatsPostseason':
+          result = await testEndpoint('teamStats', 'getTeamPitchingStats', selectedTeam, selectedSeason, SEASON_TYPES.POSTSEASON);
           break;
 
         // ========== ROSTER SERVICE ==========
@@ -125,6 +147,32 @@ function ApiTestPage() {
           result = await testEndpoint('teamLeaders', 'getLeagueSplits', selectedSeason, SEASON_TYPES.REGULAR, PLAYER_ROLES.PITCHER);
           break;
 
+        // ========== LEAGUE LEADERS SERVICE ==========
+        case 'getLeagueBattingLeaders':
+          result = await testEndpoint('leagueLeaders', 'getLeagueBattingLeaders', selectedSeason, SEASON_TYPES.REGULAR);
+          break;
+        case 'getLeaguePitchingLeaders':
+          result = await testEndpoint('leagueLeaders', 'getLeaguePitchingLeaders', selectedSeason, SEASON_TYPES.REGULAR);
+          break;
+        case 'getLeagueTopBattingLeaders':
+          result = await testEndpoint('leagueLeaders', 'getTopBattingLeaders', selectedSeason, SEASON_TYPES.REGULAR);
+          break;
+        case 'getLeagueTopPitchingLeaders':
+          result = await testEndpoint('leagueLeaders', 'getTopPitchingLeaders', selectedSeason, SEASON_TYPES.REGULAR);
+          break;
+        case 'getLeagueHotBattingLeaders':
+          result = await testEndpoint('leagueLeaders', 'getHotBattingLeaders', selectedSeason, SEASON_TYPES.REGULAR);
+          break;
+        case 'getLeagueHotPitchingLeaders':
+          result = await testEndpoint('leagueLeaders', 'getHotPitchingLeaders', selectedSeason, SEASON_TYPES.REGULAR);
+          break;
+        case 'getLeagueSplitsBattersService':
+          result = await testEndpoint('leagueLeaders', 'getLeagueSplits', selectedSeason, SEASON_TYPES.REGULAR, PLAYER_ROLES.BATTER);
+          break;
+        case 'getLeagueSplitsPitchersService':
+          result = await testEndpoint('leagueLeaders', 'getLeagueSplits', selectedSeason, SEASON_TYPES.REGULAR, PLAYER_ROLES.PITCHER);
+          break;
+
         default:
           await testAllEndpoints();
       }
@@ -147,33 +195,37 @@ function ApiTestPage() {
   };
 
   return (
-    <div style={styles.container}>
-      <div style={styles.card}>
-        <h1 style={styles.title}>🧪 API Endpoint Tester</h1>
-        <p style={styles.subtitle}>Test your backend API endpoints</p>
+    <div className="api-test-page">
+      {/* Header */}
+      <div className="api-test-header">
+        <h1>🧪 API Endpoint Tester</h1>
+        <p className="header-subtitle">Test your backend API endpoints</p>
+      </div>
 
+      {/* Content */}
+      <div className="api-test-content">
         {/* Test Configuration */}
-        <div style={styles.section}>
+        <div className="api-test-card">
           <h3>⚙️ Test Configuration</h3>
-          <div style={styles.configGrid}>
-            <div style={styles.configItem}>
-              <label style={styles.label}>Team</label>
+          <div className="config-grid">
+            <div className="config-item">
+              <label>Team</label>
               <select 
                 value={selectedTeam} 
                 onChange={(e) => setSelectedTeam(Number(e.target.value))}
-                style={styles.select}
+                className="api-test-select"
               >
                 {Object.entries(TEAM_IDS).map(([name, id]) => (
                   <option key={id} value={id}>{name} ({id})</option>
                 ))}
               </select>
             </div>
-            <div style={styles.configItem}>
-              <label style={styles.label}>Season</label>
+            <div className="config-item">
+              <label>Season</label>
               <select 
                 value={selectedSeason} 
                 onChange={(e) => setSelectedSeason(e.target.value)}
-                style={styles.select}
+                className="api-test-select"
               >
                 <option value="2025">2025</option>
                 <option value="2024">2024</option>
@@ -186,24 +238,24 @@ function ApiTestPage() {
         </div>
 
         {/* Run All Tests */}
-        <div style={styles.section}>
+        <div className="api-test-card">
           <h3>🚀 Quick Test</h3>
           <button 
             onClick={handleRunAllTests} 
             disabled={testing}
-            style={styles.buttonPrimary}
+            className="btn-primary"
           >
             {testing ? '⏳ Running Tests...' : '🚀 Run All Tests'}
           </button>
         </div>
 
         {/* Individual Tests */}
-        <div style={styles.section}>
+        <div className="api-test-card">
           <h3>🎯 Individual Tests</h3>
           <select 
             value={selectedTest} 
             onChange={(e) => setSelectedTest(e.target.value)}
-            style={styles.select}
+            className="api-test-select"
           >
             <option value="all">-- Select a Test --</option>
             
@@ -218,11 +270,18 @@ function ApiTestPage() {
             <optgroup label="🏟️ Teams Service">
               <option value="getTeamSeason">Get Team Season Data</option>
               <option value="getTeamMonthly">Get Team Monthly Data</option>
+              <option value="getTeamRegularSeasonStandings">Get Regular Season Standings</option>
+              <option value="getTeamSpringTrainingStandings">Get Spring Training Standings</option>
+              <option value="getTeamPostseasonBracket">Get Postseason Bracket</option>
             </optgroup>
 
             <optgroup label="📊 Team Stats Service">
-              <option value="getTeamBattingStats">Get Team Batting Stats</option>
-              <option value="getTeamPitchingStats">Get Team Pitching Stats</option>
+              <option value="getTeamBattingStats">Get Team Batting Stats (Regular)</option>
+              <option value="getTeamPitchingStats">Get Team Pitching Stats (Regular)</option>
+              <option value="getTeamBattingStatsSpring">Get Team Batting Stats (Spring)</option>
+              <option value="getTeamPitchingStatsSpring">Get Team Pitching Stats (Spring)</option>
+              <option value="getTeamBattingStatsPostseason">Get Team Batting Stats (Postseason)</option>
+              <option value="getTeamPitchingStatsPostseason">Get Team Pitching Stats (Postseason)</option>
             </optgroup>
 
             <optgroup label="👥 Roster Service">
@@ -262,12 +321,23 @@ function ApiTestPage() {
               <option value="getLeagueSplitsBatters">Get League Splits (Batters)</option>
               <option value="getLeagueSplitsPitchers">Get League Splits (Pitchers)</option>
             </optgroup>
+
+            <optgroup label="🌍 League Leaders Service">
+              <option value="getLeagueBattingLeaders">Get League Batting Leaders</option>
+              <option value="getLeaguePitchingLeaders">Get League Pitching Leaders</option>
+              <option value="getLeagueTopBattingLeaders">Get Top MLB Batting Leaders (League)</option>
+              <option value="getLeagueTopPitchingLeaders">Get Top MLB Pitching Leaders (League)</option>
+              <option value="getLeagueHotBattingLeaders">Get Hot MLB Batting Leaders (League)</option>
+              <option value="getLeagueHotPitchingLeaders">Get Hot MLB Pitching Leaders (League)</option>
+              <option value="getLeagueSplitsBattersService">Get League Splits Batters (Service)</option>
+              <option value="getLeagueSplitsPitchersService">Get League Splits Pitchers (Service)</option>
+            </optgroup>
           </select>
 
           <button 
             onClick={handleRunSingleTest} 
             disabled={testing || selectedTest === 'all'}
-            style={styles.buttonSecondary}
+            className="btn-secondary"
           >
             {testing ? '⏳ Running...' : `Run: ${selectedTest}`}
           </button>
@@ -275,17 +345,13 @@ function ApiTestPage() {
 
         {/* Result Display */}
         {lastResult && (
-          <div style={{
-            ...styles.resultBox,
-            background: lastResult.includes('✅') ? '#c6f6d5' : '#fed7d7',
-            borderColor: lastResult.includes('✅') ? '#48bb78' : '#f56565',
-          }}>
-            <p style={styles.resultText}>{lastResult}</p>
+          <div className={`result-box ${lastResult.includes('✅') ? 'success' : 'error'}`}>
+            <p>{lastResult}</p>
           </div>
         )}
 
         {/* Current Test Info */}
-        <div style={styles.infoBox}>
+        <div className="info-box">
           <h4>📍 Current Test Parameters:</h4>
           <ul>
             <li><strong>Team:</strong> {getTeamName(selectedTeam)} (ID: {selectedTeam})</li>
@@ -296,7 +362,7 @@ function ApiTestPage() {
         </div>
 
         {/* Instructions */}
-        <div style={styles.instructionsBox}>
+        <div className="instructions-box">
           <h4>📝 Instructions:</h4>
           <ol>
             <li>Make sure your backend server is running on <code>http://127.0.0.1:8000</code></li>
@@ -308,37 +374,48 @@ function ApiTestPage() {
         </div>
 
         {/* Endpoint Reference */}
-        <div style={styles.endpointsBox}>
+        <div className="endpoints-box">
           <h4>🔗 Endpoint Reference:</h4>
-          <div style={styles.endpointGrid}>
-            <div style={styles.endpointCategory}>
+          <div className="endpoint-grid">
+            <div className="endpoint-category">
               <strong>Games</strong>
               <code>/games/team?team_id=X&season=Y&season_type=R</code>
               <code>/games/team/last10?team_id=X&season=Y</code>
               <code>/games/team/home?team_id=X&season=Y</code>
               <code>/games/team/away?team_id=X&season=Y</code>
             </div>
-            <div style={styles.endpointCategory}>
+            <div className="endpoint-category">
               <strong>Teams</strong>
               <code>/teams/season?team_id=X&season=Y</code>
               <code>/teams/monthly?team_id=X&season=Y</code>
+              <code>/teams/standings?season=Y</code>
+              <code>/teams/standings/spring?season=Y</code>
+              <code>/teams/standings/postseason?season=Y</code>
             </div>
-            <div style={styles.endpointCategory}>
+            <div className="endpoint-category">
               <strong>Stats</strong>
               <code>/teams/stats/batting?team_id=X&season=Y&season_type=R</code>
               <code>/teams/stats/pitching?team_id=X&season=Y&season_type=R</code>
             </div>
-            <div style={styles.endpointCategory}>
+            <div className="endpoint-category">
               <strong>Roster</strong>
               <code>/teams/roster?team_id=X&season=Y&role=pitcher|batters</code>
             </div>
-            <div style={styles.endpointCategory}>
-              <strong>Leaders</strong>
+            <div className="endpoint-category">
+              <strong>Team Leaders</strong>
               <code>/teams/leaders/batting?team_id=X&season=Y&season_type=R</code>
               <code>/teams/leaders/pitching?team_id=X&season=Y&season_type=R</code>
+              <code>/teams/leaders/batting/team/top?team_id=X&season=Y</code>
+              <code>/teams/leaders/batting/hot/team?team_id=X&season=Y</code>
+              <code>/teams/leaders/splits/team?team_id=X&season=Y&role=batters</code>
+            </div>
+            <div className="endpoint-category">
+              <strong>League Leaders</strong>
+              <code>/teams/leaders/batting/league?season=Y&season_type=R</code>
+              <code>/teams/leaders/pitching/league?season=Y&season_type=R</code>
               <code>/teams/leaders/batting/top?season=Y&season_type=R</code>
               <code>/teams/leaders/batting/hot?season=Y&season_type=R</code>
-              <code>/teams/leaders/splits/team?team_id=X&season=Y&role=batters</code>
+              <code>/teams/leaders/splits/league?season=Y&role=batters</code>
             </div>
           </div>
         </div>
@@ -346,128 +423,5 @@ function ApiTestPage() {
     </div>
   );
 }
-
-const styles = {
-  container: {
-    padding: '2rem',
-    maxWidth: '900px',
-    margin: '0 auto',
-    fontFamily: 'system-ui, -apple-system, sans-serif',
-    backgroundColor: '#f7fafc',
-    minHeight: '100vh',
-  },
-  card: {
-    background: 'white',
-    borderRadius: '12px',
-    padding: '2rem',
-    boxShadow: '0 4px 6px rgba(0,0,0,0.1)',
-  },
-  title: {
-    fontSize: '2rem',
-    marginBottom: '0.5rem',
-    color: '#1a202c',
-  },
-  subtitle: {
-    color: '#718096',
-    marginBottom: '2rem',
-  },
-  section: {
-    marginBottom: '2rem',
-    paddingBottom: '1.5rem',
-    borderBottom: '1px solid #e2e8f0',
-  },
-  configGrid: {
-    display: 'grid',
-    gridTemplateColumns: '1fr 1fr',
-    gap: '1rem',
-    marginTop: '1rem',
-  },
-  configItem: {
-    display: 'flex',
-    flexDirection: 'column',
-  },
-  label: {
-    fontSize: '0.875rem',
-    fontWeight: '600',
-    color: '#4a5568',
-    marginBottom: '0.5rem',
-  },
-  select: {
-    width: '100%',
-    padding: '0.75rem',
-    fontSize: '1rem',
-    borderRadius: '8px',
-    border: '2px solid #e2e8f0',
-    backgroundColor: 'white',
-    cursor: 'pointer',
-  },
-  buttonPrimary: {
-    padding: '1rem 2rem',
-    fontSize: '1rem',
-    fontWeight: 'bold',
-    color: 'white',
-    background: '#C8102E',
-    border: 'none',
-    borderRadius: '8px',
-    cursor: 'pointer',
-    width: '100%',
-    transition: 'background 0.2s',
-    marginTop: '1rem',
-  },
-  buttonSecondary: {
-    padding: '0.75rem 1.5rem',
-    fontSize: '1rem',
-    fontWeight: 'bold',
-    color: 'white',
-    background: '#041E42',
-    border: 'none',
-    borderRadius: '8px',
-    cursor: 'pointer',
-    marginTop: '1rem',
-    width: '100%',
-    transition: 'background 0.2s',
-  },
-  resultBox: {
-    padding: '1rem',
-    borderRadius: '8px',
-    border: '2px solid',
-    marginBottom: '1.5rem',
-  },
-  resultText: {
-    margin: 0,
-    fontWeight: '600',
-  },
-  infoBox: {
-    background: '#ebf8ff',
-    padding: '1.5rem',
-    borderRadius: '8px',
-    marginBottom: '1.5rem',
-    border: '1px solid #bee3f8',
-  },
-  instructionsBox: {
-    background: '#f7fafc',
-    padding: '1.5rem',
-    borderRadius: '8px',
-    marginBottom: '1.5rem',
-    border: '1px solid #e2e8f0',
-  },
-  endpointsBox: {
-    background: '#edf2f7',
-    padding: '1.5rem',
-    borderRadius: '8px',
-    fontSize: '0.875rem',
-  },
-  endpointGrid: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '1rem',
-    marginTop: '1rem',
-  },
-  endpointCategory: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '0.25rem',
-  },
-};
 
 export default ApiTestPage;

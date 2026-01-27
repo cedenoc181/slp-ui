@@ -3,6 +3,7 @@ import teamsService from '../services/teamsService';
 import teamStatsService from '../services/teamStatsService';
 import rosterService from '../services/rosterService';
 import teamLeadersService from '../services/teamLeadersService';
+import leagueLeadersService from '../services/leagueLeadersService';
 import { TEAM_IDS, SEASON_TYPES, PLAYER_ROLES } from '../constants/apiConstants';
 
 /**
@@ -193,7 +194,7 @@ class ApiTester {
 
   async testGetTopBattingLeaders() {
     try {
-      const data = await teamLeadersService.getTopBattingLeaders(this.testSeason, SEASON_TYPES.REGULAR);
+      const data = await leagueLeadersService.getTopBattingLeaders(this.testSeason, SEASON_TYPES.REGULAR);
       this.logResult('getTopBattingLeaders (MLB)', true, data);
       return data;
     } catch (error) {
@@ -204,7 +205,7 @@ class ApiTester {
 
   async testGetTopPitchingLeaders() {
     try {
-      const data = await teamLeadersService.getTopPitchingLeaders(this.testSeason, SEASON_TYPES.REGULAR);
+      const data = await leagueLeadersService.getTopPitchingLeaders(this.testSeason, SEASON_TYPES.REGULAR);
       this.logResult('getTopPitchingLeaders (MLB)', true, data);
       return data;
     } catch (error) {
@@ -312,6 +313,7 @@ class ApiTester {
       teamStats: teamStatsService,
       roster: rosterService,
       teamLeaders: teamLeadersService,
+      leagueLeaders: leagueLeadersService,
     };
 
     try {
