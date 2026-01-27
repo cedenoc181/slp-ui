@@ -434,7 +434,7 @@ function MLBStandings() {
                         <tr 
                           key={team.rank} 
                           className={`${team.rank === 1 ? 'division-leader' : ''} clickable-row`}
-                          onClick={() => handleTeamClick(team.teamAbbreviation)}
+                          onClick={(e) => handleTeamClick(e, team.teamAbbreviation)} onAuxClick={(e) => handleTeamClick(e, team.teamAbbreviation)}
                         >
                           <td className="rank-col">{team.rank}</td>
                           <td className="team-col">
@@ -493,7 +493,7 @@ function MLBStandings() {
                         <tr 
                           key={team.rank} 
                           className={`${team.rank === 1 ? 'division-leader' : ''} clickable-row`}
-                          onClick={() => handleTeamClick(team.teamAbbreviation)}
+                          onClick={(e) => handleTeamClick(e, team.teamAbbreviation)} onAuxClick={(e) => handleTeamClick(e, team.teamAbbreviation)}
                         >
                           <td className="rank-col">{team.rank}</td>
                           <td className="team-col">
@@ -552,7 +552,7 @@ function MLBStandings() {
                         <tr 
                           key={team.rank} 
                           className={`${team.rank === 1 ? 'division-leader' : ''} clickable-row`}
-                          onClick={() => handleTeamClick(team.teamAbbreviation)}
+                          onClick={(e) => handleTeamClick(e, team.teamAbbreviation)} onAuxClick={(e) => handleTeamClick(e, team.teamAbbreviation)}
                         >
                           <td className="rank-col">{team.rank}</td>
                           <td className="team-col">
@@ -614,7 +614,7 @@ function MLBStandings() {
                         <tr 
                           key={team.rank} 
                           className={`${team.rank <= 3 ? 'wildcard-position' : ''} clickable-row`}
-                          onClick={() => handleTeamClick(team.teamAbbreviation)}
+                          onClick={(e) => handleTeamClick(e, team.teamAbbreviation)} onAuxClick={(e) => handleTeamClick(e, team.teamAbbreviation)}
                         >
                           <td className="rank-col">{team.rank}</td>
                           <td className="team-col">
@@ -652,7 +652,7 @@ function MLBStandings() {
                     <div 
                       key={team.leagueRank} 
                       className="league-power-item clickable-power-item"
-                      onClick={() => handleTeamClick(team.teamAbbreviation)}
+                      onClick={(e) => handleTeamClick(e, team.teamAbbreviation)} onAuxClick={(e) => handleTeamClick(e, team.teamAbbreviation)}
                     >
                       <div className="league-power-rank">{team.leagueRank}</div>
                       <div className="league-power-team-info">
@@ -693,7 +693,7 @@ function MLBStandings() {
                     <div 
                       key={team.rank} 
                       className="power-ranking-item clickable-power-item"
-                      onClick={() => handleTeamClick(team.teamAbbreviation)}
+                      onClick={(e) => handleTeamClick(e, team.teamAbbreviation)} onAuxClick={(e) => handleTeamClick(e, team.teamAbbreviation)}
                     >
                       <div className="power-rank">{team.rank}</div>
                       <div className="power-team-info">

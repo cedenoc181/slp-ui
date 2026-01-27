@@ -743,3 +743,39 @@
 @media (max-width: 430px) {
 
 }
+
+/* ============================================
+   Loading & Error States - Centered
+   ============================================ */
+.playoff-bracket-container .standings-loading,
+.playoff-bracket-container .standings-error {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  min-height: 400px;
+  width: 100%;
+  margin: 0 auto;
+  text-align: center;
+  color: var(--text-main);
+}
+
+.playoff-bracket-container .standings-loading .loading-spinner {
+  width: 48px;
+  height: 48px;
+  border: 4px solid rgba(255, 255, 255, 0.1);
+  border-top-color: var(--al-color);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.playoff-bracket-container .standings-error {
+  color: #ff6b6b;
+}

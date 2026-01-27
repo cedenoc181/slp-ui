@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import '../../../../styles/stats-page-styling/mlb-standings-springtraining.css';
 import teamsService from '../../../../data/services/teamsService';
 import teamStatsService from '../../../../data/services/teamStatsService';
-import { SEASON_TYPES } from '../../../../data/constants/apiConstants';
+import { SEASON_TYPES, TEAM_METADATA } from '../../../../data/constants/apiConstants';
 
 function MLBStandingsSpringTraining({ selectedSeason, selectedLeague }) {
   const navigate = useNavigate();
@@ -163,9 +163,9 @@ function MLBStandingsSpringTraining({ selectedSeason, selectedLeague }) {
     };
   }, [springData, selectedLeague]);
 
-  // Helper function to convert team name to URL-friendly format
-  const formatTeamNameForUrl = (teamName) => {
-    return teamName.toLowerCase().replace(/\s+/g, '-');
+  // Helper function to get URL-friendly team name from abbreviation
+  const getTeamUrlFromAbbr = (teamAbbreviation) => {
+    return TEAM_METADATA[teamAbbreviation]?.urlName || teamAbbreviation?.toLowerCase();
   };
 
   // Format team display - just return team name or abbreviation for compact mode
@@ -174,10 +174,11 @@ function MLBStandingsSpringTraining({ selectedSeason, selectedLeague }) {
     return teamName;
   }, []);
 
-  // Handle team click navigation
-  const handleTeamClick = (teamName) => {
-    const formattedName = formatTeamNameForUrl(teamName);
-    navigate(`/team-analytics/${formattedName}`);
+  // Handle team click navigation - includes season as query parameter
+  const handleTeamClick = (teamAbbreviation) => {
+    if (!teamAbbreviation) return;
+    const urlName = getTeamUrlFromAbbr(teamAbbreviation);
+    navigate(`/team-analytics/${urlName}?season=${selectedSeason}`);
   };
 
   return (
@@ -257,7 +258,7 @@ function MLBStandingsSpringTraining({ selectedSeason, selectedLeague }) {
                   <tr 
                     key={team.mlbTeamId} 
                     className={`${index === 0 ? 'spring-leader' : ''} clickable-row`}
-                    onClick={() => handleTeamClick(team.team)}
+                    onClick={() => handleTeamClick(team.teamAbbreviation)}
                   >
                     <td className="rank-col">{team.rank}</td>
                     <td className="team-col">
