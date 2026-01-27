@@ -247,9 +247,10 @@ function MLBStandings() {
   };
 
   // Handle team click navigation - includes season as query parameter
-  const handleTeamClick = (teamAbbreviation) => {
+  const handleTeamClick = (e, teamAbbreviation) => {
     const urlName = getTeamUrlFromAbbr(teamAbbreviation);
     navigate(`/team-analytics/${urlName}?season=${selectedSeason}`);
+    window.scrollTo(0, 0);
   };
 
   // Handle season type change
