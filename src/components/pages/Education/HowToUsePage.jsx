@@ -212,7 +212,7 @@ function HowToUsePage() {
       <div className="container">
         <h1 className="page-title">How to Use Sandlot Picks</h1>
         <p className="page-subtitle">
-          Your complete guide to navigating our platform, understanding predictions, and joining our Discord community
+          Your complete guide to navigating our MLB analytics platform and getting the most from our tools
         </p>
 
         {/* Tab Navigation */}
