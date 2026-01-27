@@ -4,157 +4,187 @@
       "id": 1,
       "category": "General",
       "question": "What is Sandlot Picks Analytics?",
-      "answer": "Sandlot Picks Analytics is a data-driven platform that provides predictive analytics and insights for MLB betting. We use advanced machine learning models and statistical analysis to help you make informed betting decisions on player props and game outcomes."
+      "answer": "Sandlot Picks Analytics is a comprehensive MLB analytics platform that provides in-depth statistical analysis for players, teams, and league standings. We use advanced metrics and data visualization to help baseball fans and researchers better understand the game."
     },
     {
       "id": 2,
       "category": "General",
-      "question": "How accurate are your predictions?",
-      "answer": "Our models are continuously validated using metrics like RMSE (Root Mean Squared Error) and R² (Coefficient of Determination). While no prediction is 100% accurate, our models are trained on years of historical data and updated regularly to maintain high accuracy. We transparently share our model performance metrics with our users."
+      "question": "What can I do on this platform?",
+      "answer": "You can explore detailed player statistics, analyze team performance across multiple categories, track MLB standings and division races, learn about baseball analytics through our educational resources, and stay informed with our Sandlot Insider articles."
     },
     {
       "id": 3,
       "category": "General",
-      "question": "Is this a gambling service?",
-      "answer": "No, we are not a gambling service. Sandlot Picks Analytics provides educational content and analytical insights to help you make informed decisions. We do not accept bets, facilitate gambling, or guarantee winnings. All betting decisions are your own responsibility."
+      "question": "Is Sandlot Picks free to use?",
+      "answer": "Yes! Sandlot Picks offers free access to browse core content including MLB Standings, educational resources, our Glossary, and Sandlot Insider articles. Creating a free account unlocks additional features like Player Analytics and Team Analytics with detailed statistics."
     },
     {
       "id": 4,
-      "category": "Account & Access",
+      "category": "General",
       "question": "Do I need to create an account?",
-      "answer": "Currently, our platform offers free access to basic analytics and predictions without requiring an account. Premium features and advanced analytics may require account creation in the future."
+      "answer": "While you can browse some content without an account, creating a free account gives you access to our full analytics suite including Player Analytics and Team Analytics. For advanced features like predictions and premium UI tools, a paid subscription is required."
     },
     {
       "id": 5,
-      "category": "Account & Access",
-      "question": "How do I join the Discord community?",
-      "answer": "You can join our Discord community by clicking the Discord icon in our footer or visiting discord.com/invite/CQsrtNp4S7. Our community is free to join and provides daily discussions, insights, and direct support from our team."
+      "category": "Access & Pricing",
+      "question": "What access levels are available?",
+      "answer": "We offer three tiers: (1) Guest Access - browse standings, glossary, articles, and educational content for free. (2) Free Account - unlock Player Analytics and Team Analytics with comprehensive statistics. (3) Premium - access predictions, advanced analytical tools, and premium features."
     },
     {
       "id": 6,
-      "category": "Account & Access",
-      "question": "Is there a mobile app?",
-      "answer": "Currently, we don't have a dedicated mobile app, but our website is fully responsive and optimized for mobile devices. You can access all features through your mobile browser with the same functionality as desktop."
+      "category": "Access & Pricing",
+      "question": "What's included in a free account?",
+      "answer": "A free account gives you full access to Player Analytics with detailed batting and pitching stats, Team Analytics with offensive, pitching, and defensive breakdowns, historical data comparisons, and all educational resources."
     },
     {
       "id": 7,
-      "category": "Predictions & Analytics",
-      "question": "What types of predictions do you offer?",
-      "answer": "We specialize in MLB player prop predictions including hits, runs, strikeouts, home runs, and other performance metrics. Our models analyze batter vs. pitcher matchups, recent form, ballpark factors, weather conditions, and historical performance data."
+      "category": "Access & Pricing",
+      "question": "What premium features are available?",
+      "answer": "Premium subscribers get access to our prediction models, advanced analytical UI tools, enhanced data visualizations, and exclusive insights. These tools are designed for serious analysts and researchers who want the deepest level of baseball intelligence."
     },
     {
       "id": 8,
-      "category": "Predictions & Analytics",
-      "question": "When are predictions updated?",
-      "answer": "Predictions are updated daily based on confirmed starting lineups, latest player statistics, injury reports, and other relevant factors. We recommend checking predictions closer to game time for the most accurate information."
+      "category": "Player Analytics",
+      "question": "How do I search for a player?",
+      "answer": "Navigate to the Player Analytics page and use the search bar at the top. You can search by player name to instantly access their complete statistical profile including batting, pitching, and advanced metrics. Note: Full Player Analytics requires a free account."
     },
     {
       "id": 9,
-      "category": "Predictions & Analytics",
-      "question": "How do you calculate predictions?",
-      "answer": "Our predictions use machine learning models trained on historical MLB data. We employ advanced regression techniques, feature engineering, and real-time matchup analysis. Key factors include player statistics, pitcher-batter history, ballpark factors, weather conditions, and recent performance trends."
+      "category": "Player Analytics",
+      "question": "What statistics are available for players?",
+      "answer": "We provide comprehensive player statistics including traditional metrics (AVG, HR, RBI, ERA, W-L), advanced metrics (wOBA, xFIP, BABIP, WAR), splits (vs LHP/RHP, home/away), and historical trends across multiple seasons."
     },
     {
       "id": 10,
-      "category": "Predictions & Analytics",
-      "question": "What do the confidence scores mean?",
-      "answer": "Confidence scores indicate how certain our model is about a prediction based on historical accuracy and data quality. Higher confidence doesn't guarantee success but indicates stronger statistical backing. We recommend considering both the prediction and confidence level when making decisions."
+      "category": "Player Analytics",
+      "question": "Can I compare multiple players?",
+      "answer": "Yes, our analytics tools allow you to view and compare statistics across different players. This helps you identify performance differences, trends, and how players stack up against each other."
     },
     {
       "id": 11,
-      "category": "Data & Statistics",
-      "question": "Where does your data come from?",
-      "answer": "We aggregate data from multiple reliable sources including official MLB statistics, advanced baseball metrics providers, and historical game data. All data is verified and cross-referenced to ensure accuracy."
+      "category": "Team Analytics",
+      "question": "How do I view team statistics?",
+      "answer": "Go to Team Analytics and select any of the 30 MLB teams. You'll see comprehensive data including offensive stats, pitching metrics, defensive performance, and historical comparisons. Note: Full Team Analytics requires a free account."
     },
     {
       "id": 12,
+      "category": "Team Analytics",
+      "question": "What team metrics are available?",
+      "answer": "Team Analytics includes runs scored/allowed, batting average, OPS, ERA, WHIP, fielding percentage, home/away splits, recent performance trends, and much more. Data is organized into offensive, pitching, and defensive categories."
+    },
+    {
+      "id": 13,
+      "category": "Team Analytics",
+      "question": "Can I view historical team data?",
+      "answer": "Yes, you can view team statistics across multiple seasons to analyze year-over-year trends, identify improvements or declines, and understand how teams have evolved over time."
+    },
+    {
+      "id": 14,
+      "category": "MLB Standings",
+      "question": "Where can I see current MLB standings?",
+      "answer": "Visit our MLB Standings page to view current division standings, wild card races, win-loss records, games behind leaders, and playoff positioning for all 30 teams organized by division. Standings are available to all users without an account."
+    },
+    {
+      "id": 15,
+      "category": "MLB Standings",
+      "question": "How often are standings updated?",
+      "answer": "Standings are updated regularly throughout the MLB season to reflect the most current records and playoff positioning for all teams."
+    },
+    {
+      "id": 16,
+      "category": "Data & Statistics",
+      "question": "Where does your data come from?",
+      "answer": "We aggregate data from multiple reliable sources including official MLB statistics and advanced baseball metrics providers. All data is verified and cross-referenced to ensure accuracy."
+    },
+    {
+      "id": 17,
       "category": "Data & Statistics",
       "question": "What advanced metrics do you use?",
       "answer": "We utilize advanced sabermetrics including wOBA (Weighted On-Base Average), xFIP (Expected Fielding Independent Pitching), BABIP (Batting Average on Balls in Play), barrel rate, exit velocity, launch angle, and many others. Check our Glossary page for detailed explanations."
     },
     {
-      "id": 13,
+      "id": 18,
       "category": "Data & Statistics",
       "question": "How often is your data updated?",
-      "answer": "Statistical data is updated daily after games conclude. Real-time factors like lineups, injuries, and weather are monitored continuously and updated as information becomes available."
-    },
-    {
-      "id": 14,
-      "category": "Betting & Strategy",
-      "question": "Do you guarantee winning bets?",
-      "answer": "No. We do not and cannot guarantee winning bets. Sports betting involves inherent risk and uncertainty. Our analytics are designed to provide informed insights, not guaranteed outcomes. Always bet responsibly and never wager more than you can afford to lose."
-    },
-    {
-      "id": 15,
-      "category": "Betting & Strategy",
-      "question": "What is responsible gambling?",
-      "answer": "Responsible gambling means setting limits, never chasing losses, only betting what you can afford to lose, and recognizing when gambling becomes a problem. If you or someone you know has a gambling problem, call 1-800-GAMBLER for help."
-    },
-    {
-      "id": 16,
-      "category": "Betting & Strategy",
-      "question": "How should I use your predictions?",
-      "answer": "Our predictions should be one factor in your decision-making process. Consider combining our analytics with your own research, current events, and risk tolerance. Use proper bankroll management and never rely solely on any single source for betting decisions."
-    },
-    {
-      "id": 17,
-      "category": "Betting & Strategy",
-      "question": "What is bankroll management?",
-      "answer": "Bankroll management involves setting aside a specific amount of money for betting and wagering only a small percentage (typically 1-5%) on any single bet. This strategy helps protect your funds and allows you to weather losing streaks without going broke."
-    },
-    {
-      "id": 18,
-      "category": "Technical",
-      "question": "Why isn't a prediction showing?",
-      "answer": "Predictions may not show if: starting lineups aren't confirmed, a player is injured or not starting, there's insufficient historical data for the matchup, or our model lacks confidence in making an accurate prediction. We only display predictions that meet our quality standards."
+      "answer": "Statistical data is updated regularly throughout the MLB season after games conclude. We strive to provide the most current information available for your research and analysis."
     },
     {
       "id": 19,
-      "category": "Technical",
-      "question": "I found a bug. How do I report it?",
-      "answer": "We appreciate bug reports! Please use our Contact page and select 'Report a Bug' from the dropdown. Provide as much detail as possible including what you were doing, what went wrong, and any error messages you saw."
+      "category": "Data & Statistics",
+      "question": "I don't understand a statistic. Where can I learn more?",
+      "answer": "Visit our Glossary page for comprehensive definitions and explanations of all baseball statistics and metrics used on our platform. Each term includes context for how to interpret and use the data effectively."
     },
     {
       "id": 20,
+      "category": "Learning Resources",
+      "question": "What educational content do you offer?",
+      "answer": "We provide a detailed Glossary of baseball statistics, a Data Science section explaining our analytics methodology, informative blog posts, and Sandlot Insider articles with in-depth analysis and commentary."
+    },
+    {
+      "id": 21,
+      "category": "Learning Resources",
+      "question": "Where can I read analysis articles?",
+      "answer": "Check out our Sandlot Insider section for in-depth articles, player analysis, team breakdowns, and baseball commentary written by our team of analysts."
+    },
+    {
+      "id": 22,
+      "category": "Learning Resources",
+      "question": "How can I improve my understanding of baseball analytics?",
+      "answer": "Start with our Glossary to learn key terms, read our Data Science section to understand analytical methodology, explore our How To Use guide for tips on using our tools effectively, and dive into Sandlot Insider for applied analysis."
+    },
+    {
+      "id": 23,
+      "category": "Technical",
+      "question": "Is there a mobile app?",
+      "answer": "Currently, we don't have a dedicated mobile app, but our website is fully responsive and optimized for mobile devices. You can access all features through your mobile browser with the same functionality as desktop."
+    },
+    {
+      "id": 24,
+      "category": "Technical",
+      "question": "I found a bug. How do I report it?",
+      "answer": "We appreciate bug reports! Please use our Contact page and provide as much detail as possible including what you were doing, what went wrong, and any error messages you saw."
+    },
+    {
+      "id": 25,
       "category": "Technical",
       "question": "What browsers are supported?",
       "answer": "Our platform works best on modern browsers including Chrome, Firefox, Safari, and Edge (latest versions). We recommend keeping your browser updated for the best experience and security."
     },
     {
-      "id": 21,
-      "category": "Pricing & Features",
-      "question": "Is Sandlot Picks free to use?",
-      "answer": "Yes! Currently, we offer free access to our analytics, predictions, and community. We may introduce premium features in the future, but our core mission is to provide valuable insights accessible to everyone."
+      "id": 26,
+      "category": "Technical",
+      "question": "Why isn't data showing for a player or team?",
+      "answer": "Data may not show if the player is a recent call-up with limited MLB statistics, there's a temporary data sync issue, or the player is inactive. Try refreshing the page or check back later."
     },
     {
-      "id": 22,
-      "category": "Pricing & Features",
+      "id": 27,
+      "category": "Future Plans",
       "question": "Will you add other sports?",
-      "answer": "We're focused on perfecting our MLB analytics first. While we've designed our platform to be modular and scalable for other sports, we currently have no immediate plans to expand beyond baseball. Stay tuned to our announcements!"
+      "answer": "We're focused on perfecting our MLB analytics first. While we've designed our platform to be modular and scalable, we currently have no immediate plans to expand beyond baseball. Stay tuned to our announcements!"
     },
     {
-      "id": 23,
-      "category": "Privacy & Security",
+      "id": 28,
+      "category": "Future Plans",
+      "question": "What new features are coming?",
+      "answer": "We're continuously improving our platform with enhanced visualizations, additional statistics, more in-depth analysis tools, and expanded educational content. Follow our updates for the latest additions."
+    },
+    {
+      "id": 29,
+      "category": "Privacy & Support",
       "question": "How is my data protected?",
       "answer": "We take privacy seriously. We don't collect unnecessary personal information, use industry-standard encryption, and never sell your data to third parties. Read our Privacy Policy for complete details on data handling and protection."
     },
     {
-      "id": 24,
-      "category": "Privacy & Security",
-      "question": "Do you use cookies?",
-      "answer": "Yes, we use cookies for essential functionality like remembering your preferences and for analytics to improve our service. We use Google Analytics to understand how visitors use our site. You can control cookies through your browser settings."
-    },
-    {
-      "id": 25,
-      "category": "Community & Support",
+      "id": 30,
+      "category": "Privacy & Support",
       "question": "How can I contact support?",
-      "answer": "You can reach us through our Contact page or email us directly at support@sandlotpicks.com. We typically respond within 24 hours. For immediate help, join our Discord community where team members and other users can assist you."
+      "answer": "You can reach us through our Contact page. We typically respond within 24-48 hours and appreciate your patience as we work to address all inquiries."
     },
     {
-      "id": 26,
-      "category": "Community & Support",
-      "question": "Can I contribute or provide feedback?",
-      "answer": "Absolutely! We welcome feedback, feature requests, and suggestions. Use our Contact page and select 'General Feedback' or 'Feature Request'. Your input helps us improve and better serve the community."
+      "id": 31,
+      "category": "Privacy & Support",
+      "question": "Can I provide feedback or suggest features?",
+      "answer": "Absolutely! We welcome feedback, feature requests, and suggestions. Use our Contact page to share your ideas. Your input helps us improve and build a better platform for the baseball community."
     }
   ]
 }

@@ -7,62 +7,67 @@
         {
           "type": "intro",
           "title": "Welcome to Sandlot Picks Analytics!",
-          "content": ""
+          "content": "Your data-driven companion for MLB insights and analytics. Here's how to get the most out of our platform."
         },
         {
           "type": "steps",
           "steps": [
             {
               "number": 1,
-              "title": "Explore Our Website",
-              "description": "Browse through our platform to access:",
+              "title": "Explore Player Analytics",
+              "description": "Dive deep into individual player performance:",
               "items": [
-                "Daily MLB predictions and analytics",
-                "Advanced statistics and player matchups",
-                "Educational resources in our Glossary",
-                "Answers to common questions in our FAQ"
+                "Search for any MLB player by name",
+                "View comprehensive batting and pitching statistics",
+                "Analyze trends across different time periods",
+                "Compare players using advanced metrics"
               ],
               "links": [
-                { "text": "Glossary", "url": "/glossary" },
-                { "text": "FAQ", "url": "/faqs" }
+                { "text": "Player Analytics", "url": "/player-analytics" }
               ]
             },
             {
               "number": 2,
-              "title": "Join Our Discord Community",
-              "description": "Connect with fellow data-driven bettors and get real-time updates:",
+              "title": "Analyze Team Performance",
+              "description": "Get a complete picture of any MLB team:",
               "items": [
-                "Daily predictions posted during MLB season",
-                "Live discussions and insights",
-                "Direct support from our team",
-                "Community picks and strategies"
+                "Browse all 30 MLB teams",
+                "View offensive, defensive, and pitching breakdowns",
+                "Track team trends and recent performance",
+                "Compare teams across various metrics"
               ],
-              "cta": {
-                "text": "Join Discord Server",
-                "url": "https://discord.com/invite/CQsrtNp4S7",
-                "external": true
-              }
+              "links": [
+                { "text": "Team Analytics", "url": "/team-analytics" }
+              ]
             },
             {
               "number": 3,
-              "title": "Review Predictions",
-              "description": "Check our predictions and analytics before making your bets:",
+              "title": "Check MLB Standings",
+              "description": "Stay updated on the league landscape:",
               "items": [
-                "Review confidence scores and edge values",
-                "Analyze matchup details and statistics",
-                "Consider weather, ballpark factors, and recent form",
-                "Use our insights as part of your decision-making process"
+                "View current division standings",
+                "Track wild card races and playoff positioning",
+                "Analyze win/loss records and streaks",
+                "Monitor games behind and elimination numbers"
+              ],
+              "links": [
+                { "text": "MLB Standings", "url": "/mlb-standings" }
               ]
             },
             {
               "number": 4,
-              "title": "Bet Responsibly",
-              "description": "Always practice responsible gambling:",
+              "title": "Learn & Research",
+              "description": "Expand your baseball analytics knowledge:",
               "items": [
-                "Set a budget and stick to it",
-                "Never bet more than you can afford to lose",
-                "Use proper bankroll management (1-5% per bet)",
-                "Track your results and learn from them"
+                "Read our Sandlot Insider articles for in-depth analysis",
+                "Explore the Data Science section to understand our methodology",
+                "Use the Glossary to learn baseball statistics terminology",
+                "Check FAQs for answers to common questions"
+              ],
+              "links": [
+                { "text": "Glossary", "url": "/glossary" },
+                { "text": "FAQ", "url": "/faqs" },
+                { "text": "Data Science", "url": "/data-science" }
               ]
             }
           ]
@@ -70,177 +75,129 @@
       ]
     },
     {
-      "id": "discord",
-      "title": "Discord Community",
+      "id": "analytics",
+      "title": "Using Analytics",
       "sections": [
         {
           "type": "intro",
-          "title": "Navigating Our Discord Community",
-          "content": "Welcome to the FAQ thread! Here are answers to the most common questions about how Sandlot Picks operates and what you can expect from this community."
+          "title": "Navigating Our Analytics Tools",
+          "content": "Our analytics suite provides powerful insights to help you understand player and team performance at a deeper level."
         },
         {
           "type": "faqs",
           "items": [
             {
               "id": 1,
-              "icon": "❓",
-              "question": "When are betting predictions usually posted?",
-              "subtitle": "Wondering what time you should check in for the latest picks?",
-              "answer": "Picks are usually posted around 10:00 AM - 2:00 PM Eastern Time for the duration of MLB season. This gives you plenty of time to review before games start.",
-              "highlight": "10:00 AM - 2:00 PM Eastern Time"
+              "icon": "📊",
+              "question": "How do I find a specific player?",
+              "subtitle": "Searching for player stats and analytics",
+              "answer": "Navigate to Player Analytics and use the search bar at the top of the page. You can search by player name to instantly access their full statistical profile.",
+              "highlight": "Player Analytics"
             },
             {
               "id": 2,
-              "icon": "❓",
-              "question": "Where can I find the posted predictions?",
-              "subtitle": "Which channels should I be looking at for today's plays?",
-              "answer": "Picks are posted in the 💸-PREDICTIONS-💸 category. Channels are split by bet type:",
+              "icon": "🏟️",
+              "question": "How do I view team statistics?",
+              "subtitle": "Accessing comprehensive team data",
+              "answer": "Go to Team Analytics and select any of the 30 MLB teams. You'll see:",
               "list": [
-                "Batter props",
-                "Pitcher props",
-                "Head-to-head matchups",
-                "And more!"
+                "Offensive statistics (runs, hits, home runs, OPS)",
+                "Pitching metrics (ERA, WHIP, strikeouts)",
+                "Defensive performance data",
+                "Historical trends and comparisons"
               ],
-              "highlight": "💸-PREDICTIONS-💸"
+              "highlight": "Team Analytics"
             },
             {
               "id": 3,
-              "icon": "❓",
-              "question": "How are the betting predictions created?",
-              "subtitle": "What's the process behind these picks? Is it AI, data modeling, expert knowledge, or all of the above?",
-              "answer": "MLB data is trained on both individual and team levels. Our Machine Learning Algorithms analyze:",
+              "icon": "📈",
+              "question": "What statistics are available?",
+              "subtitle": "Understanding the depth of our data",
+              "answer": "We provide both traditional and advanced statistics including:",
               "list": [
-                "Recent performance trends",
-                "Seasonal statistics",
-                "Advanced metrics (wOBA, xFIP, BABIP, etc.)",
-                "Matchup history and splits",
-                "Ballpark factors and weather conditions"
-              ],
-              "footer": "This creates the most accurate, data-driven predictions possible."
+                "Traditional: AVG, HR, RBI, ERA, W-L",
+                "Advanced: wOBA, xFIP, BABIP, WAR",
+                "Situational: vs LHP/RHP splits, home/away",
+                "Recent form and trend analysis"
+              ]
             },
             {
               "id": 4,
-              "icon": "❓",
-              "question": "What does 'STD' or Standard Deviation mean on a prediction?",
-              "subtitle": "I keep seeing STD next to the predictions — what does that tell me as a bettor?",
-              "answer": "STD stands for standard deviation. It helps you understand how consistent a prediction is compared to a player's previous performances.",
-              "list": [
-                "Lower STD: More consistent, predictable performance",
-                "Higher STD: More volatile, less predictable"
-              ]
+              "icon": "📅",
+              "question": "How often is the data updated?",
+              "subtitle": "Staying current with the latest stats",
+              "answer": "Our statistics are updated regularly throughout the MLB season to ensure you have access to the most current data for your analysis."
             },
             {
               "id": 5,
-              "icon": "❓",
-              "question": "What does 'Edge' mean in the context of these picks?",
-              "subtitle": "What's ' (+2.50) / (-2.50) '? Why does it matter to my decision-making?",
-              "answer": "The 'edge' is shown next to the prediction, for example:",
-              "list": [
-                "🔥 OVER (+2.50)",
-                "❄️ UNDER (-2.50)"
-              ],
-              "footer": "This value represents the difference between our model's expected result and the actual betting line. A higher edge indicates greater value in the bet."
+              "icon": "🔍",
+              "question": "Can I compare multiple players or teams?",
+              "subtitle": "Making side-by-side comparisons",
+              "answer": "Yes! Our analytics tools allow you to compare performance metrics across different players and teams to identify trends and make informed decisions."
             },
             {
               "id": 6,
-              "icon": "❓",
-              "question": "Does Sandlot Picks cover sports other than MLB?",
-              "subtitle": "Are there picks for NBA, NFL, NHL, or college sports too?",
-              "answer": "We are dedicated to being the best sports betting algorithm in the game of baseball.",
-              "footer": "Potential future expansions include:",
-              "list": [
-                "⚾️ NCAA College Baseball",
-                "🇰🇷 KBO (Korean Baseball)",
-                "🇯🇵 NPB (Japanese Baseball)"
-              ]
+              "icon": "📚",
+              "question": "What if I don't understand a statistic?",
+              "subtitle": "Learning baseball analytics terminology",
+              "answer": "Visit our Glossary page for detailed explanations of all statistics and metrics used throughout the platform. Each term includes definitions and context for how to interpret the data.",
+              "highlight": "Glossary"
             }
           ]
-        },
-        {
-          "type": "screenshots",
-          "title": "Discord Community Channels",
-          "images": [
-            {
-              "src": "pitcher_prop.png",
-              "alt": "Discord Predictions Channel",
-              "caption": "Player Prop Predictions"
-            },
-            {
-              "src": "mlb_news.png",
-              "alt": "Discord MLB news Channel",
-              "caption": "MLB news and Updates"
-            },
-            {
-              "src": "pick_analysis.png",
-              "alt": "Discord Analysis Channel",
-              "caption": "Prediction Analysis"
-            }
-          ]
-        },
-        {
-          "type": "cta",
-          "title": "Ready to Join?",
-          "description": "Get access to daily predictions, live discussions, and a community of data-driven bettors",
-          "button": {
-            "text": "Join Our Discord Community",
-            "url": "https://discord.com/invite/CQsrtNp4S7",
-            "external": true
-          }
         }
       ]
     },
     {
       "id": "understanding",
-      "title": "Understanding Predictions",
+      "title": "Understanding Stats",
       "sections": [
         {
           "type": "intro",
-          "title": "Understanding Our Predictions",
-          "content": ""
-        },
-        {
-          "type": "prediction-example",
-          "title": "Prediction Format",
-          "description": "Our predictions include several key components:",
-          "example": {
-            "player": "Aaron Judge (NYY)",
-            "prop": "Total Bases OVER 1.5",
-            "prediction": "🔥 OVER (+2.50)",
-            "confidence": "78%",
-            "std": "0.85"
-          }
+          "title": "Understanding Baseball Analytics",
+          "content": "Get familiar with the key metrics and statistics we use to analyze player and team performance."
         },
         {
           "type": "metrics",
           "title": "Key Metrics Explained",
           "metrics": [
             {
-              "name": "Edge Value",
-              "description": "The difference between our model's prediction and the betting line. Higher edge = more value.",
+              "name": "Batting Average (AVG)",
+              "description": "Hits divided by at-bats. A fundamental measure of a hitter's ability to get on base via hits.",
               "scale": [
-                { "range": "+2.0 or higher", "meaning": "Strong value bet" },
-                { "range": "+1.0 to +2.0", "meaning": "Good value" },
-                { "range": "+0.5 to +1.0", "meaning": "Moderate value" },
-                { "range": "Below +0.5", "meaning": "Minimal edge" }
+                { "range": ".300+", "meaning": "Elite hitter" },
+                { "range": ".270-.299", "meaning": "Above average" },
+                { "range": ".240-.269", "meaning": "League average" },
+                { "range": "Below .240", "meaning": "Below average" }
               ]
             },
             {
-              "name": "Confidence Score",
-              "description": "How certain our model is about the prediction based on historical accuracy.",
+              "name": "On-Base Plus Slugging (OPS)",
+              "description": "Combines on-base percentage and slugging percentage. A comprehensive measure of hitting ability.",
               "scale": [
-                { "range": "80%+", "meaning": "Very high confidence" },
-                { "range": "70-79%", "meaning": "High confidence" },
-                { "range": "60-69%", "meaning": "Moderate confidence" },
-                { "range": "Below 60%", "meaning": "Lower confidence" }
+                { "range": ".900+", "meaning": "All-Star caliber" },
+                { "range": ".800-.899", "meaning": "Above average" },
+                { "range": ".700-.799", "meaning": "League average" },
+                { "range": "Below .700", "meaning": "Below average" }
               ]
             },
             {
-              "name": "Standard Deviation (STD)",
-              "description": "Measures consistency and volatility in player performance.",
+              "name": "Earned Run Average (ERA)",
+              "description": "Average earned runs allowed per nine innings pitched. Lower is better for pitchers.",
               "scale": [
-                { "range": "Low STD (0.5-1.0)", "meaning": "Consistent player" },
-                { "range": "Medium STD (1.0-1.5)", "meaning": "Some variance" },
-                { "range": "High STD (1.5+)", "meaning": "Volatile performance" }
+                { "range": "Below 3.00", "meaning": "Ace level" },
+                { "range": "3.00-3.99", "meaning": "Quality starter" },
+                { "range": "4.00-4.99", "meaning": "League average" },
+                { "range": "5.00+", "meaning": "Below average" }
+              ]
+            },
+            {
+              "name": "Weighted On-Base Average (wOBA)",
+              "description": "Advanced metric that weights each way of reaching base by its run value.",
+              "scale": [
+                { "range": ".400+", "meaning": "Elite" },
+                { "range": ".340-.399", "meaning": "Above average" },
+                { "range": ".310-.339", "meaning": "League average" },
+                { "range": "Below .310", "meaning": "Below average" }
               ]
             }
           ]
@@ -249,81 +206,78 @@
           "type": "factors",
           "title": "Factors We Analyze",
           "items": [
-            { "title": "Player Statistics", "description": "Recent form, season stats, career averages" },
-            { "title": "Matchup History", "description": "Batter vs. pitcher history, handedness advantages" },
-            { "title": "Ballpark Factors", "description": "Dimensions, altitude, surface type" },
-            { "title": "Weather Conditions", "description": "Wind, temperature, humidity" },
-            { "title": "Team Performance", "description": "Overall team stats and recent results" },
-            { "title": "Advanced Metrics", "description": "wOBA, xFIP, BABIP, exit velocity, barrel rate" }
+            { "title": "Player Statistics", "description": "Recent form, season stats, career averages, and splits" },
+            { "title": "Matchup History", "description": "Batter vs. pitcher history and handedness advantages" },
+            { "title": "Ballpark Factors", "description": "Dimensions, altitude, and how parks affect scoring" },
+            { "title": "Weather Conditions", "description": "Wind, temperature, and humidity impacts on gameplay" },
+            { "title": "Team Performance", "description": "Overall team stats, lineup strength, and bullpen depth" },
+            { "title": "Advanced Metrics", "description": "xFIP, BABIP, exit velocity, barrel rate, and more" }
           ]
         }
       ]
     },
     {
       "id": "tips",
-      "title": "Betting Tips",
+      "title": "Research Tips",
       "sections": [
         {
           "type": "intro",
-          "title": "Smart Betting Strategies",
-          "content": ""
+          "title": "Getting the Most From Our Analytics",
+          "content": "Tips and strategies for conducting effective baseball research using our platform."
         },
         {
           "type": "tips",
           "tips": [
             {
-              "icon": "💰",
-              "title": "Bankroll Management",
-              "description": "The foundation of successful betting:",
+              "icon": "🎯",
+              "title": "Start with the Basics",
+              "description": "Build your foundation before diving deep:",
               "items": [
-                "Set aside a specific amount for betting (your bankroll)",
-                "Never bet more than 1-5% of your bankroll on a single bet",
-                "Don't chase losses by increasing bet sizes",
-                "Track all your bets to understand your performance"
+                "Familiarize yourself with traditional stats first",
+                "Use our Glossary to understand new metrics",
+                "Compare players within the same position group",
+                "Look at both recent performance and season-long trends"
               ]
             },
             {
               "icon": "📊",
-              "title": "Using Our Analytics",
-              "description": "How to incorporate our predictions into your strategy:",
+              "title": "Use Context",
+              "description": "Numbers tell a story, but context is key:",
               "items": [
-                "Use predictions as one factor, not the only factor",
-                "Prioritize bets with high confidence AND high edge",
-                "Consider standard deviation for consistency",
-                "Do your own research on recent news and injuries",
-                "Compare multiple sportsbooks for the best lines"
-              ]
-            },
-            {
-              "icon": "⚠️",
-              "title": "Responsible Gambling",
-              "description": "Always remember:",
-              "items": [
-                "Betting should be entertainment, not income",
-                "Set loss limits and stick to them",
-                "Never bet money you can't afford to lose",
-                "Take breaks and don't bet when emotional",
-                "Seek help if gambling becomes a problem: 1-800-GAMBLER"
+                "Consider ballpark factors when comparing players",
+                "Account for schedule difficulty and opponent quality",
+                "Look at splits (home/away, vs LHP/RHP) for deeper insights",
+                "Check for injuries or lineup changes that affect stats"
               ]
             },
             {
               "icon": "📈",
-              "title": "Advanced Tips",
-              "description": "Level up your betting game:",
+              "title": "Identify Trends",
+              "description": "Look for patterns in the data:",
               "items": [
-                "Line shopping: Compare odds across multiple sportsbooks",
-                "Timing: Sometimes waiting for better lines pays off",
-                "Specialization: Focus on bet types you understand best",
-                "Record keeping: Track everything to identify your strengths",
-                "Community input: Learn from others in our Discord"
+                "Track recent form vs. season averages",
+                "Monitor hot and cold streaks",
+                "Compare performance across different time periods",
+                "Watch for breakout players or declining veterans"
+              ]
+            },
+            {
+              "icon": "🔬",
+              "title": "Advanced Analysis",
+              "description": "Level up your research:",
+              "items": [
+                "Use advanced metrics like wOBA and xFIP for better accuracy",
+                "Analyze matchup-specific data for head-to-head insights",
+                "Consider team-level stats alongside individual performance",
+                "Cross-reference multiple data points before drawing conclusions"
               ]
             }
           ]
         },
         {
           "type": "warning",
-          "title": "⚠️ Important Disclaimer",
-          "content": "Sandlot Picks provides analytical insights and predictions based on statistical models. We do not guarantee winning bets. All betting involves risk, and past performance does not guarantee future results. Please gamble responsibly."
+          "title": "📝 Research Reminder",
+          "content": "Baseball analytics provide valuable insights, but no statistic can predict the future with certainty. Use our tools as part of a comprehensive research approach, and always consider multiple factors when forming opinions about player and team performance."
         }
       ]
     }
