@@ -995,11 +995,12 @@
   grid-template-columns: 2fr 1fr;
   gap: 1.5rem;
   margin-bottom: 2rem;
+  align-items: stretch;
 }
 
 /* Roster Table */
 .roster-card {
-  max-height: 500px;
+  height: 500px;
   display: flex;
   flex-direction: column;
 }
@@ -1075,9 +1076,62 @@
 
 /* Injury List */
 .injury-card {
-  max-height: 500px;
+  height: 500px;
   display: flex;
   flex-direction: column;
+}
+
+.injury-card .card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.injury-summary-badges {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.injury-badge {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 4px 8px;
+  border-radius: 4px;
+  white-space: nowrap;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.injury-badge.current {
+  background: rgba(244, 67, 54, 0.15);
+  color: #F44336;
+}
+
+.injury-badge.current:hover {
+  background: rgba(244, 67, 54, 0.25);
+}
+
+.injury-badge.current.active-filter {
+  background: rgba(244, 67, 54, 0.4);
+  box-shadow: 0 0 0 2px #F44336;
+}
+
+.injury-badge.returned {
+  background: rgba(76, 175, 80, 0.15);
+  color: #4CAF50;
+}
+
+.injury-badge.returned:hover {
+  background: rgba(76, 175, 80, 0.25);
+}
+
+.injury-badge.returned.active-filter {
+  background: rgba(76, 175, 80, 0.4);
+  box-shadow: 0 0 0 2px #4CAF50;
 }
 
 .injury-list {
@@ -1093,6 +1147,17 @@
   background: rgba(244, 67, 54, 0.08);
   border: 1px solid rgba(244, 67, 54, 0.2);
   border-radius: 8px;
+  transition: all 0.2s ease;
+}
+
+.injury-item.returned {
+  background: rgba(76, 175, 80, 0.08);
+  border-color: rgba(76, 175, 80, 0.2);
+}
+
+.injury-item.active {
+  background: rgba(244, 67, 54, 0.08);
+  border-color: rgba(244, 67, 54, 0.2);
 }
 
 .injury-player-info {
@@ -1127,10 +1192,37 @@
   color: var(--text-secondary, #aaa);
 }
 
+.injury-dates {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
+  font-size: 11px;
+}
+
+.injury-date-label {
+  color: var(--text-muted, #666);
+}
+
+.injury-date {
+  color: var(--text-secondary, #aaa);
+  font-weight: 500;
+}
+
+.injury-date.returned {
+  color: #4CAF50;
+}
+
+.injury-date.expected {
+  color: #FF9800;
+  font-style: italic;
+}
+
 .injury-status-row {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  margin-top: 4px;
 }
 
 .injury-status {
@@ -1148,6 +1240,12 @@
 .injury-status.long-term {
   background: rgba(244, 67, 54, 0.2);
   color: #F44336;
+}
+
+.injury-days {
+  font-size: 11px;
+  color: var(--text-muted, #666);
+  font-weight: 500;
 }
 
 .injury-return {
@@ -1289,6 +1387,12 @@
 @media (max-width: 1024px) {
   .roster-injury-section {
     grid-template-columns: 1fr;
+  }
+
+  .roster-card,
+  .injury-card {
+    height: auto;
+    max-height: 450px;
   }
 
   .team-info-grid {

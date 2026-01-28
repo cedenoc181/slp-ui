@@ -7,6 +7,7 @@ import teamStatsService from '../../../../data/services/teamStatsService';
 import teamLeadersService from '../../../../data/services/teamLeadersService';
 import gamesService from '../../../../data/services/gamesService';
 import rosterService from '../../../../data/services/rosterService';
+import injuryService from '../../../../data/services/injuryService';
 
 // Import Constants & Utilities
 import { 
@@ -51,6 +52,7 @@ function TeamAnalytics() {
   const [leadersToggle, setLeadersToggle] = useState('batting');
   const [teamStatsToggle, setTeamStatsToggle] = useState('batting');
   const [rosterFilter, setRosterFilter] = useState('all'); // NEW: 'all', 'pitchers', 'position'
+  const [injuryFilter, setInjuryFilter] = useState('all'); // 'all', 'active', 'returned'
   const [hideFloatingFilters, setHideFloatingFilters] = useState(false);
   const [isChartSectionVisible, setIsChartSectionVisible] = useState(false);
   const chartSectionRef = useRef(null);
@@ -72,6 +74,12 @@ function TeamAnalytics() {
   const [awayGames, setAwayGames] = useState(null);
   const [roster, setRoster] = useState(null);
   const [teamSplits, setTeamSplits] = useState(null);
+  
+  // Injury Data (fetched separately based on timeframe)
+  const [injuriesFullSeason, setInjuriesFullSeason] = useState(null);
+  const [injuriesFirstHalf, setInjuriesFirstHalf] = useState(null);
+  const [injuriesSecondHalf, setInjuriesSecondHalf] = useState(null);
+  const [injuriesLoading, setInjuriesLoading] = useState(false);
 
   // ========== Fetch All Team Data ==========
   const fetchTeamData = async (teamId, season) => {
@@ -93,6 +101,9 @@ function TeamAnalytics() {
         awayGamesData,
         rosterData,
         splitsData,
+        injuriesFullSeasonData,
+        injuriesFirstHalfData,
+        injuriesSecondHalfData,
       ] = await Promise.all([
         teamsService.getTeamSeason(teamId, season).catch(err => { console.warn('Team season failed:', err); return null; }),
         teamsService.getTeamMonthly(teamId, season).catch(err => { console.warn('Team monthly failed:', err); return null; }),
@@ -105,6 +116,9 @@ function TeamAnalytics() {
         gamesService.getTeamAwayGames(teamId, season).catch(err => { console.warn('Away games failed:', err); return null; }),
         rosterService.getTeamRoster(teamId, season).catch(err => { console.warn('Roster failed:', err); return null; }),
         teamLeadersService.getTeamSplits(teamId, season, SEASON_TYPES.REGULAR, PLAYER_ROLES.BATTER).catch(err => { console.warn('Splits failed:', err); return null; }),
+        injuryService.getTeamInjuriesFullSeason(teamId, season).catch(err => { console.warn('Injuries full season failed:', err); return null; }),
+        injuryService.getTeamInjuriesFirstHalf(teamId, season).catch(err => { console.warn('Injuries first half failed:', err); return null; }),
+        injuryService.getTeamInjuriesSecondHalf(teamId, season).catch(err => { console.warn('Injuries second half failed:', err); return null; }),
       ]);
 
       // Update state with raw data
@@ -119,6 +133,9 @@ function TeamAnalytics() {
       setAwayGames(awayGamesData);
       setRoster(rosterData);
       setTeamSplits(splitsData);
+      setInjuriesFullSeason(injuriesFullSeasonData);
+      setInjuriesFirstHalf(injuriesFirstHalfData);
+      setInjuriesSecondHalf(injuriesSecondHalfData);
 
       console.log('✅ All data fetched successfully!');
     } catch (err) {
@@ -238,39 +255,105 @@ function TeamAnalytics() {
 
   // ========== Data Helpers ==========
   
+  // Get injuries based on current timeframe
+  // Filter locally based on injury_date to ensure accurate first-half/second-half splits
+  const getInjuriesForTimeframe = () => {
+    const allInjuries = injuriesFullSeason?.injuries || [];
+    
+    if (timeframe === 'season') {
+      return allInjuries;
+    }
+    
+    // Filter based on injury_date (IL date)
+    // First half: Feb - June (months 2-6)
+    // Second half: July - November (months 7-11)
+    return allInjuries.filter(injury => {
+      if (!injury.injury_date) return false;
+      
+      const injuryDate = new Date(injury.injury_date);
+      const month = injuryDate.getMonth() + 1; // getMonth() is 0-indexed
+      
+      if (timeframe === 'first-half') {
+        // First half: February (2) through June (6)
+        return month >= 2 && month <= 6;
+      } else if (timeframe === 'second-half') {
+        // Second half: July (7) through November (11)
+        return month >= 7 && month <= 11;
+      }
+      
+      return true;
+    });
+  };
+
+  // Helper to determine if player is still actively injured
+  const isStillInjured = (injury) => {
+    // If activation_date exists (not null), the player has returned from IL
+    // If activation_date is null/undefined, they're still on IL
+    return !injury.activation_date;
+  };
+
+  // Get injury counts for display
+  const getInjuryCounts = () => {
+    const injuries = getInjuriesForTimeframe();
+    return {
+      total: injuries.length,
+      current: injuries.filter(i => isStillInjured(i)).length, // Still on IL
+      returned: injuries.filter(i => !isStillInjured(i)).length  // Returned from IL
+    };
+  };
+
+  // Get injury period label
+  const getInjuryPeriodLabel = () => {
+    switch (timeframe) {
+      case 'first-half':
+        return 'First Half';
+      case 'second-half':
+        return 'Second Half';
+      case 'season':
+      default:
+        return 'Full Season';
+    }
+  };
+  
   // NEW: Filter roster based on toggle
+  // Now roster is an object with: { pitchers, catchers, infielders, outfielders }
   const getFilteredRoster = () => {
-    if (!roster || !Array.isArray(roster)) return [];
+    if (!roster) return [];
     
     switch (rosterFilter) {
       case 'pitchers':
-        return roster.filter(player => {
-          const pos = (player.position_abbreviation || player.position || '').toUpperCase();
-          return pos === 'P' || pos === 'SP' || pos === 'RP' || pos === 'CL';
-        });
+        return roster.pitchers || [];
       case 'position':
-        return roster.filter(player => {
-          const pos = (player.position_abbreviation || player.position || '').toUpperCase();
-          return pos !== 'P' && pos !== 'SP' && pos !== 'RP' && pos !== 'CL';
-        });
+        // Combine catchers, infielders, and outfielders
+        return [
+          ...(roster.catchers || []),
+          ...(roster.infielders || []),
+          ...(roster.outfielders || [])
+        ];
       default:
-        return roster;
+        // All players - combine all position groups
+        return [
+          ...(roster.pitchers || []),
+          ...(roster.catchers || []),
+          ...(roster.infielders || []),
+          ...(roster.outfielders || [])
+        ];
     }
   };
 
   // Get roster counts for subtitle
   const getRosterCounts = () => {
-    if (!roster || !Array.isArray(roster)) return { total: 0, pitchers: 0, position: 0 };
+    if (!roster) return { total: 0, pitchers: 0, position: 0 };
     
-    const pitchers = roster.filter(player => {
-      const pos = (player.position_abbreviation || player.position || '').toUpperCase();
-      return pos === 'P' || pos === 'SP' || pos === 'RP' || pos === 'CL';
-    });
+    const pitchersCount = (roster.pitchers || []).length;
+    const positionCount = (roster.catchers || []).length + 
+                          (roster.infielders || []).length + 
+                          (roster.outfielders || []).length;
     
     return {
-      total: roster.length,
-      pitchers: pitchers.length,
-      position: roster.length - pitchers.length
+      total: roster.total_players || (pitchersCount + positionCount),
+      pitchers: pitchersCount,
+      position: positionCount
     };
   };
 
@@ -1242,11 +1325,11 @@ function TeamAnalytics() {
                   </thead>
                   <tbody>
                     {filteredRoster.map((player, idx) => (
-                      <tr key={idx}>
+                      <tr key={player.id || idx}>
                         <td className="player-number">{player.jersey_number || '-'}</td>
-                        <td className="player-name">{player.full_name || 'Unknown'}</td>
+                        <td className="player-name">{player.player_name || player.full_name || 'Unknown'}</td>
                         <td className="player-position">
-                          <span className="position-badge">{player.position_abbreviation || '-'}</span>
+                          <span className="position-badge">{player.position_abbreviation || player.position || '-'}</span>
                         </td>
                         <td className="player-hands">
                           {player.bats || '-'}/{player.throws || '-'}
@@ -1268,36 +1351,101 @@ function TeamAnalytics() {
           {/* Team Injury List */}
           <div className="section-card injury-card">
             <div className="card-header">
-              <h3>Injury Report</h3>
-              <p className="card-subtitle">
-                {teamSeasonData?.injuries?.length || 0} {(teamSeasonData?.injuries?.length || 0) === 1 ? 'Player' : 'Players'} Injured
-              </p>
-            </div>
-            <div className="injury-list">
-              {teamSeasonData?.injuries && teamSeasonData.injuries.length > 0 ? (
-                teamSeasonData.injuries.map((injury, idx) => (
-                  <div key={idx} className="injury-item">
-                    <div className="injury-player-info">
-                      <div className="injury-player-name">{injury.name || injury.player_name}</div>
-                      <div className="injury-position">{injury.position}</div>
-                    </div>
-                    <div className="injury-details">
-                      <div className="injury-type">{injury.injury || injury.description}</div>
-                      <div className="injury-status-row">
-                        <span className={`injury-status ${injury.status?.includes('60') ? 'long-term' : 'short-term'}`}>
-                          {injury.status}
-                        </span>
-                        <span className="injury-return">Return: {injury.expected_return || injury.expectedReturn || 'TBD'}</span>
-                      </div>
-                    </div>
-                  </div>
-                ))
-              ) : (
-                <div className="no-injuries">
-                  <span className="no-injuries-icon">✅</span>
-                  <p>No players currently on injured list</p>
+              <div>
+                <h3>Injury Report</h3>
+                <p className="card-subtitle">
+                  {timeframe === 'season' && <><strong>📊 Full Season:</strong> {getInjuryCounts().total} {getInjuryCounts().total === 1 ? 'Injury' : 'Injuries'}</>}
+                  {timeframe === 'first-half' && <><strong>1️⃣ First Half:</strong> {getInjuryCounts().total} {getInjuryCounts().total === 1 ? 'Injury' : 'Injuries'}</>}
+                  {timeframe === 'second-half' && <><strong>2️⃣ Second Half:</strong> {getInjuryCounts().total} {getInjuryCounts().total === 1 ? 'Injury' : 'Injuries'}</>}
+                </p>
+              </div>
+              {getInjuryCounts().total > 0 && (
+                <div className="injury-summary-badges">
+                  <button 
+                    className={`injury-badge current ${injuryFilter === 'active' ? 'active-filter' : ''}`} 
+                    title="Show active injuries first"
+                    onClick={() => setInjuryFilter(injuryFilter === 'active' ? 'all' : 'active')}
+                  >
+                    🏥 {getInjuryCounts().current} Active
+                  </button>
+                  <button 
+                    className={`injury-badge returned ${injuryFilter === 'returned' ? 'active-filter' : ''}`} 
+                    title="Show returned injuries first"
+                    onClick={() => setInjuryFilter(injuryFilter === 'returned' ? 'all' : 'returned')}
+                  >
+                    ✅ {getInjuryCounts().returned} Returned
+                  </button>
                 </div>
               )}
+            </div>
+            <div className="injury-list">
+              {(() => {
+                const injuries = getInjuriesForTimeframe();
+                if (injuries && injuries.length > 0) {
+                  // Sort based on injuryFilter selection
+                  const sortedInjuries = [...injuries].sort((a, b) => {
+                    const aActive = isStillInjured(a);
+                    const bActive = isStillInjured(b);
+                    
+                    // If filter is 'active', show active injuries first
+                    if (injuryFilter === 'active') {
+                      if (aActive && !bActive) return -1;
+                      if (!aActive && bActive) return 1;
+                    }
+                    // If filter is 'returned', show returned injuries first
+                    else if (injuryFilter === 'returned') {
+                      if (!aActive && bActive) return -1;
+                      if (aActive && !bActive) return 1;
+                    }
+                    // For 'all' or within same group, sort by injury_date (most recent first)
+                    return new Date(b.injury_date) - new Date(a.injury_date);
+                  });
+                  return sortedInjuries.map((injury, idx) => {
+                    const stillInjured = isStillInjured(injury);
+                    return (
+                    <div key={idx} className={`injury-item ${stillInjured ? 'active' : 'returned'}`}>
+                      <div className="injury-player-info">
+                        <div className="injury-player-name">{injury.player_name || injury.name}</div>
+                        <div className="injury-position">{injury.position}</div>
+                      </div>
+                      <div className="injury-details">
+                        <div className="injury-type">{injury.injury_desc || 'No description'}</div>
+                        <div className="injury-dates">
+                          <span className="injury-date-label">IL Date:</span>
+                          <span className="injury-date">{injury.injury_date ? new Date(injury.injury_date + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : 'N/A'}</span>
+                          {injury.activation_date && !stillInjured && (
+                            <>
+                              <span className="injury-date-label">Returned:</span>
+                              <span className="injury-date returned">{new Date(injury.activation_date + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</span>
+                            </>
+                          )}
+                          {stillInjured && injury.expected_return_date && (
+                            <>
+                              <span className="injury-date-label">Expected:</span>
+                              <span className="injury-date expected">{new Date(injury.expected_return_date + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</span>
+                            </>
+                          )}
+                        </div>
+                        <div className="injury-status-row">
+                          <span className={`injury-status ${injury.injury_period?.includes('60') ? 'long-term' : 'short-term'}`}>
+                            {injury.injury_period || 'IL'}
+                          </span>
+                          {injury.days_on_il !== undefined && (
+                            <span className="injury-days">{injury.days_on_il} days</span>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  )});
+                } else {
+                  return (
+                    <div className="no-injuries">
+                      <span className="no-injuries-icon">✅</span>
+                      <p>No injuries recorded for {getInjuryPeriodLabel().toLowerCase()}</p>
+                    </div>
+                  );
+                }
+              })()}
             </div>
           </div>
         </div>

@@ -200,8 +200,8 @@ function AccountPage() {
               <ul>
                 <li>✓ Everything in Free</li>
                 <li>✓ Game Predictions</li>
-                <li>✓ Advanced Analytics</li>
-                <li>✓ Save Favorites</li>
+                <li>✓ Advanced Analytics Tools</li>
+                <li>✓ Personalized Experience</li>
                 <li>✓ Priority Support</li>
               </ul>
             </div>
