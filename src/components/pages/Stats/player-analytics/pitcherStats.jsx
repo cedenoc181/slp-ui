@@ -658,7 +658,7 @@ function PitcherStats({ teamId = 'ALL', teamDbId = null, season = '2025', teamNa
                   {cat.playerId && (
                     <div className="pitcher-card-photo">
                       <img
-                        src={`https://img.mlbstatic.com/mlb-photos/image/upload/w_213,q_100/v1/people/${cat.playerId}/headshot/67/current`}
+                        src={`https://img.mlbstatic.com/mlb-photos/image/upload/w_120,q_100/v1/people/${cat.playerId}/headshot/67/current`}
                         alt={cat.player}
                         onError={(e) => { e.target.style.display = 'none'; }}
                       />
