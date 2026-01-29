@@ -12,9 +12,24 @@ import '../../../../styles/stats-page-styling/player-analytics.css';
 
 function PlayerAnalytics() {
   const [metricType, setMetricType] = useState('batting');
-  const [selectedTeam, setSelectedTeam] = useState('ALL');
-  const [selectedSeason, setSelectedSeason] = useState('2025');
-  const [searchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
+  
+  // Initialize state from URL params or defaults
+  const [selectedTeam, setSelectedTeam] = useState(() => {
+    const teamParam = searchParams.get('team');
+    if (teamParam && (teamParam === 'ALL' || TEAMS.some((t) => t.id === teamParam))) {
+      return teamParam;
+    }
+    return 'ALL';
+  });
+  
+  const [selectedSeason, setSelectedSeason] = useState(() => {
+    const seasonParam = searchParams.get('season');
+    if (seasonParam && SEASONS.includes(seasonParam)) {
+      return seasonParam;
+    }
+    return '2025';
+  });
 
   // Add "All Teams" option to the teams list
   const teamsWithAll = useMemo(() => {
@@ -24,23 +39,37 @@ function PlayerAnalytics() {
     ];
   }, []);
 
-  // Seed dropdowns from query params when present
+  // Sync state FROM URL params when they change externally (e.g., navigation from Team Analytics)
   useEffect(() => {
     const teamParam = searchParams.get('team');
     const seasonParam = searchParams.get('season');
 
     if (teamParam) {
-      // Check if it's a valid team abbreviation
       const isValidTeam = teamParam === 'ALL' || TEAMS.some((t) => t.id === teamParam);
-      if (isValidTeam) {
+      if (isValidTeam && teamParam !== selectedTeam) {
         setSelectedTeam(teamParam);
       }
     }
 
-    if (seasonParam && SEASONS.includes(seasonParam)) {
+    if (seasonParam && SEASONS.includes(seasonParam) && seasonParam !== selectedSeason) {
       setSelectedSeason(seasonParam);
     }
-  }, [searchParams]);
+  }, [searchParams, selectedTeam, selectedSeason]);
+
+  // Update URL when dropdown selections change
+  const handleTeamChange = (newTeam) => {
+    setSelectedTeam(newTeam);
+    const newParams = new URLSearchParams(searchParams);
+    newParams.set('team', newTeam);
+    setSearchParams(newParams, { replace: true });
+  };
+
+  const handleSeasonChange = (newSeason) => {
+    setSelectedSeason(newSeason);
+    const newParams = new URLSearchParams(searchParams);
+    newParams.set('season', newSeason);
+    setSearchParams(newParams, { replace: true });
+  };
 
   // Get current team object
   const currentTeam = useMemo(() => {
@@ -91,7 +120,7 @@ function PlayerAnalytics() {
                 <div className="team-selector">
                   <select
                     value={selectedTeam}
-                    onChange={(e) => setSelectedTeam(e.target.value)}
+                    onChange={(e) => handleTeamChange(e.target.value)}
                     className="team-dropdown"
                   >
                     {teamsWithAll.map((team) => (
@@ -105,7 +134,7 @@ function PlayerAnalytics() {
                 <div className="season-selector">
                   <select
                     value={selectedSeason}
-                    onChange={(e) => setSelectedSeason(e.target.value)}
+                    onChange={(e) => handleSeasonChange(e.target.value)}
                     className="season-dropdown"
                   >
                     {SEASONS.map((season) => (
@@ -142,6 +171,7 @@ function PlayerAnalytics() {
       <div className="analytics-content container">
         {metricType === 'batting' ? (
           <BatterStats 
+            key={`batter-${selectedTeam}-${selectedSeason}`}
             teamId={selectedTeam}
             teamDbId={currentTeamId}
             season={selectedSeason} 
@@ -149,6 +179,7 @@ function PlayerAnalytics() {
           />
         ) : (
           <PitcherStats 
+            key={`pitcher-${selectedTeam}-${selectedSeason}`}
             teamId={selectedTeam}
             teamDbId={currentTeamId}
             season={selectedSeason} 

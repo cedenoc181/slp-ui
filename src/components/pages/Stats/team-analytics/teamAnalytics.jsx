@@ -1080,13 +1080,20 @@ function TeamAnalytics() {
           </div>
 
           {/* Team Leaders */}
-          <div className="section-card">
+          <div 
+            className="section-card clickable-card"
+            onClick={() => {
+              navigate(`/player-analytics?team=${selectedTeam}&season=${selectedSeason}`);
+              window.scrollTo(0, 0);
+            }}
+            title="View full player analytics"
+          >
             <div className="card-header">
               <div>
                 <h3>Team Leaders</h3>
                 <p className="card-subtitle">Top performers</p>
               </div>
-              <div className="toggle-buttons">
+              <div className="toggle-buttons" onClick={(e) => e.stopPropagation()}>
                 <button className={`toggle-btn ${leadersToggle === 'batting' ? 'active' : ''}`} onClick={() => setLeadersToggle('batting')}>Batting</button>
                 <button className={`toggle-btn ${leadersToggle === 'pitching' ? 'active' : ''}`} onClick={() => setLeadersToggle('pitching')}>Pitching</button>
               </div>
