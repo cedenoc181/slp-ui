@@ -140,6 +140,7 @@ function TeamsCarousel() {
 
   const handleTeamClick = (team) => {
     navigate(`/team-analytics/${team.urlName}`);
+    window.scrollTo(0, 0);
   };
 
   const scroll = (direction) => {

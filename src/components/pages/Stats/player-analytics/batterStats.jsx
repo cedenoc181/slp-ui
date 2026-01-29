@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import teamLeadersService from '../../../../data/services/teamLeadersService';
 import leagueLeadersService from '../../../../data/services/leagueLeadersService';
+import rosterService from '../../../../data/services/rosterService';
 import { TEAMS } from '../../../../data/constants/apiConstants';
 import '../../../../styles/stats-page-styling/batter-stats.css';
 
@@ -32,6 +33,10 @@ function BatterStats({ teamId = 'ALL', teamDbId = null, season = '2025', teamNam
 
   // ========== STATE FOR ALL DATA ==========
 
+  // Active roster player IDs for filtering (team-specific only)
+  const [activeRosterIds, setActiveRosterIds] = useState(new Set());
+  const [rosterLoading, setRosterLoading] = useState(false);
+
   // Top 10 batters (league-wide or team-specific)
   const [topBattersData, setTopBattersData] = useState([]);
   const [topBattersLoading, setTopBattersLoading] = useState(false);
@@ -50,6 +55,34 @@ function BatterStats({ teamId = 'ALL', teamDbId = null, season = '2025', teamNam
   const [splitsLoading, setSplitsLoading] = useState(false);
 
   // ========== API CALLS ==========
+
+  // Fetch team roster to get active player IDs (for filtering out traded players)
+  useEffect(() => {
+    const fetchRoster = async () => {
+      // Only fetch roster when a specific team is selected
+      if (!isTeamSelected || !teamDbId || !season) {
+        setActiveRosterIds(new Set());
+        return;
+      }
+
+      setRosterLoading(true);
+
+      try {
+        const rosterData = await rosterService.getTeamRoster(teamDbId, season);
+        // Get position players only (non-pitchers) with active status
+        const activeIds = rosterService.getActivePlayerMlbIds(rosterData, true);
+        setActiveRosterIds(activeIds);
+        console.log(`📋 Loaded ${activeIds.size} active position players for roster filtering`);
+      } catch (error) {
+        console.error('Error fetching roster for filtering:', error);
+        setActiveRosterIds(new Set());
+      } finally {
+        setRosterLoading(false);
+      }
+    };
+
+    fetchRoster();
+  }, [isTeamSelected, teamDbId, season]);
 
   // Fetch top batters - team-specific or league-wide
   useEffect(() => {
@@ -185,13 +218,35 @@ function BatterStats({ teamId = 'ALL', teamDbId = null, season = '2025', teamNam
     return String(value);
   }, []);
 
+  // ========== ROSTER FILTER HELPER ==========
+  /**
+   * Filter players to only include those on the active roster
+   * For team-specific views, this excludes traded/released players
+   * For league-wide views, returns all players (no filtering)
+   */
+  const filterByActiveRoster = useCallback((players) => {
+    // No filtering for league-wide view or if roster hasn't loaded
+    if (!isTeamSelected || activeRosterIds.size === 0) {
+      return players;
+    }
+    
+    if (!players || !Array.isArray(players)) return players;
+    
+    return players.filter(player => {
+      const mlbId = player.player_mlb_id || player.player_id;
+      // Keep player if they're on the active roster
+      return mlbId && activeRosterIds.has(mlbId);
+    });
+  }, [isTeamSelected, activeRosterIds]);
+
   // ========== COMPUTED DATA ==========
 
-  // Visible top batters
+  // Visible top batters (filtered by active roster for team views)
   const visibleTopBatters = useMemo(() => {
     if (!topBattersData || !Array.isArray(topBattersData)) return [];
-    return topBattersData.filter(Boolean);
-  }, [topBattersData]);
+    const filtered = topBattersData.filter(Boolean);
+    return isTeamSelected ? filterByActiveRoster(filtered) : filtered;
+  }, [topBattersData, isTeamSelected, filterByActiveRoster]);
 
   // Build leader categories from team data OR league data
   const leaderCategories = useMemo(() => {
@@ -345,12 +400,22 @@ function BatterStats({ teamId = 'ALL', teamDbId = null, season = '2025', teamNam
   }, [battingLeaders, formatAvg, formatOps]);
 
   // Build splits display data from array-based API response
+  // For team views, filter to only show players on active roster
   const splitsDisplayData = useMemo(() => {
     if (!splitsData || !Array.isArray(splitsData)) return [];
 
+    // Filter splits data by active roster if team is selected
+    let filteredSplits = splitsData;
+    if (isTeamSelected && activeRosterIds.size > 0) {
+      filteredSplits = splitsData.filter(item => {
+        const mlbId = item.player_mlb_id || item.player_id;
+        return mlbId && activeRosterIds.has(mlbId);
+      });
+    }
+
     // Map API data by category for quick lookup
     const dataByCategory = {};
-    splitsData.forEach(item => {
+    filteredSplits.forEach(item => {
       if (item.category) {
         dataByCategory[item.category] = item;
       }
@@ -373,9 +438,10 @@ function BatterStats({ teamId = 'ALL', teamDbId = null, season = '2025', teamNam
         };
       })
       .filter(Boolean);
-  }, [splitsData]);
+  }, [splitsData, isTeamSelected, activeRosterIds]);
 
   // Get hot batters for selected metric category
+  // For team views, filter to only show players on active roster
   const filteredHotBatters = useMemo(() => {
     if (!hotBattersData || typeof hotBattersData !== 'object') return [];
 
@@ -383,12 +449,20 @@ function BatterStats({ teamId = 'ALL', teamDbId = null, season = '2025', teamNam
     const categoryData = hotBattersData[hotMetric];
     if (!categoryData || !Array.isArray(categoryData)) return [];
 
+    // Filter by active roster if team is selected
+    let filtered = [...categoryData].filter(Boolean);
+    if (isTeamSelected && activeRosterIds.size > 0) {
+      filtered = filtered.filter(player => {
+        const mlbId = player.player_mlb_id || player.player_id;
+        return mlbId && activeRosterIds.has(mlbId);
+      });
+    }
+
     // Sort by total and return top players
-    return [...categoryData]
-      .filter(Boolean)
+    return filtered
       .sort((a, b) => (b.total || 0) - (a.total || 0))
       .slice(0, 7);
-  }, [hotBattersData, hotMetric]);
+  }, [hotBattersData, hotMetric, isTeamSelected, activeRosterIds]);
 
   // Dynamic titles
   const topListTitle = isTeamSelected ? `${season} ${teamName}` : `${season} MLB`;
@@ -445,7 +519,7 @@ function BatterStats({ teamId = 'ALL', teamDbId = null, season = '2025', teamNam
     };
 
     // Find team's mlbId for logo - check multiple matching strategies
-    const teamNameLower = teamNameDisplay.toLowerCase();
+    const teamNameLower = teamNameDisplay.toLowerCase().trim();
     const team = TEAMS.find(t => {
       const nameLower = t.name.toLowerCase();
       const urlNameLower = t.urlName.toLowerCase();
@@ -455,10 +529,21 @@ function BatterStats({ teamId = 'ALL', teamDbId = null, season = '2025', teamNam
       if (urlNameLower === teamNameLower.replace(/\s+/g, '-')) return true;
       // Abbreviation match (e.g., "LAA", "NYY")
       if (t.id.toLowerCase() === teamNameLower) return true;
-      // Partial match - team name ends with API name (e.g., "Los Angeles Angels" ends with "Angels")
-      if (nameLower.endsWith(teamNameLower)) return true;
-      // Partial match - API name contains city or team name
-      if (nameLower.includes(teamNameLower) || teamNameLower.includes(nameLower.split(' ').pop())) return true;
+      // Check if API team name matches the team portion of full name (e.g., "Red Sox" matches "Boston Red Sox")
+      // Split on spaces and check if the last 1-2 words match
+      const apiWords = teamNameLower.split(' ');
+      const fullNameWords = nameLower.split(' ');
+      // Check for 2-word match first (e.g., "Red Sox", "White Sox", "Blue Jays")
+      if (apiWords.length >= 2) {
+        const lastTwoApi = apiWords.slice(-2).join(' ');
+        const lastTwoFull = fullNameWords.slice(-2).join(' ');
+        if (lastTwoApi === lastTwoFull) return true;
+      }
+      // Check for 1-word match (e.g., "Yankees", "Mets", "Dodgers")
+      if (apiWords.length === 1) {
+        const lastWordFull = fullNameWords[fullNameWords.length - 1];
+        if (apiWords[0] === lastWordFull) return true;
+      }
       return false;
     });
     const teamLogoUrl = team?.mlbId 
@@ -538,12 +623,27 @@ function BatterStats({ teamId = 'ALL', teamDbId = null, season = '2025', teamNam
     const isAboveAvg = value > leagueAvg;
 
     // Find team logo
-    const teamNameLower = teamName.toLowerCase();
+    const teamNameLower = teamName.toLowerCase().trim();
     const team = TEAMS.find(t => {
       const nameLower = t.name.toLowerCase();
+      // Exact match
       if (nameLower === teamNameLower) return true;
-      if (nameLower.endsWith(teamNameLower)) return true;
+      // Abbreviation match
       if (t.id.toLowerCase() === teamNameLower) return true;
+      // Check if API team name matches the team portion of full name
+      const apiWords = teamNameLower.split(' ');
+      const fullNameWords = nameLower.split(' ');
+      // 2-word match (e.g., "Red Sox" matches "Boston Red Sox")
+      if (apiWords.length >= 2) {
+        const lastTwoApi = apiWords.slice(-2).join(' ');
+        const lastTwoFull = fullNameWords.slice(-2).join(' ');
+        if (lastTwoApi === lastTwoFull) return true;
+      }
+      // 1-word match (e.g., "Yankees" matches "New York Yankees")
+      if (apiWords.length === 1) {
+        const lastWordFull = fullNameWords[fullNameWords.length - 1];
+        if (apiWords[0] === lastWordFull) return true;
+      }
       return false;
     });
     const teamLogoUrl = team?.mlbId
@@ -661,10 +761,10 @@ function BatterStats({ teamId = 'ALL', teamDbId = null, season = '2025', teamNam
           </div>
         </div>
         <div className="hot-bats-content">
-          {hotBattersLoading ? (
+          {(hotBattersLoading || (isTeamSelected && rosterLoading)) ? (
             <div className="batter-loading">
               <div className="loading-spinner"></div>
-              <span>Loading hot batters...</span>
+              <span>{rosterLoading ? 'Loading roster...' : 'Loading hot batters...'}</span>
             </div>
           ) : filteredHotBatters.length > 0 ? (
             <div className="hot-batters-list">
@@ -689,10 +789,10 @@ function BatterStats({ teamId = 'ALL', teamDbId = null, season = '2025', teamNam
             </div>
           </div>
           <div className="batter-splits-main">
-            {splitsLoading ? (
+            {(splitsLoading || (isTeamSelected && rosterLoading)) ? (
               <div className="batter-loading">
                 <div className="loading-spinner"></div>
-                <span>Loading splits...</span>
+                <span>{rosterLoading ? 'Loading roster...' : 'Loading splits...'}</span>
               </div>
             ) : splitsDisplayData.length > 0 ? (
               <div className="split-bars-container">
@@ -715,10 +815,10 @@ function BatterStats({ teamId = 'ALL', teamDbId = null, season = '2025', teamNam
             </p>
           </div>
 
-          {topBattersLoading && (
+          {(topBattersLoading || (isTeamSelected && rosterLoading)) && (
             <div className="batter-loading">
               <div className="loading-spinner"></div>
-              <span>Loading top batters...</span>
+              <span>{rosterLoading ? 'Loading roster...' : 'Loading top batters...'}</span>
             </div>
           )}
 
@@ -730,7 +830,7 @@ function BatterStats({ teamId = 'ALL', teamDbId = null, season = '2025', teamNam
             <div className="batter-empty">No batter leaderboard data.</div>
           )}
 
-          {!topBattersLoading && !topBattersError && visibleTopBatters.length > 0 && (
+          {!topBattersLoading && !rosterLoading && !topBattersError && visibleTopBatters.length > 0 && (
             <ol className="batter-top-list-items">
               {visibleTopBatters.map(renderBatterItem)}
             </ol>

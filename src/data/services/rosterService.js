@@ -90,6 +90,62 @@ class RosterService {
       ...(rosterData.outfielders || [])
     ];
   }
+
+  /**
+   * Helper: Filter out invalid roster statuses (traded, released, etc.)
+   * Valid statuses typically include: 'active', 'IL', '60-day IL', 'minors'
+   * Invalid statuses: 'traded', 'released', 'retired', 'DFA'
+   * @param {Array} players - Array of player roster entries
+   * @returns {Array} Filtered players with valid roster status
+   */
+  filterActiveRoster(players) {
+    if (!players || !Array.isArray(players)) return [];
+    
+    const EXCLUDED_STATUSES = ['traded', 'released', 'retired', 'dfa', 'designated for assignment'];
+    
+    return players.filter(player => {
+      const status = (player.status || '').toLowerCase().trim();
+      // Keep player if status is empty/null (assume active) or not in excluded list
+      return !status || !EXCLUDED_STATUSES.some(excluded => status.includes(excluded));
+    });
+  }
+
+  /**
+   * Helper: Get a Set of active player MLB IDs for a team (for quick validation)
+   * Filters out traded/released players and returns only valid roster members
+   * @param {Object} rosterData - Grouped roster data from API
+   * @param {boolean} positionPlayersOnly - If true, only returns position players (excludes pitchers)
+   * @returns {Set<number>} Set of player_mlb_id values for active roster members
+   */
+  getActivePlayerMlbIds(rosterData, positionPlayersOnly = false) {
+    if (!rosterData) return new Set();
+    
+    let allPlayers;
+    if (positionPlayersOnly) {
+      allPlayers = this.getPositionPlayersFlat(rosterData);
+    } else {
+      allPlayers = this.getAllPlayersFlat(rosterData);
+    }
+    
+    const activePlayers = this.filterActiveRoster(allPlayers);
+    
+    return new Set(
+      activePlayers
+        .filter(p => p.player_mlb_id)
+        .map(p => p.player_mlb_id)
+    );
+  }
+
+  /**
+   * Helper: Verify if a player belongs to a team's active roster
+   * @param {number} playerMlbId - Player's MLB ID
+   * @param {Set<number>} activePlayerIds - Set of active player MLB IDs from roster
+   * @returns {boolean} True if player is on active roster
+   */
+  isPlayerOnActiveRoster(playerMlbId, activePlayerIds) {
+    if (!playerMlbId || !activePlayerIds) return false;
+    return activePlayerIds.has(playerMlbId);
+  }
 }
 
 export default new RosterService();
