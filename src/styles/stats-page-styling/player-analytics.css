@@ -415,15 +415,12 @@
 }
 
 /* ============================================
-   Transitions & Animations
+   Transitions & Animations - Minimal for Performance
    ============================================ */
-.player-analytics-page * {
-  transition-property: background-color, border-color, color, box-shadow, opacity, transform;
-  transition-duration: 0.2s;
-  transition-timing-function: ease;
-}
+/* Removed global wildcard transitions to prevent browser crashes */
+/* Individual elements should define their own minimal transitions as needed */
 
-/* Disable transitions for elements that shouldn't animate */
+/* Disable transitions for form elements */
 .player-analytics-page select,
 .player-analytics-page option {
   transition: none;
