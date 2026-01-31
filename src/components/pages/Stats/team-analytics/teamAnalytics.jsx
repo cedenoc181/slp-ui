@@ -1273,9 +1273,15 @@ function TeamAnalytics() {
                     <span className="team-stat-label">Strikeouts</span>
                     <span className="team-stat-value">{currentPitchingStats.strikeouts || currentPitchingStats.so || 0}</span>
                   </div>
-                  <div className="team-stat-row highlight">
+                  <div className="team-stat-row">
                     <span className="team-stat-label">Opp AVG</span>
                     <span className="team-stat-value">{currentPitchingStats.opp_avg || currentPitchingStats.avg || '.000'}</span>
+                  </div>
+                  <div className="team-stat-row highlight">
+                    <span className="team-stat-label">MLB Pitching Rank</span>
+                    <span className="team-stat-value rank-value">
+                      #{currentPitchingStats.mlb_pitching_rank || '-'}
+                    </span>
                   </div>
                 </div>
               ) : (

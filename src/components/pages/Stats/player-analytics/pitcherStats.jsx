@@ -435,12 +435,73 @@ function PitcherStats({ teamId = 'ALL', teamDbId = null, season = '2025', teamNa
     const wins = pitcher.wins ?? 0;
     const whip = formatWhip(pitcher.whip);
     const key = playerId ? `pitcher-${playerId}` : `pitcher-idx-${idx}`;
+    
+    // Check if player has been traded away, released, or claimed
+    const playerStatus = pitcher.status?.toLowerCase();
+    const isTraded = playerStatus === 'traded';
+    const isReleased = playerStatus === 'released';
+    const isClaimed = playerStatus === 'claimed';
+    
+    // For traded players: use traded_to for destination
+    // For released/claimed players: use acquired_by or traded_to for the team that signed them
+    const tradedToTeamId = pitcher.traded_to || null;
+    const acquiredByTeamId = pitcher.acquired_by || null;
+    const destinationTeamId = isTraded ? tradedToTeamId : ((isReleased || isClaimed) ? (acquiredByTeamId || tradedToTeamId) : null);
+    const destinationTeam = destinationTeamId 
+      ? TEAMS.find(t => t.teamId === destinationTeamId)?.name 
+      : null;
+    
+    // Check if player was acquired (only show green for active players)
+    // traded_from = acquired via trade, acquired_from = signed after release
+    const tradedFromTeamId = pitcher.traded_from || null;
+    const acquiredFromTeamId = pitcher.acquired_from || null;
+    const isActivePlayer = !isTraded && !isReleased && !isClaimed;
+    const isAcquiredViaTrade = isActivePlayer && tradedFromTeamId !== null;
+    const isAcquiredViaSigning = isActivePlayer && !tradedFromTeamId && acquiredFromTeamId !== null;
+    const originTeamId = tradedFromTeamId || acquiredFromTeamId;
+    const originTeam = originTeamId 
+      ? TEAMS.find(t => t.teamId === originTeamId)?.name 
+      : null;
+    
+    // Determine tooltip and styling
+    let tooltip = null;
+    let statusClass = '';
+    let badgeText = null;
+    
+    if (isTraded) {
+      tooltip = `Traded${destinationTeam ? ` to ${destinationTeam}` : ''}`;
+      statusClass = ' traded-player';
+      badgeText = 'TRADED';
+    } else if (isReleased) {
+      tooltip = `Released${destinationTeam ? `, signed by ${destinationTeam}` : ''}`;
+      statusClass = ' traded-player';
+      badgeText = 'RELEASED';
+    } else if (isClaimed) {
+      tooltip = `Claimed${destinationTeam ? ` by ${destinationTeam}` : ''}`;
+      statusClass = ' traded-player';
+      badgeText = 'CLAIMED';
+    } else if (isAcquiredViaTrade) {
+      tooltip = `Acquired${originTeam ? ` from ${originTeam}` : ''}`;
+      statusClass = ' acquired-player';
+      badgeText = 'ACQUIRED';
+    } else if (isAcquiredViaSigning) {
+      tooltip = `Signed${originTeam ? ` from ${originTeam}` : ''}`;
+      statusClass = ' acquired-player';
+      badgeText = 'SIGNED';
+    }
 
     return (
-      <li key={key} className="pitcher-top-list-item">
+      <li 
+        key={key} 
+        className={`pitcher-top-list-item${statusClass}`}
+        title={tooltip}
+      >
         <div className="pitcher-top-rank">#{idx + 1}</div>
         <div className="pitcher-top-info">
-          <div className="pitcher-top-name">{playerName}</div>
+          <div className="pitcher-top-name">
+            {playerName}
+            {badgeText && <span className={`${isTraded || isReleased || isClaimed ? 'traded-badge' : 'acquired-badge'}`}>{badgeText}</span>}
+          </div>
         </div>
         <div className="pitcher-top-stats">
           <span>ERA {era}</span>
