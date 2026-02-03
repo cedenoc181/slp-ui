@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import { Link } from 'react-router-dom';
 import teamLeadersService from '../../../../data/services/teamLeadersService';
 import leagueLeadersService from '../../../../data/services/leagueLeadersService';
 import { TEAMS } from '../../../../data/constants/apiConstants';
@@ -469,7 +470,9 @@ function BatterStats({ teamId = 'ALL', teamDbId = null, season = '2025', teamNam
         <div className="batter-top-rank">#{idx + 1}</div>
         <div className="batter-top-info">
           <div className="batter-top-name">
-            {playerName}
+            <Link to={`/player/${playerId}?season=${season}`} className="player-profile-link">
+              {playerName}
+            </Link>
             {badgeText && <span className={`${isTraded || isReleased || isClaimed ? 'traded-badge' : 'acquired-badge'}`}>{badgeText}</span>}
           </div>
         </div>
@@ -480,7 +483,7 @@ function BatterStats({ teamId = 'ALL', teamDbId = null, season = '2025', teamNam
         </div>
       </li>
     );
-  }, [formatAvg, formatOps]);
+  }, [formatAvg, formatOps, season]);
 
   const renderHotBatterItem = useCallback((batter, idx) => {
     if (!batter) return null;
@@ -552,7 +555,11 @@ function BatterStats({ teamId = 'ALL', teamDbId = null, season = '2025', teamNam
             </div>
           )}
           <div className="hot-batter-info">
-            <span className="hot-batter-name">{playerName}</span>
+            <span className="hot-batter-name">
+              <Link to={`/player/${playerId}?season=${season}`} className="player-profile-link">
+                {playerName}
+              </Link>
+            </span>
             {!isTeamSelected && teamNameDisplay && (
               <span className="hot-batter-team">{teamNameDisplay}</span>
             )}
@@ -585,7 +592,7 @@ function BatterStats({ teamId = 'ALL', teamDbId = null, season = '2025', teamNam
         )}
       </div>
     );
-  }, [hotMetric, isTeamSelected]);
+  }, [hotMetric, isTeamSelected, season]);
 
   // Render split item with horizontal bar chart
   const renderSplitItem = useCallback((split) => {

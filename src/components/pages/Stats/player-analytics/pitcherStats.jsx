@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import { Link } from 'react-router-dom';
 import teamLeadersService from '../../../../data/services/teamLeadersService';
 import leagueLeadersService from '../../../../data/services/leagueLeadersService';
 import { TEAMS } from '../../../../data/constants/apiConstants';
@@ -499,7 +500,9 @@ function PitcherStats({ teamId = 'ALL', teamDbId = null, season = '2025', teamNa
         <div className="pitcher-top-rank">#{idx + 1}</div>
         <div className="pitcher-top-info">
           <div className="pitcher-top-name">
-            {playerName}
+            <Link to={`/player/${playerId}?season=${season}`} className="player-profile-link">
+              {playerName}
+            </Link>
             {badgeText && <span className={`${isTraded || isReleased || isClaimed ? 'traded-badge' : 'acquired-badge'}`}>{badgeText}</span>}
           </div>
         </div>
@@ -510,7 +513,7 @@ function PitcherStats({ teamId = 'ALL', teamDbId = null, season = '2025', teamNa
         </div>
       </li>
     );
-  }, [formatEra, formatWhip]);
+  }, [formatEra, formatWhip, season]);
 
   const renderHotPitcherItem = useCallback((pitcher, idx) => {
     if (!pitcher) return null;
@@ -571,7 +574,11 @@ function PitcherStats({ teamId = 'ALL', teamDbId = null, season = '2025', teamNa
             </div>
           )}
           <div className="hot-pitcher-info">
-            <span className="hot-pitcher-name">{playerName}</span>
+            <span className="hot-pitcher-name">
+              <Link to={`/player/${playerId}?season=${season}`} className="player-profile-link">
+                {playerName}
+              </Link>
+            </span>
             {!isTeamSelected && teamNameDisplay && (
               <span className="hot-pitcher-team">{teamNameDisplay}</span>
             )}
@@ -604,7 +611,7 @@ function PitcherStats({ teamId = 'ALL', teamDbId = null, season = '2025', teamNa
         )}
       </div>
     );
-  }, [hotMetric, isTeamSelected]);
+  }, [hotMetric, isTeamSelected, season]);
 
   // Render split item with horizontal bar chart
   const renderSplitItem = useCallback((split) => {

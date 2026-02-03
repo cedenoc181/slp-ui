@@ -49,6 +49,7 @@ import PrivacyPolicy from './components/legal/PrivacyPolicy';
 import MLBStandings from './components/pages/Stats/mlb-standings/mlbStandings';
 import TeamAnalytics from './components/pages/Stats/team-analytics/teamAnalytics';
 import PlayerAnalytics from './components/pages/Stats/player-analytics/playerAnalytics';
+import PlayerProfileStats from './components/pages/Stats/player-analytics/playerProfileStats';
 
 // styling imports
 import './styles/chalkboard.css';
@@ -66,6 +67,7 @@ import './styles/stats-page-styling/team-analytics.css';
 import './styles/stats-page-styling/mlb-standings.css';
 import './styles/stats-page-styling/player-analytics.css';
 import './styles/stats-page-styling/batter-stats.css';
+import './styles/stats-page-styling/player-profile.css';
 
 
 //Insights-page-styles//
@@ -144,6 +146,7 @@ function App() {
           <Route path="/team-analytics" element={<TeamAnalytics />} />
           <Route path="/team-analytics/:teamName" element={<TeamAnalytics />} />
           <Route path="/player-analytics" element={<PlayerAnalytics />} />
+          <Route path="/player/:playerId" element={<PlayerProfileStats />} />
 
           {/* Education routes */}
           <Route path="/glossary" element={<Glossary />} />
