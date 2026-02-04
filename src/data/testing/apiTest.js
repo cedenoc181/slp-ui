@@ -5,6 +5,7 @@ import rosterService from '../services/rosterService';
 import teamLeadersService from '../services/teamLeadersService';
 import leagueLeadersService from '../services/leagueLeadersService';
 import injuryService from '../services/injuryService';
+import playerStatsService from '../services/playerStatsServices';
 import { TEAM_IDS, SEASON_TYPES, PLAYER_ROLES } from '../constants/apiConstants';
 
 /**
@@ -17,6 +18,8 @@ class ApiTester {
     this.results = [];
     this.testTeamId = TEAM_IDS.LAD; // Using Dodgers for testing
     this.testSeason = '2025';
+    this.testPlayerId = 660271; // Shohei Ohtani for player profile testing
+    this.testPlayerMlbId = 660271; // MLB ID for Ohtani
   }
 
   // Helper to log test results
@@ -321,6 +324,163 @@ class ApiTester {
     }
   }
 
+  // ========== PLAYER STATS SERVICE TESTS ==========
+
+  async testGetPlayerInfo() {
+    try {
+      const data = await playerStatsService.getPlayerInfo(this.testPlayerId);
+      this.logResult('getPlayerInfo', true, data);
+      return data;
+    } catch (error) {
+      this.logResult('getPlayerInfo', false, null, error);
+      return null;
+    }
+  }
+
+  async testGetPlayerInfoByMlbId() {
+    try {
+      const data = await playerStatsService.getPlayerInfoByMlbId(this.testPlayerMlbId);
+      this.logResult('getPlayerInfoByMlbId', true, data);
+      return data;
+    } catch (error) {
+      this.logResult('getPlayerInfoByMlbId', false, null, error);
+      return null;
+    }
+  }
+
+  async testGetBatterCareerStats() {
+    try {
+      const data = await playerStatsService.getBatterCareerStats(this.testPlayerId);
+      this.logResult('getBatterCareerStats', true, data);
+      return data;
+    } catch (error) {
+      this.logResult('getBatterCareerStats', false, null, error);
+      return null;
+    }
+  }
+
+  async testGetBatterCurrentStats() {
+    try {
+      const data = await playerStatsService.getBatterCurrentStats(this.testPlayerId, this.testSeason);
+      this.logResult('getBatterCurrentStats', true, data);
+      return data;
+    } catch (error) {
+      this.logResult('getBatterCurrentStats', false, null, error);
+      return null;
+    }
+  }
+
+  async testGetBatterVsHandSplits() {
+    try {
+      const data = await playerStatsService.getBatterVsHandSplits(this.testPlayerId, this.testSeason);
+      this.logResult('getBatterVsHandSplits', true, data);
+      return data;
+    } catch (error) {
+      this.logResult('getBatterVsHandSplits', false, null, error);
+      return null;
+    }
+  }
+
+  async testGetBatterHomeRoadSplits() {
+    try {
+      const data = await playerStatsService.getBatterHomeRoadSplits(this.testPlayerId, this.testSeason);
+      this.logResult('getBatterHomeRoadSplits', true, data);
+      return data;
+    } catch (error) {
+      this.logResult('getBatterHomeRoadSplits', false, null, error);
+      return null;
+    }
+  }
+
+  async testGetPitcherCareerStats() {
+    try {
+      // Using a pitcher ID - adjust if needed for proper testing
+      const data = await playerStatsService.getPitcherCareerStats(this.testPlayerId);
+      this.logResult('getPitcherCareerStats', true, data);
+      return data;
+    } catch (error) {
+      this.logResult('getPitcherCareerStats', false, null, error);
+      return null;
+    }
+  }
+
+  async testGetPitcherCurrentStats() {
+    try {
+      const data = await playerStatsService.getPitcherCurrentStats(this.testPlayerId, this.testSeason);
+      this.logResult('getPitcherCurrentStats', true, data);
+      return data;
+    } catch (error) {
+      this.logResult('getPitcherCurrentStats', false, null, error);
+      return null;
+    }
+  }
+
+  async testGetPitcherVsHandSplits() {
+    try {
+      const data = await playerStatsService.getPitcherVsHandSplits(this.testPlayerId, this.testSeason);
+      this.logResult('getPitcherVsHandSplits', true, data);
+      return data;
+    } catch (error) {
+      this.logResult('getPitcherVsHandSplits', false, null, error);
+      return null;
+    }
+  }
+
+  async testGetPitcherHomeRoadSplits() {
+    try {
+      const data = await playerStatsService.getPitcherHomeRoadSplits(this.testPlayerId, this.testSeason);
+      this.logResult('getPitcherHomeRoadSplits', true, data);
+      return data;
+    } catch (error) {
+      this.logResult('getPitcherHomeRoadSplits', false, null, error);
+      return null;
+    }
+  }
+
+  async testGetBatterMonthlyPerformance() {
+    try {
+      const data = await playerStatsService.getBatterMonthlyPerformance(this.testPlayerId, this.testSeason);
+      this.logResult('getBatterMonthlyPerformance', true, data);
+      return data;
+    } catch (error) {
+      this.logResult('getBatterMonthlyPerformance', false, null, error);
+      return null;
+    }
+  }
+
+  async testGetPitcherMonthlyPerformance() {
+    try {
+      const data = await playerStatsService.getPitcherMonthlyPerformance(this.testPlayerId, this.testSeason);
+      this.logResult('getPitcherMonthlyPerformance', true, data);
+      return data;
+    } catch (error) {
+      this.logResult('getPitcherMonthlyPerformance', false, null, error);
+      return null;
+    }
+  }
+
+  async testGetPlayerMonthlyPerformance() {
+    try {
+      const data = await playerStatsService.getPlayerMonthlyPerformance(this.testPlayerId, this.testSeason);
+      this.logResult('getPlayerMonthlyPerformance', true, data);
+      return data;
+    } catch (error) {
+      this.logResult('getPlayerMonthlyPerformance', false, null, error);
+      return null;
+    }
+  }
+
+  async testGetFullPlayerProfile() {
+    try {
+      const data = await playerStatsService.getFullPlayerProfile(this.testPlayerId, this.testSeason);
+      this.logResult('getFullPlayerProfile', true, data);
+      return data;
+    } catch (error) {
+      this.logResult('getFullPlayerProfile', false, null, error);
+      return null;
+    }
+  }
+
   // ========== RUN ALL TESTS ==========
 
   async runAllTests() {
@@ -371,6 +531,23 @@ class ApiTester {
     await this.testGetInjurySummary();
     await this.testGetTeamInjuriesCustomRange();
 
+    // Player Stats Service Tests
+    console.log('\n📋 TESTING PLAYER STATS SERVICE');
+    await this.testGetPlayerInfo();
+    await this.testGetPlayerInfoByMlbId();
+    await this.testGetBatterCareerStats();
+    await this.testGetBatterCurrentStats();
+    await this.testGetBatterVsHandSplits();
+    await this.testGetBatterHomeRoadSplits();
+    await this.testGetPitcherCareerStats();
+    await this.testGetPitcherCurrentStats();
+    await this.testGetPitcherVsHandSplits();
+    await this.testGetPitcherHomeRoadSplits();
+    await this.testGetBatterMonthlyPerformance();
+    await this.testGetPitcherMonthlyPerformance();
+    await this.testGetPlayerMonthlyPerformance();
+    await this.testGetFullPlayerProfile();
+
     // Summary
     this.printSummary();
   }
@@ -410,6 +587,7 @@ class ApiTester {
       teamLeaders: teamLeadersService,
       leagueLeaders: leagueLeadersService,
       injury: injuryService,
+      playerStats: playerStatsService,
     };
 
     try {

@@ -232,7 +232,7 @@ function PitcherStats({ teamId = 'ALL', teamDbId = null, season = '2025', teamNa
           category: 'ERA',
           statLabel: 'ERA',
           player: eraLeader.player_name,
-          playerId: eraLeader.player_mlb_id || eraLeader.player_id,
+          playerId: eraLeader.id,
           team: eraLeader.team_name || eraLeader.team,
           value: formatEra(eraLeader.era),
         });
@@ -243,7 +243,7 @@ function PitcherStats({ teamId = 'ALL', teamDbId = null, season = '2025', teamNa
           category: 'Wins',
           statLabel: 'W',
           player: winsLeader.player_name,
-          playerId: winsLeader.player_mlb_id || winsLeader.player_id,
+          playerId: winsLeader.id,
           team: winsLeader.team_name || winsLeader.team,
           value: winsLeader.wins,
         });
@@ -254,7 +254,7 @@ function PitcherStats({ teamId = 'ALL', teamDbId = null, season = '2025', teamNa
           category: 'Strikeouts',
           statLabel: 'K',
           player: kLeader.player_name,
-          playerId: kLeader.player_mlb_id || kLeader.player_id,
+          playerId: kLeader.id,
           team: kLeader.team_name || kLeader.team,
           value: kLeader.strikeouts || kLeader.so,
         });
@@ -265,7 +265,7 @@ function PitcherStats({ teamId = 'ALL', teamDbId = null, season = '2025', teamNa
           category: 'WHIP',
           statLabel: 'WHIP',
           player: whipLeader.player_name,
-          playerId: whipLeader.player_mlb_id || whipLeader.player_id,
+          playerId: whipLeader.id,
           team: whipLeader.team_name || whipLeader.team,
           value: formatWhip(whipLeader.whip),
         });
@@ -276,7 +276,7 @@ function PitcherStats({ teamId = 'ALL', teamDbId = null, season = '2025', teamNa
           category: 'Opponent AVG',
           statLabel: 'OPP',
           player: oppAvgLeader.player_name,
-          playerId: oppAvgLeader.player_mlb_id || oppAvgLeader.player_id,
+          playerId: oppAvgLeader.id,
           team: oppAvgLeader.team_name || oppAvgLeader.team,
           value: formatOppAvg(oppAvgLeader.opponent_avg || oppAvgLeader.opp_avg),
         });
@@ -287,7 +287,7 @@ function PitcherStats({ teamId = 'ALL', teamDbId = null, season = '2025', teamNa
           category: 'Innings Pitched',
           statLabel: 'IP',
           player: ipLeader.player_name,
-          playerId: ipLeader.player_mlb_id || ipLeader.player_id,
+          playerId: ipLeader.id,
           team: ipLeader.team_name || ipLeader.team,
           value: formatIP(ipLeader.innings_pitched || ipLeader.ip),
         });
@@ -306,7 +306,7 @@ function PitcherStats({ teamId = 'ALL', teamDbId = null, season = '2025', teamNa
         category: 'Earned Run Avg',
         statLabel: 'ERA',
         player: eraLeaderData.player_name,
-        playerId: eraLeaderData.player_mlb_id || eraLeaderData.player_id,
+        playerId: eraLeaderData.id,
         value: formatEra(eraLeaderData.era ?? eraLeaderData.value),
       });
     }
@@ -318,7 +318,7 @@ function PitcherStats({ teamId = 'ALL', teamDbId = null, season = '2025', teamNa
         category: 'Wins',
         statLabel: 'W',
         player: winsLeaderData.player_name,
-        playerId: winsLeaderData.player_mlb_id || winsLeaderData.player_id,
+        playerId: winsLeaderData.id,
         value: winsLeaderData.wins ?? winsLeaderData.value ?? 0,
       });
     }
@@ -330,7 +330,7 @@ function PitcherStats({ teamId = 'ALL', teamDbId = null, season = '2025', teamNa
         category: 'Strikeouts',
         statLabel: 'K',
         player: kLeaderData.player_name,
-        playerId: kLeaderData.player_mlb_id || kLeaderData.player_id,
+        playerId: kLeaderData.id,
         value: kLeaderData.strikeouts ?? kLeaderData.so ?? kLeaderData.value ?? 0,
       });
     }
@@ -342,7 +342,7 @@ function PitcherStats({ teamId = 'ALL', teamDbId = null, season = '2025', teamNa
         category: 'Walks+Hits/IP',
         statLabel: 'WHIP',
         player: whipLeaderData.player_name,
-        playerId: whipLeaderData.player_mlb_id || whipLeaderData.player_id,
+        playerId: whipLeaderData.id,
         value: formatWhip(whipLeaderData.whip ?? whipLeaderData.value),
       });
     }
@@ -354,7 +354,7 @@ function PitcherStats({ teamId = 'ALL', teamDbId = null, season = '2025', teamNa
         category: 'Opponent AVG',
         statLabel: 'OPP',
         player: oppAvgLeaderData.player_name,
-        playerId: oppAvgLeaderData.player_mlb_id || oppAvgLeaderData.player_id,
+        playerId: oppAvgLeaderData.id,
         value: formatOppAvg(oppAvgLeaderData.opponent_avg ?? oppAvgLeaderData.opp_avg ?? oppAvgLeaderData.value),
       });
     }
@@ -366,7 +366,7 @@ function PitcherStats({ teamId = 'ALL', teamDbId = null, season = '2025', teamNa
         category: 'Innings Pitched',
         statLabel: 'IP',
         player: ipLeaderData.player_name,
-        playerId: ipLeaderData.player_mlb_id || ipLeaderData.player_id,
+        playerId: ipLeaderData.id,
         value: formatIP(ipLeaderData.innings_pitched ?? ipLeaderData.ip ?? ipLeaderData.value),
       });
     }
@@ -398,6 +398,7 @@ function PitcherStats({ teamId = 'ALL', teamDbId = null, season = '2025', teamNa
           format: cat.format,
           inverse: cat.inverse, // true if lower is better (e.g., ERA)
           playerName: data.player_name || 'Unknown',
+          playerId: data.id || null,
           teamName: data.team_name || '',
           value: data.value ?? 0,
           leagueAvg: data.league_avg ?? 0,
@@ -430,7 +431,7 @@ function PitcherStats({ teamId = 'ALL', teamDbId = null, season = '2025', teamNa
   const renderPitcherItem = useCallback((pitcher, idx) => {
     if (!pitcher) return null;
 
-    const playerId = pitcher.player_id;
+    const playerId = pitcher.id;
     const playerName = pitcher.player_name || 'Unknown';
     const era = formatEra(pitcher.era);
     const wins = pitcher.wins ?? 0;
@@ -500,7 +501,7 @@ function PitcherStats({ teamId = 'ALL', teamDbId = null, season = '2025', teamNa
         <div className="pitcher-top-rank">#{idx + 1}</div>
         <div className="pitcher-top-info">
           <div className="pitcher-top-name">
-            <Link to={`/player/${playerId}?season=${season}`} className="player-profile-link">
+            <Link to={`/player/${playerId}?season=${season}`} className="player-profile-link" onClick={() => window.scrollTo(0, 0)}>
               {playerName}
             </Link>
             {badgeText && <span className={`${isTraded || isReleased || isClaimed ? 'traded-badge' : 'acquired-badge'}`}>{badgeText}</span>}
@@ -518,7 +519,7 @@ function PitcherStats({ teamId = 'ALL', teamDbId = null, season = '2025', teamNa
   const renderHotPitcherItem = useCallback((pitcher, idx) => {
     if (!pitcher) return null;
 
-    const playerId = pitcher.player_id;
+    const playerId = pitcher.id;
     const playerName = pitcher.player_name || 'Unknown';
     const teamNameDisplay = pitcher.team_name || pitcher.team || '';
     const key = playerId ? `hot-pitcher-${playerId}` : `hot-pitcher-idx-${idx}`;
@@ -575,7 +576,7 @@ function PitcherStats({ teamId = 'ALL', teamDbId = null, season = '2025', teamNa
           )}
           <div className="hot-pitcher-info">
             <span className="hot-pitcher-name">
-              <Link to={`/player/${playerId}?season=${season}`} className="player-profile-link">
+              <Link to={`/player/${playerId}?season=${season}`} className="player-profile-link" onClick={() => window.scrollTo(0, 0)}>
                 {playerName}
               </Link>
             </span>
@@ -615,7 +616,7 @@ function PitcherStats({ teamId = 'ALL', teamDbId = null, season = '2025', teamNa
 
   // Render split item with horizontal bar chart
   const renderSplitItem = useCallback((split) => {
-    const { key, label, format, inverse, playerName, teamName, value, leagueAvg } = split;
+    const { key, label, format, inverse, playerName, playerId, teamName, value, leagueAvg } = split;
 
     // Format value based on type
     const formatValue = (val, fmt) => {
@@ -671,7 +672,13 @@ function PitcherStats({ teamId = 'ALL', teamDbId = null, season = '2025', teamNa
                 onError={(e) => { e.target.style.display = 'none'; }}
               />
             )}
-            <span className="split-bar-name">{playerName}</span>
+            {playerId ? (
+              <Link to={`/player/${playerId}?season=${season}`} className="player-profile-link split-bar-name" onClick={() => window.scrollTo(0, 0)}>
+                {playerName}
+              </Link>
+            ) : (
+              <span className="split-bar-name">{playerName}</span>
+            )}
           </div>
         </div>
         <div className="split-bar-chart">
@@ -693,7 +700,7 @@ function PitcherStats({ teamId = 'ALL', teamDbId = null, season = '2025', teamNa
         </div>
       </div>
     );
-  }, []);
+  }, [season]);
 
   return (
     <section className="pitcher-stats-section container">
@@ -732,7 +739,9 @@ function PitcherStats({ teamId = 'ALL', teamDbId = null, season = '2025', teamNa
                       />
                     </div>
                   )}
-                  <span className="pitcher-player">{cat.player}</span>
+                  <Link to={`/player/${cat.playerId}?season=${season}`} className="player-profile-link" onClick={() => window.scrollTo(0, 0)}>
+                    <span className="pitcher-player">{cat.player}</span>
+                  </Link>
                   {!isTeamSelected && cat.team && (
                     <span className="pitcher-team">{cat.team}</span>
                   )}
