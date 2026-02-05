@@ -84,6 +84,9 @@
   height: 32px;
   object-fit: contain;
   flex-shrink: 0;
+  background: rgba(255, 255, 255, 0.9);
+  border-radius: 50%;
+  padding: 4px;
 }
 
 .pps-player-photo {
@@ -94,7 +97,7 @@
   object-position: center 20%;
   border-radius: 12px;
   border: 2px solid var(--pps-border-color);
-  background: var(--pps-bg-secondary);
+  background: rgba(255, 255, 255, 0.9);
   z-index: 1;
 }
 
@@ -506,7 +509,19 @@
 }
 
 /* Team History */
-.pps-timeline { display: flex; flex-direction: column; }
+.pps-timeline { 
+  display: flex; 
+  flex-direction: column;
+  max-height: 320px; /* Approx 4 teams */
+  overflow-y: auto;
+  padding-right: 0.5rem;
+}
+
+/* Custom scrollbar for team history */
+.pps-timeline::-webkit-scrollbar { width: 6px; }
+.pps-timeline::-webkit-scrollbar-track { background: rgba(255, 255, 255, 0.05); border-radius: 3px; }
+.pps-timeline::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.2); border-radius: 3px; }
+.pps-timeline::-webkit-scrollbar-thumb:hover { background: rgba(255, 255, 255, 0.3); }
 
 .pps-timeline-item {
   position: relative;
@@ -540,7 +555,14 @@
 }
 
 .pps-timeline-team { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.5rem; }
-.pps-timeline-team-logo { width: 36px; height: 36px; object-fit: contain; }
+.pps-timeline-team-logo { 
+  width: 36px; 
+  height: 36px; 
+  object-fit: contain; 
+  background: rgba(255, 255, 255, 0.9);
+  border-radius: 50%;
+  padding: 4px;
+}
 .pps-timeline-team-info { display: flex; flex-direction: column; }
 .pps-timeline-team-name { font-size: 0.95rem; font-weight: 700; color: #ffffff; }
 .pps-timeline-years { font-size: 0.8rem; color: var(--pps-text-secondary); }

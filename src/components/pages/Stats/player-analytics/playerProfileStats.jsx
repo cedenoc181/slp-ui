@@ -1,8 +1,9 @@
 import React, { useState, useMemo, useEffect, useCallback, useRef } from 'react';
 import { useParams, useSearchParams } from 'react-router-dom';
-import { SEASONS, TEAMS } from '../../../../data/constants/apiConstants';
+import { SEASONS, TEAMS, TEAM_METADATA } from '../../../../data/constants/apiConstants';
 import playerStatsService from '../../../../data/services/playerStatsServices';
 import injuryService from '../../../../data/services/injuryService';
+import rosterService from '../../../../data/services/rosterService';
 import '../../../../styles/stats-page-styling/player-profile.css';
 
 function PlayerProfileStats() {
@@ -118,6 +119,26 @@ function PlayerProfileStats() {
     };
     
     fetchInjuryHistory();
+  }, [playerId]);
+
+  // Fetch team history (roster history) when playerId changes
+  useEffect(() => {
+    const fetchTeamHistory = async () => {
+      if (!playerId) return;
+      
+      try {
+        // Get player roster history without season param for full history
+        const response = await rosterService.getPlayerRosterHistory(playerId);
+        // API returns { player_id, player_mlb_id, player_name, seasons: [...] }
+        const seasons = response?.seasons || [];
+        setTeamHistory(Array.isArray(seasons) ? seasons : []);
+      } catch (err) {
+        console.error('Error fetching team history:', err);
+        setTeamHistory([]);
+      }
+    };
+    
+    fetchTeamHistory();
   }, [playerId]);
 
   // Fetch season stats, career stats, and splits when player info or season changes
@@ -1048,49 +1069,47 @@ function PlayerProfileStats() {
                 </div>
               </div>
               <div className="pps-timeline">
-                {/* Generate team history from career stats */}
+                {/* Generate team history from roster API */}
                 {(() => {
-                  // Group career stats by team and calculate date ranges
-                  const teamHistoryData = careerStats.reduce((acc, season) => {
-                    const teamId = season.team_id || season.teamId;
-                    // Safely extract team name - handle both string and object formats
-                    const teamName = season.team_name 
-                      || (typeof season.team === 'string' ? season.team : season.team?.team_name) 
-                      || 'Unknown Team';
-                    const year = season.season || season.year;
+                  // Group roster history by team_id and calculate date ranges
+                  const teamHistoryData = teamHistory.reduce((acc, season) => {
+                    const teamId = season.team_id;
+                    const teamAbbr = season.team_abbreviation;
+                    // Look up MLB team ID from TEAM_METADATA using abbreviation
+                    const mlbTeamId = TEAM_METADATA[teamAbbr]?.mlbId;
+                    const teamName = season.team_name || 'Unknown Team';
+                    const year = season.season;
+                    const gamesPlayed = season.games_played || 0;
                     
                     if (!teamId) return acc;
                     
                     if (!acc[teamId]) {
                       acc[teamId] = {
                         teamId,
+                        mlbTeamId,
                         teamName,
+                        teamAbbreviation: teamAbbr,
                         seasons: [],
-                        totalAvg: [],
+                        totalGames: 0,
                       };
                     }
                     acc[teamId].seasons.push(year);
-                    if (season.avg || season.batting_avg) {
-                      acc[teamId].totalAvg.push(season.avg || season.batting_avg);
-                    }
+                    acc[teamId].totalGames += gamesPlayed;
                     return acc;
                   }, {});
 
                   // Convert to array and sort by most recent
-                  const teamHistory = Object.values(teamHistoryData)
+                  const groupedTeams = Object.values(teamHistoryData)
                     .map(team => ({
                       ...team,
                       startYear: Math.min(...team.seasons),
                       endYear: Math.max(...team.seasons),
                       seasonCount: team.seasons.length,
-                      avgBattingAvg: team.totalAvg.length > 0 
-                        ? (team.totalAvg.reduce((a, b) => a + b, 0) / team.totalAvg.length).toFixed(3).replace(/^0/, '')
-                        : null,
                     }))
                     .sort((a, b) => b.endYear - a.endYear);
 
-                  if (teamHistory.length === 0) {
-                    // Fallback to current team if no career stats
+                  if (groupedTeams.length === 0) {
+                    // Fallback to current team if no roster history
                     return (
                       <div className="pps-timeline-item current">
                         <div className="pps-timeline-marker"></div>
@@ -1119,16 +1138,18 @@ function PlayerProfileStats() {
                     );
                   }
 
-                  return teamHistory.map((team, idx) => (
+                  return groupedTeams.map((team, idx) => (
                     <div key={team.teamId} className={`pps-timeline-item ${idx === 0 ? 'current' : ''}`}>
                       <div className="pps-timeline-marker"></div>
                       <div className="pps-timeline-content">
                         <div className="pps-timeline-team">
-                          <img 
-                            src={getTeamLogoUrl(team.teamId)} 
-                            alt={team.teamName}
-                            className="pps-timeline-team-logo"
-                          />
+                          {team.mlbTeamId && (
+                            <img 
+                              src={getTeamLogoUrl(team.mlbTeamId)} 
+                              alt={team.teamName}
+                              className="pps-timeline-team-logo"
+                            />
+                          )}
                           <div className="pps-timeline-team-info">
                             <span className="pps-timeline-team-name">{team.teamName}</span>
                             <span className="pps-timeline-years">
@@ -1141,10 +1162,10 @@ function PlayerProfileStats() {
                         </div>
                         <div className="pps-timeline-stats">
                           <span>{team.seasonCount} season{team.seasonCount !== 1 ? 's' : ''}</span>
-                          {team.avgBattingAvg && (
+                          {team.totalGames > 0 && (
                             <>
                               <span className="pps-separator">•</span>
-                              <span>AVG: {team.avgBattingAvg}</span>
+                              <span>{team.totalGames} G</span>
                             </>
                           )}
                         </div>

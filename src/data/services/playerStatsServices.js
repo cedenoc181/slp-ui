@@ -29,6 +29,79 @@ class PlayerStatsService {
     return await api.get(`/player-profile/mlb/${playerMlbId}/info`);
   }
 
+  /**
+   * Look up a player by internal ID, MLB ID, or full name
+   * Returns player's id, mlb_id, full_name, and current team_id
+   * Priority: player_id > mlb_id > full_name (uses first provided parameter)
+   * @param {Object} params - Lookup parameters
+   * @param {number} [params.playerId] - Internal player ID
+   * @param {number} [params.mlbId] - MLB player ID
+   * @param {string} [params.fullName] - Player full name (case-insensitive)
+   * @returns {Promise<Object|null>} Player lookup result or null if not found
+   */
+  async lookupPlayer({ playerId, mlbId, fullName }) {
+    const params = new URLSearchParams();
+    if (playerId) params.append('player_id', playerId);
+    else if (mlbId) params.append('mlb_id', mlbId);
+    else if (fullName) params.append('full_name', fullName);
+    else return null;
+    
+    try {
+      return await api.get(`/players/lookup?${params.toString()}`);
+    } catch (error) {
+      // Return null if player not found (404)
+      if (error.message?.includes('404')) return null;
+      throw error;
+    }
+  }
+
+  /**
+   * Search players by name or MLB ID (for search bar autocomplete)
+   * Uses partial name matching for better autocomplete experience
+   * @param {string} query - Search query (player name or MLB ID)
+   * @param {number} limit - Maximum number of results (default 10)
+   * @returns {Promise<Array>} Array of matching players with id, mlb_id, full_name, team_id
+   */
+  async searchPlayers(query, limit = 10) {
+    if (!query || query.trim().length < 2) {
+      return [];
+    }
+    
+    const trimmedQuery = query.trim();
+    
+    // Check if query is a numeric ID (MLB ID or player ID)
+    const isNumericId = /^\d+$/.test(trimmedQuery);
+    
+    try {
+      if (isNumericId) {
+        // For numeric IDs, use the lookup endpoint for exact match
+        const numId = parseInt(trimmedQuery, 10);
+        let result = null;
+        
+        // Try MLB ID first (5-7 digits typically), then internal player ID
+        if (numId >= 100000) {
+          result = await this.lookupPlayer({ mlbId: numId });
+        } else {
+          // Try as internal player ID first, then MLB ID
+          result = await this.lookupPlayer({ playerId: numId });
+          if (!result) {
+            result = await this.lookupPlayer({ mlbId: numId });
+          }
+        }
+        
+        // Wrap single result in array for consistency
+        return result ? [result] : [];
+      } else {
+        // For name searches, use the search endpoint with partial matching
+        const encodedQuery = encodeURIComponent(trimmedQuery);
+        return await api.get(`/players/search?q=${encodedQuery}&limit=${limit}`);
+      }
+    } catch (error) {
+      console.error('Error searching players:', error);
+      return [];
+    }
+  }
+
   // ============================================================================
   // BATTER STATS ENDPOINTS
   // ============================================================================

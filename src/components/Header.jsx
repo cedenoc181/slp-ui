@@ -1,9 +1,10 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import articlesData from '../data/contentData/article.json';
 import moreArticlesData from '../data/contentData/moreArticles.json';
 import { TEAMS } from '../data/constants/apiConstants';
 import { useAuth } from '../context/AuthContext';
+import playerStatsService from '../data/services/playerStatsServices';
 
 
 function Header() {
@@ -13,6 +14,8 @@ function Header() {
   const [searchQuery, setSearchQuery] = useState('');
   const [searchSuggestions, setSearchSuggestions] = useState([]);
   const [isSearchFocused, setIsSearchFocused] = useState(false);
+  const [isSearchingPlayers, setIsSearchingPlayers] = useState(false);
+  const searchDebounceRef = useRef(null);
   const navigate = useNavigate();
   const location = useLocation();
   const { isAuthenticated } = useAuth();
@@ -69,6 +72,15 @@ function Header() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
+  // Cleanup debounce timer on unmount
+  useEffect(() => {
+    return () => {
+      if (searchDebounceRef.current) {
+        clearTimeout(searchDebounceRef.current);
+      }
+    };
+  }, []);
+
   const handleLogoClick = (e) => {
     e.preventDefault();
     e.stopPropagation();
@@ -100,10 +112,63 @@ function Header() {
     return match ? match[1] : null;
   };
 
-  const buildSuggestions = (value) => {
+  // Search players from API with debouncing
+  const searchPlayersAsync = useCallback(async (query, existingResults) => {
+    if (!query || query.trim().length < 2) {
+      return;
+    }
+
+    setIsSearchingPlayers(true);
+    try {
+      const players = await playerStatsService.searchPlayers(query, 5);
+      
+      if (Array.isArray(players) && players.length > 0) {
+        const playerResults = players.map((player) => {
+          // Handle different response formats from lookup vs search endpoints
+          const playerName = player.full_name || player.player_name || 'Unknown Player';
+          const playerId = player.id || player.player_id;
+          const teamName = player.team_name || player.current_team?.team_name || '';
+          
+          return {
+            type: 'player',
+            icon: '👤',
+            label: playerName,
+            sublabel: teamName,
+            playerId: playerId,
+            playerMlbId: player.mlb_id || player.player_mlb_id,
+            onSelect: () => {
+              closeMenu();
+              // Navigate to player profile using internal player ID
+              navigate(`/player/${playerId}`);
+              window.scrollTo({ top: 0, behavior: 'smooth' });
+              setSearchQuery('');
+              setSearchSuggestions([]);
+            }
+          };
+        });
+
+        // Combine player results with existing results (players first, then others)
+        setSearchSuggestions((prev) => {
+          const nonPlayerResults = prev.filter(r => r.type !== 'player');
+          return [...playerResults, ...nonPlayerResults].slice(0, 8);
+        });
+      }
+    } catch (error) {
+      console.error('Error searching players:', error);
+      // Silently fail - local results are still shown
+    } finally {
+      setIsSearchingPlayers(false);
+    }
+  }, [navigate, closeMenu]);
+
+  const buildSuggestions = useCallback((value) => {
     const trimmed = value.trim();
     if (!trimmed) {
       setSearchSuggestions([]);
+      // Clear any pending debounced search
+      if (searchDebounceRef.current) {
+        clearTimeout(searchDebounceRef.current);
+      }
       return;
     }
     
@@ -111,8 +176,24 @@ function Header() {
     const normalized = trimmed.replace(/\b20\d{2}\b/, '').trim().toLowerCase();
     const results = [];
 
-    // 1. Search Teams (all 30 MLB teams)
-    if (normalized.length >= 2) {
+    // Check if query looks like an MLB ID (all digits, 5-7 characters)
+    const isLikelyMlbId = /^\d{5,7}$/.test(trimmed);
+
+    // 1. Search Players (via API with debounce)
+    // Clear previous debounce timer
+    if (searchDebounceRef.current) {
+      clearTimeout(searchDebounceRef.current);
+    }
+
+    // Debounce the API call for player search
+    if (normalized.length >= 2 || isLikelyMlbId) {
+      searchDebounceRef.current = setTimeout(() => {
+        searchPlayersAsync(trimmed, results);
+      }, 300);
+    }
+
+    // 2. Search Teams (all 30 MLB teams) - immediate/local
+    if (normalized.length >= 2 && !isLikelyMlbId) {
       const teamMatches = teamOptions.filter((team) => {
         const searchTerms = [
           team.name.toLowerCase(),
@@ -125,8 +206,8 @@ function Header() {
                );
       });
 
-      // Limit to top 3 team matches
-      teamMatches.slice(0, 3).forEach((team) => {
+      // Limit to top 2 team matches (reduced to make room for players)
+      teamMatches.slice(0, 2).forEach((team) => {
         results.push({
           type: 'team',
           icon: '📊',
@@ -157,7 +238,7 @@ function Header() {
       });
     }
 
-    // 2. Search Pages by keywords
+    // 3. Search Pages by keywords
     const pageMatches = pageOptions.filter((page) => {
       const labelMatch = page.label.toLowerCase().includes(normalized);
       const keywordMatch = page.keywords.some(kw => kw.includes(normalized) || normalized.includes(kw));
@@ -182,7 +263,7 @@ function Header() {
       }
     });
 
-    // 3. Search Articles by tags
+    // 4. Search Articles by tags
     const lowerTokens = normalized.split(/\s+/).filter(Boolean);
     const articleMatches = articleTags.filter((tag) => {
       const lowerTag = tag.toLowerCase();
@@ -205,9 +286,9 @@ function Header() {
       });
     });
 
-    // Limit total suggestions to 6
+    // Set local results immediately (player results will be added async)
     setSearchSuggestions(results.slice(0, 6));
-  };
+  }, [teamOptions, pageOptions, articleTags, navigate, closeMenu, searchPlayersAsync]);
 
   // Helper function to get icon for page type
   const getPageIcon = (path) => {
@@ -270,11 +351,17 @@ function Header() {
             placeholder="Search teams, players, articles..."
             aria-label="Search"
           />
-          {isSearchFocused && searchSuggestions.length > 0 && (
+          {isSearchFocused && (searchSuggestions.length > 0 || isSearchingPlayers) && (
             <div className="search-suggestions">
+              {isSearchingPlayers && searchSuggestions.length === 0 && (
+                <div className="search-loading">
+                  <span className="suggestion-icon">🔍</span>
+                  <span className="suggestion-label">Searching players...</span>
+                </div>
+              )}
               {searchSuggestions.map((item, idx) => (
                 <button
-                  key={`${item.type}-${idx}`}
+                  key={`${item.type}-${item.playerId || idx}`}
                   type="button"
                   className="search-suggestion"
                   onClick={item.onSelect}
@@ -282,7 +369,11 @@ function Header() {
                   <span className="suggestion-icon">{item.icon}</span>
                   <div className="suggestion-content">
                     <span className="suggestion-label">{item.label}</span>
-                    <span className="suggestion-type">{item.type}</span>
+                    {item.sublabel ? (
+                      <span className="suggestion-sublabel">{item.sublabel}</span>
+                    ) : (
+                      <span className="suggestion-type">{item.type}</span>
+                    )}
                   </div>
                 </button>
               ))}
