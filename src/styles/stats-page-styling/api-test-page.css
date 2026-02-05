@@ -90,8 +90,20 @@
    ============================================ */
 .config-grid {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
+  grid-template-columns: repeat(4, 1fr);
   gap: 1rem;
+}
+
+@media (max-width: 900px) {
+  .config-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 500px) {
+  .config-grid {
+    grid-template-columns: 1fr;
+  }
 }
 
 .config-item {
@@ -150,6 +162,40 @@
 .api-test-select optgroup {
   font-weight: 700;
   color: var(--api-test-primary-color);
+}
+
+.api-test-input {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--api-test-text-primary);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 10px;
+  font-size: 1rem;
+  font-weight: 500;
+  transition: background-color 0.15s ease-out, border-color 0.15s ease-out;
+  box-sizing: border-box;
+}
+
+.api-test-input:hover {
+  background-color: rgba(255, 255, 255, 0.12);
+  border-color: rgba(255, 255, 255, 0.25);
+}
+
+.api-test-input:focus {
+  outline: none;
+  border-color: var(--api-test-primary-color);
+  box-shadow: 0 0 0 3px rgba(25, 118, 210, 0.2);
+}
+
+.api-test-input::placeholder {
+  color: var(--api-test-text-muted);
+}
+
+.config-hint {
+  font-size: 0.75rem;
+  color: var(--api-test-text-muted);
+  margin-top: 0.25rem;
 }
 
 /* ============================================

@@ -8,6 +8,8 @@ function ApiTestPage() {
   const [selectedTest, setSelectedTest] = useState('all');
   const [selectedTeam, setSelectedTeam] = useState(TEAM_IDS.LAD);
   const [selectedSeason, setSelectedSeason] = useState('2025');
+  const [selectedPlayerId, setSelectedPlayerId] = useState(''); // Internal DB player.id
+  const [selectedMlbId, setSelectedMlbId] = useState('660271'); // MLB ID (e.g., Ohtani)
   const [lastResult, setLastResult] = useState(null);
 
   const handleRunAllTests = async () => {
@@ -200,6 +202,68 @@ function ApiTestPage() {
           });
           break;
 
+        // ========== PLAYER STATS SERVICE ==========
+        // Uses player.id (internal DB ID)
+        case 'getPlayerInfo':
+          result = await testEndpoint('playerStats', 'getPlayerInfo', Number(selectedPlayerId));
+          break;
+        // Uses mlb_id (official MLB ID)
+        case 'getPlayerInfoByMlbId':
+          result = await testEndpoint('playerStats', 'getPlayerInfoByMlbId', Number(selectedMlbId));
+          break;
+        // Uses player.id only (career - no season)
+        case 'getBatterCareerStats':
+          result = await testEndpoint('playerStats', 'getBatterCareerStats', Number(selectedPlayerId));
+          break;
+        case 'getBatterCareerTotals':
+          result = await testEndpoint('playerStats', 'getBatterCareerTotals', Number(selectedPlayerId));
+          break;
+        // Uses player.id + season
+        case 'getBatterCurrentStats':
+          result = await testEndpoint('playerStats', 'getBatterCurrentStats', Number(selectedPlayerId), selectedSeason);
+          break;
+        case 'getBatterVsHandSplits':
+          result = await testEndpoint('playerStats', 'getBatterVsHandSplits', Number(selectedPlayerId), selectedSeason);
+          break;
+        case 'getBatterHomeRoadSplits':
+          result = await testEndpoint('playerStats', 'getBatterHomeRoadSplits', Number(selectedPlayerId), selectedSeason);
+          break;
+        // Uses player.id only (career totals - no season)
+        case 'getBatterVsHandSplitsCareerTotals':
+          result = await testEndpoint('playerStats', 'getBatterVsHandSplitsCareerTotals', Number(selectedPlayerId));
+          break;
+        case 'getBatterHomeRoadSplitsCareerTotals':
+          result = await testEndpoint('playerStats', 'getBatterHomeRoadSplitsCareerTotals', Number(selectedPlayerId));
+          break;
+        // Uses player.id + season
+        case 'getBatterMonthlyPerformance':
+          result = await testEndpoint('playerStats', 'getBatterMonthlyPerformance', Number(selectedPlayerId), selectedSeason);
+          break;
+        // Pitcher endpoints - Uses player.id only (career - no season)
+        case 'getPitcherCareerStats':
+          result = await testEndpoint('playerStats', 'getPitcherCareerStats', Number(selectedPlayerId));
+          break;
+        case 'getPitcherCareerTotals':
+          result = await testEndpoint('playerStats', 'getPitcherCareerTotals', Number(selectedPlayerId));
+          break;
+        // Pitcher endpoints - Uses player.id + season
+        case 'getPitcherCurrentStats':
+          result = await testEndpoint('playerStats', 'getPitcherCurrentStats', Number(selectedPlayerId), selectedSeason);
+          break;
+        case 'getPitcherVsHandSplits':
+          result = await testEndpoint('playerStats', 'getPitcherVsHandSplits', Number(selectedPlayerId), selectedSeason);
+          break;
+        case 'getPitcherHomeRoadSplits':
+          result = await testEndpoint('playerStats', 'getPitcherHomeRoadSplits', Number(selectedPlayerId), selectedSeason);
+          break;
+        case 'getPitcherMonthlyPerformance':
+          result = await testEndpoint('playerStats', 'getPitcherMonthlyPerformance', Number(selectedPlayerId), selectedSeason);
+          break;
+        // Uses player.id + season
+        case 'getFullPlayerProfile':
+          result = await testEndpoint('playerStats', 'getFullPlayerProfile', Number(selectedPlayerId), selectedSeason);
+          break;
+
         default:
           await testAllEndpoints();
       }
@@ -260,6 +324,28 @@ function ApiTestPage() {
                 <option value="2022">2022</option>
                 <option value="2021">2021</option>
               </select>
+            </div>
+            <div className="config-item">
+              <label>Player ID (player.id)</label>
+              <input
+                type="text"
+                value={selectedPlayerId}
+                onChange={(e) => setSelectedPlayerId(e.target.value)}
+                className="api-test-input"
+                placeholder="Enter player.id"
+              />
+              <small className="config-hint">Internal DB ID</small>
+            </div>
+            <div className="config-item">
+              <label>MLB ID (mlb_id)</label>
+              <input
+                type="text"
+                value={selectedMlbId}
+                onChange={(e) => setSelectedMlbId(e.target.value)}
+                className="api-test-input"
+                placeholder="Enter mlb_id (e.g., 660271)"
+              />
+              <small className="config-hint">Official MLB ID (e.g., 660271 = Ohtani)</small>
             </div>
           </div>
         </div>
@@ -369,6 +455,26 @@ function ApiTestPage() {
               <option value="getInjurySummary">Get League Injury Summary</option>
               <option value="getTeamInjuriesCustomRange">Get Team Injuries (Custom Range)</option>
             </optgroup>
+
+            <optgroup label="👤 Player Stats Service">
+              <option value="getPlayerInfo">Get Player Info [player.id]</option>
+              <option value="getPlayerInfoByMlbId">Get Player Info by MLB ID [mlb_id]</option>
+              <option value="getBatterCareerStats">Get Batter Career Stats [player.id]</option>
+              <option value="getBatterCareerTotals">Get Batter Career Totals [player.id]</option>
+              <option value="getBatterCurrentStats">Get Batter Current Stats [player.id + season]</option>
+              <option value="getBatterVsHandSplits">Get Batter vs Hand Splits [player.id + season]</option>
+              <option value="getBatterHomeRoadSplits">Get Batter Home/Road Splits [player.id + season]</option>
+              <option value="getBatterVsHandSplitsCareerTotals">Get Batter vs Hand Splits Career [player.id]</option>
+              <option value="getBatterHomeRoadSplitsCareerTotals">Get Batter Home/Road Splits Career [player.id]</option>
+              <option value="getBatterMonthlyPerformance">Get Batter Monthly Performance [player.id + season]</option>
+              <option value="getPitcherCareerStats">Get Pitcher Career Stats [player.id]</option>
+              <option value="getPitcherCareerTotals">Get Pitcher Career Totals [player.id]</option>
+              <option value="getPitcherCurrentStats">Get Pitcher Current Stats [player.id + season]</option>
+              <option value="getPitcherVsHandSplits">Get Pitcher vs Hand Splits [player.id + season]</option>
+              <option value="getPitcherHomeRoadSplits">Get Pitcher Home/Road Splits [player.id + season]</option>
+              <option value="getPitcherMonthlyPerformance">Get Pitcher Monthly Performance [player.id + season]</option>
+              <option value="getFullPlayerProfile">Get Full Player Profile [player.id + season]</option>
+            </optgroup>
           </select>
 
           <button 
@@ -393,6 +499,8 @@ function ApiTestPage() {
           <ul>
             <li><strong>Team:</strong> {getTeamName(selectedTeam)} (ID: {selectedTeam})</li>
             <li><strong>Season:</strong> {selectedSeason}</li>
+            <li><strong>Player ID (player.id):</strong> {selectedPlayerId || 'Not set'}</li>
+            <li><strong>MLB ID (mlb_id):</strong> {selectedMlbId || 'Not set'}</li>
             <li><strong>Season Type:</strong> Regular (R)</li>
             <li><strong>API Base URL:</strong> http://127.0.0.1:8000</li>
           </ul>
@@ -463,6 +571,37 @@ function ApiTestPage() {
               <code>/players/injuries/player?player_id=X&season=Y</code>
               <code>/players/injuries/summary?season=Y</code>
               <code>/players/injuries/team?team_id=X&season=Y&start_date=...&end_date=...</code>
+            </div>
+            <div className="endpoint-category">
+              <strong>Player Profile - Info</strong>
+              <code>/player-profile/{'{player_id}'}/info</code>
+              <code>/player-profile/mlb/{'{mlb_id}'}/info</code>
+            </div>
+            <div className="endpoint-category">
+              <strong>Player Profile - Batter Stats</strong>
+              <code>/player-profile/{'{player_id}'}/batter/career-stats</code>
+              <code>/player-profile/{'{player_id}'}/batter/career-totals</code>
+              <code>/player-profile/{'{player_id}'}/batter/current-stats?season=Y</code>
+              <code>/player-profile/{'{player_id}'}/batter/monthly-performance?season=Y</code>
+            </div>
+            <div className="endpoint-category">
+              <strong>Player Profile - Batter Splits</strong>
+              <code>/player-profile/{'{player_id}'}/batter/vs-hand-splits?season=Y</code>
+              <code>/player-profile/{'{player_id}'}/batter/home-road-splits?season=Y</code>
+              <code>/player-profile/{'{player_id}'}/batter/vs-hand-splits-career-totals</code>
+              <code>/player-profile/{'{player_id}'}/batter/home-road-splits-career-totals</code>
+            </div>
+            <div className="endpoint-category">
+              <strong>Player Profile - Pitcher Stats</strong>
+              <code>/player-profile/{'{player_id}'}/pitcher/career-stats</code>
+              <code>/player-profile/{'{player_id}'}/pitcher/career-totals</code>
+              <code>/player-profile/{'{player_id}'}/pitcher/current-stats?season=Y</code>
+              <code>/player-profile/{'{player_id}'}/pitcher/monthly-performance?season=Y</code>
+            </div>
+            <div className="endpoint-category">
+              <strong>Player Profile - Pitcher Splits</strong>
+              <code>/player-profile/{'{player_id}'}/pitcher/vs-hand-splits?season=Y</code>
+              <code>/player-profile/{'{player_id}'}/pitcher/home-road-splits?season=Y</code>
             </div>
           </div>
         </div>

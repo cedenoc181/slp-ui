@@ -359,6 +359,17 @@ class ApiTester {
     }
   }
 
+  async testGetBatterCareerTotals() {
+    try {
+      const data = await playerStatsService.getBatterCareerTotals(this.testPlayerId);
+      this.logResult('getBatterCareerTotals', true, data);
+      return data;
+    } catch (error) {
+      this.logResult('getBatterCareerTotals', false, null, error);
+      return null;
+    }
+  }
+
   async testGetBatterCurrentStats() {
     try {
       const data = await playerStatsService.getBatterCurrentStats(this.testPlayerId, this.testSeason);
@@ -392,6 +403,28 @@ class ApiTester {
     }
   }
 
+  async testGetBatterVsHandSplitsCareerTotals() {
+    try {
+      const data = await playerStatsService.getBatterVsHandSplitsCareerTotals(this.testPlayerId);
+      this.logResult('getBatterVsHandSplitsCareerTotals', true, data);
+      return data;
+    } catch (error) {
+      this.logResult('getBatterVsHandSplitsCareerTotals', false, null, error);
+      return null;
+    }
+  }
+
+  async testGetBatterHomeRoadSplitsCareerTotals() {
+    try {
+      const data = await playerStatsService.getBatterHomeRoadSplitsCareerTotals(this.testPlayerId);
+      this.logResult('getBatterHomeRoadSplitsCareerTotals', true, data);
+      return data;
+    } catch (error) {
+      this.logResult('getBatterHomeRoadSplitsCareerTotals', false, null, error);
+      return null;
+    }
+  }
+
   async testGetPitcherCareerStats() {
     try {
       // Using a pitcher ID - adjust if needed for proper testing
@@ -400,6 +433,17 @@ class ApiTester {
       return data;
     } catch (error) {
       this.logResult('getPitcherCareerStats', false, null, error);
+      return null;
+    }
+  }
+
+  async testGetPitcherCareerTotals() {
+    try {
+      const data = await playerStatsService.getPitcherCareerTotals(this.testPlayerId);
+      this.logResult('getPitcherCareerTotals', true, data);
+      return data;
+    } catch (error) {
+      this.logResult('getPitcherCareerTotals', false, null, error);
       return null;
     }
   }
@@ -536,10 +580,14 @@ class ApiTester {
     await this.testGetPlayerInfo();
     await this.testGetPlayerInfoByMlbId();
     await this.testGetBatterCareerStats();
+    await this.testGetBatterCareerTotals();
     await this.testGetBatterCurrentStats();
     await this.testGetBatterVsHandSplits();
     await this.testGetBatterHomeRoadSplits();
+    await this.testGetBatterVsHandSplitsCareerTotals();
+    await this.testGetBatterHomeRoadSplitsCareerTotals();
     await this.testGetPitcherCareerStats();
+    await this.testGetPitcherCareerTotals();
     await this.testGetPitcherCurrentStats();
     await this.testGetPitcherVsHandSplits();
     await this.testGetPitcherHomeRoadSplits();

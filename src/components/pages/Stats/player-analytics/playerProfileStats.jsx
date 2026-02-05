@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect, useCallback } from 'react';
+import React, { useState, useMemo, useEffect, useCallback, useRef } from 'react';
 import { useParams, useSearchParams } from 'react-router-dom';
 import { SEASONS, TEAMS } from '../../../../data/constants/apiConstants';
 import playerStatsService from '../../../../data/services/playerStatsServices';
@@ -20,6 +20,8 @@ function PlayerProfileStats() {
   // State for active tabs/filters
   const [activeStatsTab, setActiveStatsTab] = useState('current'); // current, career
   const [activeSplitsTab, setActiveSplitsTab] = useState('handedness'); // handedness, homeAway
+  const [seasonDropdownOpen, setSeasonDropdownOpen] = useState(false);
+  const seasonDropdownRef = useRef(null);
   const [activeGameLogMonth, setActiveGameLogMonth] = useState('all'); // all, apr, may, jun, jul, aug, sep, oct
   const [trendTimeframe, setTrendTimeframe] = useState('5y'); // 1y, 3y, 5y, career
   const [selectedChartMetric, setSelectedChartMetric] = useState('hr'); // hr, h, avg, ops, bb, so
@@ -33,6 +35,8 @@ function PlayerProfileStats() {
   const [playerInfo, setPlayerInfo] = useState(null);
   const [seasonStats, setSeasonStats] = useState(null);
   const [careerStats, setCareerStats] = useState([]);
+  const [careerTotals, setCareerTotals] = useState(null);
+  const [careerTotalsLoading, setCareerTotalsLoading] = useState(false);
   const [vsHandSplits, setVsHandSplits] = useState([]);
   const [homeRoadSplits, setHomeRoadSplits] = useState([]);
   const [monthlyPerformance, setMonthlyPerformance] = useState(null);
@@ -48,6 +52,17 @@ function PlayerProfileStats() {
       setSelectedSeason(seasonParam);
     }
   }, [searchParams, selectedSeason]);
+
+  // Close season dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (seasonDropdownRef.current && !seasonDropdownRef.current.contains(event.target)) {
+        setSeasonDropdownOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   // Update URL when season changes
   const handleSeasonChange = (newSeason) => {
@@ -108,13 +123,18 @@ function PlayerProfileStats() {
           setMonthlyPerformance(monthly);
         } else {
           // Batter or two-way player (show batting stats by default)
+          console.log('Fetching batter monthly performance with playerId:', playerId, 'season:', selectedSeason);
           const [current, career, vsHand, homeRoad, monthly] = await Promise.all([
             playerStatsService.getBatterCurrentStats(playerId, selectedSeason).catch(() => null),
             playerStatsService.getBatterCareerStats(playerId).catch(() => []),
             playerStatsService.getBatterVsHandSplits(playerId, selectedSeason).catch(() => []),
             playerStatsService.getBatterHomeRoadSplits(playerId, selectedSeason).catch(() => []),
-            playerStatsService.getBatterMonthlyPerformance(playerId, selectedSeason).catch(() => null),
+            playerStatsService.getBatterMonthlyPerformance(playerId, selectedSeason).catch((err) => {
+              console.error('Monthly performance API error:', err);
+              return null;
+            }),
           ]);
+          console.log('Monthly performance API response:', monthly);
           setSeasonStats(current);
           setCareerStats(career);
           setVsHandSplits(vsHand);
@@ -130,6 +150,36 @@ function PlayerProfileStats() {
     
     fetchPlayerStats();
   }, [playerInfo, playerId, selectedSeason]);
+
+  // Fetch career totals when Career tab is selected
+  const handleCareerTabClick = useCallback(async () => {
+    setActiveStatsTab('career');
+    
+    // If we already have career totals, don't fetch again
+    if (careerTotals) return;
+    
+    if (!playerInfo || !playerId) return;
+    
+    setCareerTotalsLoading(true);
+    
+    try {
+      const isPitcher = playerInfo.position === 'P' || playerInfo.position === 'SP' || playerInfo.position === 'RP';
+      const isTwoWay = playerInfo.position === 'TWP' || playerInfo.is_two_way;
+      
+      let totals;
+      if (isPitcher && !isTwoWay) {
+        totals = await playerStatsService.getPitcherCareerTotals(playerId);
+      } else {
+        totals = await playerStatsService.getBatterCareerTotals(playerId);
+      }
+      setCareerTotals(totals);
+    } catch (err) {
+      console.error('Error fetching career totals:', err);
+      setCareerTotals(null);
+    } finally {
+      setCareerTotalsLoading(false);
+    }
+  }, [playerInfo, playerId, careerTotals]);
 
   // Calculate player age
   const playerAge = useMemo(() => {
@@ -163,56 +213,95 @@ function PlayerProfileStats() {
 
   // Chart metric options and labels
   const chartMetricOptions = {
-    hr: { label: 'Home Runs', short: 'HR', apiKey: 'hr' },
-    h: { label: 'Hits', short: 'H', apiKey: 'h' },
-    avg: { label: 'Batting Average', short: 'AVG', apiKey: 'avg' },
-    ops: { label: 'OPS', short: 'OPS', apiKey: 'ops' },
-    bb: { label: 'Walks', short: 'BB', apiKey: 'bb' },
-    so: { label: 'Strikeouts', short: 'SO', apiKey: 'so' }
+    hr: { label: 'Home Runs', short: 'HR' },
+    h: { label: 'Hits', short: 'H' },
+    rbi: { label: 'RBIs', short: 'RBI' },
+    r: { label: 'Runs', short: 'R' },
+    avg: { label: 'Batting Average', short: 'AVG' },
+    ops: { label: 'OPS', short: 'OPS' },
+    bb: { label: 'Walks', short: 'BB' },
+    so: { label: 'Strikeouts', short: 'SO' }
   };
 
   // Transform monthly performance API data into chart format
   const getMonthlyChartData = useMemo(() => {
+    console.log('monthlyPerformance:', monthlyPerformance);
+    
     if (!monthlyPerformance) return {};
     
-    const months = ['Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct'];
+    // API returns data under 'monthly_stats' or 'batting' object with full month names
+    const battingData = monthlyPerformance.monthly_stats || monthlyPerformance.batting || monthlyPerformance;
+    console.log('battingData:', battingData);
+    
+    if (!battingData || typeof battingData !== 'object') return {};
+    
+    // Month mapping: display label -> API key (full month name)
+    const monthMapping = [
+      { display: 'Mar', apiKey: 'March' },
+      { display: 'Apr', apiKey: 'April' },
+      { display: 'May', apiKey: 'May' },
+      { display: 'Jun', apiKey: 'June' },
+      { display: 'Jul', apiKey: 'July' },
+      { display: 'Aug', apiKey: 'August' },
+      { display: 'Sep', apiKey: 'September' },
+      { display: 'Oct', apiKey: 'October' }
+    ];
+    
     const result = {};
     
-    // Map API fields to chart metrics
+    // Map chart metrics to API response field names
     const fieldMappings = {
-      hr: 'hr',
-      h: 'h',
+      hr: 'home_runs',
+      h: 'hits',
+      rbi: 'rbis',
+      r: 'runs',
       avg: 'avg',
       ops: 'ops',
-      bb: 'bb',
-      so: 'so'
+      bb: 'walks',
+      so: 'strikeouts'
     };
     
     Object.entries(fieldMappings).forEach(([metric, apiField]) => {
-      result[metric] = months.map(month => {
-        const monthKey = month.toLowerCase();
-        const monthData = monthlyPerformance[monthKey] || monthlyPerformance[month] || {};
-        return {
-          period: month,
-          value: monthData[apiField] || 0
-        };
-      }).filter(item => item.value !== 0 || months.indexOf(item.period) < 6); // Include months with 0 but hide Oct if no data
+      result[metric] = monthMapping
+        .map(({ display, apiKey }) => {
+          const monthData = battingData[apiKey] || {};
+          return {
+            period: display,
+            value: monthData[apiField] || 0
+          };
+        })
+        .filter(item => {
+          // Include months that have data (any games played)
+          const monthKey = monthMapping.find(m => m.display === item.period)?.apiKey;
+          const monthData = battingData[monthKey] || {};
+          return monthData.games > 0;
+        });
     });
     
+    console.log('getMonthlyChartData result:', result);
     return result;
   }, [monthlyPerformance]);
 
-  // Transform career stats API data into yearly chart format
+  // Transform career stats API data into yearly chart format (regular season only - season_type: 2)
   const getYearlyChartData = useMemo(() => {
     if (!careerStats || careerStats.length === 0) return {};
     
+    // Filter to only include regular season stats (season_type: 2 or "2")
+    const regularSeasonStats = careerStats.filter(season => 
+      season.season_type === 2 || season.season_type === '2' || season.season_type === 'R'
+    );
+    
+    if (regularSeasonStats.length === 0) return {};
+    
     const result = {};
-    const metrics = ['hr', 'h', 'avg', 'ops', 'bb', 'so'];
+    const metrics = ['hr', 'h', 'rbi', 'r', 'avg', 'ops', 'bb', 'so'];
     
     // Map API response fields (may vary)
     const fieldMappings = {
       hr: ['hr', 'home_runs', 'HR'],
       h: ['h', 'hits', 'H'],
+      rbi: ['rbi', 'rbis', 'RBI'],
+      r: ['r', 'runs', 'R'],
       avg: ['avg', 'batting_avg', 'AVG', 'batting_average'],
       ops: ['ops', 'OPS'],
       bb: ['bb', 'walks', 'BB', 'base_on_balls'],
@@ -220,7 +309,7 @@ function PlayerProfileStats() {
     };
     
     metrics.forEach(metric => {
-      result[metric] = careerStats
+      result[metric] = regularSeasonStats
         .map(season => {
           // Find the value from any of the possible field names
           let value = 0;
@@ -356,21 +445,6 @@ function PlayerProfileStats() {
                 <span className="pps-quick-stat-value">{formatDate(playerInfo.mlb_debut_date || playerInfo.debut_date)}</span>
               </div>
             </div>
-
-            {/* Season Selector */}
-            <div className="pps-season-selector">
-              <label htmlFor="pps-season-select">Season</label>
-              <select 
-                id="pps-season-select"
-                className="pps-season-dropdown"
-                value={selectedSeason}
-                onChange={(e) => handleSeasonChange(e.target.value)}
-              >
-                {SEASONS.map((season) => (
-                  <option key={season} value={season}>{season}</option>
-                ))}
-              </select>
-            </div>
           </div>
         </div>
       </header>
@@ -429,18 +503,38 @@ function PlayerProfileStats() {
             <div className="pps-section-header">
               <div>
                 <h2 className="pps-section-title">Season Statistics</h2>
-                <p className="pps-section-subtitle">{selectedSeason} season performance</p>
+                <p className="pps-section-subtitle">
+                  {activeStatsTab === 'career' ? 'Career performance' : `${selectedSeason} season performance`}
+                </p>
               </div>
-              <div className="pps-tab-toggle">
+              <div className="pps-tab-toggle" ref={seasonDropdownRef}>
                 <button
-                  className={`pps-tab-btn ${activeStatsTab === 'current' ? 'active' : ''}`}
-                  onClick={() => setActiveStatsTab('current')}
+                  className={`pps-tab-btn pps-dropdown-btn ${activeStatsTab === 'current' ? 'active' : ''}`}
+                  onClick={() => setSeasonDropdownOpen(!seasonDropdownOpen)}
                 >
                   {selectedSeason}
+                  <span className={`pps-dropdown-arrow ${seasonDropdownOpen ? 'open' : ''}`}>▼</span>
                 </button>
+                {seasonDropdownOpen && (
+                  <div className="pps-dropdown-menu">
+                    {SEASONS.filter(season => season !== selectedSeason).map((season) => (
+                      <button
+                        key={season}
+                        className="pps-dropdown-item"
+                        onClick={() => {
+                          setActiveStatsTab('current');
+                          handleSeasonChange(season);
+                          setSeasonDropdownOpen(false);
+                        }}
+                      >
+                        {season}
+                      </button>
+                    ))}
+                  </div>
+                )}
                 <button
                   className={`pps-tab-btn ${activeStatsTab === 'career' ? 'active' : ''}`}
-                  onClick={() => setActiveStatsTab('career')}
+                  onClick={handleCareerTabClick}
                 >
                   Career
                 </button>
@@ -451,9 +545,9 @@ function PlayerProfileStats() {
               {/* Batting Stats Card */}
               <div className="pps-stats-card">
                 <h3 className="pps-stats-card-title">Batting</h3>
-                {statsLoading ? (
+                {(statsLoading || (activeStatsTab === 'career' && careerTotalsLoading)) ? (
                   <div className="pps-stats-loading">Loading stats...</div>
-                ) : seasonStats ? (
+                ) : (activeStatsTab === 'career' ? careerTotals : seasonStats) ? (
                   <div className="pps-stats-table">
                     <div className="pps-stat-row header">
                       <span>G</span>
@@ -466,14 +560,21 @@ function PlayerProfileStats() {
                       <span>OPS</span>
                     </div>
                     <div className="pps-stat-row values">
-                      <span>{seasonStats.g || seasonStats.games || '-'}</span>
-                      <span>{seasonStats.ab || seasonStats.at_bats || '-'}</span>
-                      <span>{seasonStats.h || seasonStats.hits || '-'}</span>
-                      <span className="pps-highlight">{seasonStats.hr || seasonStats.home_runs || '-'}</span>
-                      <span>{seasonStats.rbi || '-'}</span>
-                      <span>{seasonStats.r || seasonStats.runs || '-'}</span>
-                      <span>{seasonStats.avg?.toFixed(3)?.replace(/^0/, '') || seasonStats.batting_avg?.toFixed(3)?.replace(/^0/, '') || '-'}</span>
-                      <span className="pps-highlight">{seasonStats.ops?.toFixed(3) || '-'}</span>
+                      {(() => {
+                        const stats = activeStatsTab === 'career' ? careerTotals : seasonStats;
+                        return (
+                          <>
+                            <span>{stats.g || stats.games_played || '-'}</span>
+                            <span>{stats.ab || stats.at_bats || '-'}</span>
+                            <span>{stats.h || stats.hits || '-'}</span>
+                            <span className="pps-highlight">{stats.hr || stats.home_runs || '-'}</span>
+                            <span>{stats.rbis || stats.rbi || '-'}</span>
+                            <span>{stats.r || stats.runs || '-'}</span>
+                            <span>{stats.avg?.toFixed(3)?.replace(/^0/, '') || stats.batting_avg?.toFixed(3)?.replace(/^0/, '') || '-'}</span>
+                            <span className="pps-highlight">{stats.ops?.toFixed(3) || '-'}</span>
+                          </>
+                        );
+                      })()}
                     </div>
                   </div>
                 ) : (
@@ -484,9 +585,9 @@ function PlayerProfileStats() {
               {/* Additional Stats Card */}
               <div className="pps-stats-card">
                 <h3 className="pps-stats-card-title">Additional</h3>
-                {statsLoading ? (
+                {(statsLoading || (activeStatsTab === 'career' && careerTotalsLoading)) ? (
                   <div className="pps-stats-loading">Loading stats...</div>
-                ) : seasonStats ? (
+                ) : (activeStatsTab === 'career' ? careerTotals : seasonStats) ? (
                   <div className="pps-stats-table">
                     <div className="pps-stat-row header">
                       <span>SB</span>
@@ -497,12 +598,19 @@ function PlayerProfileStats() {
                       <span>TB</span>
                     </div>
                     <div className="pps-stat-row values">
-                      <span>{seasonStats.sb || seasonStats.stolen_bases || '-'}</span>
-                      <span>{seasonStats.bb || seasonStats.walks || seasonStats.base_on_balls || '-'}</span>
-                      <span>{seasonStats.so || seasonStats.strikeouts || seasonStats.strike_outs || '-'}</span>
-                      <span>{seasonStats.doubles || seasonStats['2b'] || '-'}</span>
-                      <span>{seasonStats.triples || seasonStats['3b'] || '-'}</span>
-                      <span>{seasonStats.tb || seasonStats.total_bases || '-'}</span>
+                      {(() => {
+                        const stats = activeStatsTab === 'career' ? careerTotals : seasonStats;
+                        return (
+                          <>
+                            <span>{stats.sb || stats.stolen_bases || '-'}</span>
+                            <span>{stats.bb || stats.walks || stats.base_on_balls || '-'}</span>
+                            <span>{stats.so || stats.strikeouts || stats.strike_outs || '-'}</span>
+                            <span>{stats.doubles || stats['2b'] || '-'}</span>
+                            <span>{stats.triples || stats['3b'] || '-'}</span>
+                            <span>{stats.tb || stats.total_bases || '-'}</span>
+                          </>
+                        );
+                      })()}
                     </div>
                   </div>
                 ) : (
@@ -566,27 +674,38 @@ function PlayerProfileStats() {
                 </select>
               </div>
               <div className="pps-comparison-chart-container">
-                <div className="pps-chart-placeholder">
-                  <div className="pps-comparison-bars">
-                    {(() => {
-                      const chartData = getChartData();
-                      const maxValue = getMaxValue(chartData);
-                      return chartData.map(({ period, value }) => (
-                        <div key={period} className="pps-comparison-bar-group">
-                          <div 
-                            className="pps-comparison-bar"
-                            style={{ 
-                              '--bar-height': `${(value / maxValue) * 100}%`
-                            }}
-                          >
-                            <span className="pps-bar-value">{formatChartValue(value)}</span>
+                {statsLoading ? (
+                  <div className="pps-chart-loading">Loading chart data...</div>
+                ) : (
+                  <div className="pps-chart-placeholder">
+                    <div className="pps-comparison-bars">
+                      {(() => {
+                        const chartData = getChartData();
+                        if (!chartData || chartData.length === 0) {
+                          return (
+                            <div className="pps-chart-no-data">
+                              No {activeStatsTab === 'career' ? 'career' : 'monthly'} data available
+                            </div>
+                          );
+                        }
+                        const maxValue = getMaxValue(chartData);
+                        return chartData.map(({ period, value }) => (
+                          <div key={period} className="pps-comparison-bar-group">
+                            <div 
+                              className="pps-comparison-bar"
+                              style={{ 
+                                '--bar-height': `${(value / maxValue) * 100}%`
+                              }}
+                            >
+                              <span className="pps-bar-value">{formatChartValue(value)}</span>
+                            </div>
+                            <span className="pps-bar-label">{period}</span>
                           </div>
-                          <span className="pps-bar-label">{period}</span>
-                        </div>
-                      ));
-                    })()}
+                        ));
+                      })()}
+                    </div>
                   </div>
-                </div>
+                )}
               </div>
             </div>
           </section>
@@ -596,7 +715,7 @@ function PlayerProfileStats() {
             <div className="pps-section-header">
               <div>
                 <h2 className="pps-section-title">Player Splits</h2>
-                <p className="pps-section-subtitle">Performance breakdowns</p>
+                <p className="pps-section-subtitle">{selectedSeason} performance breakdowns</p>
               </div>
               <div className="pps-tab-toggle">
                 <button
@@ -621,21 +740,23 @@ function PlayerProfileStats() {
                 <div className="pps-splits-comparison">
                   {/* vs LHP/LHB Split */}
                   {(() => {
-                    const vsLeft = vsHandSplits?.find(s => 
-                      s.split_type === 'vs_lhp' || s.split_type === 'vs_lhb' || 
-                      s.split === 'vs_lhp' || s.split === 'vs_lhb' ||
-                      s.vs_hand === 'L'
+                    // API returns array with season entries containing vs_lhp/vs_rhp nested objects
+                    const seasonSplits = vsHandSplits?.find(s => 
+                      String(s.season) === String(selectedSeason)
+                    );
+                    const vsLeft = seasonSplits?.vs_lhp || vsHandSplits?.find(s => 
+                      s.split_type === 'vs_lhp' || s.vs_hand === 'L'
                     );
                     return (
                       <div className="pps-split-card vs-left">
                         <div className="pps-split-header">
                           <span className="pps-split-label">vs LHP</span>
-                          <span className="pps-split-sample">{vsLeft?.pa || vsLeft?.plate_appearances || '-'} PA</span>
+                          <span className="pps-split-sample">{vsLeft?.hits || '-'} H</span>
                         </div>
                         <div className="pps-split-stats">
                           <div className="pps-split-stat">
                             <span className="pps-split-stat-value">
-                              {vsLeft?.avg?.toFixed(3)?.replace(/^0/, '') || vsLeft?.batting_avg?.toFixed(3)?.replace(/^0/, '') || '-'}
+                              {vsLeft?.avg?.toFixed(3)?.replace(/^0/, '') || '-'}
                             </span>
                             <span className="pps-split-stat-label">AVG</span>
                           </div>
@@ -646,8 +767,26 @@ function PlayerProfileStats() {
                             <span className="pps-split-stat-label">OPS</span>
                           </div>
                           <div className="pps-split-stat">
-                            <span className="pps-split-stat-value">{vsLeft?.hr || vsLeft?.home_runs || '-'}</span>
+                            <span className="pps-split-stat-value">{vsLeft?.home_runs || '-'}</span>
                             <span className="pps-split-stat-label">HR</span>
+                          </div>
+                          <div className="pps-split-stat">
+                            <span className="pps-split-stat-value">{vsLeft?.total_bases || '-'}</span>
+                            <span className="pps-split-stat-label">TB</span>
+                          </div>
+                          <div className="pps-split-stat">
+                            <span className="pps-split-stat-value">{vsLeft?.strikeouts || '-'}</span>
+                            <span className="pps-split-stat-label">SO</span>
+                          </div>
+                          <div className="pps-split-stat">
+                            <span className="pps-split-stat-value">{vsLeft?.walks || '-'}</span>
+                            <span className="pps-split-stat-label">BB</span>
+                          </div>
+                          <div className="pps-split-stat">
+                            <span className="pps-split-stat-value">
+                              {vsLeft?.at_bats_per_hr?.toFixed(1) || '-'}
+                            </span>
+                            <span className="pps-split-stat-label">AB/HR</span>
                           </div>
                         </div>
                       </div>
@@ -658,21 +797,23 @@ function PlayerProfileStats() {
 
                   {/* vs RHP/RHB Split */}
                   {(() => {
-                    const vsRight = vsHandSplits?.find(s => 
-                      s.split_type === 'vs_rhp' || s.split_type === 'vs_rhb' || 
-                      s.split === 'vs_rhp' || s.split === 'vs_rhb' ||
-                      s.vs_hand === 'R'
+                    // API returns array with season entries containing vs_lhp/vs_rhp nested objects
+                    const seasonSplits = vsHandSplits?.find(s => 
+                      String(s.season) === String(selectedSeason)
+                    );
+                    const vsRight = seasonSplits?.vs_rhp || vsHandSplits?.find(s => 
+                      s.split_type === 'vs_rhp' || s.vs_hand === 'R'
                     );
                     return (
                       <div className="pps-split-card vs-right">
                         <div className="pps-split-header">
                           <span className="pps-split-label">vs RHP</span>
-                          <span className="pps-split-sample">{vsRight?.pa || vsRight?.plate_appearances || '-'} PA</span>
+                          <span className="pps-split-sample">{vsRight?.hits || '-'} H</span>
                         </div>
                         <div className="pps-split-stats">
                           <div className="pps-split-stat">
                             <span className="pps-split-stat-value">
-                              {vsRight?.avg?.toFixed(3)?.replace(/^0/, '') || vsRight?.batting_avg?.toFixed(3)?.replace(/^0/, '') || '-'}
+                              {vsRight?.avg?.toFixed(3)?.replace(/^0/, '') || '-'}
                             </span>
                             <span className="pps-split-stat-label">AVG</span>
                           </div>
@@ -683,8 +824,26 @@ function PlayerProfileStats() {
                             <span className="pps-split-stat-label">OPS</span>
                           </div>
                           <div className="pps-split-stat">
-                            <span className="pps-split-stat-value">{vsRight?.hr || vsRight?.home_runs || '-'}</span>
+                            <span className="pps-split-stat-value">{vsRight?.home_runs || '-'}</span>
                             <span className="pps-split-stat-label">HR</span>
+                          </div>
+                          <div className="pps-split-stat">
+                            <span className="pps-split-stat-value">{vsRight?.total_bases || '-'}</span>
+                            <span className="pps-split-stat-label">TB</span>
+                          </div>
+                          <div className="pps-split-stat">
+                            <span className="pps-split-stat-value">{vsRight?.strikeouts || '-'}</span>
+                            <span className="pps-split-stat-label">SO</span>
+                          </div>
+                          <div className="pps-split-stat">
+                            <span className="pps-split-stat-value">{vsRight?.walks || '-'}</span>
+                            <span className="pps-split-stat-label">BB</span>
+                          </div>
+                          <div className="pps-split-stat">
+                            <span className="pps-split-stat-value">
+                              {vsRight?.at_bats_per_hr?.toFixed(1) || '-'}
+                            </span>
+                            <span className="pps-split-stat-label">AB/HR</span>
                           </div>
                         </div>
                       </div>
@@ -695,21 +854,24 @@ function PlayerProfileStats() {
                 <div className="pps-splits-comparison">
                   {/* Home Split */}
                   {(() => {
-                    const homeSplit = homeRoadSplits?.find(s => 
+                    // API returns array with season entries containing at_home/on_road nested objects
+                    const seasonSplits = homeRoadSplits?.find(s => 
+                      String(s.season) === String(selectedSeason)
+                    );
+                    const homeSplit = seasonSplits?.at_home || homeRoadSplits?.find(s => 
                       s.split_type === 'home' || s.split_type === 'at_home' || 
-                      s.split === 'home' || s.split === 'at_home' ||
-                      s.location === 'home'
+                      s.split === 'home' || s.location === 'home'
                     );
                     return (
                       <div className="pps-split-card home">
                         <div className="pps-split-header">
                           <span className="pps-split-label">Home</span>
-                          <span className="pps-split-sample">{homeSplit?.g || homeSplit?.games || '-'} G</span>
+                          <span className="pps-split-sample">{homeSplit?.hits || '-'} H</span>
                         </div>
                         <div className="pps-split-stats">
                           <div className="pps-split-stat">
                             <span className="pps-split-stat-value">
-                              {homeSplit?.avg?.toFixed(3)?.replace(/^0/, '') || homeSplit?.batting_avg?.toFixed(3)?.replace(/^0/, '') || '-'}
+                              {homeSplit?.avg?.toFixed(3)?.replace(/^0/, '') || '-'}
                             </span>
                             <span className="pps-split-stat-label">AVG</span>
                           </div>
@@ -720,8 +882,26 @@ function PlayerProfileStats() {
                             <span className="pps-split-stat-label">OPS</span>
                           </div>
                           <div className="pps-split-stat">
-                            <span className="pps-split-stat-value">{homeSplit?.hr || homeSplit?.home_runs || '-'}</span>
+                            <span className="pps-split-stat-value">{homeSplit?.home_runs || '-'}</span>
                             <span className="pps-split-stat-label">HR</span>
+                          </div>
+                          <div className="pps-split-stat">
+                            <span className="pps-split-stat-value">{homeSplit?.total_bases || '-'}</span>
+                            <span className="pps-split-stat-label">TB</span>
+                          </div>
+                          <div className="pps-split-stat">
+                            <span className="pps-split-stat-value">{homeSplit?.strikeouts || '-'}</span>
+                            <span className="pps-split-stat-label">SO</span>
+                          </div>
+                          <div className="pps-split-stat">
+                            <span className="pps-split-stat-value">{homeSplit?.walks || '-'}</span>
+                            <span className="pps-split-stat-label">BB</span>
+                          </div>
+                          <div className="pps-split-stat">
+                            <span className="pps-split-stat-value">
+                              {homeSplit?.at_bats_per_hr?.toFixed(1) || '-'}
+                            </span>
+                            <span className="pps-split-stat-label">AB/HR</span>
                           </div>
                         </div>
                       </div>
@@ -732,21 +912,24 @@ function PlayerProfileStats() {
 
                   {/* Away/Road Split */}
                   {(() => {
-                    const awaySplit = homeRoadSplits?.find(s => 
+                    // API returns array with season entries containing at_home/on_road nested objects
+                    const seasonSplits = homeRoadSplits?.find(s => 
+                      String(s.season) === String(selectedSeason)
+                    );
+                    const awaySplit = seasonSplits?.on_road || homeRoadSplits?.find(s => 
                       s.split_type === 'away' || s.split_type === 'road' || s.split_type === 'on_road' ||
-                      s.split === 'away' || s.split === 'road' || s.split === 'on_road' ||
-                      s.location === 'away' || s.location === 'road'
+                      s.split === 'away' || s.split === 'road' || s.location === 'away'
                     );
                     return (
                       <div className="pps-split-card away">
                         <div className="pps-split-header">
                           <span className="pps-split-label">Away</span>
-                          <span className="pps-split-sample">{awaySplit?.g || awaySplit?.games || '-'} G</span>
+                          <span className="pps-split-sample">{awaySplit?.hits || '-'} H</span>
                         </div>
                         <div className="pps-split-stats">
                           <div className="pps-split-stat">
                             <span className="pps-split-stat-value">
-                              {awaySplit?.avg?.toFixed(3)?.replace(/^0/, '') || awaySplit?.batting_avg?.toFixed(3)?.replace(/^0/, '') || '-'}
+                              {awaySplit?.avg?.toFixed(3)?.replace(/^0/, '') || '-'}
                             </span>
                             <span className="pps-split-stat-label">AVG</span>
                           </div>
@@ -757,8 +940,26 @@ function PlayerProfileStats() {
                             <span className="pps-split-stat-label">OPS</span>
                           </div>
                           <div className="pps-split-stat">
-                            <span className="pps-split-stat-value">{awaySplit?.hr || awaySplit?.home_runs || '-'}</span>
+                            <span className="pps-split-stat-value">{awaySplit?.home_runs || '-'}</span>
                             <span className="pps-split-stat-label">HR</span>
+                          </div>
+                          <div className="pps-split-stat">
+                            <span className="pps-split-stat-value">{awaySplit?.total_bases || '-'}</span>
+                            <span className="pps-split-stat-label">TB</span>
+                          </div>
+                          <div className="pps-split-stat">
+                            <span className="pps-split-stat-value">{awaySplit?.strikeouts || '-'}</span>
+                            <span className="pps-split-stat-label">SO</span>
+                          </div>
+                          <div className="pps-split-stat">
+                            <span className="pps-split-stat-value">{awaySplit?.walks || '-'}</span>
+                            <span className="pps-split-stat-label">BB</span>
+                          </div>
+                          <div className="pps-split-stat">
+                            <span className="pps-split-stat-value">
+                              {awaySplit?.at_bats_per_hr?.toFixed(1) || '-'}
+                            </span>
+                            <span className="pps-split-stat-label">AB/HR</span>
                           </div>
                         </div>
                       </div>

@@ -45,6 +45,17 @@ class PlayerStatsService {
   }
 
   /**
+   * Get batter career totals - aggregated stats across all seasons
+   * @param {number} playerId - Internal player ID
+   * @param {string} seasonType - Season type: 'R' (regular), 'S' (spring), 'P' (postseason)
+   * @returns {Promise<Object>} Single object with summed counting stats and calculated rate stats
+   */
+  async getBatterCareerTotals(playerId, seasonType = null) {
+    const params = seasonType ? `?season_type=${seasonType}` : '';
+    return await api.get(`/player-profile/${playerId}/batter/career-totals${params}`);
+  }
+
+  /**
    * Get batter stats for current or specified season
    * @param {number} playerId - Internal player ID
    * @param {number} season - Season year (defaults to current year if omitted)
@@ -89,6 +100,26 @@ class PlayerStatsService {
     return await api.get(`/player-profile/${playerId}/batter/home-road-splits?${queryString}`);
   }
 
+  /**
+   * Get batter career totals for home vs road splits
+   * Sums counting stats across all regular seasons
+   * @param {number} playerId - Internal player ID
+   * @returns {Promise<Object>} Career totals for at_home and on_road stats
+   */
+  async getBatterHomeRoadSplitsCareerTotals(playerId) {
+    return await api.get(`/player-profile/${playerId}/batter/home-road-splits-career-totals`);
+  }
+
+  /**
+   * Get batter career totals for splits vs left-handed and right-handed pitchers
+   * Sums counting stats across all regular seasons
+   * @param {number} playerId - Internal player ID
+   * @returns {Promise<Object>} Career totals for vs_lhp and vs_rhp stats
+   */
+  async getBatterVsHandSplitsCareerTotals(playerId) {
+    return await api.get(`/player-profile/${playerId}/batter/vs-hand-splits-career-totals`);
+  }
+
   // ============================================================================
   // PITCHER STATS ENDPOINTS
   // ============================================================================
@@ -102,6 +133,17 @@ class PlayerStatsService {
   async getPitcherCareerStats(playerId, seasonType = null) {
     const params = seasonType ? `?season_type=${seasonType}` : '';
     return await api.get(`/player-profile/${playerId}/pitcher/career-stats${params}`);
+  }
+
+  /**
+   * Get pitcher career totals - aggregated stats across all seasons
+   * @param {number} playerId - Internal player ID
+   * @param {string} seasonType - Season type: 'R' (regular), 'S' (spring), 'P' (postseason)
+   * @returns {Promise<Object>} Single object with summed counting stats and calculated rate stats (ERA, WHIP, K/9, etc.)
+   */
+  async getPitcherCareerTotals(playerId, seasonType = null) {
+    const params = seasonType ? `?season_type=${seasonType}` : '';
+    return await api.get(`/player-profile/${playerId}/pitcher/career-totals${params}`);
   }
 
   /**
