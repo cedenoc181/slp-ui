@@ -217,6 +217,7 @@ function BatterStats({ teamId = 'ALL', teamDbId = null, season = '2025', teamNam
           player: hrLeader.player_name,
           playerId: hrLeader.id || hrLeader.player_id,
           playerMlbId: hrLeader.player_mlb_id,
+          playerSlug: hrLeader.name_slug || hrLeader.player_mlb_id,
           team: hrLeader.team_name || hrLeader.team?.team_name || '',
           value: hrLeader.home_runs || 0,
         });
@@ -229,6 +230,7 @@ function BatterStats({ teamId = 'ALL', teamDbId = null, season = '2025', teamNam
           player: avgLeader.player_name,
           playerId: avgLeader.id || avgLeader.player_id,
           playerMlbId: avgLeader.player_mlb_id,
+          playerSlug: avgLeader.name_slug || avgLeader.player_mlb_id,
           team: avgLeader.team_name || avgLeader.team?.team_name || '',
           value: formatAvg(avgLeader.avg),
         });
@@ -241,6 +243,7 @@ function BatterStats({ teamId = 'ALL', teamDbId = null, season = '2025', teamNam
           player: rbiLeader.player_name,
           playerId: rbiLeader.id || rbiLeader.player_id,
           playerMlbId: rbiLeader.player_mlb_id,
+          playerSlug: rbiLeader.name_slug || rbiLeader.player_mlb_id,
           team: rbiLeader.team_name || rbiLeader.team?.team_name || '',
           value: rbiLeader.rbis || rbiLeader.rbi || 0,
         });
@@ -253,6 +256,7 @@ function BatterStats({ teamId = 'ALL', teamDbId = null, season = '2025', teamNam
           player: opsLeader.player_name,
           playerId: opsLeader.id || opsLeader.player_id,
           playerMlbId: opsLeader.player_mlb_id,
+          playerSlug: opsLeader.name_slug || opsLeader.player_mlb_id,
           team: opsLeader.team_name || opsLeader.team?.team_name || '',
           value: formatOps(opsLeader.ops),
         });
@@ -265,6 +269,7 @@ function BatterStats({ teamId = 'ALL', teamDbId = null, season = '2025', teamNam
           player: sbLeader.player_name,
           playerId: sbLeader.id || sbLeader.player_id,
           playerMlbId: sbLeader.player_mlb_id,
+          playerSlug: sbLeader.name_slug || sbLeader.player_mlb_id,
           team: sbLeader.team_name || sbLeader.team?.team_name || '',
           value: sbLeader.stolen_bases || sbLeader.sb || 0,
         });
@@ -277,6 +282,7 @@ function BatterStats({ teamId = 'ALL', teamDbId = null, season = '2025', teamNam
           player: hitsLeader.player_name,
           playerId: hitsLeader.id || hitsLeader.player_id,
           playerMlbId: hitsLeader.player_mlb_id,
+          playerSlug: hitsLeader.name_slug || hitsLeader.player_mlb_id,
           team: hitsLeader.team_name || hitsLeader.team?.team_name || '',
           value: hitsLeader.hits || hitsLeader.h || 0,
         });
@@ -295,6 +301,7 @@ function BatterStats({ teamId = 'ALL', teamDbId = null, season = '2025', teamNam
         player: battingLeaders.home_runs.player_name,
         playerId: battingLeaders.home_runs.id || battingLeaders.home_runs.player_id,
         playerMlbId: battingLeaders.home_runs.player_mlb_id,
+        playerSlug: battingLeaders.home_runs.name_slug || battingLeaders.home_runs.player_mlb_id,
         value: battingLeaders.home_runs.home_runs ?? battingLeaders.home_runs.value ?? 0,
       });
     }
@@ -306,6 +313,7 @@ function BatterStats({ teamId = 'ALL', teamDbId = null, season = '2025', teamNam
         player: battingLeaders.avg.player_name,
         playerId: battingLeaders.avg.id || battingLeaders.avg.player_id,
         playerMlbId: battingLeaders.avg.player_mlb_id,
+        playerSlug: battingLeaders.avg.name_slug || battingLeaders.avg.player_mlb_id,
         value: formatAvg(battingLeaders.avg.avg ?? battingLeaders.avg.value),
       });
     }
@@ -317,6 +325,7 @@ function BatterStats({ teamId = 'ALL', teamDbId = null, season = '2025', teamNam
         player: battingLeaders.rbis.player_name,
         playerId: battingLeaders.rbis.id || battingLeaders.rbis.player_id,
         playerMlbId: battingLeaders.rbis.player_mlb_id,
+        playerSlug: battingLeaders.rbis.name_slug || battingLeaders.rbis.player_mlb_id,
         value: battingLeaders.rbis.rbis ?? battingLeaders.rbis.value ?? 0,
       });
     }
@@ -328,6 +337,7 @@ function BatterStats({ teamId = 'ALL', teamDbId = null, season = '2025', teamNam
         player: battingLeaders.ops.player_name,
         playerId: battingLeaders.ops.id || battingLeaders.ops.player_id,
         playerMlbId: battingLeaders.ops.player_mlb_id,
+        playerSlug: battingLeaders.ops.name_slug || battingLeaders.ops.player_mlb_id,
         value: formatOps(battingLeaders.ops.ops ?? battingLeaders.ops.value),
       });
     }
@@ -339,6 +349,7 @@ function BatterStats({ teamId = 'ALL', teamDbId = null, season = '2025', teamNam
         player: battingLeaders.stolen_bases.player_name,
         playerId: battingLeaders.stolen_bases.id || battingLeaders.stolen_bases.player_id,
         playerMlbId: battingLeaders.stolen_bases.player_mlb_id,
+        playerSlug: battingLeaders.stolen_bases.name_slug || battingLeaders.stolen_bases.player_mlb_id,
         value: battingLeaders.stolen_bases.stolen_bases ?? battingLeaders.stolen_bases.value ?? 0,
       });
     }
@@ -350,6 +361,7 @@ function BatterStats({ teamId = 'ALL', teamDbId = null, season = '2025', teamNam
         player: battingLeaders.hits.player_name,
         playerId: battingLeaders.hits.id || battingLeaders.hits.player_id,
         playerMlbId: battingLeaders.hits.player_mlb_id,
+        playerSlug: battingLeaders.hits.name_slug || battingLeaders.hits.player_mlb_id,
         value: battingLeaders.hits.hits ?? battingLeaders.hits.value ?? 0,
       });
     }
@@ -383,12 +395,15 @@ function BatterStats({ teamId = 'ALL', teamDbId = null, season = '2025', teamNam
           extractedTeamName = data.team.team_name;
         }
 
+        const playerMlbId = data.player_mlb_id || data.mlb_id;
         return {
           key: cat.key,
           label: cat.label,
           format: cat.format,
           playerName: data.player_name || 'Unknown',
           playerId: data.id || data.player_id || null,
+          playerMlbId: playerMlbId,
+          playerSlug: data.name_slug || playerMlbId,
           teamName: extractedTeamName,
           value: data.value ?? 0,
           leagueAvg: data.league_avg ?? 0,
@@ -422,6 +437,8 @@ function BatterStats({ teamId = 'ALL', teamDbId = null, season = '2025', teamNam
     if (!batter) return null;
 
     const playerId = batter.id || batter.player_id;
+    const playerMlbId = batter.player_mlb_id || batter.mlb_id;
+    const playerSlug = batter.name_slug || playerMlbId;
     const playerName = batter.player_name || 'Unknown';
     const homeRuns = batter.home_runs ?? 0;
     const avg = formatAvg(batter.avg);
@@ -491,7 +508,7 @@ function BatterStats({ teamId = 'ALL', teamDbId = null, season = '2025', teamNam
         <div className="batter-top-rank">#{idx + 1}</div>
         <div className="batter-top-info">
           <div className="batter-top-name">
-            <Link to={`/player/${playerId}?season=${season}`} className="player-profile-link" onClick={() => window.scrollTo(0, 0)}>
+            <Link to={`/player/${playerSlug}?season=${season}`} className="player-profile-link" onClick={() => window.scrollTo(0, 0)}>
               {playerName}
             </Link>
             {badgeText && <span className={`${isTraded || isReleased || isClaimed ? 'traded-badge' : 'acquired-badge'}`}>{badgeText}</span>}
@@ -510,6 +527,8 @@ function BatterStats({ teamId = 'ALL', teamDbId = null, season = '2025', teamNam
     if (!batter) return null;
 
     const playerId = batter.id || batter.player_id;
+    const playerMlbId = batter.player_mlb_id || batter.mlb_id;
+    const playerSlug = batter.name_slug || playerMlbId;
     const playerName = batter.player_name || 'Unknown';
     const teamNameDisplay = batter.team_name || batter.team?.team_name || '';
     const key = playerId ? `hot-batter-${playerId}` : `hot-batter-idx-${idx}`;
@@ -577,7 +596,7 @@ function BatterStats({ teamId = 'ALL', teamDbId = null, season = '2025', teamNam
           )}
           <div className="hot-batter-info">
             <span className="hot-batter-name">
-              <Link to={`/player/${playerId}?season=${season}`} className="player-profile-link" onClick={() => window.scrollTo(0, 0)}>
+              <Link to={`/player/${playerSlug}?season=${season}`} className="player-profile-link" onClick={() => window.scrollTo(0, 0)}>
                 {playerName}
               </Link>
             </span>
@@ -617,7 +636,7 @@ function BatterStats({ teamId = 'ALL', teamDbId = null, season = '2025', teamNam
 
   // Render split item with horizontal bar chart
   const renderSplitItem = useCallback((split) => {
-    const { key, label, format, playerName, playerId, teamName, value, leagueAvg } = split;
+    const { key, label, format, playerName, playerId, playerMlbId, playerSlug, teamName, value, leagueAvg } = split;
 
     // Ensure teamName is a string
     const safeTeamName = typeof teamName === 'string' ? teamName : '';
@@ -682,8 +701,8 @@ function BatterStats({ teamId = 'ALL', teamDbId = null, season = '2025', teamNam
                 onError={(e) => { e.target.style.display = 'none'; }}
               />
             )}
-            {playerId ? (
-              <Link to={`/player/${playerId}?season=${season}`} className="player-profile-link split-bar-name" onClick={() => window.scrollTo(0, 0)}>
+            {playerSlug ? (
+              <Link to={`/player/${playerSlug}?season=${season}`} className="player-profile-link split-bar-name" onClick={() => window.scrollTo(0, 0)}>
                 {playerName}
               </Link>
             ) : (
@@ -749,7 +768,7 @@ function BatterStats({ teamId = 'ALL', teamDbId = null, season = '2025', teamNam
                       />
                     </div>
                   )}
-                  <Link to={`/player/${cat.playerId}?season=${season}`} className="player-profile-link" onClick={() => window.scrollTo(0, 0)}>
+                  <Link to={`/player/${cat.playerSlug}?season=${season}`} className="player-profile-link" onClick={() => window.scrollTo(0, 0)}>
                     <span className="batter-player">{cat.player}</span>
                   </Link>
                   {!isTeamSelected && cat.team && typeof cat.team === 'string' && (

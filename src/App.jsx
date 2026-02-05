@@ -146,7 +146,7 @@ function App() {
           <Route path="/team-analytics" element={<TeamAnalytics />} />
           <Route path="/team-analytics/:teamName" element={<TeamAnalytics />} />
           <Route path="/player-analytics" element={<PlayerAnalytics />} />
-          <Route path="/player/:playerId" element={<PlayerProfileStats />} />
+          <Route path="/player/:nameSlug" element={<PlayerProfileStats />} />
 
           {/* Education routes */}
           <Route path="/glossary" element={<Glossary />} />

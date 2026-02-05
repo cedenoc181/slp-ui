@@ -6,9 +6,31 @@ import injuryService from '../../../../data/services/injuryService';
 import rosterService from '../../../../data/services/rosterService';
 import '../../../../styles/stats-page-styling/player-profile.css';
 
+// Helper to extract MLB ID from name slug (e.g., "aaron-judge-592450" -> 592450)
+// Also handles raw numeric IDs for backwards compatibility
+const extractMlbIdFromSlug = (slug) => {
+  if (!slug) return null;
+  
+  // If the slug is just a number, treat it as the MLB ID directly
+  if (/^\d+$/.test(slug)) {
+    return parseInt(slug, 10);
+  }
+  
+  // MLB ID is the last segment after the final hyphen (always numeric)
+  const match = slug.match(/-(\d+)$/);
+  return match ? parseInt(match[1], 10) : null;
+};
+
 function PlayerProfileStats() {
-  const { playerId } = useParams();
+  const { nameSlug } = useParams();
   const [searchParams, setSearchParams] = useSearchParams();
+  
+  // Extract MLB ID from the SEO-friendly slug
+  const mlbIdFromSlug = useMemo(() => {
+    const id = extractMlbIdFromSlug(nameSlug);
+    console.log('Extracted MLB ID from slug:', nameSlug, '->', id);
+    return id;
+  }, [nameSlug]);
   
   // Initialize season from URL params or default
   const [selectedSeason, setSelectedSeason] = useState(() => {
@@ -77,17 +99,34 @@ function PlayerProfileStats() {
     setSearchParams(newParams, { replace: true });
   };
 
-  // Fetch player info on mount or when playerId changes
+  // Fetch player info on mount or when nameSlug changes
   useEffect(() => {
     const fetchPlayerInfo = async () => {
-      if (!playerId) return;
+      if (!mlbIdFromSlug) {
+        console.warn('No MLB ID extracted from slug:', nameSlug);
+        setError('Invalid player URL');
+        setPlayerLoading(false);
+        return;
+      }
       
       setPlayerLoading(true);
       setError(null);
       
       try {
-        const data = await playerStatsService.getPlayerInfo(playerId);
-        setPlayerInfo(data);
+        // Use MLB ID from slug to fetch player info
+        console.log('Fetching player info for MLB ID:', mlbIdFromSlug);
+        const data = await playerStatsService.getPlayerInfoByMlbId(mlbIdFromSlug);
+        console.log('Player info response:', data);
+        
+        // Handle different response formats - API might return data nested or flat
+        const playerData = data?.player || data;
+        
+        // Ensure we have an id field for subsequent API calls
+        if (!playerData?.id && playerData?.player_id) {
+          playerData.id = playerData.player_id;
+        }
+        
+        setPlayerInfo(playerData);
       } catch (err) {
         console.error('Error fetching player info:', err);
         setError('Failed to load player information');
@@ -98,17 +137,17 @@ function PlayerProfileStats() {
     };
     
     fetchPlayerInfo();
-  }, [playerId]);
+  }, [mlbIdFromSlug]);
 
   // Fetch player injury history when playerInfo loads
   useEffect(() => {
     const fetchInjuryHistory = async () => {
-      if (!playerId) return;
+      if (!playerInfo?.id) return;
       
       try {
         // Pass player.id (internal DB ID) to get accurate injury history
         // Don't pass season to get full history
-        const response = await injuryService.getPlayerInjuryHistory(playerId);
+        const response = await injuryService.getPlayerInjuryHistory(playerInfo.id);
         // API returns { player_id, season, total_injuries, injuries: [...] }
         const injuries = response?.injuries || [];
         setInjuryHistory(Array.isArray(injuries) ? injuries : []);
@@ -119,16 +158,16 @@ function PlayerProfileStats() {
     };
     
     fetchInjuryHistory();
-  }, [playerId]);
+  }, [playerInfo]);
 
-  // Fetch team history (roster history) when playerId changes
+  // Fetch team history (roster history) when playerInfo changes
   useEffect(() => {
     const fetchTeamHistory = async () => {
-      if (!playerId) return;
+      if (!playerInfo?.id) return;
       
       try {
         // Get player roster history without season param for full history
-        const response = await rosterService.getPlayerRosterHistory(playerId);
+        const response = await rosterService.getPlayerRosterHistory(playerInfo.id);
         // API returns { player_id, player_mlb_id, player_name, seasons: [...] }
         const seasons = response?.seasons || [];
         setTeamHistory(Array.isArray(seasons) ? seasons : []);
@@ -139,13 +178,18 @@ function PlayerProfileStats() {
     };
     
     fetchTeamHistory();
-  }, [playerId]);
+  }, [playerInfo]);
 
   // Fetch season stats, career stats, and splits when player info or season changes
   useEffect(() => {
     const fetchPlayerStats = async () => {
-      if (!playerInfo || !playerId) return;
+      if (!playerInfo?.id) {
+        console.log('Skipping stats fetch - no playerInfo.id. playerInfo:', playerInfo);
+        return;
+      }
       
+      const internalPlayerId = playerInfo.id;
+      console.log('Fetching stats for internal player ID:', internalPlayerId, 'season:', selectedSeason);
       setStatsLoading(true);
       
       try {
@@ -156,11 +200,11 @@ function PlayerProfileStats() {
         // Fetch current season stats
         if (isPitcher && !isTwoWay) {
           const [current, career, vsHand, homeRoad, monthly] = await Promise.all([
-            playerStatsService.getPitcherCurrentStats(playerId, selectedSeason).catch(() => null),
-            playerStatsService.getPitcherCareerStats(playerId).catch(() => []),
-            playerStatsService.getPitcherVsHandSplits(playerId, selectedSeason).catch(() => []),
-            playerStatsService.getPitcherHomeRoadSplits(playerId, selectedSeason).catch(() => []),
-            playerStatsService.getPitcherMonthlyPerformance(playerId, selectedSeason).catch(() => null),
+            playerStatsService.getPitcherCurrentStats(internalPlayerId, selectedSeason).catch(() => null),
+            playerStatsService.getPitcherCareerStats(internalPlayerId).catch(() => []),
+            playerStatsService.getPitcherVsHandSplits(internalPlayerId, selectedSeason).catch(() => []),
+            playerStatsService.getPitcherHomeRoadSplits(internalPlayerId, selectedSeason).catch(() => []),
+            playerStatsService.getPitcherMonthlyPerformance(internalPlayerId, selectedSeason).catch(() => null),
           ]);
           setSeasonStats(current);
           setCareerStats(career);
@@ -169,18 +213,16 @@ function PlayerProfileStats() {
           setMonthlyPerformance(monthly);
         } else {
           // Batter or two-way player (show batting stats by default)
-          console.log('Fetching batter monthly performance with playerId:', playerId, 'season:', selectedSeason);
           const [current, career, vsHand, homeRoad, monthly] = await Promise.all([
-            playerStatsService.getBatterCurrentStats(playerId, selectedSeason).catch(() => null),
-            playerStatsService.getBatterCareerStats(playerId).catch(() => []),
-            playerStatsService.getBatterVsHandSplits(playerId, selectedSeason).catch(() => []),
-            playerStatsService.getBatterHomeRoadSplits(playerId, selectedSeason).catch(() => []),
-            playerStatsService.getBatterMonthlyPerformance(playerId, selectedSeason).catch((err) => {
+            playerStatsService.getBatterCurrentStats(internalPlayerId, selectedSeason).catch(() => null),
+            playerStatsService.getBatterCareerStats(internalPlayerId).catch(() => []),
+            playerStatsService.getBatterVsHandSplits(internalPlayerId, selectedSeason).catch(() => []),
+            playerStatsService.getBatterHomeRoadSplits(internalPlayerId, selectedSeason).catch(() => []),
+            playerStatsService.getBatterMonthlyPerformance(internalPlayerId, selectedSeason).catch((err) => {
               console.error('Monthly performance API error:', err);
               return null;
             }),
           ]);
-          console.log('Monthly performance API response:', monthly);
           setSeasonStats(current);
           setCareerStats(career);
           setVsHandSplits(vsHand);
@@ -195,14 +237,15 @@ function PlayerProfileStats() {
     };
     
     fetchPlayerStats();
-  }, [playerInfo, playerId, selectedSeason]);
+  }, [playerInfo, selectedSeason]);
 
   // Fetch career totals and career splits when Career tab is selected
   const handleCareerTabClick = useCallback(async () => {
     setActiveStatsTab('career');
     
-    if (!playerInfo || !playerId) return;
+    if (!playerInfo?.id) return;
     
+    const internalPlayerId = playerInfo.id;
     const isPitcher = playerInfo.position === 'P' || playerInfo.position === 'SP' || playerInfo.position === 'RP';
     const isTwoWay = playerInfo.position === 'TWP' || playerInfo.is_two_way;
     
@@ -212,9 +255,9 @@ function PlayerProfileStats() {
       try {
         let totals;
         if (isPitcher && !isTwoWay) {
-          totals = await playerStatsService.getPitcherCareerTotals(playerId);
+          totals = await playerStatsService.getPitcherCareerTotals(internalPlayerId);
         } else {
-          totals = await playerStatsService.getBatterCareerTotals(playerId);
+          totals = await playerStatsService.getBatterCareerTotals(internalPlayerId);
         }
         setCareerTotals(totals);
       } catch (err) {
@@ -230,8 +273,8 @@ function PlayerProfileStats() {
       setCareerSplitsLoading(true);
       try {
         const [vsHandCareer, homeRoadCareer] = await Promise.all([
-          playerStatsService.getBatterVsHandSplitsCareerTotals(playerId).catch(() => null),
-          playerStatsService.getBatterHomeRoadSplitsCareerTotals(playerId).catch(() => null),
+          playerStatsService.getBatterVsHandSplitsCareerTotals(internalPlayerId).catch(() => null),
+          playerStatsService.getBatterHomeRoadSplitsCareerTotals(internalPlayerId).catch(() => null),
         ]);
         setVsHandSplitsCareer(vsHandCareer);
         setHomeRoadSplitsCareer(homeRoadCareer);
@@ -241,7 +284,7 @@ function PlayerProfileStats() {
         setCareerSplitsLoading(false);
       }
     }
-  }, [playerInfo, playerId, careerTotals, vsHandSplitsCareer, homeRoadSplitsCareer]);
+  }, [playerInfo, careerTotals, vsHandSplitsCareer, homeRoadSplitsCareer]);
 
   // Calculate player age
   const playerAge = useMemo(() => {
@@ -535,28 +578,70 @@ function PlayerProfileStats() {
               </div>
             </div>
             <div className="pps-trend-chart-container">
-              <div className="pps-trend-chart-placeholder">
-                {/* Stock-style chart placeholder - will be replaced with actual chart library */}
-                <div className="pps-trend-chart-mock"></div>
-                <div className="pps-trend-chart-labels">
-                  <span>2020</span>
-                  <span>2025</span>
-                </div>
-              </div>
-              <div className="pps-trend-summary">
-                <div className="pps-trend-metric">
-                  <span className="pps-trend-metric-label">OPS Trend</span>
-                  <span className="pps-trend-metric-value positive">+8.2%</span>
-                </div>
-                <div className="pps-trend-metric">
-                  <span className="pps-trend-metric-label">Peak Season</span>
-                  <span className="pps-trend-metric-value">2023</span>
-                </div>
-                <div className="pps-trend-metric">
-                  <span className="pps-trend-metric-label">Career AVG</span>
-                  <span className="pps-trend-metric-value">.285</span>
-                </div>
-              </div>
+              {(() => {
+                // Calculate trend metrics from career stats
+                const regularSeasonStats = careerStats.filter(s => 
+                  s.season_type === 2 || s.season_type === '2' || s.season_type === 'R'
+                ).sort((a, b) => (a.season || a.year) - (b.season || b.year));
+                
+                const firstYear = regularSeasonStats[0]?.season || regularSeasonStats[0]?.year || '-';
+                const lastYear = regularSeasonStats[regularSeasonStats.length - 1]?.season || 
+                                 regularSeasonStats[regularSeasonStats.length - 1]?.year || '-';
+                
+                // Find peak OPS season
+                const peakOpsSeason = regularSeasonStats.reduce((peak, s) => {
+                  const ops = s.ops || 0;
+                  return ops > (peak?.ops || 0) ? s : peak;
+                }, null);
+                
+                // Calculate OPS trend (first 2 seasons avg vs last 2 seasons avg)
+                let opsTrend = null;
+                if (regularSeasonStats.length >= 2) {
+                  const firstTwo = regularSeasonStats.slice(0, 2);
+                  const lastTwo = regularSeasonStats.slice(-2);
+                  const firstAvg = firstTwo.reduce((sum, s) => sum + (s.ops || 0), 0) / firstTwo.length;
+                  const lastAvg = lastTwo.reduce((sum, s) => sum + (s.ops || 0), 0) / lastTwo.length;
+                  if (firstAvg > 0) {
+                    opsTrend = ((lastAvg - firstAvg) / firstAvg) * 100;
+                  }
+                }
+                
+                // Calculate career AVG
+                const careerAvg = careerTotals?.avg || careerTotals?.batting_avg;
+                
+                return (
+                  <>
+                    <div className="pps-trend-chart-placeholder">
+                      {/* Stock-style chart placeholder - will be replaced with actual chart library */}
+                      <div className="pps-trend-chart-mock"></div>
+                      <div className="pps-trend-chart-labels">
+                        <span>{firstYear}</span>
+                        <span>{lastYear}</span>
+                      </div>
+                    </div>
+                    <div className="pps-trend-summary">
+                      <div className="pps-trend-metric">
+                        <span className="pps-trend-metric-label">OPS Trend</span>
+                        <span className={`pps-trend-metric-value ${opsTrend !== null ? (opsTrend >= 0 ? 'positive' : 'negative') : ''}`}>
+                          {opsTrend !== null ? `${opsTrend >= 0 ? '+' : ''}${opsTrend.toFixed(1)}%` : '-'}
+                        </span>
+                      </div>
+                      <div className="pps-trend-metric">
+                        <span className="pps-trend-metric-label">Peak Season</span>
+                        <span className="pps-trend-metric-value">
+                          {peakOpsSeason?.season || peakOpsSeason?.year || '-'}
+                        </span>
+                      </div>
+                      <div className="pps-trend-metric">
+                        <span className="pps-trend-metric-label">Career AVG</span>
+                        <span className="pps-trend-metric-value">
+                          {careerAvg ? careerAvg.toFixed(3).replace(/^0/, '') : (careerTotalsLoading ? '...' : '-')}
+                        </span>
+                      </div>
+                    </div>
+                  </>
+                );
+              })()}
             </div>
           </section>
 
@@ -1256,101 +1341,13 @@ function PlayerProfileStats() {
             </div>
 
             <div className="pps-game-log-container">
-              <div className="pps-game-log-table-wrapper">
-                <table className="pps-game-log-table">
-                  <thead>
-                    <tr>
-                      <th>Date</th>
-                      <th>Opp</th>
-                      <th>Result</th>
-                      <th>AB</th>
-                      <th>H</th>
-                      <th>HR</th>
-                      <th>RBI</th>
-                      <th>BB</th>
-                      <th>SO</th>
-                      <th>AVG</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {/* Sample game log entries */}
-                    <tr>
-                      <td className="pps-date-col">Sep 29</td>
-                      <td className="pps-opp-col">
-                        <span className="pps-opp-logo-small">COL</span>
-                      </td>
-                      <td className="pps-result-col win">W 8-4</td>
-                      <td>4</td>
-                      <td>2</td>
-                      <td className="pps-highlight">1</td>
-                      <td>3</td>
-                      <td>1</td>
-                      <td>1</td>
-                      <td>.310</td>
-                    </tr>
-                    <tr>
-                      <td className="pps-date-col">Sep 28</td>
-                      <td className="pps-opp-col">
-                        <span className="pps-opp-logo-small">@COL</span>
-                      </td>
-                      <td className="pps-result-col win">W 10-2</td>
-                      <td>5</td>
-                      <td>3</td>
-                      <td className="pps-highlight">2</td>
-                      <td>5</td>
-                      <td>0</td>
-                      <td>0</td>
-                      <td>.309</td>
-                    </tr>
-                    <tr>
-                      <td className="pps-date-col">Sep 27</td>
-                      <td className="pps-opp-col">
-                        <span className="pps-opp-logo-small">@COL</span>
-                      </td>
-                      <td className="pps-result-col loss">L 3-5</td>
-                      <td>4</td>
-                      <td>1</td>
-                      <td>0</td>
-                      <td>0</td>
-                      <td>1</td>
-                      <td>2</td>
-                      <td>.307</td>
-                    </tr>
-                    <tr>
-                      <td className="pps-date-col">Sep 26</td>
-                      <td className="pps-opp-col">
-                        <span className="pps-opp-logo-small">SD</span>
-                      </td>
-                      <td className="pps-result-col win">W 6-2</td>
-                      <td>4</td>
-                      <td>2</td>
-                      <td className="pps-highlight">1</td>
-                      <td>2</td>
-                      <td>0</td>
-                      <td>1</td>
-                      <td>.307</td>
-                    </tr>
-                    <tr>
-                      <td className="pps-date-col">Sep 25</td>
-                      <td className="pps-opp-col">
-                        <span className="pps-opp-logo-small">SD</span>
-                      </td>
-                      <td className="pps-result-col win">W 4-1</td>
-                      <td>3</td>
-                      <td>1</td>
-                      <td>0</td>
-                      <td>1</td>
-                      <td>2</td>
-                      <td>0</td>
-                      <td>.306</td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
-              <div className="pps-pagination">
-                <button className="pps-pagination-btn" disabled>Previous</button>
-                <span className="pps-pagination-info">Showing 1-5 of 159 games</span>
-                <button className="pps-pagination-btn">Next</button>
+              <div className="pps-coming-soon-placeholder">
+                <div className="pps-coming-soon-icon">📊</div>
+                <h3 className="pps-coming-soon-title">Game Log Coming Soon</h3>
+                <p className="pps-coming-soon-text">
+                  Detailed game-by-game statistics will be available here. 
+                  Check back soon for complete {selectedSeason} game logs.
+                </p>
               </div>
             </div>
           </section>

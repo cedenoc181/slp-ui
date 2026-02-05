@@ -6,6 +6,12 @@ import { TEAMS } from '../data/constants/apiConstants';
 import { useAuth } from '../context/AuthContext';
 import playerStatsService from '../data/services/playerStatsServices';
 
+// Helper to get player headshot URL from MLB ID
+const getPlayerHeadshotUrl = (mlbId) => {
+  if (!mlbId) return null;
+  return `https://img.mlbstatic.com/mlb-photos/image/upload/d_people:generic:headshot:67:current.png/w_213,q_auto:best/v1/people/${mlbId}/headshot/67/current`;
+};
+
 
 function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -127,19 +133,25 @@ function Header() {
           // Handle different response formats from lookup vs search endpoints
           const playerName = player.full_name || player.player_name || 'Unknown Player';
           const playerId = player.id || player.player_id;
+          const playerMlbId = player.mlb_id || player.player_mlb_id;
+          // Use name_slug if available, otherwise fall back to MLB ID
+          const nameSlug = player.name_slug || String(playerMlbId);
           const teamName = player.team_name || player.current_team?.team_name || '';
+          const headshotUrl = getPlayerHeadshotUrl(playerMlbId);
           
           return {
             type: 'player',
             icon: '👤',
+            headshotUrl: headshotUrl,
             label: playerName,
             sublabel: teamName,
             playerId: playerId,
-            playerMlbId: player.mlb_id || player.player_mlb_id,
+            playerMlbId: playerMlbId,
+            nameSlug: nameSlug,
             onSelect: () => {
               closeMenu();
-              // Navigate to player profile using internal player ID
-              navigate(`/player/${playerId}`);
+              // Navigate to player profile using SEO-friendly slug
+              navigate(`/player/${nameSlug}`);
               window.scrollTo({ top: 0, behavior: 'smooth' });
               setSearchQuery('');
               setSearchSuggestions([]);
@@ -363,10 +375,26 @@ function Header() {
                 <button
                   key={`${item.type}-${item.playerId || idx}`}
                   type="button"
-                  className="search-suggestion"
+                  className={`search-suggestion ${item.type === 'player' ? 'player-suggestion' : ''}`}
                   onClick={item.onSelect}
                 >
-                  <span className="suggestion-icon">{item.icon}</span>
+                  {item.headshotUrl ? (
+                    <img 
+                      src={item.headshotUrl} 
+                      alt={item.label}
+                      className="suggestion-headshot"
+                      onError={(e) => {
+                        e.target.style.display = 'none';
+                        e.target.nextSibling.style.display = 'flex';
+                      }}
+                    />
+                  ) : null}
+                  <span 
+                    className="suggestion-icon" 
+                    style={item.headshotUrl ? { display: 'none' } : {}}
+                  >
+                    {item.icon}
+                  </span>
                   <div className="suggestion-content">
                     <span className="suggestion-label">{item.label}</span>
                     {item.sublabel ? (

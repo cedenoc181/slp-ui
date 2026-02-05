@@ -167,6 +167,24 @@
   text-overflow: ellipsis;
 }
 
+/* Player headshot in search suggestions */
+.suggestion-headshot {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  object-fit: cover;
+  background: rgba(255, 255, 255, 0.1);
+  flex-shrink: 0;
+}
+
+.player-suggestion {
+  padding: 10px 16px;
+}
+
+.player-suggestion .suggestion-content {
+  gap: 1px;
+}
+
 .search-loading {
   display: flex;
   align-items: center;

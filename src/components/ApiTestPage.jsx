@@ -46,6 +46,24 @@ function ApiTestPage() {
         case 'getTeamAwayGames':
           result = await testEndpoint('games', 'getTeamAwayGames', selectedTeam, selectedSeason);
           break;
+        case 'getBatterGameLogs':
+          result = await testEndpoint('games', 'getBatterGameLogs', Number(selectedPlayerId), selectedSeason, SEASON_TYPES.REGULAR, 20);
+          break;
+        case 'getBatterGameLogsSpring':
+          result = await testEndpoint('games', 'getBatterGameLogs', Number(selectedPlayerId), selectedSeason, SEASON_TYPES.SPRING_TRAINING, 20);
+          break;
+        case 'getBatterGameLogsPostseason':
+          result = await testEndpoint('games', 'getBatterGameLogs', Number(selectedPlayerId), selectedSeason, SEASON_TYPES.POSTSEASON, 20);
+          break;
+        case 'getPitcherGameLogs':
+          result = await testEndpoint('games', 'getPitcherGameLogs', Number(selectedPlayerId), selectedSeason, SEASON_TYPES.REGULAR, 20);
+          break;
+        case 'getPitcherGameLogsSpring':
+          result = await testEndpoint('games', 'getPitcherGameLogs', Number(selectedPlayerId), selectedSeason, SEASON_TYPES.SPRING_TRAINING, 20);
+          break;
+        case 'getPitcherGameLogsPostseason':
+          result = await testEndpoint('games', 'getPitcherGameLogs', Number(selectedPlayerId), selectedSeason, SEASON_TYPES.POSTSEASON, 20);
+          break;
 
         // ========== TEAMS SERVICE ==========
         case 'getTeamSeason':
@@ -378,6 +396,12 @@ function ApiTestPage() {
               <option value="getTeamLast10">Get Team Last 10 Games</option>
               <option value="getTeamHomeGames">Get Team Home Games</option>
               <option value="getTeamAwayGames">Get Team Away Games</option>
+              <option value="getBatterGameLogs">Get Batter Game Logs [player.id] (Regular)</option>
+              <option value="getBatterGameLogsSpring">Get Batter Game Logs [player.id] (Spring)</option>
+              <option value="getBatterGameLogsPostseason">Get Batter Game Logs [player.id] (Postseason)</option>
+              <option value="getPitcherGameLogs">Get Pitcher Game Logs [player.id] (Regular)</option>
+              <option value="getPitcherGameLogsSpring">Get Pitcher Game Logs [player.id] (Spring)</option>
+              <option value="getPitcherGameLogsPostseason">Get Pitcher Game Logs [player.id] (Postseason)</option>
             </optgroup>
 
             <optgroup label="🏟️ Teams Service">
@@ -528,6 +552,8 @@ function ApiTestPage() {
               <code>/games/team/last10?team_id=X&season=Y</code>
               <code>/games/team/home?team_id=X&season=Y</code>
               <code>/games/team/away?team_id=X&season=Y</code>
+              <code>/games/batter?player_id=X&season=Y&season_type=R&limit=162</code>
+              <code>/games/pitcher?player_id=X&season=Y&season_type=R&limit=50</code>
             </div>
             <div className="endpoint-category">
               <strong>Teams</strong>

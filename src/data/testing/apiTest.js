@@ -89,6 +89,28 @@ class ApiTester {
     }
   }
 
+  async testGetBatterGameLogs() {
+    try {
+      const data = await gamesService.getBatterGameLogs(this.testPlayerId, this.testSeason, SEASON_TYPES.REGULAR, 20);
+      this.logResult('getBatterGameLogs', true, data);
+      return data;
+    } catch (error) {
+      this.logResult('getBatterGameLogs', false, null, error);
+      return null;
+    }
+  }
+
+  async testGetPitcherGameLogs() {
+    try {
+      const data = await gamesService.getPitcherGameLogs(this.testPlayerId, this.testSeason, SEASON_TYPES.REGULAR, 20);
+      this.logResult('getPitcherGameLogs', true, data);
+      return data;
+    } catch (error) {
+      this.logResult('getPitcherGameLogs', false, null, error);
+      return null;
+    }
+  }
+
   // ========== TEAMS SERVICE TESTS ==========
 
   async testGetTeamSeason() {
@@ -539,6 +561,8 @@ class ApiTester {
     await this.testGetTeamLast10();
     await this.testGetTeamHomeGames();
     await this.testGetTeamAwayGames();
+    await this.testGetBatterGameLogs();
+    await this.testGetPitcherGameLogs();
 
     // Teams Service Tests
     console.log('\n📋 TESTING TEAMS SERVICE');
