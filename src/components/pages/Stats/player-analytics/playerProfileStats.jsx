@@ -2,6 +2,7 @@ import React, { useState, useMemo, useEffect, useCallback, useRef } from 'react'
 import { useParams, useSearchParams } from 'react-router-dom';
 import { SEASONS, TEAMS } from '../../../../data/constants/apiConstants';
 import playerStatsService from '../../../../data/services/playerStatsServices';
+import injuryService from '../../../../data/services/injuryService';
 import '../../../../styles/stats-page-styling/player-profile.css';
 
 function PlayerProfileStats() {
@@ -39,6 +40,9 @@ function PlayerProfileStats() {
   const [careerTotalsLoading, setCareerTotalsLoading] = useState(false);
   const [vsHandSplits, setVsHandSplits] = useState([]);
   const [homeRoadSplits, setHomeRoadSplits] = useState([]);
+  const [vsHandSplitsCareer, setVsHandSplitsCareer] = useState(null);
+  const [homeRoadSplitsCareer, setHomeRoadSplitsCareer] = useState(null);
+  const [careerSplitsLoading, setCareerSplitsLoading] = useState(false);
   const [monthlyPerformance, setMonthlyPerformance] = useState(null);
   const [teamHistory, setTeamHistory] = useState([]);
   const [injuryHistory, setInjuryHistory] = useState([]);
@@ -93,6 +97,27 @@ function PlayerProfileStats() {
     };
     
     fetchPlayerInfo();
+  }, [playerId]);
+
+  // Fetch player injury history when playerInfo loads
+  useEffect(() => {
+    const fetchInjuryHistory = async () => {
+      if (!playerId) return;
+      
+      try {
+        // Pass player.id (internal DB ID) to get accurate injury history
+        // Don't pass season to get full history
+        const response = await injuryService.getPlayerInjuryHistory(playerId);
+        // API returns { player_id, season, total_injuries, injuries: [...] }
+        const injuries = response?.injuries || [];
+        setInjuryHistory(Array.isArray(injuries) ? injuries : []);
+      } catch (err) {
+        console.error('Error fetching injury history:', err);
+        setInjuryHistory([]);
+      }
+    };
+    
+    fetchInjuryHistory();
   }, [playerId]);
 
   // Fetch season stats, career stats, and splits when player info or season changes
@@ -151,35 +176,51 @@ function PlayerProfileStats() {
     fetchPlayerStats();
   }, [playerInfo, playerId, selectedSeason]);
 
-  // Fetch career totals when Career tab is selected
+  // Fetch career totals and career splits when Career tab is selected
   const handleCareerTabClick = useCallback(async () => {
     setActiveStatsTab('career');
     
-    // If we already have career totals, don't fetch again
-    if (careerTotals) return;
-    
     if (!playerInfo || !playerId) return;
     
-    setCareerTotalsLoading(true);
+    const isPitcher = playerInfo.position === 'P' || playerInfo.position === 'SP' || playerInfo.position === 'RP';
+    const isTwoWay = playerInfo.position === 'TWP' || playerInfo.is_two_way;
     
-    try {
-      const isPitcher = playerInfo.position === 'P' || playerInfo.position === 'SP' || playerInfo.position === 'RP';
-      const isTwoWay = playerInfo.position === 'TWP' || playerInfo.is_two_way;
-      
-      let totals;
-      if (isPitcher && !isTwoWay) {
-        totals = await playerStatsService.getPitcherCareerTotals(playerId);
-      } else {
-        totals = await playerStatsService.getBatterCareerTotals(playerId);
+    // Fetch career totals if not already loaded
+    if (!careerTotals) {
+      setCareerTotalsLoading(true);
+      try {
+        let totals;
+        if (isPitcher && !isTwoWay) {
+          totals = await playerStatsService.getPitcherCareerTotals(playerId);
+        } else {
+          totals = await playerStatsService.getBatterCareerTotals(playerId);
+        }
+        setCareerTotals(totals);
+      } catch (err) {
+        console.error('Error fetching career totals:', err);
+        setCareerTotals(null);
+      } finally {
+        setCareerTotalsLoading(false);
       }
-      setCareerTotals(totals);
-    } catch (err) {
-      console.error('Error fetching career totals:', err);
-      setCareerTotals(null);
-    } finally {
-      setCareerTotalsLoading(false);
     }
-  }, [playerInfo, playerId, careerTotals]);
+    
+    // Fetch career splits if not already loaded (batters only for now)
+    if (!vsHandSplitsCareer && !homeRoadSplitsCareer && !isPitcher) {
+      setCareerSplitsLoading(true);
+      try {
+        const [vsHandCareer, homeRoadCareer] = await Promise.all([
+          playerStatsService.getBatterVsHandSplitsCareerTotals(playerId).catch(() => null),
+          playerStatsService.getBatterHomeRoadSplitsCareerTotals(playerId).catch(() => null),
+        ]);
+        setVsHandSplitsCareer(vsHandCareer);
+        setHomeRoadSplitsCareer(homeRoadCareer);
+      } catch (err) {
+        console.error('Error fetching career splits:', err);
+      } finally {
+        setCareerSplitsLoading(false);
+      }
+    }
+  }, [playerInfo, playerId, careerTotals, vsHandSplitsCareer, homeRoadSplitsCareer]);
 
   // Calculate player age
   const playerAge = useMemo(() => {
@@ -715,7 +756,9 @@ function PlayerProfileStats() {
             <div className="pps-section-header">
               <div>
                 <h2 className="pps-section-title">Player Splits</h2>
-                <p className="pps-section-subtitle">{selectedSeason} performance breakdowns</p>
+                <p className="pps-section-subtitle">
+                  {activeStatsTab === 'career' ? 'Career' : selectedSeason} performance breakdowns
+                </p>
               </div>
               <div className="pps-tab-toggle">
                 <button
@@ -734,19 +777,25 @@ function PlayerProfileStats() {
             </div>
 
             <div className="pps-splits-content">
-              {statsLoading ? (
+              {statsLoading || careerSplitsLoading ? (
                 <div className="pps-stats-loading">Loading splits...</div>
               ) : activeSplitsTab === 'handedness' ? (
                 <div className="pps-splits-comparison">
                   {/* vs LHP/LHB Split */}
                   {(() => {
-                    // API returns array with season entries containing vs_lhp/vs_rhp nested objects
-                    const seasonSplits = vsHandSplits?.find(s => 
-                      String(s.season) === String(selectedSeason)
-                    );
-                    const vsLeft = seasonSplits?.vs_lhp || vsHandSplits?.find(s => 
-                      s.split_type === 'vs_lhp' || s.vs_hand === 'L'
-                    );
+                    // Use career splits if Career tab is active, otherwise use season splits
+                    let vsLeft;
+                    if (activeStatsTab === 'career' && vsHandSplitsCareer) {
+                      vsLeft = vsHandSplitsCareer?.vs_lhp;
+                    } else {
+                      // API returns array with season entries containing vs_lhp/vs_rhp nested objects
+                      const seasonSplits = vsHandSplits?.find(s => 
+                        String(s.season) === String(selectedSeason)
+                      );
+                      vsLeft = seasonSplits?.vs_lhp || vsHandSplits?.find(s => 
+                        s.split_type === 'vs_lhp' || s.vs_hand === 'L'
+                      );
+                    }
                     return (
                       <div className="pps-split-card vs-left">
                         <div className="pps-split-header">
@@ -797,13 +846,19 @@ function PlayerProfileStats() {
 
                   {/* vs RHP/RHB Split */}
                   {(() => {
-                    // API returns array with season entries containing vs_lhp/vs_rhp nested objects
-                    const seasonSplits = vsHandSplits?.find(s => 
-                      String(s.season) === String(selectedSeason)
-                    );
-                    const vsRight = seasonSplits?.vs_rhp || vsHandSplits?.find(s => 
-                      s.split_type === 'vs_rhp' || s.vs_hand === 'R'
-                    );
+                    // Use career splits if Career tab is active, otherwise use season splits
+                    let vsRight;
+                    if (activeStatsTab === 'career' && vsHandSplitsCareer) {
+                      vsRight = vsHandSplitsCareer?.vs_rhp;
+                    } else {
+                      // API returns array with season entries containing vs_lhp/vs_rhp nested objects
+                      const seasonSplits = vsHandSplits?.find(s => 
+                        String(s.season) === String(selectedSeason)
+                      );
+                      vsRight = seasonSplits?.vs_rhp || vsHandSplits?.find(s => 
+                        s.split_type === 'vs_rhp' || s.vs_hand === 'R'
+                      );
+                    }
                     return (
                       <div className="pps-split-card vs-right">
                         <div className="pps-split-header">
@@ -854,14 +909,20 @@ function PlayerProfileStats() {
                 <div className="pps-splits-comparison">
                   {/* Home Split */}
                   {(() => {
-                    // API returns array with season entries containing at_home/on_road nested objects
-                    const seasonSplits = homeRoadSplits?.find(s => 
-                      String(s.season) === String(selectedSeason)
-                    );
-                    const homeSplit = seasonSplits?.at_home || homeRoadSplits?.find(s => 
-                      s.split_type === 'home' || s.split_type === 'at_home' || 
-                      s.split === 'home' || s.location === 'home'
-                    );
+                    // Use career splits if Career tab is active, otherwise use season splits
+                    let homeSplit;
+                    if (activeStatsTab === 'career' && homeRoadSplitsCareer) {
+                      homeSplit = homeRoadSplitsCareer?.at_home;
+                    } else {
+                      // API returns array with season entries containing at_home/on_road nested objects
+                      const seasonSplits = homeRoadSplits?.find(s => 
+                        String(s.season) === String(selectedSeason)
+                      );
+                      homeSplit = seasonSplits?.at_home || homeRoadSplits?.find(s => 
+                        s.split_type === 'home' || s.split_type === 'at_home' || 
+                        s.split === 'home' || s.location === 'home'
+                      );
+                    }
                     return (
                       <div className="pps-split-card home">
                         <div className="pps-split-header">
@@ -912,14 +973,20 @@ function PlayerProfileStats() {
 
                   {/* Away/Road Split */}
                   {(() => {
-                    // API returns array with season entries containing at_home/on_road nested objects
-                    const seasonSplits = homeRoadSplits?.find(s => 
-                      String(s.season) === String(selectedSeason)
-                    );
-                    const awaySplit = seasonSplits?.on_road || homeRoadSplits?.find(s => 
-                      s.split_type === 'away' || s.split_type === 'road' || s.split_type === 'on_road' ||
-                      s.split === 'away' || s.split === 'road' || s.location === 'away'
-                    );
+                    // Use career splits if Career tab is active, otherwise use season splits
+                    let awaySplit;
+                    if (activeStatsTab === 'career' && homeRoadSplitsCareer) {
+                      awaySplit = homeRoadSplitsCareer?.on_road;
+                    } else {
+                      // API returns array with season entries containing at_home/on_road nested objects
+                      const seasonSplits = homeRoadSplits?.find(s => 
+                        String(s.season) === String(selectedSeason)
+                      );
+                      awaySplit = seasonSplits?.on_road || homeRoadSplits?.find(s => 
+                        s.split_type === 'away' || s.split_type === 'road' || s.split_type === 'on_road' ||
+                        s.split === 'away' || s.split === 'road' || s.location === 'away'
+                      );
+                    }
                     return (
                       <div className="pps-split-card away">
                         <div className="pps-split-header">
@@ -1098,25 +1165,36 @@ function PlayerProfileStats() {
               </div>
               <div className="pps-injury-list">
                 {injuryHistory.length > 0 ? (
-                  injuryHistory.map((injury, idx) => (
-                    <div key={idx} className="pps-injury-item">
-                      <div className="pps-injury-date">
-                        <span className="pps-injury-month">
-                          {injury.month || new Date(injury.injury_date || injury.date).toLocaleDateString('en-US', { month: 'short' })}
-                        </span>
-                        <span className="pps-injury-year">
-                          {injury.year || new Date(injury.injury_date || injury.date).getFullYear()}
-                        </span>
+                  injuryHistory.map((injury, idx) => {
+                    // Determine if injury is still active (no activation_date means still on IL)
+                    const isActive = !injury.activation_date;
+                    // Format injury description - capitalize first letter
+                    const injuryDesc = injury.injury_desc 
+                      ? injury.injury_desc.charAt(0).toUpperCase() + injury.injury_desc.slice(1)
+                      : 'Injury';
+                    
+                    return (
+                      <div key={injury.id || idx} className="pps-injury-item">
+                        <div className="pps-injury-date">
+                          <span className="pps-injury-month">
+                            {new Date(injury.injury_date).toLocaleDateString('en-US', { month: 'short' })}
+                          </span>
+                          <span className="pps-injury-year">
+                            {injury.season || new Date(injury.injury_date).getFullYear()}
+                          </span>
+                        </div>
+                        <div className="pps-injury-details">
+                          <span className="pps-injury-type">{injuryDesc}</span>
+                          <span className="pps-injury-duration">
+                            {injury.days_on_il ? `${injury.days_on_il} days` : injury.injury_period || 'IL'}
+                          </span>
+                        </div>
+                        <div className={`pps-injury-status ${isActive ? 'active' : 'recovered'}`}>
+                          <span>{isActive ? 'Active' : 'Recovered'}</span>
+                        </div>
                       </div>
-                      <div className="pps-injury-details">
-                        <span className="pps-injury-type">{injury.injury_type || injury.description || 'Injury'}</span>
-                        <span className="pps-injury-duration">{injury.il_type || injury.duration || 'IL'}</span>
-                      </div>
-                      <div className={`pps-injury-status ${injury.is_active ? 'active' : 'recovered'}`}>
-                        <span>{injury.is_active ? 'Active' : 'Recovered'}</span>
-                      </div>
-                    </div>
-                  ))
+                    );
+                  })
                 ) : (
                   <div className="pps-no-injuries-note">
                     <span>✓ No injury history available</span>

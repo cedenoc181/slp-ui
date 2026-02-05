@@ -547,7 +547,20 @@
 .pps-timeline-stats { font-size: 0.8rem; color: var(--pps-text-muted); display: flex; gap: 0.5rem; }
 
 /* Injury History */
-.pps-injury-list { display: flex; flex-direction: column; gap: 0.75rem; }
+.pps-injury-list { 
+  display: flex; 
+  flex-direction: column; 
+  gap: 0.75rem; 
+  max-height: 320px; /* Approx 4 rows */
+  overflow-y: auto;
+  padding-right: 0.5rem;
+}
+
+/* Custom scrollbar for injury list */
+.pps-injury-list::-webkit-scrollbar { width: 6px; }
+.pps-injury-list::-webkit-scrollbar-track { background: rgba(255, 255, 255, 0.05); border-radius: 3px; }
+.pps-injury-list::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.2); border-radius: 3px; }
+.pps-injury-list::-webkit-scrollbar-thumb:hover { background: rgba(255, 255, 255, 0.3); }
 
 .pps-injury-item {
   display: grid;
