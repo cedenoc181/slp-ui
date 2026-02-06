@@ -187,6 +187,9 @@
   border-radius: 16px;
   padding: 1.5rem;
   margin-bottom: 1.5rem;
+  position: relative;
+  z-index: 0; /* Prevent child elements from overlapping navbar */
+  isolation: isolate;
 }
 
 .pps-section-header {
@@ -638,7 +641,9 @@
 .pps-month-filter option { background: #1e1e1e; color: #fff; }
 
 .pps-game-log-container { 
-  overflow: hidden; 
+  overflow: hidden;
+  position: relative;
+  z-index: 0; /* Create stacking context to contain sticky header */
 }
 
 .pps-game-log-table-wrapper { 
@@ -650,6 +655,7 @@
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 10px;
   padding: 0.5rem;
+  isolation: isolate; /* Prevent sticky header from escaping container */
 }
 
 /* Sticky header for scrollable table */
@@ -658,7 +664,7 @@
   background: rgba(30, 30, 30, 0.98);
   position: sticky;
   top: 0;
-  z-index: 1;
+  z-index: 0;
 }
 
 .pps-game-log-table th {
