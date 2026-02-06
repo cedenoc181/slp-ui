@@ -80,13 +80,13 @@
 }
 
 .pps-team-logo {
-  width: 32px;
-  height: 32px;
+  width: 40px;
+  height: 40px;
   object-fit: contain;
   flex-shrink: 0;
   background: rgba(255, 255, 255, 0.9);
   border-radius: 50%;
-  padding: 4px;
+  padding: 6px;
 }
 
 .pps-player-photo {
@@ -332,6 +332,169 @@
 .pps-trend-metric-value { font-size: 1.25rem; font-weight: 700; color: #ffffff; }
 .pps-trend-metric-value.positive { color: var(--pps-success); }
 .pps-trend-metric-value.negative { color: var(--pps-danger); }
+
+/* ========== RECENT FORM SECTION (Betting Edge) ========== */
+.pps-recent-form-section { }
+
+/* Recent Form Controls - Dropdown & Badge */
+.pps-recent-form-controls {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.pps-recent-form-controls .pps-season-type-filter {
+  min-width: 160px;
+}
+
+/* Hot/Cold Form Badge */
+.pps-form-badge {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.5rem 1rem;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.pps-form-badge.hot { background: rgba(255, 87, 34, 0.2); color: #FF5722; border: 1px solid rgba(255, 87, 34, 0.4); }
+.pps-form-badge.warming { background: rgba(255, 193, 7, 0.15); color: #FFC107; border: 1px solid rgba(255, 193, 7, 0.3); }
+.pps-form-badge.neutral { background: rgba(158, 158, 158, 0.15); color: #9E9E9E; border: 1px solid rgba(158, 158, 158, 0.3); }
+.pps-form-badge.cooling { background: rgba(33, 150, 243, 0.15); color: #2196F3; border: 1px solid rgba(33, 150, 243, 0.3); }
+.pps-form-badge.cold { background: rgba(3, 169, 244, 0.2); color: #03A9F4; border: 1px solid rgba(3, 169, 244, 0.4); }
+
+.pps-form-badge-icon { font-size: 1rem; }
+.pps-form-badge-text { }
+
+/* Recent Form Content */
+.pps-recent-form-content { display: flex; flex-direction: column; gap: 1.25rem; }
+
+/* Streak Row */
+.pps-streak-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+}
+
+.pps-streak-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  background: linear-gradient(135deg, rgba(25, 118, 210, 0.1), rgba(25, 118, 210, 0.05));
+  border: 1px solid rgba(25, 118, 210, 0.2);
+  border-radius: 12px;
+  text-align: center;
+}
+
+.pps-streak-value {
+  font-size: 2rem;
+  font-weight: 800;
+  color: var(--pps-accent-blue);
+  line-height: 1;
+}
+
+.pps-streak-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--pps-text-muted);
+  text-transform: uppercase;
+  margin-top: 0.5rem;
+}
+
+/* Rolling Averages Table */
+.pps-rolling-table-wrapper {
+  overflow-x: auto;
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 12px;
+  padding: 0.5rem;
+}
+
+.pps-rolling-table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 500px;
+}
+
+.pps-rolling-table thead tr {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.pps-rolling-table th {
+  padding: 0.75rem 0.5rem;
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: var(--pps-text-muted);
+  text-transform: uppercase;
+  text-align: center;
+  border-bottom: 1px solid var(--pps-border-color);
+}
+
+.pps-rolling-table th:first-child { text-align: left; padding-left: 1rem; }
+
+.pps-rolling-table td {
+  padding: 0.75rem 0.5rem;
+  font-size: 0.9rem;
+  text-align: center;
+  color: #ffffff;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.pps-rolling-table .pps-split-label-cell {
+  text-align: left;
+  padding-left: 1rem;
+  font-weight: 700;
+  color: var(--pps-accent-blue);
+}
+
+.pps-rolling-row.l7 .pps-split-label-cell { color: #FF9800; }
+.pps-rolling-row.l15 .pps-split-label-cell { color: #8BC34A; }
+.pps-rolling-row.l30 .pps-split-label-cell { color: #00BCD4; }
+.pps-rolling-row.season { background: rgba(255, 255, 255, 0.03); }
+.pps-rolling-row.season .pps-split-label-cell { color: var(--pps-text-secondary); font-weight: 600; }
+
+/* Above/Below season average indicators */
+.pps-rolling-table td.pps-above { color: var(--pps-success); font-weight: 700; }
+.pps-rolling-table td.pps-below { color: var(--pps-danger); font-weight: 700; }
+
+/* Trend Insights */
+.pps-trend-insight {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1rem;
+}
+
+.pps-insight-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 1rem;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid var(--pps-border-color);
+  border-radius: 10px;
+  text-align: center;
+}
+
+.pps-insight-label {
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: var(--pps-text-muted);
+  text-transform: uppercase;
+  margin-bottom: 0.5rem;
+}
+
+.pps-insight-value {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #ffffff;
+}
+
+.pps-insight-value.positive { color: var(--pps-success); }
+.pps-insight-value.negative { color: var(--pps-danger); }
 
 /* Stats Grid */
 .pps-stats-grid {
@@ -785,6 +948,7 @@
   .pps-trend-chart-container { grid-template-columns: 1fr; }
   .pps-trend-summary { flex-direction: row; justify-content: space-around; }
   .pps-two-column { grid-template-columns: 1fr; }
+  .pps-trend-insight { grid-template-columns: repeat(2, 1fr); }
 }
 
 @media (max-width: 768px) {
@@ -795,9 +959,16 @@
   .pps-team-position { justify-content: center; }
   .pps-status-badge { justify-content: center; }
   .pps-section-header { flex-direction: column; align-items: flex-start; }
+  .pps-recent-form-controls { flex-direction: column; align-items: flex-start; gap: 0.75rem; width: 100%; }
+  .pps-recent-form-controls .pps-season-type-filter { width: 100%; }
   .pps-stats-grid { grid-template-columns: 1fr; }
   .pps-splits-comparison { grid-template-columns: 1fr; }
   .pps-split-vs-divider { order: -1; width: 100%; border-radius: 4px; height: auto; padding: 0.25rem; font-size: 0.8rem; }
+  .pps-streak-row { grid-template-columns: 1fr; }
+  .pps-streak-card { padding: 0.75rem; }
+  .pps-streak-value { font-size: 1.5rem; }
+  .pps-trend-insight { grid-template-columns: repeat(2, 1fr); gap: 0.75rem; }
+  .pps-form-badge { padding: 0.4rem 0.75rem; font-size: 0.75rem; }
 }
 
 @media (max-width: 480px) {
@@ -807,4 +978,9 @@
   .pps-quick-stats { padding: 0.75rem; gap: 0.75rem; }
   .pps-section { padding: 1rem; border-radius: 12px; }
   .pps-game-log-table th, .pps-game-log-table td { padding: 0.5rem 0.35rem; font-size: 0.8rem; }
+  .pps-rolling-table th, .pps-rolling-table td { padding: 0.5rem 0.35rem; font-size: 0.8rem; }
+  .pps-trend-insight { grid-template-columns: 1fr 1fr; }
+  .pps-insight-item { padding: 0.75rem 0.5rem; }
+  .pps-insight-label { font-size: 0.65rem; }
+  .pps-insight-value { font-size: 0.95rem; }
 }

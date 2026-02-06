@@ -50,6 +50,12 @@ function PlayerProfileStats() {
   const [gameLogSeasonType, setGameLogSeasonType] = useState('R'); // R (Regular), S (Spring Training), P (Postseason)
   const [gameLogPage, setGameLogPage] = useState(1); // Current page for game log pagination
   const gamesPerPage = 10; // Number of games per page
+  
+  // Recent Form section has its own season type (independent from Game Log)
+  const [recentFormSeasonType, setRecentFormSeasonType] = useState('R'); // R (Regular), S (Spring Training), P (Postseason)
+  const [recentFormGameLog, setRecentFormGameLog] = useState([]); // Separate game log for recent form
+  const [recentFormLoading, setRecentFormLoading] = useState(false);
+  
   const [trendTimeframe, setTrendTimeframe] = useState('5y'); // 1y, 3y, 5y, career
   const [selectedChartMetric, setSelectedChartMetric] = useState('hr'); // hr, h, avg, ops, bb, so
 
@@ -224,6 +230,44 @@ function PlayerProfileStats() {
     
     fetchGameLogs();
   }, [playerInfo, selectedSeason, gameLogSeasonType]);
+
+  // Fetch game logs for Recent Form section (independent from Game Log section)
+  useEffect(() => {
+    const fetchRecentFormGameLogs = async () => {
+      if (!playerInfo?.id) return;
+      
+      setRecentFormLoading(true);
+      try {
+        const isPitcher = playerInfo.position === 'P' || playerInfo.position === 'SP' || playerInfo.position === 'RP';
+        const isTwoWay = playerInfo.position === 'TWP' || playerInfo.is_two_way;
+        
+        let response;
+        if (isPitcher && !isTwoWay) {
+          response = await gamesService.getPitcherGameLogs(
+            playerInfo.id,
+            selectedSeason,
+            recentFormSeasonType
+          );
+        } else {
+          response = await gamesService.getBatterGameLogs(
+            playerInfo.id,
+            selectedSeason,
+            recentFormSeasonType
+          );
+        }
+        
+        const games = response?.games || [];
+        setRecentFormGameLog(Array.isArray(games) ? games : []);
+      } catch (err) {
+        console.error('Error fetching recent form game logs:', err);
+        setRecentFormGameLog([]);
+      } finally {
+        setRecentFormLoading(false);
+      }
+    };
+    
+    fetchRecentFormGameLogs();
+  }, [playerInfo, selectedSeason, recentFormSeasonType]);
 
   // Fetch season stats, career stats, and splits when player info or season changes
   useEffect(() => {
@@ -480,6 +524,144 @@ function PlayerProfileStats() {
     return result;
   }, [careerStats]);
 
+  // Calculate recent form stats from game log (L7, L15, L30 rolling averages)
+  // For postseason/spring training, still compare against regular season baseline
+  // Uses its own recentFormGameLog (independent from Game Log section)
+  const recentFormStats = useMemo(() => {
+    if (!recentFormGameLog || recentFormGameLog.length === 0) return null;
+    
+    // Sort games by date (most recent first)
+    const sortedGames = [...recentFormGameLog].sort((a, b) => new Date(b.date) - new Date(a.date));
+    
+    // Calculate rolling averages for different windows
+    const calculateRollingStats = (games) => {
+      if (games.length === 0) return null;
+      
+      const totals = games.reduce((acc, g) => ({
+        hits: acc.hits + (g.hits || 0),
+        atBats: acc.atBats + (g.at_bats || 0),
+        homeRuns: acc.homeRuns + (g.home_runs || 0),
+        rbis: acc.rbis + (g.rbis || 0),
+        runs: acc.runs + (g.runs || 0),
+        walks: acc.walks + (g.walks || 0),
+        strikeouts: acc.strikeouts + (g.strikeouts || 0),
+        stolenBases: acc.stolenBases + (g.stolen_bases || 0),
+        totalBases: acc.totalBases + (g.total_bases || 0),
+        games: acc.games + 1,
+      }), { hits: 0, atBats: 0, homeRuns: 0, rbis: 0, runs: 0, walks: 0, strikeouts: 0, stolenBases: 0, totalBases: 0, games: 0 });
+      
+      const avg = totals.atBats > 0 ? totals.hits / totals.atBats : 0;
+      const obp = (totals.atBats + totals.walks) > 0 
+        ? (totals.hits + totals.walks) / (totals.atBats + totals.walks) : 0;
+      const slg = totals.atBats > 0 ? totals.totalBases / totals.atBats : 0;
+      const ops = obp + slg;
+      
+      return {
+        ...totals,
+        avg,
+        obp,
+        slg,
+        ops,
+        hitsPerGame: totals.hits / totals.games,
+        hrPerGame: totals.homeRuns / totals.games,
+        rbisPerGame: totals.rbis / totals.games,
+      };
+    };
+    
+    // Calculate hitting streak
+    let hittingStreak = 0;
+    for (const game of sortedGames) {
+      if (game.hits > 0) {
+        hittingStreak++;
+      } else {
+        break;
+      }
+    }
+    
+    // Calculate multi-hit game streak
+    let multiHitStreak = 0;
+    for (const game of sortedGames) {
+      if (game.hits >= 2) {
+        multiHitStreak++;
+      } else {
+        break;
+      }
+    }
+    
+    // Count multi-hit games in last 15
+    const last15 = sortedGames.slice(0, 15);
+    const multiHitGamesL15 = last15.filter(g => g.hits >= 2).length;
+    
+    // Calculate L7, L15, L30 from current game log (could be postseason/spring)
+    const l7 = calculateRollingStats(sortedGames.slice(0, 7));
+    const l15 = calculateRollingStats(sortedGames.slice(0, 15));
+    const l30 = calculateRollingStats(sortedGames.slice(0, 30));
+    
+    // For "season" baseline, always use regular season stats for better comparison
+    // This allows comparing postseason performance to regular season baseline
+    let season = null;
+    if (recentFormSeasonType === 'R') {
+      // Regular season - calculate from game log
+      season = calculateRollingStats(sortedGames);
+    } else if (seasonStats) {
+      // Postseason/Spring Training - use regular season stats as baseline
+      const g = seasonStats.g || seasonStats.games_played || 0;
+      const atBats = seasonStats.ab || seasonStats.at_bats || 0;
+      const hits = seasonStats.h || seasonStats.hits || 0;
+      const homeRuns = seasonStats.hr || seasonStats.home_runs || 0;
+      const rbis = seasonStats.rbis || seasonStats.rbi || 0;
+      const walks = seasonStats.bb || seasonStats.walks || seasonStats.base_on_balls || 0;
+      const strikeouts = seasonStats.so || seasonStats.strikeouts || seasonStats.strike_outs || 0;
+      const avg = seasonStats.avg || seasonStats.batting_avg || 0;
+      const ops = seasonStats.ops || 0;
+      
+      season = {
+        games: g,
+        atBats,
+        hits,
+        homeRuns,
+        rbis,
+        runs: seasonStats.r || seasonStats.runs || 0,
+        walks,
+        strikeouts,
+        stolenBases: seasonStats.sb || seasonStats.stolen_bases || 0,
+        totalBases: seasonStats.tb || seasonStats.total_bases || 0,
+        avg,
+        ops,
+        obp: seasonStats.obp || 0,
+        slg: seasonStats.slg || 0,
+        hitsPerGame: g > 0 ? hits / g : 0,
+        hrPerGame: g > 0 ? homeRuns / g : 0,
+        rbisPerGame: g > 0 ? rbis / g : 0,
+        isRegularSeasonBaseline: true, // Flag to show this is regular season baseline
+      };
+    }
+    
+    // Determine hot/cold status by comparing L7 to season baseline
+    let formStatus = 'neutral';
+    if (l7 && season && season.avg > 0) {
+      const avgDiff = ((l7.avg - season.avg) / season.avg) * 100;
+      if (avgDiff >= 15) formStatus = 'hot';
+      else if (avgDiff <= -15) formStatus = 'cold';
+      else if (avgDiff >= 5) formStatus = 'warming';
+      else if (avgDiff <= -5) formStatus = 'cooling';
+    }
+    
+    return {
+      l7,
+      l15,
+      l30,
+      season,
+      hittingStreak,
+      multiHitStreak,
+      multiHitGamesL15,
+      formStatus,
+      gamesPlayed: sortedGames.length,
+      lastGameDate: sortedGames[0]?.date,
+      isPostseasonView: recentFormSeasonType !== 'R',
+    };
+  }, [recentFormGameLog, recentFormSeasonType, seasonStats]);
+
   // Get the current chart data based on view mode
   const getChartData = () => {
     if (activeStatsTab === 'career') {
@@ -603,91 +785,202 @@ function PlayerProfileStats() {
       <main className="pps-content">
         <div className="pps-container">
           
-          {/* ========== PERFORMANCE TREND (Stock Chart Style) ========== */}
-          <section className="pps-section">
+          {/* ========== RECENT FORM (Betting Edge) ========== */}
+          <section className="pps-section pps-recent-form-section">
             <div className="pps-section-header">
               <div>
-                <h2 className="pps-section-title">Performance Trend</h2>
-                <p className="pps-section-subtitle">Historical performance trajectory</p>
+                <h2 className="pps-section-title">Recent Form</h2>
+                <p className="pps-section-subtitle">
+                  {selectedSeason} {recentFormSeasonType === 'R' ? 'Regular Season' : recentFormSeasonType === 'S' ? 'Spring Training' : 'Postseason'} rolling averages & trends
+                </p>
               </div>
-              <div className="pps-tab-toggle">
-                {['1y', '3y', '5y', 'career'].map((tf) => (
-                  <button
-                    key={tf}
-                    className={`pps-tab-btn ${trendTimeframe === tf ? 'active' : ''}`}
-                    onClick={() => setTrendTimeframe(tf)}
-                  >
-                    {tf === 'career' ? 'Career' : tf.toUpperCase()}
-                  </button>
-                ))}
+              <div className="pps-recent-form-controls">
+                <select 
+                  className="pps-season-type-filter"
+                  value={recentFormSeasonType}
+                  onChange={(e) => setRecentFormSeasonType(e.target.value)}
+                >
+                  <option value="R">Regular Season</option>
+                  <option value="S">Spring Training</option>
+                  <option value="P">Postseason</option>
+                </select>
+                {recentFormStats && (
+                  <div className={`pps-form-badge ${recentFormStats.formStatus}`}>
+                    <span className="pps-form-badge-icon">
+                      {recentFormStats.formStatus === 'hot' ? '🔥' : 
+                       recentFormStats.formStatus === 'warming' ? '📈' :
+                       recentFormStats.formStatus === 'cold' ? '❄️' :
+                       recentFormStats.formStatus === 'cooling' ? '📉' : '➖'}
+                    </span>
+                    <span className="pps-form-badge-text">
+                      {recentFormStats.formStatus === 'hot' ? 'HOT' : 
+                       recentFormStats.formStatus === 'warming' ? 'Warming Up' :
+                       recentFormStats.formStatus === 'cold' ? 'COLD' :
+                       recentFormStats.formStatus === 'cooling' ? 'Cooling Off' : 'Neutral'}
+                    </span>
+                  </div>
+                )}
               </div>
             </div>
-            <div className="pps-trend-chart-container">
-              {(() => {
-                // Calculate trend metrics from career stats
-                const regularSeasonStats = careerStats.filter(s => 
-                  s.season_type === 2 || s.season_type === '2' || s.season_type === 'R'
-                ).sort((a, b) => (a.season || a.year) - (b.season || b.year));
+            
+            {recentFormLoading ? (
+              <div className="pps-stats-loading">Loading recent form data...</div>
+            ) : recentFormStats ? (
+              <div className="pps-recent-form-content">
+                {/* Streak Indicators */}
+                <div className="pps-streak-row">
+                  <div className="pps-streak-card">
+                    <span className="pps-streak-value">{recentFormStats.hittingStreak}</span>
+                    <span className="pps-streak-label">Game Hit Streak</span>
+                  </div>
+                  <div className="pps-streak-card">
+                    <span className="pps-streak-value">{recentFormStats.multiHitGamesL15}</span>
+                    <span className="pps-streak-label">Multi-Hit Games (L15)</span>
+                  </div>
+                  <div className="pps-streak-card">
+                    <span className="pps-streak-value">{recentFormStats.gamesPlayed}</span>
+                    <span className="pps-streak-label">Games Played</span>
+                  </div>
+                </div>
                 
-                const firstYear = regularSeasonStats[0]?.season || regularSeasonStats[0]?.year || '-';
-                const lastYear = regularSeasonStats[regularSeasonStats.length - 1]?.season || 
-                                 regularSeasonStats[regularSeasonStats.length - 1]?.year || '-';
+                {/* Rolling Averages Comparison Table */}
+                <div className="pps-rolling-table-wrapper">
+                  <table className="pps-rolling-table">
+                    <thead>
+                      <tr>
+                        <th>Split</th>
+                        <th>G</th>
+                        <th>AVG</th>
+                        <th>OPS</th>
+                        <th>H</th>
+                        <th>HR</th>
+                        <th>RBI</th>
+                        <th>BB</th>
+                        <th>SO</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {/* Last 7 Games */}
+                      {recentFormStats.l7 && (
+                        <tr className="pps-rolling-row l7">
+                          <td className="pps-split-label-cell">Last 7</td>
+                          <td>{recentFormStats.l7.games}</td>
+                          <td className={recentFormStats.l7.avg > (recentFormStats.season?.avg || 0) ? 'pps-above' : recentFormStats.l7.avg < (recentFormStats.season?.avg || 0) ? 'pps-below' : ''}>
+                            {recentFormStats.l7.avg.toFixed(3).replace(/^0/, '')}
+                          </td>
+                          <td className={recentFormStats.l7.ops > (recentFormStats.season?.ops || 0) ? 'pps-above' : recentFormStats.l7.ops < (recentFormStats.season?.ops || 0) ? 'pps-below' : ''}>
+                            {recentFormStats.l7.ops.toFixed(3)}
+                          </td>
+                          <td>{recentFormStats.l7.hits}</td>
+                          <td>{recentFormStats.l7.homeRuns}</td>
+                          <td>{recentFormStats.l7.rbis}</td>
+                          <td>{recentFormStats.l7.walks}</td>
+                          <td>{recentFormStats.l7.strikeouts}</td>
+                        </tr>
+                      )}
+                      {/* Last 15 Games */}
+                      {recentFormStats.l15 && (
+                        <tr className="pps-rolling-row l15">
+                          <td className="pps-split-label-cell">Last 15</td>
+                          <td>{recentFormStats.l15.games}</td>
+                          <td className={recentFormStats.l15.avg > (recentFormStats.season?.avg || 0) ? 'pps-above' : recentFormStats.l15.avg < (recentFormStats.season?.avg || 0) ? 'pps-below' : ''}>
+                            {recentFormStats.l15.avg.toFixed(3).replace(/^0/, '')}
+                          </td>
+                          <td className={recentFormStats.l15.ops > (recentFormStats.season?.ops || 0) ? 'pps-above' : recentFormStats.l15.ops < (recentFormStats.season?.ops || 0) ? 'pps-below' : ''}>
+                            {recentFormStats.l15.ops.toFixed(3)}
+                          </td>
+                          <td>{recentFormStats.l15.hits}</td>
+                          <td>{recentFormStats.l15.homeRuns}</td>
+                          <td>{recentFormStats.l15.rbis}</td>
+                          <td>{recentFormStats.l15.walks}</td>
+                          <td>{recentFormStats.l15.strikeouts}</td>
+                        </tr>
+                      )}
+                      {/* Last 30 Games */}
+                      {recentFormStats.l30 && recentFormStats.l30.games >= 20 && (
+                        <tr className="pps-rolling-row l30">
+                          <td className="pps-split-label-cell">Last 30</td>
+                          <td>{recentFormStats.l30.games}</td>
+                          <td className={recentFormStats.l30.avg > (recentFormStats.season?.avg || 0) ? 'pps-above' : recentFormStats.l30.avg < (recentFormStats.season?.avg || 0) ? 'pps-below' : ''}>
+                            {recentFormStats.l30.avg.toFixed(3).replace(/^0/, '')}
+                          </td>
+                          <td className={recentFormStats.l30.ops > (recentFormStats.season?.ops || 0) ? 'pps-above' : recentFormStats.l30.ops < (recentFormStats.season?.ops || 0) ? 'pps-below' : ''}>
+                            {recentFormStats.l30.ops.toFixed(3)}
+                          </td>
+                          <td>{recentFormStats.l30.hits}</td>
+                          <td>{recentFormStats.l30.homeRuns}</td>
+                          <td>{recentFormStats.l30.rbis}</td>
+                          <td>{recentFormStats.l30.walks}</td>
+                          <td>{recentFormStats.l30.strikeouts}</td>
+                        </tr>
+                      )}
+                      {/* Season Totals (Regular Season baseline for postseason/spring comparisons) */}
+                      {recentFormStats.season && (
+                        <tr className="pps-rolling-row season">
+                          <td className="pps-split-label-cell">
+                            {recentFormStats.isPostseasonView ? 'Reg Season' : 'Season'}
+                          </td>
+                          <td>{recentFormStats.season.games}</td>
+                          <td>{recentFormStats.season.avg.toFixed(3).replace(/^0/, '')}</td>
+                          <td>{recentFormStats.season.ops.toFixed(3)}</td>
+                          <td>{recentFormStats.season.hits}</td>
+                          <td>{recentFormStats.season.homeRuns}</td>
+                          <td>{recentFormStats.season.rbis}</td>
+                          <td>{recentFormStats.season.walks}</td>
+                          <td>{recentFormStats.season.strikeouts}</td>
+                        </tr>
+                      )}
+                    </tbody>
+                  </table>
+                </div>
                 
-                // Find peak OPS season
-                const peakOpsSeason = regularSeasonStats.reduce((peak, s) => {
-                  const ops = s.ops || 0;
-                  return ops > (peak?.ops || 0) ? s : peak;
-                }, null);
-                
-                // Calculate OPS trend (first 2 seasons avg vs last 2 seasons avg)
-                let opsTrend = null;
-                if (regularSeasonStats.length >= 2) {
-                  const firstTwo = regularSeasonStats.slice(0, 2);
-                  const lastTwo = regularSeasonStats.slice(-2);
-                  const firstAvg = firstTwo.reduce((sum, s) => sum + (s.ops || 0), 0) / firstTwo.length;
-                  const lastAvg = lastTwo.reduce((sum, s) => sum + (s.ops || 0), 0) / lastTwo.length;
-                  if (firstAvg > 0) {
-                    opsTrend = ((lastAvg - firstAvg) / firstAvg) * 100;
-                  }
-                }
-                
-                // Calculate career AVG
-                const careerAvg = careerTotals?.avg || careerTotals?.batting_avg;
-                
-                return (
-                  <>
-                    <div className="pps-trend-chart-placeholder">
-                      {/* Stock-style chart placeholder - will be replaced with actual chart library */}
-                      <div className="pps-trend-chart-mock"></div>
-                      <div className="pps-trend-chart-labels">
-                        <span>{firstYear}</span>
-                        <span>{lastYear}</span>
-                      </div>
+                {/* Trend Insight */}
+                {recentFormStats.l7 && recentFormStats.season && (
+                  <div className="pps-trend-insight">
+                    <div className="pps-insight-item">
+                      <span className="pps-insight-label">
+                        L7 vs {recentFormStats.isPostseasonView ? 'Reg Szn' : 'Season'} AVG
+                      </span>
+                      <span className={`pps-insight-value ${recentFormStats.l7.avg >= recentFormStats.season.avg ? 'positive' : 'negative'}`}>
+                        {recentFormStats.l7.avg >= recentFormStats.season.avg ? '+' : ''}
+                        {((recentFormStats.l7.avg - recentFormStats.season.avg) * 1000).toFixed(0)} pts
+                      </span>
                     </div>
-                    <div className="pps-trend-summary">
-                      <div className="pps-trend-metric">
-                        <span className="pps-trend-metric-label">OPS Trend</span>
-                        <span className={`pps-trend-metric-value ${opsTrend !== null ? (opsTrend >= 0 ? 'positive' : 'negative') : ''}`}>
-                          {opsTrend !== null ? `${opsTrend >= 0 ? '+' : ''}${opsTrend.toFixed(1)}%` : '-'}
-                        </span>
-                      </div>
-                      <div className="pps-trend-metric">
-                        <span className="pps-trend-metric-label">Peak Season</span>
-                        <span className="pps-trend-metric-value">
-                          {peakOpsSeason?.season || peakOpsSeason?.year || '-'}
-                        </span>
-                      </div>
-                      <div className="pps-trend-metric">
-                        <span className="pps-trend-metric-label">Career AVG</span>
-                        <span className="pps-trend-metric-value">
-                          {careerAvg ? careerAvg.toFixed(3).replace(/^0/, '') : (careerTotalsLoading ? '...' : '-')}
-                        </span>
-                      </div>
+                    <div className="pps-insight-item">
+                      <span className="pps-insight-label">
+                        L7 vs {recentFormStats.isPostseasonView ? 'Reg Szn' : 'Season'} OPS
+                      </span>
+                      <span className={`pps-insight-value ${recentFormStats.l7.ops >= recentFormStats.season.ops ? 'positive' : 'negative'}`}>
+                        {recentFormStats.l7.ops >= recentFormStats.season.ops ? '+' : ''}
+                        {((recentFormStats.l7.ops - recentFormStats.season.ops) * 1000).toFixed(0)} pts
+                      </span>
                     </div>
-                  </>
-                );
-              })()}
-            </div>
+                    <div className="pps-insight-item">
+                      <span className="pps-insight-label">Hits/Game (L7)</span>
+                      <span className="pps-insight-value">
+                        {recentFormStats.l7.hitsPerGame.toFixed(2)}
+                      </span>
+                    </div>
+                    <div className="pps-insight-item">
+                      <span className="pps-insight-label">K Rate (L7)</span>
+                      <span className="pps-insight-value">
+                        {recentFormStats.l7.atBats > 0 
+                          ? ((recentFormStats.l7.strikeouts / recentFormStats.l7.atBats) * 100).toFixed(1) 
+                          : '0'}%
+                      </span>
+                    </div>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <div className="pps-no-data-placeholder">
+                <div className="pps-no-data-icon">📊</div>
+                <h3 className="pps-no-data-title">No Recent Form Data</h3>
+                <p className="pps-no-data-text">
+                  Game log data is needed to calculate recent form trends.
+                </p>
+              </div>
+            )}
           </section>
 
           {/* ========== SEASON STATS ========== */}
