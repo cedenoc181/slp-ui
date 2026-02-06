@@ -51,3 +51,138 @@ useEffect(() => {
     }
   }
 }, [post]);
+
+
+
+
+now we need to integrate the pitchers stats for the playerProfileStats page similar the way we layed out the batter stats, below are some samples of what each api will load :
+
+getPitcherCareerStats-
+
+  {
+    "season": 2025,
+    "season_type": "2",
+    "team_id": 19,
+    "team_name": "Orioles",
+    "team_abbreviation": "BAL",
+    "games_started": 27,
+    "wins": 9,
+    "losses": 11,
+    "era": 5.83,
+    "whip": 1.58,
+    "innings_pitched": 142,
+    "strikeouts": 149,
+    "walks": 72,
+    "earned_runs_allowed": 92,
+    "hits_allowed": 152,
+    "home_runs_allowed": 23,
+    "batters_faced": 654,
+    "opponent_avg": 0.273,
+    "opponent_ops": 0.83,
+    "k_per_9": 9.44,
+    "bb_per_9": 4.56,
+    "hr_per_9": 1.46,
+    "hits_per_9": 9.63,
+    "strikeout_walk_ratio": 2.07,
+    "win_percentage": 0.45,
+    "complete_games": 0,
+    "shutouts": 0
+  },
+
+  getPitcherCareerTotals-
+
+  {
+  "seasons_played": 16,
+  "first_season": 2010,
+  "last_season": 2025,
+  "games_started": 376,
+  "wins": 138,
+  "losses": 117,
+  "win_percentage": 0.541,
+  "era": 4.04,
+  "whip": 1.307,
+  "innings_pitched": 2096,
+  "strikeouts": 2086,
+  "walks": 778,
+  "earned_runs_allowed": 940,
+  "hits_allowed": 1961,
+  "home_runs_allowed": 210,
+  "batters_faced": 8994,
+  "k_per_9": 8.96,
+  "bb_per_9": 3.34,
+  "hr_per_9": 0.9,
+  "hits_per_9": 8.42,
+  "strikeout_walk_ratio": 2.68,
+  "complete_games": 2,
+  "shutouts": 1
+}
+
+getPitcherCurrentStats-
+
+{
+  "season": 2025,
+  "season_type": "2",
+  "team_id": 19,
+  "team_name": "Orioles",
+  "team_abbreviation": "BAL",
+  "games_started": 27,
+  "wins": 9,
+  "losses": 11,
+  "era": 5.83,
+  "whip": 1.58,
+  "innings_pitched": 142,
+  "strikeouts": 149,
+  "walks": 72,
+  "earned_runs_allowed": 92,
+  "hits_allowed": 152,
+  "home_runs_allowed": 23,
+  "batters_faced": 654,
+  "opponent_avg": 0.273,
+  "opponent_ops": 0.83,
+  "k_per_9": 9.44,
+  "bb_per_9": 4.56,
+  "hr_per_9": 1.46,
+  "hits_per_9": 9.63,
+  "strikeout_walk_ratio": 2.07,
+  "win_percentage": 0.45,
+  "complete_games": 0,
+  "shutouts": 0
+}
+
+getPitcherVsHandSplits-
+[
+  {
+    "season": 2025,
+    "season_type": "2",
+    "team_name": "Orioles",
+    "team_abbreviation": "BAL",
+    "vs_lhb": {
+      "avg": 0.257,
+      "ops": 0.814,
+      "whip": 1.55405405405405,
+      "tb_allowed": 124,
+      "rbis": 41,
+      "gdp": 3,
+      "k_per_9": 10.3378378378378,
+      "hr_per_9": 1.21621621621622,
+      "hits_per_9": 8.75675675675676,
+      "go_ao_ratio": 0.941176470588235
+    },
+    "vs_rhb": {
+      "avg": 0.289,
+      "ops": 0.846,
+      "whip": 1.635,
+      "tb_allowed": 134,
+      "rbis": 43,
+      "gdp": 7,
+      "k_per_9": 8.64,
+      "hr_per_9": 1.755,
+      "hits_per_9": 10.8,
+      "go_ao_ratio": 1.21666666666667
+    }
+  }
+]
+
+getPitcherHomeRoadSplits-
+
+getPitcherMonthlyPerformance-

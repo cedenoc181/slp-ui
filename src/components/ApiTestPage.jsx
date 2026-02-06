@@ -274,6 +274,13 @@ function ApiTestPage() {
         case 'getPitcherHomeRoadSplits':
           result = await testEndpoint('playerStats', 'getPitcherHomeRoadSplits', Number(selectedPlayerId), selectedSeason);
           break;
+        // Uses player.id only (career totals - no season)
+        case 'getPitcherVsHandSplitsCareerTotals':
+          result = await testEndpoint('playerStats', 'getPitcherVsHandSplitsCareerTotals', Number(selectedPlayerId));
+          break;
+        case 'getPitcherHomeRoadSplitsCareerTotals':
+          result = await testEndpoint('playerStats', 'getPitcherHomeRoadSplitsCareerTotals', Number(selectedPlayerId));
+          break;
         case 'getPitcherMonthlyPerformance':
           result = await testEndpoint('playerStats', 'getPitcherMonthlyPerformance', Number(selectedPlayerId), selectedSeason);
           break;
@@ -496,6 +503,8 @@ function ApiTestPage() {
               <option value="getPitcherCurrentStats">Get Pitcher Current Stats [player.id + season]</option>
               <option value="getPitcherVsHandSplits">Get Pitcher vs Hand Splits [player.id + season]</option>
               <option value="getPitcherHomeRoadSplits">Get Pitcher Home/Road Splits [player.id + season]</option>
+              <option value="getPitcherVsHandSplitsCareerTotals">Get Pitcher vs Hand Splits Career [player.id]</option>
+              <option value="getPitcherHomeRoadSplitsCareerTotals">Get Pitcher Home/Road Splits Career [player.id]</option>
               <option value="getPitcherMonthlyPerformance">Get Pitcher Monthly Performance [player.id + season]</option>
               <option value="getFullPlayerProfile">Get Full Player Profile [player.id + season]</option>
             </optgroup>
@@ -628,6 +637,8 @@ function ApiTestPage() {
               <strong>Player Profile - Pitcher Splits</strong>
               <code>/player-profile/{'{player_id}'}/pitcher/vs-hand-splits?season=Y</code>
               <code>/player-profile/{'{player_id}'}/pitcher/home-road-splits?season=Y</code>
+              <code>/player-profile/{'{player_id}'}/pitcher/vs-hand-splits-career-totals</code>
+              <code>/player-profile/{'{player_id}'}/pitcher/home-road-splits-career-totals</code>
             </div>
           </div>
         </div>

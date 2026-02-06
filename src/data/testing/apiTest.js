@@ -503,6 +503,28 @@ class ApiTester {
     }
   }
 
+  async testGetPitcherVsHandSplitsCareerTotals() {
+    try {
+      const data = await playerStatsService.getPitcherVsHandSplitsCareerTotals(this.testPlayerId);
+      this.logResult('getPitcherVsHandSplitsCareerTotals', true, data);
+      return data;
+    } catch (error) {
+      this.logResult('getPitcherVsHandSplitsCareerTotals', false, null, error);
+      return null;
+    }
+  }
+
+  async testGetPitcherHomeRoadSplitsCareerTotals() {
+    try {
+      const data = await playerStatsService.getPitcherHomeRoadSplitsCareerTotals(this.testPlayerId);
+      this.logResult('getPitcherHomeRoadSplitsCareerTotals', true, data);
+      return data;
+    } catch (error) {
+      this.logResult('getPitcherHomeRoadSplitsCareerTotals', false, null, error);
+      return null;
+    }
+  }
+
   async testGetBatterMonthlyPerformance() {
     try {
       const data = await playerStatsService.getBatterMonthlyPerformance(this.testPlayerId, this.testSeason);
@@ -615,6 +637,8 @@ class ApiTester {
     await this.testGetPitcherCurrentStats();
     await this.testGetPitcherVsHandSplits();
     await this.testGetPitcherHomeRoadSplits();
+    await this.testGetPitcherVsHandSplitsCareerTotals();
+    await this.testGetPitcherHomeRoadSplitsCareerTotals();
     await this.testGetBatterMonthlyPerformance();
     await this.testGetPitcherMonthlyPerformance();
     await this.testGetPlayerMonthlyPerformance();

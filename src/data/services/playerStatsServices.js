@@ -264,6 +264,26 @@ class PlayerStatsService {
     return await api.get(`/player-profile/${playerId}/pitcher/home-road-splits?${queryString}`);
   }
 
+  /**
+   * Get pitcher career totals for home vs road splits
+   * Sums counting stats (W, L, GS, IP, K, BB) and averages rate stats (ERA, WHIP, AVG, OPS) across all regular seasons
+   * @param {number} playerId - Internal player ID
+   * @returns {Promise<Object>} Career totals for at_home and on_road stats
+   */
+  async getPitcherHomeRoadSplitsCareerTotals(playerId) {
+    return await api.get(`/player-profile/${playerId}/pitcher/home-road-splits-career-totals`);
+  }
+
+  /**
+   * Get pitcher career totals for splits vs left-handed and right-handed batters
+   * Sums counting stats (TB, RBI, GDP) and averages rate stats (AVG, OPS, WHIP, K/9) across all regular seasons
+   * @param {number} playerId - Internal player ID
+   * @returns {Promise<Object>} Career totals for vs_lhb and vs_rhb stats
+   */
+  async getPitcherVsHandSplitsCareerTotals(playerId) {
+    return await api.get(`/player-profile/${playerId}/pitcher/vs-hand-splits-career-totals`);
+  }
+
   // ============================================================================
   // MONTHLY PERFORMANCE ENDPOINTS
   // ============================================================================
