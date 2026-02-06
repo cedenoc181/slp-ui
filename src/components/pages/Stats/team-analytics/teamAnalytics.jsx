@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
+import { useParams, useNavigate, useSearchParams, Link } from 'react-router-dom';
 
 // Import API Services
 import teamsService from '../../../../data/services/teamsService';
@@ -1337,18 +1337,33 @@ function TeamAnalytics() {
                     </tr>
                   </thead>
                   <tbody>
-                    {filteredRoster.map((player, idx) => (
-                      <tr key={player.id || idx}>
-                        <td className="player-number">{player.jersey_number || '-'}</td>
-                        <td className="player-name">{player.player_name || player.full_name || 'Unknown'}</td>
-                        <td className="player-position">
+                    {filteredRoster.map((player, idx) => {
+                      const playerSlug = player.name_slug || player.player_mlb_id;
+                      return (
+                        <tr key={player.id || idx}>
+                          <td className="player-number">{player.jersey_number || '-'}</td>
+                          <td className="player-name">
+                            {playerSlug ? (
+                              <Link 
+                                to={`/player/${playerSlug}?season=${selectedSeason}`} 
+                                className="player-profile-link"
+                                onClick={() => window.scrollTo(0, 0)}
+                              >
+                                {player.player_name || player.full_name || 'Unknown'}
+                              </Link>
+                            ) : (
+                              player.player_name || player.full_name || 'Unknown'
+                            )}
+                          </td>
+                          <td className="player-position">
                           <span className="position-badge">{player.position_abbreviation || player.position || '-'}</span>
                         </td>
-                        <td className="player-hands">
-                          {player.bats || '-'}/{player.throws || '-'}
-                        </td>
-                      </tr>
-                    ))}
+                          <td className="player-hands">
+                            {player.bats || '-'}/{player.throws || '-'}
+                          </td>
+                        </tr>
+                      );
+                    })}
                   </tbody>
                 </table>
               ) : (
