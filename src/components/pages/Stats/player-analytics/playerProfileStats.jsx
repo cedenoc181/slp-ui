@@ -197,8 +197,9 @@ function PlayerProfileStats() {
       
       setGameLogLoading(true);
       try {
-        const isPitcher = playerInfo.position === 'P' || playerInfo.position === 'SP' || playerInfo.position === 'RP';
-        const isTwoWay = playerInfo.position === 'TWP' || playerInfo.is_two_way;
+        const pos = playerInfo.position_abbreviation || playerInfo.position || playerInfo.primary_position;
+        const isPitcher = pos === 'P' || pos === 'SP' || pos === 'RP' || pos === 'Pitcher' || pos === 'Starting Pitcher' || pos === 'Relief Pitcher';
+        const isTwoWay = pos === 'TWP' || pos === 'Two-Way Player' || playerInfo.is_two_way;
         
         let response;
         if (isPitcher && !isTwoWay) {
@@ -238,8 +239,9 @@ function PlayerProfileStats() {
       
       setRecentFormLoading(true);
       try {
-        const isPitcher = playerInfo.position === 'P' || playerInfo.position === 'SP' || playerInfo.position === 'RP';
-        const isTwoWay = playerInfo.position === 'TWP' || playerInfo.is_two_way;
+        const pos = playerInfo.position_abbreviation || playerInfo.position || playerInfo.primary_position;
+        const isPitcher = pos === 'P' || pos === 'SP' || pos === 'RP' || pos === 'Pitcher' || pos === 'Starting Pitcher' || pos === 'Relief Pitcher';
+        const isTwoWay = pos === 'TWP' || pos === 'Two-Way Player' || playerInfo.is_two_way;
         
         let response;
         if (isPitcher && !isTwoWay) {
@@ -283,18 +285,23 @@ function PlayerProfileStats() {
       
       try {
         // Determine player type based on position
-        const isPitcher = playerInfo.position === 'P' || playerInfo.position === 'SP' || playerInfo.position === 'RP';
-        const isTwoWay = playerInfo.position === 'TWP' || playerInfo.is_two_way;
+        const pos = playerInfo.position_abbreviation || playerInfo.position || playerInfo.primary_position;
+        const isPitcher = pos === 'P' || pos === 'SP' || pos === 'RP' || pos === 'Pitcher' || pos === 'Starting Pitcher' || pos === 'Relief Pitcher';
+        const isTwoWay = pos === 'TWP' || pos === 'Two-Way Player' || playerInfo.is_two_way;
+        
+        console.log('Player type detection - position:', pos, 'isPitcher:', isPitcher, 'isTwoWay:', isTwoWay);
         
         // Fetch current season stats
         if (isPitcher && !isTwoWay) {
+          console.log('Fetching PITCHER stats...');
           const [current, career, vsHand, homeRoad, monthly] = await Promise.all([
-            playerStatsService.getPitcherCurrentStats(internalPlayerId, selectedSeason).catch(() => null),
-            playerStatsService.getPitcherCareerStats(internalPlayerId).catch(() => []),
-            playerStatsService.getPitcherVsHandSplits(internalPlayerId, selectedSeason).catch(() => []),
-            playerStatsService.getPitcherHomeRoadSplits(internalPlayerId, selectedSeason).catch(() => []),
-            playerStatsService.getPitcherMonthlyPerformance(internalPlayerId, selectedSeason).catch(() => null),
+            playerStatsService.getPitcherCurrentStats(internalPlayerId, selectedSeason).catch((e) => { console.error('getPitcherCurrentStats error:', e); return null; }),
+            playerStatsService.getPitcherCareerStats(internalPlayerId).catch((e) => { console.error('getPitcherCareerStats error:', e); return []; }),
+            playerStatsService.getPitcherVsHandSplits(internalPlayerId, selectedSeason).catch((e) => { console.error('getPitcherVsHandSplits error:', e); return []; }),
+            playerStatsService.getPitcherHomeRoadSplits(internalPlayerId, selectedSeason).catch((e) => { console.error('getPitcherHomeRoadSplits error:', e); return []; }),
+            playerStatsService.getPitcherMonthlyPerformance(internalPlayerId, selectedSeason).catch((e) => { console.error('getPitcherMonthlyPerformance error:', e); return null; }),
           ]);
+          console.log('Pitcher stats results - current:', current, 'career:', career, 'vsHand:', vsHand, 'homeRoad:', homeRoad, 'monthly:', monthly);
           setSeasonStats(current);
           setCareerStats(career);
           setVsHandSplits(vsHand);
@@ -328,6 +335,19 @@ function PlayerProfileStats() {
     fetchPlayerStats();
   }, [playerInfo, selectedSeason]);
 
+  // Helper to determine if player is a pitcher
+  const isPitcher = useMemo(() => {
+    if (!playerInfo) return false;
+    const pos = playerInfo.position_abbreviation || playerInfo.position || playerInfo.primary_position;
+    return pos === 'P' || pos === 'SP' || pos === 'RP' || pos === 'Pitcher' || pos === 'Starting Pitcher' || pos === 'Relief Pitcher';
+  }, [playerInfo]);
+
+  const isTwoWay = useMemo(() => {
+    if (!playerInfo) return false;
+    const pos = playerInfo.position_abbreviation || playerInfo.position || playerInfo.primary_position;
+    return pos === 'TWP' || pos === 'Two-Way Player' || playerInfo.is_two_way;
+  }, [playerInfo]);
+
   // Fetch career totals and career splits when Career tab is selected
   const handleCareerTabClick = useCallback(async () => {
     setActiveStatsTab('career');
@@ -335,8 +355,6 @@ function PlayerProfileStats() {
     if (!playerInfo?.id) return;
     
     const internalPlayerId = playerInfo.id;
-    const isPitcher = playerInfo.position === 'P' || playerInfo.position === 'SP' || playerInfo.position === 'RP';
-    const isTwoWay = playerInfo.position === 'TWP' || playerInfo.is_two_way;
     
     // Fetch career totals if not already loaded
     if (!careerTotals) {
@@ -357,14 +375,22 @@ function PlayerProfileStats() {
       }
     }
     
-    // Fetch career splits if not already loaded (batters only for now)
-    if (!vsHandSplitsCareer && !homeRoadSplitsCareer && !isPitcher) {
+    // Fetch career splits if not already loaded
+    if (!vsHandSplitsCareer && !homeRoadSplitsCareer) {
       setCareerSplitsLoading(true);
       try {
-        const [vsHandCareer, homeRoadCareer] = await Promise.all([
-          playerStatsService.getBatterVsHandSplitsCareerTotals(internalPlayerId).catch(() => null),
-          playerStatsService.getBatterHomeRoadSplitsCareerTotals(internalPlayerId).catch(() => null),
-        ]);
+        let vsHandCareer, homeRoadCareer;
+        if (isPitcher && !isTwoWay) {
+          [vsHandCareer, homeRoadCareer] = await Promise.all([
+            playerStatsService.getPitcherVsHandSplitsCareerTotals(internalPlayerId).catch(() => null),
+            playerStatsService.getPitcherHomeRoadSplitsCareerTotals(internalPlayerId).catch(() => null),
+          ]);
+        } else {
+          [vsHandCareer, homeRoadCareer] = await Promise.all([
+            playerStatsService.getBatterVsHandSplitsCareerTotals(internalPlayerId).catch(() => null),
+            playerStatsService.getBatterHomeRoadSplitsCareerTotals(internalPlayerId).catch(() => null),
+          ]);
+        }
         setVsHandSplitsCareer(vsHandCareer);
         setHomeRoadSplitsCareer(homeRoadCareer);
       } catch (err) {
@@ -373,7 +399,32 @@ function PlayerProfileStats() {
         setCareerSplitsLoading(false);
       }
     }
-  }, [playerInfo, careerTotals, vsHandSplitsCareer, homeRoadSplitsCareer]);
+  }, [playerInfo, careerTotals, vsHandSplitsCareer, homeRoadSplitsCareer, isPitcher, isTwoWay]);
+
+  // Get available seasons from career stats (only seasons the player has data for)
+  const availableSeasons = useMemo(() => {
+    if (!careerStats || careerStats.length === 0) {
+      // If no career stats loaded yet, show current year as fallback
+      return [new Date().getFullYear().toString()];
+    }
+    
+    // Extract unique seasons from career stats, filter for regular season only
+    const seasons = careerStats
+      .filter(s => s.season_type === 2 || s.season_type === '2' || s.season_type === 'R')
+      .map(s => String(s.season || s.year))
+      .filter((v, i, a) => a.indexOf(v) === i) // unique
+      .sort((a, b) => parseInt(b) - parseInt(a)); // descending (most recent first)
+    
+    return seasons.length > 0 ? seasons : [new Date().getFullYear().toString()];
+  }, [careerStats]);
+
+  // Auto-select the most recent available season when career stats load
+  useEffect(() => {
+    if (availableSeasons.length > 0 && !availableSeasons.includes(selectedSeason)) {
+      // Current selected season is not in available seasons, switch to most recent
+      setSelectedSeason(availableSeasons[0]);
+    }
+  }, [availableSeasons, selectedSeason]);
 
   // Calculate player age
   const playerAge = useMemo(() => {
@@ -405,8 +456,8 @@ function PlayerProfileStats() {
     return `https://img.mlbstatic.com/mlb-photos/image/upload/w_213,q_100/v1/people/${mlbId}/headshot/67/current`;
   }, []);
 
-  // Chart metric options and labels
-  const chartMetricOptions = {
+  // Chart metric options and labels - different for batters vs pitchers
+  const batterChartMetricOptions = {
     hr: { label: 'Home Runs', short: 'HR' },
     h: { label: 'Hits', short: 'H' },
     rbi: { label: 'RBIs', short: 'RBI' },
@@ -417,6 +468,41 @@ function PlayerProfileStats() {
     so: { label: 'Strikeouts', short: 'SO' }
   };
 
+  const pitcherChartMetricOptions = {
+    era: { label: 'ERA', short: 'ERA' },
+    whip: { label: 'WHIP', short: 'WHIP' },
+    so: { label: 'Strikeouts', short: 'K' },
+    wins: { label: 'Wins', short: 'W' },
+    ip: { label: 'Innings Pitched', short: 'IP' },
+    k_per_9: { label: 'K/9', short: 'K/9' },
+    bb_per_9: { label: 'BB/9', short: 'BB/9' },
+    quality_starts: { label: 'Quality Starts', short: 'QS' }
+  };
+
+  // Use appropriate chart options based on player type
+  const chartMetricOptions = useMemo(() => {
+    return (isPitcher && !isTwoWay) ? pitcherChartMetricOptions : batterChartMetricOptions;
+  }, [isPitcher, isTwoWay]);
+
+  // Get current metric safely - fallback to first available if selected doesn't exist
+  const currentChartMetric = useMemo(() => {
+    if (chartMetricOptions[selectedChartMetric]) {
+      return { key: selectedChartMetric, ...chartMetricOptions[selectedChartMetric] };
+    }
+    // Fallback to first available metric
+    const firstKey = Object.keys(chartMetricOptions)[0];
+    return { key: firstKey, ...chartMetricOptions[firstKey] };
+  }, [chartMetricOptions, selectedChartMetric]);
+
+  // Set default chart metric based on player type
+  useEffect(() => {
+    if (isPitcher && !isTwoWay) {
+      setSelectedChartMetric('era');
+    } else {
+      setSelectedChartMetric('hr');
+    }
+  }, [isPitcher, isTwoWay]);
+
   // Transform monthly performance API data into chart format
   const getMonthlyChartData = useMemo(() => {
     console.log('monthlyPerformance:', monthlyPerformance);
@@ -424,10 +510,10 @@ function PlayerProfileStats() {
     if (!monthlyPerformance) return {};
     
     // API returns data under 'monthly_stats' or 'batting' object with full month names
-    const battingData = monthlyPerformance.monthly_stats || monthlyPerformance.batting || monthlyPerformance;
-    console.log('battingData:', battingData);
+    const statsData = monthlyPerformance.monthly_stats || monthlyPerformance.batting || monthlyPerformance;
+    console.log('statsData:', statsData);
     
-    if (!battingData || typeof battingData !== 'object') return {};
+    if (!statsData || typeof statsData !== 'object') return {};
     
     // Month mapping: display label -> API key (full month name)
     const monthMapping = [
@@ -443,8 +529,9 @@ function PlayerProfileStats() {
     
     const result = {};
     
-    // Map chart metrics to API response field names
+    // Map chart metrics to API response field names - include both batter and pitcher fields
     const fieldMappings = {
+      // Batter fields
       hr: 'home_runs',
       h: 'hits',
       rbi: 'rbis',
@@ -452,13 +539,21 @@ function PlayerProfileStats() {
       avg: 'avg',
       ops: 'ops',
       bb: 'walks',
-      so: 'strikeouts'
+      so: 'strikeouts',
+      // Pitcher fields
+      era: 'era',
+      whip: 'whip',
+      wins: 'wins',
+      ip: 'innings_pitched',
+      k_per_9: 'k_per_9',
+      bb_per_9: 'bb_per_9',
+      quality_starts: 'quality_starts'
     };
     
     Object.entries(fieldMappings).forEach(([metric, apiField]) => {
       result[metric] = monthMapping
         .map(({ display, apiKey }) => {
-          const monthData = battingData[apiKey] || {};
+          const monthData = statsData[apiKey] || {};
           return {
             period: display,
             value: monthData[apiField] || 0
@@ -467,7 +562,7 @@ function PlayerProfileStats() {
         .filter(item => {
           // Include months that have data (any games played)
           const monthKey = monthMapping.find(m => m.display === item.period)?.apiKey;
-          const monthData = battingData[monthKey] || {};
+          const monthData = statsData[monthKey] || {};
           return monthData.games > 0;
         });
     });
@@ -488,10 +583,10 @@ function PlayerProfileStats() {
     if (regularSeasonStats.length === 0) return {};
     
     const result = {};
-    const metrics = ['hr', 'h', 'rbi', 'r', 'avg', 'ops', 'bb', 'so'];
     
-    // Map API response fields (may vary)
-    const fieldMappings = {
+    // Batter metrics
+    const batterMetrics = ['hr', 'h', 'rbi', 'r', 'avg', 'ops', 'bb', 'so'];
+    const batterFieldMappings = {
       hr: ['hr', 'home_runs', 'HR'],
       h: ['h', 'hits', 'H'],
       rbi: ['rbi', 'rbis', 'RBI'],
@@ -501,6 +596,22 @@ function PlayerProfileStats() {
       bb: ['bb', 'walks', 'BB', 'base_on_balls'],
       so: ['so', 'strikeouts', 'SO', 'strike_outs']
     };
+
+    // Pitcher metrics
+    const pitcherMetrics = ['era', 'whip', 'so', 'wins', 'ip', 'k_per_9', 'bb_per_9'];
+    const pitcherFieldMappings = {
+      era: ['era', 'ERA'],
+      whip: ['whip', 'WHIP'],
+      so: ['so', 'strikeouts', 'SO', 'strike_outs'],
+      wins: ['wins', 'w', 'W'],
+      ip: ['ip', 'innings_pitched', 'IP'],
+      k_per_9: ['k_per_9', 'k9', 'strikeouts_per_9'],
+      bb_per_9: ['bb_per_9', 'bb9', 'walks_per_9']
+    };
+
+    // Determine which metrics to use based on player type
+    const metrics = (isPitcher && !isTwoWay) ? pitcherMetrics : batterMetrics;
+    const fieldMappings = (isPitcher && !isTwoWay) ? pitcherFieldMappings : batterFieldMappings;
     
     metrics.forEach(metric => {
       result[metric] = regularSeasonStats
@@ -522,9 +633,9 @@ function PlayerProfileStats() {
     });
     
     return result;
-  }, [careerStats]);
+  }, [careerStats, isPitcher, isTwoWay]);
 
-  // Calculate recent form stats from game log (L7, L15, L30 rolling averages)
+  // Calculate recent form stats from game log (L5, L10, L30 rolling averages for pitchers OR L7, L15, L30 for batters)
   // For postseason/spring training, still compare against regular season baseline
   // Uses its own recentFormGameLog (independent from Game Log section)
   const recentFormStats = useMemo(() => {
@@ -533,6 +644,118 @@ function PlayerProfileStats() {
     // Sort games by date (most recent first)
     const sortedGames = [...recentFormGameLog].sort((a, b) => new Date(b.date) - new Date(a.date));
     
+    // ========== PITCHER STATS CALCULATION ==========
+    if (isPitcher && !isTwoWay) {
+      const calculatePitcherRollingStats = (games) => {
+        if (games.length === 0) return null;
+        
+        const totals = games.reduce((acc, g) => ({
+          inningsPitched: acc.inningsPitched + (g.innings_pitched || 0),
+          strikeouts: acc.strikeouts + (g.strikeouts || 0),
+          walks: acc.walks + (g.walks || 0),
+          earnedRuns: acc.earnedRuns + (g.earned_runs || 0),
+          hitsAllowed: acc.hitsAllowed + (g.hits_allowed || 0),
+          homeRunsAllowed: acc.homeRunsAllowed + (g.home_runs_allowed || 0),
+          wins: acc.wins + (g.win ? 1 : 0),
+          losses: acc.losses + (g.loss ? 1 : 0),
+          qualityStarts: acc.qualityStarts + (g.quality_start ? 1 : 0),
+          games: acc.games + 1,
+        }), { inningsPitched: 0, strikeouts: 0, walks: 0, earnedRuns: 0, hitsAllowed: 0, homeRunsAllowed: 0, wins: 0, losses: 0, qualityStarts: 0, games: 0 });
+        
+        const era = totals.inningsPitched > 0 ? (totals.earnedRuns / totals.inningsPitched) * 9 : 0;
+        const whip = totals.inningsPitched > 0 ? (totals.walks + totals.hitsAllowed) / totals.inningsPitched : 0;
+        const kPer9 = totals.inningsPitched > 0 ? (totals.strikeouts / totals.inningsPitched) * 9 : 0;
+        const bbPer9 = totals.inningsPitched > 0 ? (totals.walks / totals.inningsPitched) * 9 : 0;
+        
+        return {
+          ...totals,
+          era,
+          whip,
+          kPer9,
+          bbPer9,
+          kPerGame: totals.strikeouts / totals.games,
+          ipPerGame: totals.inningsPitched / totals.games,
+        };
+      };
+      
+      // Calculate quality start streak
+      let qualityStartStreak = 0;
+      for (const game of sortedGames) {
+        if (game.quality_start || (game.innings_pitched >= 6 && game.earned_runs <= 3)) {
+          qualityStartStreak++;
+        } else {
+          break;
+        }
+      }
+      
+      // Count quality starts in last 10
+      const last10 = sortedGames.slice(0, 10);
+      const qualityStartsL10 = last10.filter(g => g.quality_start || (g.innings_pitched >= 6 && g.earned_runs <= 3)).length;
+      
+      // Calculate L5, L10, L30 for pitchers
+      const l5 = calculatePitcherRollingStats(sortedGames.slice(0, 5));
+      const l10 = calculatePitcherRollingStats(sortedGames.slice(0, 10));
+      const l30 = calculatePitcherRollingStats(sortedGames.slice(0, 30));
+      
+      // Season baseline for pitchers
+      let season = null;
+      if (recentFormSeasonType === 'R') {
+        season = calculatePitcherRollingStats(sortedGames);
+      } else if (seasonStats) {
+        const gs = seasonStats.games_started || seasonStats.gs || 0;
+        const ip = seasonStats.innings_pitched || seasonStats.ip || 0;
+        const era = seasonStats.era || 0;
+        const whip = seasonStats.whip || 0;
+        const strikeouts = seasonStats.strikeouts || seasonStats.so || 0;
+        const walks = seasonStats.walks || seasonStats.bb || 0;
+        
+        season = {
+          games: gs,
+          inningsPitched: ip,
+          strikeouts,
+          walks,
+          earnedRuns: seasonStats.earned_runs_allowed || 0,
+          hitsAllowed: seasonStats.hits_allowed || 0,
+          homeRunsAllowed: seasonStats.home_runs_allowed || 0,
+          wins: seasonStats.wins || 0,
+          losses: seasonStats.losses || 0,
+          era,
+          whip,
+          kPer9: seasonStats.k_per_9 || 0,
+          bbPer9: seasonStats.bb_per_9 || 0,
+          kPerGame: gs > 0 ? strikeouts / gs : 0,
+          ipPerGame: gs > 0 ? ip / gs : 0,
+          isRegularSeasonBaseline: true,
+        };
+      }
+      
+      // Determine hot/cold status for pitchers (ERA-based)
+      let formStatus = 'neutral';
+      if (l5 && season && season.era > 0) {
+        // For ERA, lower is better, so we invert the comparison
+        const eraDiff = ((season.era - l5.era) / season.era) * 100;
+        if (eraDiff >= 20) formStatus = 'hot'; // ERA much lower than season avg
+        else if (eraDiff <= -20) formStatus = 'cold'; // ERA much higher than season avg
+        else if (eraDiff >= 10) formStatus = 'warming';
+        else if (eraDiff <= -10) formStatus = 'cooling';
+      }
+      
+      return {
+        l5,
+        l10,
+        l30,
+        season,
+        qualityStartStreak,
+        qualityStartsL10,
+        formStatus,
+        gamesPlayed: sortedGames.length,
+        lastGameDate: sortedGames[0]?.date,
+        isPostseasonView: recentFormSeasonType !== 'R',
+        isPitcher: true,
+      };
+    }
+    
+    // ========== BATTER STATS CALCULATION ==========
     // Calculate rolling averages for different windows
     const calculateRollingStats = (games) => {
       if (games.length === 0) return null;
@@ -659,15 +882,17 @@ function PlayerProfileStats() {
       gamesPlayed: sortedGames.length,
       lastGameDate: sortedGames[0]?.date,
       isPostseasonView: recentFormSeasonType !== 'R',
+      isPitcher: false,
     };
-  }, [recentFormGameLog, recentFormSeasonType, seasonStats]);
+  }, [recentFormGameLog, recentFormSeasonType, seasonStats, isPitcher, isTwoWay]);
 
   // Get the current chart data based on view mode
   const getChartData = () => {
+    const metricKey = currentChartMetric.key;
     if (activeStatsTab === 'career') {
-      return getYearlyChartData[selectedChartMetric] || [];
+      return getYearlyChartData[metricKey] || [];
     }
-    return getMonthlyChartData[selectedChartMetric] || [];
+    return getMonthlyChartData[metricKey] || [];
   };
 
   // Get max value for scaling bars
@@ -678,10 +903,17 @@ function PlayerProfileStats() {
 
   // Format value for display
   const formatChartValue = (value) => {
-    if (selectedChartMetric === 'avg' || selectedChartMetric === 'ops') {
+    const metricKey = currentChartMetric.key;
+    if (metricKey === 'avg' || metricKey === 'ops') {
       return value.toFixed(3).replace(/^0/, '');
     }
-    return value;
+    if (metricKey === 'era' || metricKey === 'whip' || metricKey === 'k_per_9' || metricKey === 'bb_per_9') {
+      return value.toFixed(2);
+    }
+    if (metricKey === 'ip') {
+      return value.toFixed(1);
+    }
+    return Math.round(value);
   };
 
   if (playerLoading) {
@@ -827,149 +1059,279 @@ function PlayerProfileStats() {
               <div className="pps-stats-loading">Loading recent form data...</div>
             ) : recentFormStats ? (
               <div className="pps-recent-form-content">
-                {/* Streak Indicators */}
-                <div className="pps-streak-row">
-                  <div className="pps-streak-card">
-                    <span className="pps-streak-value">{recentFormStats.hittingStreak}</span>
-                    <span className="pps-streak-label">Game Hit Streak</span>
+                {/* Streak Indicators - Different for pitchers vs batters */}
+                {recentFormStats.isPitcher ? (
+                  <div className="pps-streak-row">
+                    <div className="pps-streak-card">
+                      <span className="pps-streak-value">{recentFormStats.qualityStartStreak}</span>
+                      <span className="pps-streak-label">QS Streak</span>
+                    </div>
+                    <div className="pps-streak-card">
+                      <span className="pps-streak-value">{recentFormStats.qualityStartsL10}</span>
+                      <span className="pps-streak-label">Quality Starts (L10)</span>
+                    </div>
+                    <div className="pps-streak-card">
+                      <span className="pps-streak-value">{recentFormStats.gamesPlayed}</span>
+                      <span className="pps-streak-label">Games Started</span>
+                    </div>
                   </div>
-                  <div className="pps-streak-card">
-                    <span className="pps-streak-value">{recentFormStats.multiHitGamesL15}</span>
-                    <span className="pps-streak-label">Multi-Hit Games (L15)</span>
+                ) : (
+                  <div className="pps-streak-row">
+                    <div className="pps-streak-card">
+                      <span className="pps-streak-value">{recentFormStats.hittingStreak}</span>
+                      <span className="pps-streak-label">Game Hit Streak</span>
+                    </div>
+                    <div className="pps-streak-card">
+                      <span className="pps-streak-value">{recentFormStats.multiHitGamesL15}</span>
+                      <span className="pps-streak-label">Multi-Hit Games (L15)</span>
+                    </div>
+                    <div className="pps-streak-card">
+                      <span className="pps-streak-value">{recentFormStats.gamesPlayed}</span>
+                      <span className="pps-streak-label">Games Played</span>
+                    </div>
                   </div>
-                  <div className="pps-streak-card">
-                    <span className="pps-streak-value">{recentFormStats.gamesPlayed}</span>
-                    <span className="pps-streak-label">Games Played</span>
-                  </div>
-                </div>
+                )}
                 
-                {/* Rolling Averages Comparison Table */}
+                {/* Rolling Averages Comparison Table - Different for pitchers vs batters */}
                 <div className="pps-rolling-table-wrapper">
-                  <table className="pps-rolling-table">
-                    <thead>
-                      <tr>
-                        <th>Split</th>
-                        <th>G</th>
-                        <th>AVG</th>
-                        <th>OPS</th>
-                        <th>H</th>
-                        <th>HR</th>
-                        <th>RBI</th>
-                        <th>BB</th>
-                        <th>SO</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {/* Last 7 Games */}
-                      {recentFormStats.l7 && (
-                        <tr className="pps-rolling-row l7">
-                          <td className="pps-split-label-cell">Last 7</td>
-                          <td>{recentFormStats.l7.games}</td>
-                          <td className={recentFormStats.l7.avg > (recentFormStats.season?.avg || 0) ? 'pps-above' : recentFormStats.l7.avg < (recentFormStats.season?.avg || 0) ? 'pps-below' : ''}>
-                            {recentFormStats.l7.avg.toFixed(3).replace(/^0/, '')}
-                          </td>
-                          <td className={recentFormStats.l7.ops > (recentFormStats.season?.ops || 0) ? 'pps-above' : recentFormStats.l7.ops < (recentFormStats.season?.ops || 0) ? 'pps-below' : ''}>
-                            {recentFormStats.l7.ops.toFixed(3)}
-                          </td>
-                          <td>{recentFormStats.l7.hits}</td>
-                          <td>{recentFormStats.l7.homeRuns}</td>
-                          <td>{recentFormStats.l7.rbis}</td>
-                          <td>{recentFormStats.l7.walks}</td>
-                          <td>{recentFormStats.l7.strikeouts}</td>
+                  {recentFormStats.isPitcher ? (
+                    /* Pitcher Rolling Stats Table */
+                    <table className="pps-rolling-table">
+                      <thead>
+                        <tr>
+                          <th>Split</th>
+                          <th>GS</th>
+                          <th>ERA</th>
+                          <th>WHIP</th>
+                          <th>IP</th>
+                          <th>K</th>
+                          <th>BB</th>
+                          <th>K/9</th>
+                          <th>W</th>
                         </tr>
-                      )}
-                      {/* Last 15 Games */}
-                      {recentFormStats.l15 && (
-                        <tr className="pps-rolling-row l15">
-                          <td className="pps-split-label-cell">Last 15</td>
-                          <td>{recentFormStats.l15.games}</td>
-                          <td className={recentFormStats.l15.avg > (recentFormStats.season?.avg || 0) ? 'pps-above' : recentFormStats.l15.avg < (recentFormStats.season?.avg || 0) ? 'pps-below' : ''}>
-                            {recentFormStats.l15.avg.toFixed(3).replace(/^0/, '')}
-                          </td>
-                          <td className={recentFormStats.l15.ops > (recentFormStats.season?.ops || 0) ? 'pps-above' : recentFormStats.l15.ops < (recentFormStats.season?.ops || 0) ? 'pps-below' : ''}>
-                            {recentFormStats.l15.ops.toFixed(3)}
-                          </td>
-                          <td>{recentFormStats.l15.hits}</td>
-                          <td>{recentFormStats.l15.homeRuns}</td>
-                          <td>{recentFormStats.l15.rbis}</td>
-                          <td>{recentFormStats.l15.walks}</td>
-                          <td>{recentFormStats.l15.strikeouts}</td>
+                      </thead>
+                      <tbody>
+                        {/* Last 5 Starts */}
+                        {recentFormStats.l5 && (
+                          <tr className="pps-rolling-row l7">
+                            <td className="pps-split-label-cell">Last 5</td>
+                            <td>{recentFormStats.l5.games}</td>
+                            <td className={recentFormStats.l5.era < (recentFormStats.season?.era || 99) ? 'pps-above' : recentFormStats.l5.era > (recentFormStats.season?.era || 0) ? 'pps-below' : ''}>
+                              {recentFormStats.l5.era.toFixed(2)}
+                            </td>
+                            <td className={recentFormStats.l5.whip < (recentFormStats.season?.whip || 99) ? 'pps-above' : recentFormStats.l5.whip > (recentFormStats.season?.whip || 0) ? 'pps-below' : ''}>
+                              {recentFormStats.l5.whip.toFixed(2)}
+                            </td>
+                            <td>{recentFormStats.l5.inningsPitched.toFixed(1)}</td>
+                            <td>{recentFormStats.l5.strikeouts}</td>
+                            <td>{recentFormStats.l5.walks}</td>
+                            <td>{recentFormStats.l5.kPer9.toFixed(2)}</td>
+                            <td>{recentFormStats.l5.wins}</td>
+                          </tr>
+                        )}
+                        {/* Last 10 Starts */}
+                        {recentFormStats.l10 && (
+                          <tr className="pps-rolling-row l15">
+                            <td className="pps-split-label-cell">Last 10</td>
+                            <td>{recentFormStats.l10.games}</td>
+                            <td className={recentFormStats.l10.era < (recentFormStats.season?.era || 99) ? 'pps-above' : recentFormStats.l10.era > (recentFormStats.season?.era || 0) ? 'pps-below' : ''}>
+                              {recentFormStats.l10.era.toFixed(2)}
+                            </td>
+                            <td className={recentFormStats.l10.whip < (recentFormStats.season?.whip || 99) ? 'pps-above' : recentFormStats.l10.whip > (recentFormStats.season?.whip || 0) ? 'pps-below' : ''}>
+                              {recentFormStats.l10.whip.toFixed(2)}
+                            </td>
+                            <td>{recentFormStats.l10.inningsPitched.toFixed(1)}</td>
+                            <td>{recentFormStats.l10.strikeouts}</td>
+                            <td>{recentFormStats.l10.walks}</td>
+                            <td>{recentFormStats.l10.kPer9.toFixed(2)}</td>
+                            <td>{recentFormStats.l10.wins}</td>
+                          </tr>
+                        )}
+                        {/* Season Totals */}
+                        {recentFormStats.season && (
+                          <tr className="pps-rolling-row season">
+                            <td className="pps-split-label-cell">
+                              {recentFormStats.isPostseasonView ? 'Reg Season' : 'Season'}
+                            </td>
+                            <td>{recentFormStats.season.games}</td>
+                            <td>{recentFormStats.season.era.toFixed(2)}</td>
+                            <td>{recentFormStats.season.whip.toFixed(2)}</td>
+                            <td>{recentFormStats.season.inningsPitched.toFixed(1)}</td>
+                            <td>{recentFormStats.season.strikeouts}</td>
+                            <td>{recentFormStats.season.walks}</td>
+                            <td>{recentFormStats.season.kPer9.toFixed(2)}</td>
+                            <td>{recentFormStats.season.wins}</td>
+                          </tr>
+                        )}
+                      </tbody>
+                    </table>
+                  ) : (
+                    /* Batter Rolling Stats Table */
+                    <table className="pps-rolling-table">
+                      <thead>
+                        <tr>
+                          <th>Split</th>
+                          <th>G</th>
+                          <th>AVG</th>
+                          <th>OPS</th>
+                          <th>H</th>
+                          <th>HR</th>
+                          <th>RBI</th>
+                          <th>BB</th>
+                          <th>SO</th>
                         </tr>
-                      )}
-                      {/* Last 30 Games */}
-                      {recentFormStats.l30 && recentFormStats.l30.games >= 20 && (
-                        <tr className="pps-rolling-row l30">
-                          <td className="pps-split-label-cell">Last 30</td>
-                          <td>{recentFormStats.l30.games}</td>
-                          <td className={recentFormStats.l30.avg > (recentFormStats.season?.avg || 0) ? 'pps-above' : recentFormStats.l30.avg < (recentFormStats.season?.avg || 0) ? 'pps-below' : ''}>
-                            {recentFormStats.l30.avg.toFixed(3).replace(/^0/, '')}
-                          </td>
-                          <td className={recentFormStats.l30.ops > (recentFormStats.season?.ops || 0) ? 'pps-above' : recentFormStats.l30.ops < (recentFormStats.season?.ops || 0) ? 'pps-below' : ''}>
-                            {recentFormStats.l30.ops.toFixed(3)}
-                          </td>
-                          <td>{recentFormStats.l30.hits}</td>
-                          <td>{recentFormStats.l30.homeRuns}</td>
-                          <td>{recentFormStats.l30.rbis}</td>
-                          <td>{recentFormStats.l30.walks}</td>
-                          <td>{recentFormStats.l30.strikeouts}</td>
-                        </tr>
-                      )}
-                      {/* Season Totals (Regular Season baseline for postseason/spring comparisons) */}
-                      {recentFormStats.season && (
-                        <tr className="pps-rolling-row season">
-                          <td className="pps-split-label-cell">
-                            {recentFormStats.isPostseasonView ? 'Reg Season' : 'Season'}
-                          </td>
-                          <td>{recentFormStats.season.games}</td>
-                          <td>{recentFormStats.season.avg.toFixed(3).replace(/^0/, '')}</td>
-                          <td>{recentFormStats.season.ops.toFixed(3)}</td>
-                          <td>{recentFormStats.season.hits}</td>
-                          <td>{recentFormStats.season.homeRuns}</td>
-                          <td>{recentFormStats.season.rbis}</td>
-                          <td>{recentFormStats.season.walks}</td>
-                          <td>{recentFormStats.season.strikeouts}</td>
-                        </tr>
-                      )}
-                    </tbody>
-                  </table>
+                      </thead>
+                      <tbody>
+                        {/* Last 7 Games */}
+                        {recentFormStats.l7 && (
+                          <tr className="pps-rolling-row l7">
+                            <td className="pps-split-label-cell">Last 7</td>
+                            <td>{recentFormStats.l7.games}</td>
+                            <td className={recentFormStats.l7.avg > (recentFormStats.season?.avg || 0) ? 'pps-above' : recentFormStats.l7.avg < (recentFormStats.season?.avg || 0) ? 'pps-below' : ''}>
+                              {recentFormStats.l7.avg.toFixed(3).replace(/^0/, '')}
+                            </td>
+                            <td className={recentFormStats.l7.ops > (recentFormStats.season?.ops || 0) ? 'pps-above' : recentFormStats.l7.ops < (recentFormStats.season?.ops || 0) ? 'pps-below' : ''}>
+                              {recentFormStats.l7.ops.toFixed(3)}
+                            </td>
+                            <td>{recentFormStats.l7.hits}</td>
+                            <td>{recentFormStats.l7.homeRuns}</td>
+                            <td>{recentFormStats.l7.rbis}</td>
+                            <td>{recentFormStats.l7.walks}</td>
+                            <td>{recentFormStats.l7.strikeouts}</td>
+                          </tr>
+                        )}
+                        {/* Last 15 Games */}
+                        {recentFormStats.l15 && (
+                          <tr className="pps-rolling-row l15">
+                            <td className="pps-split-label-cell">Last 15</td>
+                            <td>{recentFormStats.l15.games}</td>
+                            <td className={recentFormStats.l15.avg > (recentFormStats.season?.avg || 0) ? 'pps-above' : recentFormStats.l15.avg < (recentFormStats.season?.avg || 0) ? 'pps-below' : ''}>
+                              {recentFormStats.l15.avg.toFixed(3).replace(/^0/, '')}
+                            </td>
+                            <td className={recentFormStats.l15.ops > (recentFormStats.season?.ops || 0) ? 'pps-above' : recentFormStats.l15.ops < (recentFormStats.season?.ops || 0) ? 'pps-below' : ''}>
+                              {recentFormStats.l15.ops.toFixed(3)}
+                            </td>
+                            <td>{recentFormStats.l15.hits}</td>
+                            <td>{recentFormStats.l15.homeRuns}</td>
+                            <td>{recentFormStats.l15.rbis}</td>
+                            <td>{recentFormStats.l15.walks}</td>
+                            <td>{recentFormStats.l15.strikeouts}</td>
+                          </tr>
+                        )}
+                        {/* Last 30 Games */}
+                        {recentFormStats.l30 && recentFormStats.l30.games >= 20 && (
+                          <tr className="pps-rolling-row l30">
+                            <td className="pps-split-label-cell">Last 30</td>
+                            <td>{recentFormStats.l30.games}</td>
+                            <td className={recentFormStats.l30.avg > (recentFormStats.season?.avg || 0) ? 'pps-above' : recentFormStats.l30.avg < (recentFormStats.season?.avg || 0) ? 'pps-below' : ''}>
+                              {recentFormStats.l30.avg.toFixed(3).replace(/^0/, '')}
+                            </td>
+                            <td className={recentFormStats.l30.ops > (recentFormStats.season?.ops || 0) ? 'pps-above' : recentFormStats.l30.ops < (recentFormStats.season?.ops || 0) ? 'pps-below' : ''}>
+                              {recentFormStats.l30.ops.toFixed(3)}
+                            </td>
+                            <td>{recentFormStats.l30.hits}</td>
+                            <td>{recentFormStats.l30.homeRuns}</td>
+                            <td>{recentFormStats.l30.rbis}</td>
+                            <td>{recentFormStats.l30.walks}</td>
+                            <td>{recentFormStats.l30.strikeouts}</td>
+                          </tr>
+                        )}
+                        {/* Season Totals (Regular Season baseline for postseason/spring comparisons) */}
+                        {recentFormStats.season && (
+                          <tr className="pps-rolling-row season">
+                            <td className="pps-split-label-cell">
+                              {recentFormStats.isPostseasonView ? 'Reg Season' : 'Season'}
+                            </td>
+                            <td>{recentFormStats.season.games}</td>
+                            <td>{recentFormStats.season.avg.toFixed(3).replace(/^0/, '')}</td>
+                            <td>{recentFormStats.season.ops.toFixed(3)}</td>
+                            <td>{recentFormStats.season.hits}</td>
+                            <td>{recentFormStats.season.homeRuns}</td>
+                            <td>{recentFormStats.season.rbis}</td>
+                            <td>{recentFormStats.season.walks}</td>
+                            <td>{recentFormStats.season.strikeouts}</td>
+                          </tr>
+                        )}
+                      </tbody>
+                    </table>
+                  )}
                 </div>
                 
-                {/* Trend Insight */}
-                {recentFormStats.l7 && recentFormStats.season && (
-                  <div className="pps-trend-insight">
-                    <div className="pps-insight-item">
-                      <span className="pps-insight-label">
-                        L7 vs {recentFormStats.isPostseasonView ? 'Reg Szn' : 'Season'} AVG
-                      </span>
-                      <span className={`pps-insight-value ${recentFormStats.l7.avg >= recentFormStats.season.avg ? 'positive' : 'negative'}`}>
-                        {recentFormStats.l7.avg >= recentFormStats.season.avg ? '+' : ''}
-                        {((recentFormStats.l7.avg - recentFormStats.season.avg) * 1000).toFixed(0)} pts
-                      </span>
+                {/* Trend Insight - Different for pitchers vs batters */}
+                {recentFormStats.isPitcher ? (
+                  /* Pitcher Trend Insights */
+                  recentFormStats.l5 && recentFormStats.season && (
+                    <div className="pps-trend-insight">
+                      <div className="pps-insight-item">
+                        <span className="pps-insight-label">
+                          L5 vs {recentFormStats.isPostseasonView ? 'Reg Szn' : 'Season'} ERA
+                        </span>
+                        <span className={`pps-insight-value ${recentFormStats.l5.era <= recentFormStats.season.era ? 'positive' : 'negative'}`}>
+                          {recentFormStats.l5.era <= recentFormStats.season.era ? '' : '+'}
+                          {(recentFormStats.l5.era - recentFormStats.season.era).toFixed(2)}
+                        </span>
+                      </div>
+                      <div className="pps-insight-item">
+                        <span className="pps-insight-label">
+                          L5 vs {recentFormStats.isPostseasonView ? 'Reg Szn' : 'Season'} WHIP
+                        </span>
+                        <span className={`pps-insight-value ${recentFormStats.l5.whip <= recentFormStats.season.whip ? 'positive' : 'negative'}`}>
+                          {recentFormStats.l5.whip <= recentFormStats.season.whip ? '' : '+'}
+                          {(recentFormStats.l5.whip - recentFormStats.season.whip).toFixed(2)}
+                        </span>
+                      </div>
+                      <div className="pps-insight-item">
+                        <span className="pps-insight-label">K/Game (L5)</span>
+                        <span className="pps-insight-value">
+                          {recentFormStats.l5.kPerGame.toFixed(1)}
+                        </span>
+                      </div>
+                      <div className="pps-insight-item">
+                        <span className="pps-insight-label">IP/Game (L5)</span>
+                        <span className="pps-insight-value">
+                          {recentFormStats.l5.ipPerGame.toFixed(1)}
+                        </span>
+                      </div>
                     </div>
-                    <div className="pps-insight-item">
-                      <span className="pps-insight-label">
-                        L7 vs {recentFormStats.isPostseasonView ? 'Reg Szn' : 'Season'} OPS
-                      </span>
-                      <span className={`pps-insight-value ${recentFormStats.l7.ops >= recentFormStats.season.ops ? 'positive' : 'negative'}`}>
-                        {recentFormStats.l7.ops >= recentFormStats.season.ops ? '+' : ''}
-                        {((recentFormStats.l7.ops - recentFormStats.season.ops) * 1000).toFixed(0)} pts
-                      </span>
+                  )
+                ) : (
+                  /* Batter Trend Insights */
+                  recentFormStats.l7 && recentFormStats.season && (
+                    <div className="pps-trend-insight">
+                      <div className="pps-insight-item">
+                        <span className="pps-insight-label">
+                          L7 vs {recentFormStats.isPostseasonView ? 'Reg Szn' : 'Season'} AVG
+                        </span>
+                        <span className={`pps-insight-value ${recentFormStats.l7.avg >= recentFormStats.season.avg ? 'positive' : 'negative'}`}>
+                          {recentFormStats.l7.avg >= recentFormStats.season.avg ? '+' : ''}
+                          {((recentFormStats.l7.avg - recentFormStats.season.avg) * 1000).toFixed(0)} pts
+                        </span>
+                      </div>
+                      <div className="pps-insight-item">
+                        <span className="pps-insight-label">
+                          L7 vs {recentFormStats.isPostseasonView ? 'Reg Szn' : 'Season'} OPS
+                        </span>
+                        <span className={`pps-insight-value ${recentFormStats.l7.ops >= recentFormStats.season.ops ? 'positive' : 'negative'}`}>
+                          {recentFormStats.l7.ops >= recentFormStats.season.ops ? '+' : ''}
+                          {((recentFormStats.l7.ops - recentFormStats.season.ops) * 1000).toFixed(0)} pts
+                        </span>
+                      </div>
+                      <div className="pps-insight-item">
+                        <span className="pps-insight-label">Hits/Game (L7)</span>
+                        <span className="pps-insight-value">
+                          {recentFormStats.l7.hitsPerGame.toFixed(2)}
+                        </span>
+                      </div>
+                      <div className="pps-insight-item">
+                        <span className="pps-insight-label">K Rate (L7)</span>
+                        <span className="pps-insight-value">
+                          {recentFormStats.l7.atBats > 0 
+                            ? ((recentFormStats.l7.strikeouts / recentFormStats.l7.atBats) * 100).toFixed(1) 
+                            : '0'}%
+                        </span>
+                      </div>
                     </div>
-                    <div className="pps-insight-item">
-                      <span className="pps-insight-label">Hits/Game (L7)</span>
-                      <span className="pps-insight-value">
-                        {recentFormStats.l7.hitsPerGame.toFixed(2)}
-                      </span>
-                    </div>
-                    <div className="pps-insight-item">
-                      <span className="pps-insight-label">K Rate (L7)</span>
-                      <span className="pps-insight-value">
-                        {recentFormStats.l7.atBats > 0 
-                          ? ((recentFormStats.l7.strikeouts / recentFormStats.l7.atBats) * 100).toFixed(1) 
-                          : '0'}%
-                      </span>
-                    </div>
-                  </div>
+                  )
                 )}
               </div>
             ) : (
@@ -1002,7 +1364,7 @@ function PlayerProfileStats() {
                 </button>
                 {seasonDropdownOpen && (
                   <div className="pps-dropdown-menu">
-                    {SEASONS.filter(season => season !== selectedSeason).map((season) => (
+                    {availableSeasons.filter(season => season !== selectedSeason).map((season) => (
                       <button
                         key={season}
                         className="pps-dropdown-item"
@@ -1027,115 +1389,193 @@ function PlayerProfileStats() {
             </div>
             
             <div className="pps-stats-grid">
-              {/* Batting Stats Card */}
-              <div className="pps-stats-card">
-                <h3 className="pps-stats-card-title">Batting</h3>
-                {(statsLoading || (activeStatsTab === 'career' && careerTotalsLoading)) ? (
-                  <div className="pps-stats-loading">Loading stats...</div>
-                ) : (activeStatsTab === 'career' ? careerTotals : seasonStats) ? (
-                  <div className="pps-stats-table">
-                    <div className="pps-stat-row header">
-                      <span>G</span>
-                      <span>AB</span>
-                      <span>H</span>
-                      <span>HR</span>
-                      <span>RBI</span>
-                      <span>R</span>
-                      <span>AVG</span>
-                      <span>OPS</span>
-                    </div>
-                    <div className="pps-stat-row values">
-                      {(() => {
-                        const stats = activeStatsTab === 'career' ? careerTotals : seasonStats;
-                        return (
-                          <>
-                            <span>{stats.g || stats.games_played || '-'}</span>
-                            <span>{stats.ab || stats.at_bats || '-'}</span>
-                            <span>{stats.h || stats.hits || '-'}</span>
-                            <span className="pps-highlight">{stats.hr || stats.home_runs || '-'}</span>
-                            <span>{stats.rbis || stats.rbi || '-'}</span>
-                            <span>{stats.r || stats.runs || '-'}</span>
-                            <span>{stats.avg?.toFixed(3)?.replace(/^0/, '') || stats.batting_avg?.toFixed(3)?.replace(/^0/, '') || '-'}</span>
-                            <span className="pps-highlight">{stats.ops?.toFixed(3) || '-'}</span>
-                          </>
-                        );
-                      })()}
-                    </div>
-                  </div>
-                ) : (
-                  <div className="pps-stats-no-data">No batting stats available</div>
-                )}
-              </div>
-
-              {/* Additional Stats Card */}
-              <div className="pps-stats-card">
-                <h3 className="pps-stats-card-title">Additional</h3>
-                {(statsLoading || (activeStatsTab === 'career' && careerTotalsLoading)) ? (
-                  <div className="pps-stats-loading">Loading stats...</div>
-                ) : (activeStatsTab === 'career' ? careerTotals : seasonStats) ? (
-                  <div className="pps-stats-table">
-                    <div className="pps-stat-row header">
-                      <span>SB</span>
-                      <span>BB</span>
-                      <span>SO</span>
-                      <span>2B</span>
-                      <span>3B</span>
-                      <span>TB</span>
-                    </div>
-                    <div className="pps-stat-row values">
-                      {(() => {
-                        const stats = activeStatsTab === 'career' ? careerTotals : seasonStats;
-                        return (
-                          <>
-                            <span>{stats.sb || stats.stolen_bases || '-'}</span>
-                            <span>{stats.bb || stats.walks || stats.base_on_balls || '-'}</span>
-                            <span>{stats.so || stats.strikeouts || stats.strike_outs || '-'}</span>
-                            <span>{stats.doubles || stats['2b'] || '-'}</span>
-                            <span>{stats.triples || stats['3b'] || '-'}</span>
-                            <span>{stats.tb || stats.total_bases || '-'}</span>
-                          </>
-                        );
-                      })()}
-                    </div>
-                  </div>
-                ) : (
-                  <div className="pps-stats-no-data">No additional stats available</div>
-                )}
-              </div>
-
-              {/* If pitcher, show pitching stats */}
-              {(playerInfo.position === 'P' || playerInfo.position === 'SP' || playerInfo.position === 'RP') && (
-                <div className="pps-stats-card">
-                  <h3 className="pps-stats-card-title">Pitching</h3>
-                  {statsLoading ? (
-                    <div className="pps-stats-loading">Loading stats...</div>
-                  ) : seasonStats ? (
-                    <div className="pps-stats-table">
-                      <div className="pps-stat-row header">
-                        <span>W</span>
-                        <span>L</span>
-                        <span>ERA</span>
-                        <span>G</span>
-                        <span>GS</span>
-                        <span>IP</span>
-                        <span>SO</span>
-                        <span>WHIP</span>
+              {/* Conditional stats cards based on player type */}
+              {isPitcher && !isTwoWay ? (
+                <>
+                  {/* Pitching Stats Card - Primary */}
+                  <div className="pps-stats-card">
+                    <h3 className="pps-stats-card-title">Pitching</h3>
+                    {(statsLoading || (activeStatsTab === 'career' && careerTotalsLoading)) ? (
+                      <div className="pps-stats-loading">Loading stats...</div>
+                    ) : (activeStatsTab === 'career' ? careerTotals : seasonStats) ? (
+                      <div className="pps-stats-table">
+                        <div className="pps-stat-row header">
+                          <span>W</span>
+                          <span>L</span>
+                          <span>ERA</span>
+                          <span>GS</span>
+                          <span>IP</span>
+                          <span>SO</span>
+                          <span>WHIP</span>
+                        </div>
+                        <div className="pps-stat-row values">
+                          {(() => {
+                            const stats = activeStatsTab === 'career' ? careerTotals : seasonStats;
+                            return (
+                              <>
+                                <span className="pps-highlight">{stats.wins || stats.w || '-'}</span>
+                                <span>{stats.losses || stats.l || '-'}</span>
+                                <span className="pps-highlight">{stats.era?.toFixed(2) || '-'}</span>
+                                <span>{stats.games_started || stats.gs || '-'}</span>
+                                <span>{stats.innings_pitched || stats.ip || '-'}</span>
+                                <span>{stats.strikeouts || stats.so || '-'}</span>
+                                <span className="pps-highlight">{stats.whip?.toFixed(2) || '-'}</span>
+                              </>
+                            );
+                          })()}
+                        </div>
                       </div>
-                      <div className="pps-stat-row values">
-                        <span>{seasonStats.w || seasonStats.wins || '-'}</span>
-                        <span>{seasonStats.l || seasonStats.losses || '-'}</span>
-                        <span>{seasonStats.era?.toFixed(2) || '-'}</span>
-                        <span>{seasonStats.g || seasonStats.games || '-'}</span>
-                        <span>{seasonStats.gs || seasonStats.games_started || '-'}</span>
-                        <span>{seasonStats.ip || seasonStats.innings_pitched || '-'}</span>
-                        <span>{seasonStats.so || seasonStats.strikeouts || seasonStats.strike_outs || '-'}</span>
-                        <span>{seasonStats.whip?.toFixed(2) || '-'}</span>
+                    ) : (
+                      <div className="pps-stats-no-data">No pitching stats available</div>
+                    )}
+                  </div>
+
+                  {/* Additional Pitching Stats Card */}
+                  <div className="pps-stats-card">
+                    <h3 className="pps-stats-card-title">Advanced</h3>
+                    {(statsLoading || (activeStatsTab === 'career' && careerTotalsLoading)) ? (
+                      <div className="pps-stats-loading">Loading stats...</div>
+                    ) : (activeStatsTab === 'career' ? careerTotals : seasonStats) ? (
+                      <div className="pps-stats-table">
+                        <div className="pps-stat-row header">
+                          <span>K/9</span>
+                          <span>BB/9</span>
+                          <span>HR/9</span>
+                          <span>H/9</span>
+                          <span>K/BB</span>
+                        </div>
+                        <div className="pps-stat-row values">
+                          {(() => {
+                            const stats = activeStatsTab === 'career' ? careerTotals : seasonStats;
+                            return (
+                              <>
+                                <span className="pps-highlight">{stats.k_per_9?.toFixed(2) || '-'}</span>
+                                <span>{stats.bb_per_9?.toFixed(2) || '-'}</span>
+                                <span>{stats.hr_per_9?.toFixed(2) || '-'}</span>
+                                <span>{stats.hits_per_9?.toFixed(2) || '-'}</span>
+                                <span>{stats.strikeout_walk_ratio?.toFixed(2) || '-'}</span>
+                              </>
+                            );
+                          })()}
+                        </div>
                       </div>
-                    </div>
-                  ) : (
-                    <div className="pps-stats-no-data">No pitching stats available</div>
-                  )}
-                </div>
+                    ) : (
+                      <div className="pps-stats-no-data">No advanced stats available</div>
+                    )}
+                  </div>
+
+                  {/* Opponent Stats Card */}
+                  <div className="pps-stats-card">
+                    <h3 className="pps-stats-card-title">vs Opponents</h3>
+                    {(statsLoading || (activeStatsTab === 'career' && careerTotalsLoading)) ? (
+                      <div className="pps-stats-loading">Loading stats...</div>
+                    ) : (activeStatsTab === 'career' ? careerTotals : seasonStats) ? (
+                      <div className="pps-stats-table">
+                        <div className="pps-stat-row header">
+                          <span>OPP AVG</span>
+                          <span>OPP OPS</span>
+                          <span>H</span>
+                          <span>HR</span>
+                          <span>BB</span>
+                        </div>
+                        <div className="pps-stat-row values">
+                          {(() => {
+                            const stats = activeStatsTab === 'career' ? careerTotals : seasonStats;
+                            return (
+                              <>
+                                <span>{stats.opponent_avg?.toFixed(3)?.replace(/^0/, '') || '-'}</span>
+                                <span>{stats.opponent_ops?.toFixed(3) || '-'}</span>
+                                <span>{stats.hits_allowed || '-'}</span>
+                                <span>{stats.home_runs_allowed || '-'}</span>
+                                <span>{stats.walks || stats.bb || '-'}</span>
+                              </>
+                            );
+                          })()}
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="pps-stats-no-data">No opponent stats available</div>
+                    )}
+                  </div>
+                </>
+              ) : (
+                <>
+                  {/* Batting Stats Card */}
+                  <div className="pps-stats-card">
+                    <h3 className="pps-stats-card-title">Batting</h3>
+                    {(statsLoading || (activeStatsTab === 'career' && careerTotalsLoading)) ? (
+                      <div className="pps-stats-loading">Loading stats...</div>
+                    ) : (activeStatsTab === 'career' ? careerTotals : seasonStats) ? (
+                      <div className="pps-stats-table">
+                        <div className="pps-stat-row header">
+                          <span>G</span>
+                          <span>AB</span>
+                          <span>H</span>
+                          <span>HR</span>
+                          <span>RBI</span>
+                          <span>R</span>
+                          <span>AVG</span>
+                          <span>OPS</span>
+                        </div>
+                        <div className="pps-stat-row values">
+                          {(() => {
+                            const stats = activeStatsTab === 'career' ? careerTotals : seasonStats;
+                            return (
+                              <>
+                                <span>{stats.g || stats.games_played || '-'}</span>
+                                <span>{stats.ab || stats.at_bats || '-'}</span>
+                                <span>{stats.h || stats.hits || '-'}</span>
+                                <span className="pps-highlight">{stats.hr || stats.home_runs || '-'}</span>
+                                <span>{stats.rbis || stats.rbi || '-'}</span>
+                                <span>{stats.r || stats.runs || '-'}</span>
+                                <span>{stats.avg?.toFixed(3)?.replace(/^0/, '') || stats.batting_avg?.toFixed(3)?.replace(/^0/, '') || '-'}</span>
+                                <span className="pps-highlight">{stats.ops?.toFixed(3) || '-'}</span>
+                              </>
+                            );
+                          })()}
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="pps-stats-no-data">No batting stats available</div>
+                    )}
+                  </div>
+
+                  {/* Additional Stats Card */}
+                  <div className="pps-stats-card">
+                    <h3 className="pps-stats-card-title">Additional</h3>
+                    {(statsLoading || (activeStatsTab === 'career' && careerTotalsLoading)) ? (
+                      <div className="pps-stats-loading">Loading stats...</div>
+                    ) : (activeStatsTab === 'career' ? careerTotals : seasonStats) ? (
+                      <div className="pps-stats-table">
+                        <div className="pps-stat-row header">
+                          <span>SB</span>
+                          <span>BB</span>
+                          <span>SO</span>
+                          <span>2B</span>
+                          <span>3B</span>
+                          <span>TB</span>
+                        </div>
+                        <div className="pps-stat-row values">
+                          {(() => {
+                            const stats = activeStatsTab === 'career' ? careerTotals : seasonStats;
+                            return (
+                              <>
+                                <span>{stats.sb || stats.stolen_bases || '-'}</span>
+                                <span>{stats.bb || stats.walks || stats.base_on_balls || '-'}</span>
+                                <span>{stats.so || stats.strikeouts || stats.strike_outs || '-'}</span>
+                                <span>{stats.doubles || stats['2b'] || '-'}</span>
+                                <span>{stats.triples || stats['3b'] || '-'}</span>
+                                <span>{stats.tb || stats.total_bases || '-'}</span>
+                              </>
+                            );
+                          })()}
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="pps-stats-no-data">No additional stats available</div>
+                    )}
+                  </div>
+                </>
               )}
             </div>
 
@@ -1144,13 +1584,13 @@ function PlayerProfileStats() {
               <div className="pps-comparison-chart-header">
                 <h4>
                   {activeStatsTab === 'career' 
-                    ? `${chartMetricOptions[selectedChartMetric].label} by Year`
-                    : `Monthly ${chartMetricOptions[selectedChartMetric].label}`
+                    ? `${currentChartMetric.label} by Year`
+                    : `Monthly ${currentChartMetric.label}`
                   }
                 </h4>
                 <select 
                   className="pps-metric-select"
-                  value={selectedChartMetric}
+                  value={currentChartMetric.key}
                   onChange={(e) => setSelectedChartMetric(e.target.value)}
                 >
                   {Object.entries(chartMetricOptions).map(([key, { label }]) => (
@@ -1230,16 +1670,75 @@ function PlayerProfileStats() {
                     // Use career splits if Career tab is active, otherwise use season splits
                     let vsLeft;
                     if (activeStatsTab === 'career' && vsHandSplitsCareer) {
-                      vsLeft = vsHandSplitsCareer?.vs_lhp;
+                      // For pitchers: vs_lhb, for batters: vs_lhp
+                      vsLeft = isPitcher && !isTwoWay ? vsHandSplitsCareer?.vs_lhb : vsHandSplitsCareer?.vs_lhp;
                     } else {
                       // API returns array with season entries containing vs_lhp/vs_rhp nested objects
                       const seasonSplits = vsHandSplits?.find(s => 
                         String(s.season) === String(selectedSeason)
                       );
-                      vsLeft = seasonSplits?.vs_lhp || vsHandSplits?.find(s => 
-                        s.split_type === 'vs_lhp' || s.vs_hand === 'L'
+                      vsLeft = isPitcher && !isTwoWay 
+                        ? (seasonSplits?.vs_lhb || vsHandSplits?.find(s => s.split_type === 'vs_lhb' || s.vs_hand === 'L'))
+                        : (seasonSplits?.vs_lhp || vsHandSplits?.find(s => s.split_type === 'vs_lhp' || s.vs_hand === 'L'));
+                    }
+                    
+                    // Pitcher splits
+                    if (isPitcher && !isTwoWay) {
+                      return (
+                        <div className="pps-split-card vs-left">
+                          <div className="pps-split-header">
+                            <span className="pps-split-label">vs LHB</span>
+                            <span className="pps-split-sample">{vsLeft?.tb_allowed || '-'} TB Allowed</span>
+                          </div>
+                          <div className="pps-split-stats">
+                            <div className="pps-split-stat">
+                              <span className="pps-split-stat-value">
+                                {vsLeft?.avg?.toFixed(3)?.replace(/^0/, '') || '-'}
+                              </span>
+                              <span className="pps-split-stat-label">OPP AVG</span>
+                            </div>
+                            <div className="pps-split-stat">
+                              <span className="pps-split-stat-value">
+                                {vsLeft?.ops?.toFixed(3) || '-'}
+                              </span>
+                              <span className="pps-split-stat-label">OPP OPS</span>
+                            </div>
+                            <div className="pps-split-stat">
+                              <span className="pps-split-stat-value">
+                                {vsLeft?.whip?.toFixed(2) || '-'}
+                              </span>
+                              <span className="pps-split-stat-label">WHIP</span>
+                            </div>
+                            <div className="pps-split-stat">
+                              <span className="pps-split-stat-value">
+                                {vsLeft?.k_per_9?.toFixed(1) || '-'}
+                              </span>
+                              <span className="pps-split-stat-label">K/9</span>
+                            </div>
+                            <div className="pps-split-stat">
+                              <span className="pps-split-stat-value">
+                                {vsLeft?.hr_per_9?.toFixed(1) || '-'}
+                              </span>
+                              <span className="pps-split-stat-label">HR/9</span>
+                            </div>
+                            <div className="pps-split-stat">
+                              <span className="pps-split-stat-value">
+                                {vsLeft?.hits_per_9?.toFixed(1) || '-'}
+                              </span>
+                              <span className="pps-split-stat-label">H/9</span>
+                            </div>
+                            <div className="pps-split-stat">
+                              <span className="pps-split-stat-value">
+                                {vsLeft?.go_ao_ratio?.toFixed(2) || '-'}
+                              </span>
+                              <span className="pps-split-stat-label">GO/AO</span>
+                            </div>
+                          </div>
+                        </div>
                       );
                     }
+                    
+                    // Batter splits
                     return (
                       <div className="pps-split-card vs-left">
                         <div className="pps-split-header">
@@ -1293,16 +1792,75 @@ function PlayerProfileStats() {
                     // Use career splits if Career tab is active, otherwise use season splits
                     let vsRight;
                     if (activeStatsTab === 'career' && vsHandSplitsCareer) {
-                      vsRight = vsHandSplitsCareer?.vs_rhp;
+                      // For pitchers: vs_rhb, for batters: vs_rhp
+                      vsRight = isPitcher && !isTwoWay ? vsHandSplitsCareer?.vs_rhb : vsHandSplitsCareer?.vs_rhp;
                     } else {
                       // API returns array with season entries containing vs_lhp/vs_rhp nested objects
                       const seasonSplits = vsHandSplits?.find(s => 
                         String(s.season) === String(selectedSeason)
                       );
-                      vsRight = seasonSplits?.vs_rhp || vsHandSplits?.find(s => 
-                        s.split_type === 'vs_rhp' || s.vs_hand === 'R'
+                      vsRight = isPitcher && !isTwoWay 
+                        ? (seasonSplits?.vs_rhb || vsHandSplits?.find(s => s.split_type === 'vs_rhb' || s.vs_hand === 'R'))
+                        : (seasonSplits?.vs_rhp || vsHandSplits?.find(s => s.split_type === 'vs_rhp' || s.vs_hand === 'R'));
+                    }
+                    
+                    // Pitcher splits
+                    if (isPitcher && !isTwoWay) {
+                      return (
+                        <div className="pps-split-card vs-right">
+                          <div className="pps-split-header">
+                            <span className="pps-split-label">vs RHB</span>
+                            <span className="pps-split-sample">{vsRight?.tb_allowed || '-'} TB Allowed</span>
+                          </div>
+                          <div className="pps-split-stats">
+                            <div className="pps-split-stat">
+                              <span className="pps-split-stat-value">
+                                {vsRight?.avg?.toFixed(3)?.replace(/^0/, '') || '-'}
+                              </span>
+                              <span className="pps-split-stat-label">OPP AVG</span>
+                            </div>
+                            <div className="pps-split-stat">
+                              <span className="pps-split-stat-value">
+                                {vsRight?.ops?.toFixed(3) || '-'}
+                              </span>
+                              <span className="pps-split-stat-label">OPP OPS</span>
+                            </div>
+                            <div className="pps-split-stat">
+                              <span className="pps-split-stat-value">
+                                {vsRight?.whip?.toFixed(2) || '-'}
+                              </span>
+                              <span className="pps-split-stat-label">WHIP</span>
+                            </div>
+                            <div className="pps-split-stat">
+                              <span className="pps-split-stat-value">
+                                {vsRight?.k_per_9?.toFixed(1) || '-'}
+                              </span>
+                              <span className="pps-split-stat-label">K/9</span>
+                            </div>
+                            <div className="pps-split-stat">
+                              <span className="pps-split-stat-value">
+                                {vsRight?.hr_per_9?.toFixed(1) || '-'}
+                              </span>
+                              <span className="pps-split-stat-label">HR/9</span>
+                            </div>
+                            <div className="pps-split-stat">
+                              <span className="pps-split-stat-value">
+                                {vsRight?.hits_per_9?.toFixed(1) || '-'}
+                              </span>
+                              <span className="pps-split-stat-label">H/9</span>
+                            </div>
+                            <div className="pps-split-stat">
+                              <span className="pps-split-stat-value">
+                                {vsRight?.go_ao_ratio?.toFixed(2) || '-'}
+                              </span>
+                              <span className="pps-split-stat-label">GO/AO</span>
+                            </div>
+                          </div>
+                        </div>
                       );
                     }
+                    
+                    // Batter splits
                     return (
                       <div className="pps-split-card vs-right">
                         <div className="pps-split-header">
@@ -1367,6 +1925,60 @@ function PlayerProfileStats() {
                         s.split === 'home' || s.location === 'home'
                       );
                     }
+                    
+                    // Pitcher Home/Road splits
+                    if (isPitcher && !isTwoWay) {
+                      return (
+                        <div className="pps-split-card home">
+                          <div className="pps-split-header">
+                            <span className="pps-split-label">Home</span>
+                            <span className="pps-split-sample">{homeSplit?.wins || 0}-{homeSplit?.losses || 0} ({homeSplit?.games_started || 0} GS)</span>
+                          </div>
+                          <div className="pps-split-stats">
+                            <div className="pps-split-stat">
+                              <span className="pps-split-stat-value">
+                                {homeSplit?.era?.toFixed(2) || '-'}
+                              </span>
+                              <span className="pps-split-stat-label">ERA</span>
+                            </div>
+                            <div className="pps-split-stat">
+                              <span className="pps-split-stat-value">
+                                {homeSplit?.whip?.toFixed(2) || '-'}
+                              </span>
+                              <span className="pps-split-stat-label">WHIP</span>
+                            </div>
+                            <div className="pps-split-stat">
+                              <span className="pps-split-stat-value">
+                                {homeSplit?.avg?.toFixed(3)?.replace(/^0/, '') || '-'}
+                              </span>
+                              <span className="pps-split-stat-label">OPP AVG</span>
+                            </div>
+                            <div className="pps-split-stat">
+                              <span className="pps-split-stat-value">
+                                {homeSplit?.innings_pitched?.toFixed(1) || '-'}
+                              </span>
+                              <span className="pps-split-stat-label">IP</span>
+                            </div>
+                            <div className="pps-split-stat">
+                              <span className="pps-split-stat-value">{homeSplit?.strikeouts || '-'}</span>
+                              <span className="pps-split-stat-label">K</span>
+                            </div>
+                            <div className="pps-split-stat">
+                              <span className="pps-split-stat-value">{homeSplit?.walks_allowed || homeSplit?.walks || '-'}</span>
+                              <span className="pps-split-stat-label">BB</span>
+                            </div>
+                            <div className="pps-split-stat">
+                              <span className="pps-split-stat-value">
+                                {homeSplit?.k_per_9?.toFixed(1) || '-'}
+                              </span>
+                              <span className="pps-split-stat-label">K/9</span>
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    }
+                    
+                    // Batter Home/Road splits
                     return (
                       <div className="pps-split-card home">
                         <div className="pps-split-header">
@@ -1431,6 +2043,60 @@ function PlayerProfileStats() {
                         s.split === 'away' || s.split === 'road' || s.location === 'away'
                       );
                     }
+                    
+                    // Pitcher Away/Road splits
+                    if (isPitcher && !isTwoWay) {
+                      return (
+                        <div className="pps-split-card away">
+                          <div className="pps-split-header">
+                            <span className="pps-split-label">Away</span>
+                            <span className="pps-split-sample">{awaySplit?.wins || 0}-{awaySplit?.losses || 0} ({awaySplit?.games_started || 0} GS)</span>
+                          </div>
+                          <div className="pps-split-stats">
+                            <div className="pps-split-stat">
+                              <span className="pps-split-stat-value">
+                                {awaySplit?.era?.toFixed(2) || '-'}
+                              </span>
+                              <span className="pps-split-stat-label">ERA</span>
+                            </div>
+                            <div className="pps-split-stat">
+                              <span className="pps-split-stat-value">
+                                {awaySplit?.whip?.toFixed(2) || '-'}
+                              </span>
+                              <span className="pps-split-stat-label">WHIP</span>
+                            </div>
+                            <div className="pps-split-stat">
+                              <span className="pps-split-stat-value">
+                                {awaySplit?.avg?.toFixed(3)?.replace(/^0/, '') || '-'}
+                              </span>
+                              <span className="pps-split-stat-label">OPP AVG</span>
+                            </div>
+                            <div className="pps-split-stat">
+                              <span className="pps-split-stat-value">
+                                {awaySplit?.innings_pitched?.toFixed(1) || '-'}
+                              </span>
+                              <span className="pps-split-stat-label">IP</span>
+                            </div>
+                            <div className="pps-split-stat">
+                              <span className="pps-split-stat-value">{awaySplit?.strikeouts || '-'}</span>
+                              <span className="pps-split-stat-label">K</span>
+                            </div>
+                            <div className="pps-split-stat">
+                              <span className="pps-split-stat-value">{awaySplit?.walks_allowed || awaySplit?.walks || '-'}</span>
+                              <span className="pps-split-stat-label">BB</span>
+                            </div>
+                            <div className="pps-split-stat">
+                              <span className="pps-split-stat-value">
+                                {awaySplit?.k_per_9?.toFixed(1) || '-'}
+                              </span>
+                              <span className="pps-split-stat-label">K/9</span>
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    }
+                    
+                    // Batter Away/Road splits
                     return (
                       <div className="pps-split-card away">
                         <div className="pps-split-header">
@@ -1690,15 +2356,31 @@ function PlayerProfileStats() {
                           <th>Date</th>
                           <th>Opp</th>
                           <th>Result</th>
-                          <th>AB</th>
-                          <th>H</th>
-                          <th>HR</th>
-                          <th>RBI</th>
-                          <th>R</th>
-                          <th>BB</th>
-                          <th>SO</th>
-                          <th>SB</th>
-                          <th>TB</th>
+                          {isPitcher && !isTwoWay ? (
+                            <>
+                              <th>Dec</th>
+                              <th>IP</th>
+                              <th>H</th>
+                              <th>R</th>
+                              <th>ER</th>
+                              <th>BB</th>
+                              <th>K</th>
+                              <th>HR</th>
+                              <th>PC</th>
+                            </>
+                          ) : (
+                            <>
+                              <th>AB</th>
+                              <th>H</th>
+                              <th>HR</th>
+                              <th>RBI</th>
+                              <th>R</th>
+                              <th>BB</th>
+                              <th>SO</th>
+                              <th>SB</th>
+                              <th>TB</th>
+                            </>
+                          )}
                         </tr>
                       </thead>
                       <tbody>
@@ -1721,6 +2403,10 @@ function PlayerProfileStats() {
                               day: 'numeric' 
                             });
                             
+                            // Pitcher decision (W/L/S/H/ND)
+                            const pitcherDecision = game.win ? 'W' : game.loss ? 'L' : game.save ? 'S' : game.hold ? 'H' : '-';
+                            const decisionClass = pitcherDecision === 'W' ? 'win' : pitcherDecision === 'L' ? 'loss' : pitcherDecision === 'S' ? 'save' : '';
+                            
                             return (
                               <tr key={game.game_pk}>
                                 <td className="pps-game-date">{formattedDate}</td>
@@ -1731,15 +2417,31 @@ function PlayerProfileStats() {
                                 <td className={`pps-game-result ${resultClass}`}>
                                   {result} {playerScore}-{oppScore}
                                 </td>
-                                <td>{game.at_bats}</td>
-                                <td className={game.hits > 0 ? 'pps-highlight' : ''}>{game.hits}</td>
-                                <td className={game.home_runs > 0 ? 'pps-highlight pps-hr' : ''}>{game.home_runs}</td>
-                                <td>{game.rbis}</td>
-                                <td>{game.runs}</td>
-                                <td>{game.walks}</td>
-                                <td>{game.strikeouts}</td>
-                                <td>{game.stolen_bases}</td>
-                                <td>{game.total_bases}</td>
+                                {isPitcher && !isTwoWay ? (
+                                  <>
+                                    <td className={`pps-decision ${decisionClass}`}>{pitcherDecision}</td>
+                                    <td className={game.innings_pitched >= 6 ? 'pps-highlight' : ''}>{game.innings_pitched?.toFixed(1) || '-'}</td>
+                                    <td>{game.hits_allowed ?? game.hits ?? '-'}</td>
+                                    <td>{game.runs_allowed ?? '-'}</td>
+                                    <td className={game.earned_runs_allowed === 0 ? 'pps-highlight' : ''}>{game.earned_runs_allowed ?? game.earned_runs ?? '-'}</td>
+                                    <td>{game.walks_allowed ?? game.walks ?? '-'}</td>
+                                    <td className={game.strikeouts >= 10 ? 'pps-highlight pps-k' : ''}>{game.strikeouts ?? '-'}</td>
+                                    <td className={game.home_runs_allowed > 0 ? 'pps-danger' : ''}>{game.home_runs_allowed ?? '-'}</td>
+                                    <td>{game.pitch_count ?? game.pitches ?? '-'}</td>
+                                  </>
+                                ) : (
+                                  <>
+                                    <td>{game.at_bats}</td>
+                                    <td className={game.hits > 0 ? 'pps-highlight' : ''}>{game.hits}</td>
+                                    <td className={game.home_runs > 0 ? 'pps-highlight pps-hr' : ''}>{game.home_runs}</td>
+                                    <td>{game.rbis}</td>
+                                    <td>{game.runs}</td>
+                                    <td>{game.walks}</td>
+                                    <td>{game.strikeouts}</td>
+                                    <td>{game.stolen_bases}</td>
+                                    <td>{game.total_bases}</td>
+                                  </>
+                                )}
                               </tr>
                             );
                           });
