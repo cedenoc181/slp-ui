@@ -1,9 +1,10 @@
 import React, { useState, useMemo, useEffect, useCallback, useRef } from 'react';
 import { useParams, useSearchParams } from 'react-router-dom';
-import { SEASONS, TEAMS, TEAM_METADATA } from '../../../../data/constants/apiConstants';
+import { SEASONS, TEAMS, TEAM_METADATA, SEASON_TYPES } from '../../../../data/constants/apiConstants';
 import playerStatsService from '../../../../data/services/playerStatsServices';
 import injuryService from '../../../../data/services/injuryService';
 import rosterService from '../../../../data/services/rosterService';
+import gamesService from '../../../../data/services/gamesService';
 import '../../../../styles/stats-page-styling/player-profile.css';
 
 // Helper to extract MLB ID from name slug (e.g., "aaron-judge-592450" -> 592450)
@@ -46,12 +47,15 @@ function PlayerProfileStats() {
   const [activeSplitsTab, setActiveSplitsTab] = useState('handedness'); // handedness, homeAway
   const [seasonDropdownOpen, setSeasonDropdownOpen] = useState(false);
   const seasonDropdownRef = useRef(null);
-  const [activeGameLogMonth, setActiveGameLogMonth] = useState('all'); // all, apr, may, jun, jul, aug, sep, oct
+  const [gameLogSeasonType, setGameLogSeasonType] = useState('R'); // R (Regular), S (Spring Training), P (Postseason)
+  const [gameLogPage, setGameLogPage] = useState(1); // Current page for game log pagination
+  const gamesPerPage = 10; // Number of games per page
   const [trendTimeframe, setTrendTimeframe] = useState('5y'); // 1y, 3y, 5y, career
   const [selectedChartMetric, setSelectedChartMetric] = useState('hr'); // hr, h, avg, ops, bb, so
 
   // Loading states
   const [playerLoading, setPlayerLoading] = useState(true);
+  const [gameLogLoading, setGameLogLoading] = useState(false);
   const [statsLoading, setStatsLoading] = useState(false);
   const [error, setError] = useState(null);
 
@@ -179,6 +183,47 @@ function PlayerProfileStats() {
     
     fetchTeamHistory();
   }, [playerInfo]);
+
+  // Fetch game logs when player, season, or season type changes
+  useEffect(() => {
+    const fetchGameLogs = async () => {
+      if (!playerInfo?.id) return;
+      
+      setGameLogLoading(true);
+      try {
+        const isPitcher = playerInfo.position === 'P' || playerInfo.position === 'SP' || playerInfo.position === 'RP';
+        const isTwoWay = playerInfo.position === 'TWP' || playerInfo.is_two_way;
+        
+        let response;
+        if (isPitcher && !isTwoWay) {
+          response = await gamesService.getPitcherGameLogs(
+            playerInfo.id,
+            selectedSeason,
+            gameLogSeasonType
+            // No limit - load all games
+          );
+        } else {
+          response = await gamesService.getBatterGameLogs(
+            playerInfo.id,
+            selectedSeason,
+            gameLogSeasonType
+            // No limit - load all games (up to 162 for regular season)
+          );
+        }
+        
+        // API returns { games: [...] }
+        const games = response?.games || [];
+        setGameLog(Array.isArray(games) ? games : []);
+      } catch (err) {
+        console.error('Error fetching game logs:', err);
+        setGameLog([]);
+      } finally {
+        setGameLogLoading(false);
+      }
+    };
+    
+    fetchGameLogs();
+  }, [playerInfo, selectedSeason, gameLogSeasonType]);
 
   // Fetch season stats, career stats, and splits when player info or season changes
   useEffect(() => {
@@ -1320,35 +1365,128 @@ function PlayerProfileStats() {
             <div className="pps-section-header">
               <div>
                 <h2 className="pps-section-title">Game Log</h2>
-                <p className="pps-section-subtitle">{selectedSeason} game-by-game results</p>
+                <p className="pps-section-subtitle">
+                  {selectedSeason} {gameLogSeasonType === 'R' ? 'Regular Season' : gameLogSeasonType === 'S' ? 'Spring Training' : 'Postseason'} results
+                </p>
               </div>
               <div className="pps-game-log-filters">
                 <select 
-                  className="pps-month-filter"
-                  value={activeGameLogMonth}
-                  onChange={(e) => setActiveGameLogMonth(e.target.value)}
+                  className="pps-season-type-filter"
+                  value={gameLogSeasonType}
+                  onChange={(e) => {
+                    setGameLogSeasonType(e.target.value);
+                    setGameLogPage(1); // Reset to first page when season type changes
+                  }}
                 >
-                  <option value="all">All Games</option>
-                  <option value="mar">March/April</option>
-                  <option value="may">May</option>
-                  <option value="jun">June</option>
-                  <option value="jul">July</option>
-                  <option value="aug">August</option>
-                  <option value="sep">September</option>
-                  <option value="oct">October</option>
+                  <option value="R">Regular Season</option>
+                  <option value="S">Spring Training</option>
+                  <option value="P">Postseason</option>
                 </select>
               </div>
             </div>
 
             <div className="pps-game-log-container">
-              <div className="pps-coming-soon-placeholder">
-                <div className="pps-coming-soon-icon">📊</div>
-                <h3 className="pps-coming-soon-title">Game Log Coming Soon</h3>
-                <p className="pps-coming-soon-text">
-                  Detailed game-by-game statistics will be available here. 
-                  Check back soon for complete {selectedSeason} game logs.
-                </p>
-              </div>
+              {gameLogLoading ? (
+                <div className="pps-stats-loading">Loading game logs...</div>
+              ) : gameLog.length > 0 ? (
+                <>
+                  <div className="pps-game-log-table-wrapper">
+                    <table className="pps-game-log-table">
+                      <thead>
+                        <tr>
+                          <th>Date</th>
+                          <th>Opp</th>
+                          <th>Result</th>
+                          <th>AB</th>
+                          <th>H</th>
+                          <th>HR</th>
+                          <th>RBI</th>
+                          <th>R</th>
+                          <th>BB</th>
+                          <th>SO</th>
+                          <th>SB</th>
+                          <th>TB</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {(() => {
+                          const startIndex = (gameLogPage - 1) * gamesPerPage;
+                          const endIndex = startIndex + gamesPerPage;
+                          const paginatedGames = gameLog.slice(startIndex, endIndex);
+                          
+                          return paginatedGames.map((game) => {
+                            // Determine game result (W/L)
+                            const playerScore = game.is_home ? game.home_runs_score : game.away_runs_score;
+                            const oppScore = game.is_home ? game.away_runs_score : game.home_runs_score;
+                            const result = playerScore > oppScore ? 'W' : playerScore < oppScore ? 'L' : 'T';
+                            const resultClass = result === 'W' ? 'win' : result === 'L' ? 'loss' : 'tie';
+                            
+                            // Format date
+                            const gameDate = new Date(game.date);
+                            const formattedDate = gameDate.toLocaleDateString('en-US', { 
+                              month: 'short', 
+                              day: 'numeric' 
+                            });
+                            
+                            return (
+                              <tr key={game.game_pk}>
+                                <td className="pps-game-date">{formattedDate}</td>
+                                <td className="pps-game-opponent">
+                                  <span className="pps-home-away-indicator">{game.is_home ? 'vs' : '@'}</span>
+                                  {game.opponent}
+                                </td>
+                                <td className={`pps-game-result ${resultClass}`}>
+                                  {result} {playerScore}-{oppScore}
+                                </td>
+                                <td>{game.at_bats}</td>
+                                <td className={game.hits > 0 ? 'pps-highlight' : ''}>{game.hits}</td>
+                                <td className={game.home_runs > 0 ? 'pps-highlight pps-hr' : ''}>{game.home_runs}</td>
+                                <td>{game.rbis}</td>
+                                <td>{game.runs}</td>
+                                <td>{game.walks}</td>
+                                <td>{game.strikeouts}</td>
+                                <td>{game.stolen_bases}</td>
+                                <td>{game.total_bases}</td>
+                              </tr>
+                            );
+                          });
+                        })()}
+                      </tbody>
+                    </table>
+                  </div>
+                  
+                  {/* Pagination Controls */}
+                  {gameLog.length > gamesPerPage && (
+                    <div className="pps-pagination">
+                      <button 
+                        className="pps-pagination-btn"
+                        onClick={() => setGameLogPage(prev => Math.max(1, prev - 1))}
+                        disabled={gameLogPage === 1}
+                      >
+                        ← Prev
+                      </button>
+                      <span className="pps-pagination-info">
+                        Page {gameLogPage} of {Math.ceil(gameLog.length / gamesPerPage)} ({gameLog.length} games)
+                      </span>
+                      <button 
+                        className="pps-pagination-btn"
+                        onClick={() => setGameLogPage(prev => Math.min(Math.ceil(gameLog.length / gamesPerPage), prev + 1))}
+                        disabled={gameLogPage >= Math.ceil(gameLog.length / gamesPerPage)}
+                      >
+                        Next →
+                      </button>
+                    </div>
+                  )}
+                </>
+              ) : (
+                <div className="pps-no-data-placeholder">
+                  <div className="pps-no-data-icon">📋</div>
+                  <h3 className="pps-no-data-title">No Game Logs Available</h3>
+                  <p className="pps-no-data-text">
+                    No {gameLogSeasonType === 'R' ? 'regular season' : gameLogSeasonType === 'S' ? 'spring training' : 'postseason'} games found for {selectedSeason}.
+                  </p>
+                </div>
+              )}
             </div>
           </section>
 

@@ -619,6 +619,7 @@
 /* Game Log */
 .pps-game-log-filters { display: flex; gap: 0.75rem; }
 
+.pps-season-type-filter,
 .pps-month-filter {
   padding: 0.5rem 1.5rem 0.5rem 0.75rem;
   background: rgba(255, 255, 255, 0.08);
@@ -633,6 +634,7 @@
   background-position: right 8px center;
 }
 
+.pps-season-type-filter option,
 .pps-month-filter option { background: #1e1e1e; color: #fff; }
 
 .pps-game-log-container { 
@@ -640,7 +642,9 @@
 }
 
 .pps-game-log-table-wrapper { 
-  overflow-x: auto; 
+  overflow-x: auto;
+  overflow-y: auto;
+  max-height: 450px; /* Limit height for vertical scroll */
   margin-bottom: 1rem;
   background: rgba(255, 255, 255, 0.02);
   border: 1px solid rgba(255, 255, 255, 0.08);
@@ -648,8 +652,14 @@
   padding: 0.5rem;
 }
 
+/* Sticky header for scrollable table */
 .pps-game-log-table { width: 100%; border-collapse: collapse; min-width: 600px; }
-.pps-game-log-table thead { background: rgba(255, 255, 255, 0.05); }
+.pps-game-log-table thead { 
+  background: rgba(30, 30, 30, 0.98);
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
 
 .pps-game-log-table th {
   padding: 0.75rem 0.5rem;
@@ -678,6 +688,38 @@
 .pps-game-log-table .pps-result-col.win { color: var(--pps-success); }
 .pps-game-log-table .pps-result-col.loss { color: var(--pps-danger); }
 .pps-game-log-table td.pps-highlight { color: var(--pps-accent-blue); font-weight: 700; }
+.pps-game-log-table td.pps-hr { background: rgba(66, 165, 245, 0.1); }
+
+/* Game Log Row Styles */
+.pps-game-date { font-weight: 600; color: var(--pps-text-secondary); white-space: nowrap; }
+.pps-game-opponent { font-weight: 600; white-space: nowrap; }
+.pps-home-away-indicator { 
+  font-size: 0.75rem; 
+  color: var(--pps-text-muted); 
+  margin-right: 4px;
+  font-weight: 500;
+}
+.pps-game-result { font-weight: 600; white-space: nowrap; }
+.pps-game-result.win { color: var(--pps-success); }
+.pps-game-result.loss { color: var(--pps-danger); }
+.pps-game-result.tie { color: var(--pps-text-muted); }
+
+/* No Data Placeholder */
+.pps-no-data-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem 2rem;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.03), rgba(255, 255, 255, 0.01));
+  border: 1px dashed rgba(255, 255, 255, 0.15);
+  border-radius: 12px;
+  text-align: center;
+}
+
+.pps-no-data-icon { font-size: 2.5rem; margin-bottom: 1rem; opacity: 0.6; }
+.pps-no-data-title { font-size: 1.1rem; font-weight: 600; color: var(--pps-text-secondary); margin: 0 0 0.5rem; }
+.pps-no-data-text { font-size: 0.9rem; color: var(--pps-text-muted); margin: 0; max-width: 400px; }
 
 /* Pagination */
 .pps-pagination { display: flex; justify-content: center; align-items: center; gap: 1rem; }
