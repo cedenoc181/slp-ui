@@ -98,10 +98,10 @@ function Header() {
     setIsMenuOpen(!isMenuOpen);
   };
 
-  const closeMenu = () => {
+  const closeMenu = useCallback(() => {
     setIsMenuOpen(false);
     setActiveDropdown(null);
-  };
+  }, []);
 
   const handleNavClick = (path) => {
     closeMenu();
@@ -226,7 +226,7 @@ function Header() {
           label: `${team.name} Analytics${year ? ` (${year})` : ''}`,
           onSelect: () => {
             closeMenu();
-            navigate(`/team-analytics/${team.urlName}${year ? `?year=${year}` : ''}`);
+            navigate(`/team-analytics/${team.urlName}${year ? `?season=${year}` : ''}`);
             window.scrollTo({ top: 0, behavior: 'smooth' });
             setSearchQuery('');
             setSearchSuggestions([]);

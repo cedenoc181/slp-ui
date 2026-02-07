@@ -1,6 +1,6 @@
 import React, { useState, useMemo, useEffect, useCallback, useRef } from 'react';
 import { useParams, useSearchParams } from 'react-router-dom';
-import { SEASONS, TEAMS, TEAM_METADATA, SEASON_TYPES } from '../../../../data/constants/apiConstants';
+import { SEASONS, TEAM_METADATA } from '../../../../data/constants/apiConstants';
 import playerStatsService from '../../../../data/services/playerStatsServices';
 import injuryService from '../../../../data/services/injuryService';
 import rosterService from '../../../../data/services/rosterService';
