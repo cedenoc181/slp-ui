@@ -2620,12 +2620,12 @@ function PlayerProfileStats() {
                                     <td className={`pps-decision ${decisionClass}`}>{pitcherDecision}</td>
                                     <td className={game.innings_pitched >= 6 ? 'pps-highlight' : ''}>{game.innings_pitched?.toFixed(1) || '-'}</td>
                                     <td>{game.hits_allowed ?? game.hits ?? '-'}</td>
-                                    <td>{game.runs_allowed ?? '-'}</td>
-                                    <td className={game.earned_runs_allowed === 0 ? 'pps-highlight' : ''}>{game.earned_runs_allowed ?? game.earned_runs ?? '-'}</td>
-                                    <td>{game.walks_allowed ?? game.walks ?? '-'}</td>
+                                    <td>{game.runs ?? game.runs_allowed ?? '-'}</td>
+                                    <td className={(game.earned_runs ?? game.earned_runs_allowed) === 0 ? 'pps-highlight' : ''}>{game.earned_runs ?? game.earned_runs_allowed ?? '-'}</td>
+                                    <td>{game.walks ?? game.walks_allowed ?? '-'}</td>
                                     <td className={game.strikeouts >= 10 ? 'pps-highlight pps-k' : ''}>{game.strikeouts ?? '-'}</td>
                                     <td className={game.home_runs_allowed > 0 ? 'pps-danger' : ''}>{game.home_runs_allowed ?? '-'}</td>
-                                    <td>{game.pitch_count ?? game.pitches ?? '-'}</td>
+                                    <td>{game.pitches_thrown ?? game.pitch_count ?? game.pitches ?? '-'}</td>
                                   </>
                                 ) : (
                                   <>
