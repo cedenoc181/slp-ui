@@ -70,7 +70,7 @@ class GamesService {
    * @param {number} limit - Max games to return (default 50)
    * @returns {Promise<Array>} Pitcher game logs
    */
-  async getPitcherGameLogs(playerId, season = DEFAULT_SEASON, seasonType = SEASON_TYPES.REGULAR, limit = 50) {
+  async getPitcherGameLogs(playerId, season = DEFAULT_SEASON, seasonType = SEASON_TYPES.REGULAR, limit = 162) {
     const params = new URLSearchParams();
     params.append('player_id', playerId);
     if (season) params.append('season', season);

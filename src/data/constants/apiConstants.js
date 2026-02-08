@@ -1,8 +1,16 @@
 // ========== SEASON TYPES ==========
+// Numeric codes: 1 = Spring Training, 2 = Regular Season, 3 = Postseason
 export const SEASON_TYPES = {
   REGULAR: 'R',
   POSTSEASON: 'P',
   SPRING_TRAINING: 'S',
+};
+
+// Numeric season type codes for APIs that require them
+export const SEASON_TYPE_CODES = {
+  SPRING_TRAINING: 1,
+  REGULAR: 2,
+  POSTSEASON: 3,
 };
 
 // ========== PLAYER ROLES ==========

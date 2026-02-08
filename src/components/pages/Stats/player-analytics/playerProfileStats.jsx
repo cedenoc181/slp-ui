@@ -53,11 +53,13 @@ function PlayerProfileStats() {
   
   // Recent Form section has its own season type (independent from Game Log)
   const [recentFormSeasonType, setRecentFormSeasonType] = useState('R'); // R (Regular), S (Spring Training), P (Postseason)
-  const [recentFormGameLog, setRecentFormGameLog] = useState([]); // Separate game log for recent form
+  const [recentFormGameLog, setRecentFormGameLog] = useState([]); // Separate game log for recent form (batting for TWP)
+  const [pitchingRecentFormGameLog, setPitchingRecentFormGameLog] = useState([]); // Separate pitching game log for TWP recent form
   const [recentFormLoading, setRecentFormLoading] = useState(false);
   
   const [trendTimeframe, setTrendTimeframe] = useState('5y'); // 1y, 3y, 5y, career
   const [selectedChartMetric, setSelectedChartMetric] = useState('hr'); // hr, h, avg, ops, bb, so
+  const [twoWayViewMode, setTwoWayViewMode] = useState('batting'); // batting (default), pitching - for TWP players
 
   // Loading states
   const [playerLoading, setPlayerLoading] = useState(true);
@@ -77,6 +79,17 @@ function PlayerProfileStats() {
   const [homeRoadSplitsCareer, setHomeRoadSplitsCareer] = useState(null);
   const [careerSplitsLoading, setCareerSplitsLoading] = useState(false);
   const [monthlyPerformance, setMonthlyPerformance] = useState(null);
+  
+  // Two-way player: separate pitching stats (batting stats stored in regular state above)
+  const [pitchingSeasonStats, setPitchingSeasonStats] = useState(null);
+  const [pitchingCareerStats, setPitchingCareerStats] = useState([]);
+  const [pitchingVsHandSplits, setPitchingVsHandSplits] = useState([]);
+  const [pitchingHomeRoadSplits, setPitchingHomeRoadSplits] = useState([]);
+  const [pitchingMonthlyPerformance, setPitchingMonthlyPerformance] = useState(null);
+  const [pitchingCareerTotals, setPitchingCareerTotals] = useState(null);
+  const [pitchingVsHandSplitsCareer, setPitchingVsHandSplitsCareer] = useState(null);
+  const [pitchingHomeRoadSplitsCareer, setPitchingHomeRoadSplitsCareer] = useState(null);
+  
   const [teamHistory, setTeamHistory] = useState([]);
   const [injuryHistory, setInjuryHistory] = useState([]);
   const [gameLog, setGameLog] = useState([]);
@@ -199,17 +212,23 @@ function PlayerProfileStats() {
       try {
         const pos = playerInfo.position_abbreviation || playerInfo.position || playerInfo.primary_position;
         const isPitcher = pos === 'P' || pos === 'SP' || pos === 'RP' || pos === 'Pitcher' || pos === 'Starting Pitcher' || pos === 'Relief Pitcher';
-        const isTwoWay = pos === 'TWP' || pos === 'Two-Way Player' || playerInfo.is_two_way;
+        // Only consider true TWP (position explicitly set to TWP) for game log fetching
+        const isTruelyTwoWay = pos === 'TWP' || pos === 'Two-Way Player';
+        
+        console.log('Game Log fetch - position:', pos, 'isPitcher:', isPitcher, 'isTruelyTwoWay:', isTruelyTwoWay, 'seasonType:', gameLogSeasonType);
         
         let response;
-        if (isPitcher && !isTwoWay) {
+        if (isPitcher && !isTruelyTwoWay) {
+          console.log('Fetching PITCHER game logs for main Game Log section...');
           response = await gamesService.getPitcherGameLogs(
             playerInfo.id,
             selectedSeason,
             gameLogSeasonType
             // No limit - load all games
           );
+          console.log('Main Game Log pitcher response:', response);
         } else {
+          console.log('Fetching BATTER game logs for main Game Log section...');
           response = await gamesService.getBatterGameLogs(
             playerInfo.id,
             selectedSeason,
@@ -220,6 +239,7 @@ function PlayerProfileStats() {
         
         // API returns { games: [...] }
         const games = response?.games || [];
+        console.log('Main Game Log games count:', games.length);
         setGameLog(Array.isArray(games) ? games : []);
       } catch (err) {
         console.error('Error fetching game logs:', err);
@@ -240,29 +260,53 @@ function PlayerProfileStats() {
       setRecentFormLoading(true);
       try {
         const pos = playerInfo.position_abbreviation || playerInfo.position || playerInfo.primary_position;
-        const isPitcher = pos === 'P' || pos === 'SP' || pos === 'RP' || pos === 'Pitcher' || pos === 'Starting Pitcher' || pos === 'Relief Pitcher';
-        const isTwoWay = pos === 'TWP' || pos === 'Two-Way Player' || playerInfo.is_two_way;
+        const isPitcherPos = pos === 'P' || pos === 'SP' || pos === 'RP' || pos === 'Pitcher' || pos === 'Starting Pitcher' || pos === 'Relief Pitcher';
+        // Only consider true TWP (position explicitly set to TWP) for separate game log fetching
+        // Regular pitchers with is_two_way flag should still use pitcher game logs
+        const isTruelyTwoWay = pos === 'TWP' || pos === 'Two-Way Player';
         
-        let response;
-        if (isPitcher && !isTwoWay) {
-          response = await gamesService.getPitcherGameLogs(
+        console.log('Recent Form fetch - position:', pos, 'isPitcher:', isPitcherPos, 'isTruelyTwoWay:', isTruelyTwoWay, 'is_two_way flag:', playerInfo.is_two_way, 'seasonType:', recentFormSeasonType);
+        
+        if (isTruelyTwoWay) {
+          // For true TWP (like Ohtani), fetch BOTH batting and pitching game logs
+          const [battingResponse, pitchingResponse] = await Promise.all([
+            gamesService.getBatterGameLogs(playerInfo.id, selectedSeason, recentFormSeasonType).catch(() => ({ games: [] })),
+            gamesService.getPitcherGameLogs(playerInfo.id, selectedSeason, recentFormSeasonType).catch(() => ({ games: [] })),
+          ]);
+          
+          const battingGames = battingResponse?.games || [];
+          const pitchingGames = pitchingResponse?.games || [];
+          console.log('TWP Recent Form - batting games:', battingGames.length, 'pitching games:', pitchingGames.length);
+          setRecentFormGameLog(Array.isArray(battingGames) ? battingGames : []);
+          setPitchingRecentFormGameLog(Array.isArray(pitchingGames) ? pitchingGames : []);
+        } else if (isPitcherPos) {
+          // Regular pitcher - fetch pitcher game logs into recentFormGameLog
+          console.log('Fetching pitcher game logs for player:', playerInfo.id, 'season:', selectedSeason, 'seasonType:', recentFormSeasonType);
+          const response = await gamesService.getPitcherGameLogs(
             playerInfo.id,
             selectedSeason,
             recentFormSeasonType
           );
+          console.log('Pitcher Recent Form FULL response:', JSON.stringify(response));
+          const games = response?.games || response || [];
+          console.log('Pitcher Recent Form games:', games.length, 'isArray:', Array.isArray(games));
+          setRecentFormGameLog(Array.isArray(games) ? games : []);
+          setPitchingRecentFormGameLog([]);
         } else {
-          response = await gamesService.getBatterGameLogs(
+          const response = await gamesService.getBatterGameLogs(
             playerInfo.id,
             selectedSeason,
             recentFormSeasonType
           );
+          const games = response?.games || [];
+          console.log('Batter Recent Form games:', games.length);
+          setRecentFormGameLog(Array.isArray(games) ? games : []);
+          setPitchingRecentFormGameLog([]);
         }
-        
-        const games = response?.games || [];
-        setRecentFormGameLog(Array.isArray(games) ? games : []);
       } catch (err) {
         console.error('Error fetching recent form game logs:', err);
         setRecentFormGameLog([]);
+        setPitchingRecentFormGameLog([]);
       } finally {
         setRecentFormLoading(false);
       }
@@ -307,8 +351,45 @@ function PlayerProfileStats() {
           setVsHandSplits(vsHand);
           setHomeRoadSplits(homeRoad);
           setMonthlyPerformance(monthly);
+        } else if (isTwoWay) {
+          // Two-way player: fetch BOTH batting AND pitching stats
+          console.log('Fetching BOTH batting and pitching stats for two-way player...');
+          const [
+            currentBatting, careerBatting, vsHandBatting, homeRoadBatting, monthlyBatting,
+            currentPitching, careerPitching, vsHandPitching, homeRoadPitching, monthlyPitching
+          ] = await Promise.all([
+            // Batting stats
+            playerStatsService.getBatterCurrentStats(internalPlayerId, selectedSeason).catch(() => null),
+            playerStatsService.getBatterCareerStats(internalPlayerId).catch(() => []),
+            playerStatsService.getBatterVsHandSplits(internalPlayerId, selectedSeason).catch(() => []),
+            playerStatsService.getBatterHomeRoadSplits(internalPlayerId, selectedSeason).catch(() => []),
+            playerStatsService.getBatterMonthlyPerformance(internalPlayerId, selectedSeason).catch(() => null),
+            // Pitching stats
+            playerStatsService.getPitcherCurrentStats(internalPlayerId, selectedSeason).catch(() => null),
+            playerStatsService.getPitcherCareerStats(internalPlayerId).catch(() => []),
+            playerStatsService.getPitcherVsHandSplits(internalPlayerId, selectedSeason).catch(() => []),
+            playerStatsService.getPitcherHomeRoadSplits(internalPlayerId, selectedSeason).catch(() => []),
+            playerStatsService.getPitcherMonthlyPerformance(internalPlayerId, selectedSeason).catch(() => null),
+          ]);
+          
+          // Store batting stats in regular state
+          setSeasonStats(currentBatting);
+          setCareerStats(careerBatting);
+          setVsHandSplits(vsHandBatting);
+          setHomeRoadSplits(homeRoadBatting);
+          setMonthlyPerformance(monthlyBatting);
+          
+          // Store pitching stats in separate TWP state
+          setPitchingSeasonStats(currentPitching);
+          setPitchingCareerStats(careerPitching);
+          setPitchingVsHandSplits(vsHandPitching);
+          setPitchingHomeRoadSplits(homeRoadPitching);
+          setPitchingMonthlyPerformance(monthlyPitching);
+          
+          console.log('TWP stats - batting:', currentBatting, 'pitching:', currentPitching);
         } else {
-          // Batter or two-way player (show batting stats by default)
+          // Batter only
+          console.log('Fetching BATTER stats...');
           const [current, career, vsHand, homeRoad, monthly] = await Promise.all([
             playerStatsService.getBatterCurrentStats(internalPlayerId, selectedSeason).catch(() => null),
             playerStatsService.getBatterCareerStats(internalPlayerId).catch(() => []),
@@ -348,6 +429,54 @@ function PlayerProfileStats() {
     return pos === 'TWP' || pos === 'Two-Way Player' || playerInfo.is_two_way;
   }, [playerInfo]);
 
+  // Computed: should we show pitching stats?
+  // For TWP: use twoWayViewMode. For pitchers: yes. For batters: no.
+  const showPitchingStats = useMemo(() => {
+    if (isTwoWay) return twoWayViewMode === 'pitching';
+    return isPitcher;
+  }, [isTwoWay, twoWayViewMode, isPitcher]);
+
+  // For TWP: get the active stats based on current view mode
+  const activeSeasonStats = useMemo(() => {
+    if (isTwoWay && twoWayViewMode === 'pitching') return pitchingSeasonStats;
+    return seasonStats;
+  }, [isTwoWay, twoWayViewMode, pitchingSeasonStats, seasonStats]);
+
+  const activeCareerStats = useMemo(() => {
+    if (isTwoWay && twoWayViewMode === 'pitching') return pitchingCareerStats;
+    return careerStats;
+  }, [isTwoWay, twoWayViewMode, pitchingCareerStats, careerStats]);
+
+  const activeVsHandSplits = useMemo(() => {
+    if (isTwoWay && twoWayViewMode === 'pitching') return pitchingVsHandSplits;
+    return vsHandSplits;
+  }, [isTwoWay, twoWayViewMode, pitchingVsHandSplits, vsHandSplits]);
+
+  const activeHomeRoadSplits = useMemo(() => {
+    if (isTwoWay && twoWayViewMode === 'pitching') return pitchingHomeRoadSplits;
+    return homeRoadSplits;
+  }, [isTwoWay, twoWayViewMode, pitchingHomeRoadSplits, homeRoadSplits]);
+
+  const activeMonthlyPerformance = useMemo(() => {
+    if (isTwoWay && twoWayViewMode === 'pitching') return pitchingMonthlyPerformance;
+    return monthlyPerformance;
+  }, [isTwoWay, twoWayViewMode, pitchingMonthlyPerformance, monthlyPerformance]);
+
+  const activeCareerTotals = useMemo(() => {
+    if (isTwoWay && twoWayViewMode === 'pitching') return pitchingCareerTotals;
+    return careerTotals;
+  }, [isTwoWay, twoWayViewMode, pitchingCareerTotals, careerTotals]);
+
+  const activeVsHandSplitsCareer = useMemo(() => {
+    if (isTwoWay && twoWayViewMode === 'pitching') return pitchingVsHandSplitsCareer;
+    return vsHandSplitsCareer;
+  }, [isTwoWay, twoWayViewMode, pitchingVsHandSplitsCareer, vsHandSplitsCareer]);
+
+  const activeHomeRoadSplitsCareer = useMemo(() => {
+    if (isTwoWay && twoWayViewMode === 'pitching') return pitchingHomeRoadSplitsCareer;
+    return homeRoadSplitsCareer;
+  }, [isTwoWay, twoWayViewMode, pitchingHomeRoadSplitsCareer, homeRoadSplitsCareer]);
+
   // Fetch career totals and career splits when Career tab is selected
   const handleCareerTabClick = useCallback(async () => {
     setActiveStatsTab('career');
@@ -375,6 +504,17 @@ function PlayerProfileStats() {
       }
     }
     
+    // For TWP, also fetch pitching career totals if not already loaded
+    if (isTwoWay && !pitchingCareerTotals) {
+      try {
+        const pitchingTotals = await playerStatsService.getPitcherCareerTotals(internalPlayerId);
+        setPitchingCareerTotals(pitchingTotals);
+      } catch (err) {
+        console.error('Error fetching pitching career totals for TWP:', err);
+        setPitchingCareerTotals(null);
+      }
+    }
+    
     // Fetch career splits if not already loaded
     if (!vsHandSplitsCareer && !homeRoadSplitsCareer) {
       setCareerSplitsLoading(true);
@@ -399,7 +539,21 @@ function PlayerProfileStats() {
         setCareerSplitsLoading(false);
       }
     }
-  }, [playerInfo, careerTotals, vsHandSplitsCareer, homeRoadSplitsCareer, isPitcher, isTwoWay]);
+    
+    // For TWP, also fetch pitching career splits if not already loaded
+    if (isTwoWay && !pitchingVsHandSplitsCareer && !pitchingHomeRoadSplitsCareer) {
+      try {
+        const [pitchingVsHandCareer, pitchingHomeRoadCareer] = await Promise.all([
+          playerStatsService.getPitcherVsHandSplitsCareerTotals(internalPlayerId).catch(() => null),
+          playerStatsService.getPitcherHomeRoadSplitsCareerTotals(internalPlayerId).catch(() => null),
+        ]);
+        setPitchingVsHandSplitsCareer(pitchingVsHandCareer);
+        setPitchingHomeRoadSplitsCareer(pitchingHomeRoadCareer);
+      } catch (err) {
+        console.error('Error fetching pitching career splits for TWP:', err);
+      }
+    }
+  }, [playerInfo, careerTotals, vsHandSplitsCareer, homeRoadSplitsCareer, isPitcher, isTwoWay, pitchingCareerTotals, pitchingVsHandSplitsCareer, pitchingHomeRoadSplitsCareer]);
 
   // Get available seasons from career stats (only seasons the player has data for)
   const availableSeasons = useMemo(() => {
@@ -481,8 +635,12 @@ function PlayerProfileStats() {
 
   // Use appropriate chart options based on player type
   const chartMetricOptions = useMemo(() => {
-    return (isPitcher && !isTwoWay) ? pitcherChartMetricOptions : batterChartMetricOptions;
-  }, [isPitcher, isTwoWay]);
+    // For TWP: use twoWayViewMode. For pitchers: pitching. For batters: batting
+    if (isTwoWay) {
+      return twoWayViewMode === 'pitching' ? pitcherChartMetricOptions : batterChartMetricOptions;
+    }
+    return isPitcher ? pitcherChartMetricOptions : batterChartMetricOptions;
+  }, [isPitcher, isTwoWay, twoWayViewMode]);
 
   // Get current metric safely - fallback to first available if selected doesn't exist
   const currentChartMetric = useMemo(() => {
@@ -496,12 +654,14 @@ function PlayerProfileStats() {
 
   // Set default chart metric based on player type
   useEffect(() => {
-    if (isPitcher && !isTwoWay) {
+    // For TWP: use twoWayViewMode. For pitchers: pitching. For batters: batting
+    const showPitching = isTwoWay ? twoWayViewMode === 'pitching' : isPitcher;
+    if (showPitching) {
       setSelectedChartMetric('era');
     } else {
       setSelectedChartMetric('hr');
     }
-  }, [isPitcher, isTwoWay]);
+  }, [isPitcher, isTwoWay, twoWayViewMode]);
 
   // Transform monthly performance API data into chart format
   const getMonthlyChartData = useMemo(() => {
@@ -610,8 +770,8 @@ function PlayerProfileStats() {
     };
 
     // Determine which metrics to use based on player type
-    const metrics = (isPitcher && !isTwoWay) ? pitcherMetrics : batterMetrics;
-    const fieldMappings = (isPitcher && !isTwoWay) ? pitcherFieldMappings : batterFieldMappings;
+    const metrics = showPitchingStats ? pitcherMetrics : batterMetrics;
+    const fieldMappings = showPitchingStats ? pitcherFieldMappings : batterFieldMappings;
     
     metrics.forEach(metric => {
       result[metric] = regularSeasonStats
@@ -633,19 +793,36 @@ function PlayerProfileStats() {
     });
     
     return result;
-  }, [careerStats, isPitcher, isTwoWay]);
+  }, [careerStats, showPitchingStats]);
 
   // Calculate recent form stats from game log (L5, L10, L30 rolling averages for pitchers OR L7, L15, L30 for batters)
   // For postseason/spring training, still compare against regular season baseline
   // Uses its own recentFormGameLog (independent from Game Log section)
+  // For TWP: uses pitchingRecentFormGameLog when in pitching mode
   const recentFormStats = useMemo(() => {
-    if (!recentFormGameLog || recentFormGameLog.length === 0) return null;
+    // Check if this is a true TWP (position explicitly set to TWP, not just is_two_way flag)
+    const pos = playerInfo?.position_abbreviation || playerInfo?.position || playerInfo?.primary_position;
+    const isTruelyTwoWay = pos === 'TWP' || pos === 'Two-Way Player';
+    
+    // Determine which game log to use based on toggle mode
+    // Only use separate pitching game log for true TWP players
+    const activeGameLog = showPitchingStats && isTruelyTwoWay ? pitchingRecentFormGameLog : recentFormGameLog;
+    
+    console.log('recentFormStats calculation - showPitchingStats:', showPitchingStats, 'isTwoWay:', isTwoWay, 'isTruelyTwoWay:', isTruelyTwoWay, 'position:', pos);
+    console.log('recentFormStats - recentFormGameLog length:', recentFormGameLog?.length, 'pitchingRecentFormGameLog length:', pitchingRecentFormGameLog?.length);
+    console.log('recentFormStats - activeGameLog length:', activeGameLog?.length);
+    
+    if (!activeGameLog || activeGameLog.length === 0) {
+      console.log('recentFormStats returning null - no game log data');
+      return null;
+    }
     
     // Sort games by date (most recent first)
-    const sortedGames = [...recentFormGameLog].sort((a, b) => new Date(b.date) - new Date(a.date));
+    const sortedGames = [...activeGameLog].sort((a, b) => new Date(b.date) - new Date(a.date));
+    console.log('recentFormStats - sortedGames first game:', sortedGames[0]);
     
     // ========== PITCHER STATS CALCULATION ==========
-    if (isPitcher && !isTwoWay) {
+    if (showPitchingStats) {
       const calculatePitcherRollingStats = (games) => {
         if (games.length === 0) return null;
         
@@ -701,28 +878,28 @@ function PlayerProfileStats() {
       let season = null;
       if (recentFormSeasonType === 'R') {
         season = calculatePitcherRollingStats(sortedGames);
-      } else if (seasonStats) {
-        const gs = seasonStats.games_started || seasonStats.gs || 0;
-        const ip = seasonStats.innings_pitched || seasonStats.ip || 0;
-        const era = seasonStats.era || 0;
-        const whip = seasonStats.whip || 0;
-        const strikeouts = seasonStats.strikeouts || seasonStats.so || 0;
-        const walks = seasonStats.walks || seasonStats.bb || 0;
+      } else if (activeSeasonStats) {
+        const gs = activeSeasonStats.games_started || activeSeasonStats.gs || 0;
+        const ip = activeSeasonStats.innings_pitched || activeSeasonStats.ip || 0;
+        const era = activeSeasonStats.era || 0;
+        const whip = activeSeasonStats.whip || 0;
+        const strikeouts = activeSeasonStats.strikeouts || activeSeasonStats.so || 0;
+        const walks = activeSeasonStats.walks || activeSeasonStats.bb || 0;
         
         season = {
           games: gs,
           inningsPitched: ip,
           strikeouts,
           walks,
-          earnedRuns: seasonStats.earned_runs_allowed || 0,
-          hitsAllowed: seasonStats.hits_allowed || 0,
-          homeRunsAllowed: seasonStats.home_runs_allowed || 0,
-          wins: seasonStats.wins || 0,
-          losses: seasonStats.losses || 0,
+          earnedRuns: activeSeasonStats.earned_runs_allowed || 0,
+          hitsAllowed: activeSeasonStats.hits_allowed || 0,
+          homeRunsAllowed: activeSeasonStats.home_runs_allowed || 0,
+          wins: activeSeasonStats.wins || 0,
+          losses: activeSeasonStats.losses || 0,
           era,
           whip,
-          kPer9: seasonStats.k_per_9 || 0,
-          bbPer9: seasonStats.bb_per_9 || 0,
+          kPer9: activeSeasonStats.k_per_9 || 0,
+          bbPer9: activeSeasonStats.bb_per_9 || 0,
           kPerGame: gs > 0 ? strikeouts / gs : 0,
           ipPerGame: gs > 0 ? ip / gs : 0,
           isRegularSeasonBaseline: true,
@@ -740,7 +917,7 @@ function PlayerProfileStats() {
         else if (eraDiff <= -10) formStatus = 'cooling';
       }
       
-      return {
+      const pitcherResult = {
         l5,
         l10,
         l30,
@@ -753,6 +930,8 @@ function PlayerProfileStats() {
         isPostseasonView: recentFormSeasonType !== 'R',
         isPitcher: true,
       };
+      console.log('recentFormStats - returning pitcher stats:', pitcherResult);
+      return pitcherResult;
     }
     
     // ========== BATTER STATS CALCULATION ==========
@@ -826,17 +1005,17 @@ function PlayerProfileStats() {
     if (recentFormSeasonType === 'R') {
       // Regular season - calculate from game log
       season = calculateRollingStats(sortedGames);
-    } else if (seasonStats) {
+    } else if (activeSeasonStats) {
       // Postseason/Spring Training - use regular season stats as baseline
-      const g = seasonStats.g || seasonStats.games_played || 0;
-      const atBats = seasonStats.ab || seasonStats.at_bats || 0;
-      const hits = seasonStats.h || seasonStats.hits || 0;
-      const homeRuns = seasonStats.hr || seasonStats.home_runs || 0;
-      const rbis = seasonStats.rbis || seasonStats.rbi || 0;
-      const walks = seasonStats.bb || seasonStats.walks || seasonStats.base_on_balls || 0;
-      const strikeouts = seasonStats.so || seasonStats.strikeouts || seasonStats.strike_outs || 0;
-      const avg = seasonStats.avg || seasonStats.batting_avg || 0;
-      const ops = seasonStats.ops || 0;
+      const g = activeSeasonStats.g || activeSeasonStats.games_played || 0;
+      const atBats = activeSeasonStats.ab || activeSeasonStats.at_bats || 0;
+      const hits = activeSeasonStats.h || activeSeasonStats.hits || 0;
+      const homeRuns = activeSeasonStats.hr || activeSeasonStats.home_runs || 0;
+      const rbis = activeSeasonStats.rbis || activeSeasonStats.rbi || 0;
+      const walks = activeSeasonStats.bb || activeSeasonStats.walks || activeSeasonStats.base_on_balls || 0;
+      const strikeouts = activeSeasonStats.so || activeSeasonStats.strikeouts || activeSeasonStats.strike_outs || 0;
+      const avg = activeSeasonStats.avg || activeSeasonStats.batting_avg || 0;
+      const ops = activeSeasonStats.ops || 0;
       
       season = {
         games: g,
@@ -844,15 +1023,15 @@ function PlayerProfileStats() {
         hits,
         homeRuns,
         rbis,
-        runs: seasonStats.r || seasonStats.runs || 0,
+        runs: activeSeasonStats.r || activeSeasonStats.runs || 0,
         walks,
         strikeouts,
-        stolenBases: seasonStats.sb || seasonStats.stolen_bases || 0,
-        totalBases: seasonStats.tb || seasonStats.total_bases || 0,
+        stolenBases: activeSeasonStats.sb || activeSeasonStats.stolen_bases || 0,
+        totalBases: activeSeasonStats.tb || activeSeasonStats.total_bases || 0,
         avg,
         ops,
-        obp: seasonStats.obp || 0,
-        slg: seasonStats.slg || 0,
+        obp: activeSeasonStats.obp || 0,
+        slg: activeSeasonStats.slg || 0,
         hitsPerGame: g > 0 ? hits / g : 0,
         hrPerGame: g > 0 ? homeRuns / g : 0,
         rbisPerGame: g > 0 ? rbis / g : 0,
@@ -884,7 +1063,7 @@ function PlayerProfileStats() {
       isPostseasonView: recentFormSeasonType !== 'R',
       isPitcher: false,
     };
-  }, [recentFormGameLog, recentFormSeasonType, seasonStats, isPitcher, isTwoWay]);
+  }, [recentFormGameLog, pitchingRecentFormGameLog, recentFormSeasonType, activeSeasonStats, showPitchingStats, playerInfo]);
 
   // Get the current chart data based on view mode
   const getChartData = () => {
@@ -979,6 +1158,24 @@ function PlayerProfileStats() {
                   <span className={`pps-status-dot ${playerInfo.injury_status?.toLowerCase() || (playerInfo.active ? 'active' : 'inactive')}`}></span>
                   {playerInfo.injury_status || playerInfo.roster_status || (playerInfo.active ? 'Active' : 'Inactive')}
                 </div>
+                
+                {/* Two-Way Player Toggle */}
+                {isTwoWay && (
+                  <div className="pps-twoway-toggle">
+                    <button
+                      className={`pps-twoway-btn ${twoWayViewMode === 'batting' ? 'active' : ''}`}
+                      onClick={() => setTwoWayViewMode('batting')}
+                    >
+                      ⚾ Batting
+                    </button>
+                    <button
+                      className={`pps-twoway-btn ${twoWayViewMode === 'pitching' ? 'active' : ''}`}
+                      onClick={() => setTwoWayViewMode('pitching')}
+                    >
+                      ⚡ Pitching
+                    </button>
+                  </div>
+                )}
               </div>
             </div>
 
@@ -1390,14 +1587,15 @@ function PlayerProfileStats() {
             
             <div className="pps-stats-grid">
               {/* Conditional stats cards based on player type */}
-              {isPitcher && !isTwoWay ? (
+              {/* For TWP: use twoWayViewMode toggle. For pitchers: show pitching. For batters: show batting */}
+              {showPitchingStats ? (
                 <>
                   {/* Pitching Stats Card - Primary */}
                   <div className="pps-stats-card">
                     <h3 className="pps-stats-card-title">Pitching</h3>
                     {(statsLoading || (activeStatsTab === 'career' && careerTotalsLoading)) ? (
                       <div className="pps-stats-loading">Loading stats...</div>
-                    ) : (activeStatsTab === 'career' ? careerTotals : seasonStats) ? (
+                    ) : (activeStatsTab === 'career' ? activeCareerTotals : activeSeasonStats) ? (
                       <div className="pps-stats-table">
                         <div className="pps-stat-row header">
                           <span>W</span>
@@ -1410,7 +1608,7 @@ function PlayerProfileStats() {
                         </div>
                         <div className="pps-stat-row values">
                           {(() => {
-                            const stats = activeStatsTab === 'career' ? careerTotals : seasonStats;
+                            const stats = activeStatsTab === 'career' ? activeCareerTotals : activeSeasonStats;
                             return (
                               <>
                                 <span className="pps-highlight">{stats.wins || stats.w || '-'}</span>
@@ -1435,7 +1633,7 @@ function PlayerProfileStats() {
                     <h3 className="pps-stats-card-title">Advanced</h3>
                     {(statsLoading || (activeStatsTab === 'career' && careerTotalsLoading)) ? (
                       <div className="pps-stats-loading">Loading stats...</div>
-                    ) : (activeStatsTab === 'career' ? careerTotals : seasonStats) ? (
+                    ) : (activeStatsTab === 'career' ? activeCareerTotals : activeSeasonStats) ? (
                       <div className="pps-stats-table">
                         <div className="pps-stat-row header">
                           <span>K/9</span>
@@ -1446,7 +1644,7 @@ function PlayerProfileStats() {
                         </div>
                         <div className="pps-stat-row values">
                           {(() => {
-                            const stats = activeStatsTab === 'career' ? careerTotals : seasonStats;
+                            const stats = activeStatsTab === 'career' ? activeCareerTotals : activeSeasonStats;
                             return (
                               <>
                                 <span className="pps-highlight">{stats.k_per_9?.toFixed(2) || '-'}</span>
@@ -1469,7 +1667,7 @@ function PlayerProfileStats() {
                     <h3 className="pps-stats-card-title">vs Opponents</h3>
                     {(statsLoading || (activeStatsTab === 'career' && careerTotalsLoading)) ? (
                       <div className="pps-stats-loading">Loading stats...</div>
-                    ) : (activeStatsTab === 'career' ? careerTotals : seasonStats) ? (
+                    ) : (activeStatsTab === 'career' ? activeCareerTotals : activeSeasonStats) ? (
                       <div className="pps-stats-table">
                         <div className="pps-stat-row header">
                           <span>OPP AVG</span>
@@ -1480,7 +1678,7 @@ function PlayerProfileStats() {
                         </div>
                         <div className="pps-stat-row values">
                           {(() => {
-                            const stats = activeStatsTab === 'career' ? careerTotals : seasonStats;
+                            const stats = activeStatsTab === 'career' ? activeCareerTotals : activeSeasonStats;
                             return (
                               <>
                                 <span>{stats.opponent_avg?.toFixed(3)?.replace(/^0/, '') || '-'}</span>
@@ -1505,7 +1703,7 @@ function PlayerProfileStats() {
                     <h3 className="pps-stats-card-title">Batting</h3>
                     {(statsLoading || (activeStatsTab === 'career' && careerTotalsLoading)) ? (
                       <div className="pps-stats-loading">Loading stats...</div>
-                    ) : (activeStatsTab === 'career' ? careerTotals : seasonStats) ? (
+                    ) : (activeStatsTab === 'career' ? activeCareerTotals : activeSeasonStats) ? (
                       <div className="pps-stats-table">
                         <div className="pps-stat-row header">
                           <span>G</span>
@@ -1519,7 +1717,7 @@ function PlayerProfileStats() {
                         </div>
                         <div className="pps-stat-row values">
                           {(() => {
-                            const stats = activeStatsTab === 'career' ? careerTotals : seasonStats;
+                            const stats = activeStatsTab === 'career' ? activeCareerTotals : activeSeasonStats;
                             return (
                               <>
                                 <span>{stats.g || stats.games_played || '-'}</span>
@@ -1545,7 +1743,7 @@ function PlayerProfileStats() {
                     <h3 className="pps-stats-card-title">Additional</h3>
                     {(statsLoading || (activeStatsTab === 'career' && careerTotalsLoading)) ? (
                       <div className="pps-stats-loading">Loading stats...</div>
-                    ) : (activeStatsTab === 'career' ? careerTotals : seasonStats) ? (
+                    ) : (activeStatsTab === 'career' ? activeCareerTotals : activeSeasonStats) ? (
                       <div className="pps-stats-table">
                         <div className="pps-stat-row header">
                           <span>SB</span>
@@ -1557,7 +1755,7 @@ function PlayerProfileStats() {
                         </div>
                         <div className="pps-stat-row values">
                           {(() => {
-                            const stats = activeStatsTab === 'career' ? careerTotals : seasonStats;
+                            const stats = activeStatsTab === 'career' ? activeCareerTotals : activeSeasonStats;
                             return (
                               <>
                                 <span>{stats.sb || stats.stolen_bases || '-'}</span>
@@ -1669,21 +1867,21 @@ function PlayerProfileStats() {
                   {(() => {
                     // Use career splits if Career tab is active, otherwise use season splits
                     let vsLeft;
-                    if (activeStatsTab === 'career' && vsHandSplitsCareer) {
+                    if (activeStatsTab === 'career' && activeVsHandSplitsCareer) {
                       // For pitchers: vs_lhb, for batters: vs_lhp
-                      vsLeft = isPitcher && !isTwoWay ? vsHandSplitsCareer?.vs_lhb : vsHandSplitsCareer?.vs_lhp;
+                      vsLeft = showPitchingStats ? activeVsHandSplitsCareer?.vs_lhb : activeVsHandSplitsCareer?.vs_lhp;
                     } else {
                       // API returns array with season entries containing vs_lhp/vs_rhp nested objects
-                      const seasonSplits = vsHandSplits?.find(s => 
+                      const seasonSplits = activeVsHandSplits?.find(s => 
                         String(s.season) === String(selectedSeason)
                       );
-                      vsLeft = isPitcher && !isTwoWay 
-                        ? (seasonSplits?.vs_lhb || vsHandSplits?.find(s => s.split_type === 'vs_lhb' || s.vs_hand === 'L'))
-                        : (seasonSplits?.vs_lhp || vsHandSplits?.find(s => s.split_type === 'vs_lhp' || s.vs_hand === 'L'));
+                      vsLeft = showPitchingStats 
+                        ? (seasonSplits?.vs_lhb || activeVsHandSplits?.find(s => s.split_type === 'vs_lhb' || s.vs_hand === 'L'))
+                        : (seasonSplits?.vs_lhp || activeVsHandSplits?.find(s => s.split_type === 'vs_lhp' || s.vs_hand === 'L'));
                     }
                     
                     // Pitcher splits
-                    if (isPitcher && !isTwoWay) {
+                    if (showPitchingStats) {
                       return (
                         <div className="pps-split-card vs-left">
                           <div className="pps-split-header">
@@ -1791,21 +1989,21 @@ function PlayerProfileStats() {
                   {(() => {
                     // Use career splits if Career tab is active, otherwise use season splits
                     let vsRight;
-                    if (activeStatsTab === 'career' && vsHandSplitsCareer) {
+                    if (activeStatsTab === 'career' && activeVsHandSplitsCareer) {
                       // For pitchers: vs_rhb, for batters: vs_rhp
-                      vsRight = isPitcher && !isTwoWay ? vsHandSplitsCareer?.vs_rhb : vsHandSplitsCareer?.vs_rhp;
+                      vsRight = showPitchingStats ? activeVsHandSplitsCareer?.vs_rhb : activeVsHandSplitsCareer?.vs_rhp;
                     } else {
                       // API returns array with season entries containing vs_lhp/vs_rhp nested objects
-                      const seasonSplits = vsHandSplits?.find(s => 
+                      const seasonSplits = activeVsHandSplits?.find(s => 
                         String(s.season) === String(selectedSeason)
                       );
-                      vsRight = isPitcher && !isTwoWay 
-                        ? (seasonSplits?.vs_rhb || vsHandSplits?.find(s => s.split_type === 'vs_rhb' || s.vs_hand === 'R'))
-                        : (seasonSplits?.vs_rhp || vsHandSplits?.find(s => s.split_type === 'vs_rhp' || s.vs_hand === 'R'));
+                      vsRight = showPitchingStats 
+                        ? (seasonSplits?.vs_rhb || activeVsHandSplits?.find(s => s.split_type === 'vs_rhb' || s.vs_hand === 'R'))
+                        : (seasonSplits?.vs_rhp || activeVsHandSplits?.find(s => s.split_type === 'vs_rhp' || s.vs_hand === 'R'));
                     }
                     
                     // Pitcher splits
-                    if (isPitcher && !isTwoWay) {
+                    if (showPitchingStats) {
                       return (
                         <div className="pps-split-card vs-right">
                           <div className="pps-split-header">
@@ -1913,21 +2111,21 @@ function PlayerProfileStats() {
                   {(() => {
                     // Use career splits if Career tab is active, otherwise use season splits
                     let homeSplit;
-                    if (activeStatsTab === 'career' && homeRoadSplitsCareer) {
-                      homeSplit = homeRoadSplitsCareer?.at_home;
+                    if (activeStatsTab === 'career' && activeHomeRoadSplitsCareer) {
+                      homeSplit = activeHomeRoadSplitsCareer?.at_home;
                     } else {
                       // API returns array with season entries containing at_home/on_road nested objects
-                      const seasonSplits = homeRoadSplits?.find(s => 
+                      const seasonSplits = activeHomeRoadSplits?.find(s => 
                         String(s.season) === String(selectedSeason)
                       );
-                      homeSplit = seasonSplits?.at_home || homeRoadSplits?.find(s => 
+                      homeSplit = seasonSplits?.at_home || activeHomeRoadSplits?.find(s => 
                         s.split_type === 'home' || s.split_type === 'at_home' || 
                         s.split === 'home' || s.location === 'home'
                       );
                     }
                     
                     // Pitcher Home/Road splits
-                    if (isPitcher && !isTwoWay) {
+                    if (showPitchingStats) {
                       return (
                         <div className="pps-split-card home">
                           <div className="pps-split-header">
@@ -2031,21 +2229,21 @@ function PlayerProfileStats() {
                   {(() => {
                     // Use career splits if Career tab is active, otherwise use season splits
                     let awaySplit;
-                    if (activeStatsTab === 'career' && homeRoadSplitsCareer) {
-                      awaySplit = homeRoadSplitsCareer?.on_road;
+                    if (activeStatsTab === 'career' && activeHomeRoadSplitsCareer) {
+                      awaySplit = activeHomeRoadSplitsCareer?.on_road;
                     } else {
                       // API returns array with season entries containing at_home/on_road nested objects
-                      const seasonSplits = homeRoadSplits?.find(s => 
+                      const seasonSplits = activeHomeRoadSplits?.find(s => 
                         String(s.season) === String(selectedSeason)
                       );
-                      awaySplit = seasonSplits?.on_road || homeRoadSplits?.find(s => 
+                      awaySplit = seasonSplits?.on_road || activeHomeRoadSplits?.find(s => 
                         s.split_type === 'away' || s.split_type === 'road' || s.split_type === 'on_road' ||
                         s.split === 'away' || s.split === 'road' || s.location === 'away'
                       );
                     }
                     
                     // Pitcher Away/Road splits
-                    if (isPitcher && !isTwoWay) {
+                    if (showPitchingStats) {
                       return (
                         <div className="pps-split-card away">
                           <div className="pps-split-header">
@@ -2356,7 +2554,7 @@ function PlayerProfileStats() {
                           <th>Date</th>
                           <th>Opp</th>
                           <th>Result</th>
-                          {isPitcher && !isTwoWay ? (
+                          {showPitchingStats ? (
                             <>
                               <th>Dec</th>
                               <th>IP</th>
@@ -2417,7 +2615,7 @@ function PlayerProfileStats() {
                                 <td className={`pps-game-result ${resultClass}`}>
                                   {result} {playerScore}-{oppScore}
                                 </td>
-                                {isPitcher && !isTwoWay ? (
+                                {showPitchingStats ? (
                                   <>
                                     <td className={`pps-decision ${decisionClass}`}>{pitcherDecision}</td>
                                     <td className={game.innings_pitched >= 6 ? 'pps-highlight' : ''}>{game.innings_pitched?.toFixed(1) || '-'}</td>

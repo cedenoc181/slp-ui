@@ -216,6 +216,45 @@
   position: relative;
 }
 
+/* Two-Way Player Toggle */
+.pps-twoway-toggle {
+  display: flex;
+  gap: 2px;
+  background: linear-gradient(135deg, rgba(139, 69, 19, 0.3), rgba(255, 140, 0, 0.3));
+  padding: 3px;
+  border-radius: 8px;
+  margin-top: 0.75rem;
+  border: 1px solid rgba(255, 140, 0, 0.4);
+  width: fit-content;
+}
+
+.pps-twoway-btn {
+  padding: 0.4rem 0.75rem;
+  background: transparent;
+  border: none;
+  border-radius: 6px;
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  white-space: nowrap;
+}
+
+.pps-twoway-btn:hover {
+  color: #fff;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.pps-twoway-btn.active {
+  background: linear-gradient(135deg, #ff8c00, #e65c00);
+  color: #fff;
+  box-shadow: 0 2px 8px rgba(255, 140, 0, 0.4);
+}
+
 .pps-tab-btn {
   padding: 0.5rem 1rem;
   background: transparent;
