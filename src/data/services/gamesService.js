@@ -80,4 +80,5 @@ class GamesService {
   }
 }
 
-export default new GamesService();
+const gamesService = new GamesService();
+export default gamesService;

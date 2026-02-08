@@ -203,7 +203,7 @@ function PlayerProfileStats() {
     fetchTeamHistory();
   }, [playerInfo]);
 
-  // Fetch game logs when player, season, or season type changes
+  // Fetch game logs when player, season, season type, or TWP view mode changes
   useEffect(() => {
     const fetchGameLogs = async () => {
       if (!playerInfo?.id) return;
@@ -215,10 +215,14 @@ function PlayerProfileStats() {
         // Only consider true TWP (position explicitly set to TWP) for game log fetching
         const isTruelyTwoWay = pos === 'TWP' || pos === 'Two-Way Player';
         
-        console.log('Game Log fetch - position:', pos, 'isPitcher:', isPitcher, 'isTruelyTwoWay:', isTruelyTwoWay, 'seasonType:', gameLogSeasonType);
+        // For TWP: use twoWayViewMode to determine which game logs to fetch
+        // For pitchers: always fetch pitcher logs. For batters: always fetch batter logs.
+        const shouldFetchPitcherLogs = isTruelyTwoWay ? twoWayViewMode === 'pitching' : isPitcher;
+        
+        console.log('Game Log fetch - position:', pos, 'isPitcher:', isPitcher, 'isTruelyTwoWay:', isTruelyTwoWay, 'twoWayViewMode:', twoWayViewMode, 'shouldFetchPitcherLogs:', shouldFetchPitcherLogs, 'seasonType:', gameLogSeasonType);
         
         let response;
-        if (isPitcher && !isTruelyTwoWay) {
+        if (shouldFetchPitcherLogs) {
           console.log('Fetching PITCHER game logs for main Game Log section...');
           response = await gamesService.getPitcherGameLogs(
             playerInfo.id,
@@ -241,6 +245,8 @@ function PlayerProfileStats() {
         const games = response?.games || [];
         console.log('Main Game Log games count:', games.length);
         setGameLog(Array.isArray(games) ? games : []);
+        // Reset to page 1 when fetching new data
+        setGameLogPage(1);
       } catch (err) {
         console.error('Error fetching game logs:', err);
         setGameLog([]);
@@ -250,7 +256,7 @@ function PlayerProfileStats() {
     };
     
     fetchGameLogs();
-  }, [playerInfo, selectedSeason, gameLogSeasonType]);
+  }, [playerInfo, selectedSeason, gameLogSeasonType, twoWayViewMode]);
 
   // Fetch game logs for Recent Form section (independent from Game Log section)
   useEffect(() => {
@@ -664,13 +670,14 @@ function PlayerProfileStats() {
   }, [isPitcher, isTwoWay, twoWayViewMode]);
 
   // Transform monthly performance API data into chart format
+  // For TWP: uses activeMonthlyPerformance which switches based on batting/pitching toggle
   const getMonthlyChartData = useMemo(() => {
-    console.log('monthlyPerformance:', monthlyPerformance);
+    console.log('activeMonthlyPerformance:', activeMonthlyPerformance);
     
-    if (!monthlyPerformance) return {};
+    if (!activeMonthlyPerformance) return {};
     
     // API returns data under 'monthly_stats' or 'batting' object with full month names
-    const statsData = monthlyPerformance.monthly_stats || monthlyPerformance.batting || monthlyPerformance;
+    const statsData = activeMonthlyPerformance.monthly_stats || activeMonthlyPerformance.batting || activeMonthlyPerformance.pitching || activeMonthlyPerformance;
     console.log('statsData:', statsData);
     
     if (!statsData || typeof statsData !== 'object') return {};
@@ -729,7 +736,7 @@ function PlayerProfileStats() {
     
     console.log('getMonthlyChartData result:', result);
     return result;
-  }, [monthlyPerformance]);
+  }, [activeMonthlyPerformance]);
 
   // Transform career stats API data into yearly chart format (regular season only - season_type: 2)
   const getYearlyChartData = useMemo(() => {
@@ -2588,9 +2595,9 @@ function PlayerProfileStats() {
                           const paginatedGames = gameLog.slice(startIndex, endIndex);
                           
                           return paginatedGames.map((game) => {
-                            // Determine game result (W/L)
-                            const playerScore = game.is_home ? game.home_runs_score : game.away_runs_score;
-                            const oppScore = game.is_home ? game.away_runs_score : game.home_runs_score;
+                            // Determine game result (W/L) - support both new (team_score/opponent_score) and old (home_runs_score/away_runs_score) API formats
+                            const playerScore = game.team_score ?? (game.is_home ? game.home_runs_score : game.away_runs_score);
+                            const oppScore = game.opponent_score ?? (game.is_home ? game.away_runs_score : game.home_runs_score);
                             const result = playerScore > oppScore ? 'W' : playerScore < oppScore ? 'L' : 'T';
                             const resultClass = result === 'W' ? 'win' : result === 'L' ? 'loss' : 'tie';
                             
@@ -2601,9 +2608,9 @@ function PlayerProfileStats() {
                               day: 'numeric' 
                             });
                             
-                            // Pitcher decision (W/L/S/H/ND)
-                            const pitcherDecision = game.win ? 'W' : game.loss ? 'L' : game.save ? 'S' : game.hold ? 'H' : '-';
-                            const decisionClass = pitcherDecision === 'W' ? 'win' : pitcherDecision === 'L' ? 'loss' : pitcherDecision === 'S' ? 'save' : '';
+                            // Pitcher decision (W/L/ND) - uses win, loss, no_decision booleans from API
+                            const pitcherDecision = game.win ? 'W' : game.loss ? 'L' : '-';
+                            const decisionClass = pitcherDecision === 'W' ? 'win' : pitcherDecision === 'L' ? 'loss' : '';
                             
                             return (
                               <tr key={game.game_pk}>
