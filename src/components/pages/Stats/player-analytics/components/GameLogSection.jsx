@@ -1,8 +1,58 @@
+/**
+ * ============================================================================
+ * GAME LOG SECTION COMPONENT
+ * ============================================================================
+ * 
+ * PURPOSE:
+ * Displays a detailed game-by-game log of player performance with pagination.
+ * Shows individual game stats for either batting or pitching depending on
+ * the player type and current view mode.
+ * 
+ * PARENT COMPONENT:
+ * - playerProfileStats.jsx (main Player Profile page)
+ * 
+ * DATA SOURCES:
+ * - gameLog: Array of game entries from gamesService
+ * - Data comes from parent, filtered by season and season type
+ * 
+ * KEY FEATURES:
+ * 1. Season Type Filter: Switch between Regular, Spring, Postseason
+ * 2. Paginated Table: 10 games per page with prev/next navigation
+ * 3. Game Results: Shows W/L with score
+ * 4. Stat Highlighting: Key stats are visually highlighted
+ * 
+ * TWO-WAY PLAYER (TWP) SUPPORT:
+ * - showPitchingStats determines column layout
+ * - Pitchers: Dec, IP, H, R, ER, BB, K, HR, PC
+ * - Batters: AB, H, HR, RBI, R, BB, SO, SB, TB
+ * 
+ * HIGHLIGHTING RULES:
+ * - Batters: Hits > 0, HR > 0, RBI > 0, SB > 0, TB > 0
+ * - Pitchers: IP >= 6, ER = 0, K >= 10, HR allowed (danger)
+ * 
+ * STATE MANAGEMENT:
+ * - gameLogPage: Internal state for pagination (resets on season type change)
+ * 
+ * PERFORMANCE NOTES:
+ * - Wrapped in React.memo to prevent unnecessary re-renders
+ * - Pagination state is local to avoid parent re-renders
+ * 
+ * ============================================================================
+ */
+
 import React, { memo, useState, useCallback } from 'react';
 
 /**
- * Game Log Section Component
- * Displays paginated game logs with season type filter
+ * GameLogSection - Displays paginated game-by-game performance log
+ * 
+ * @param {Object} props
+ * @param {Array} props.gameLog - Array of game objects with performance data
+ * @param {boolean} props.gameLogLoading - Loading state for game log data
+ * @param {string} props.selectedSeason - Currently selected season year
+ * @param {string} props.gameLogSeasonType - 'R' (Regular), 'S' (Spring), 'P' (Postseason)
+ * @param {Function} props.setGameLogSeasonType - Callback to change season type
+ * @param {boolean} props.showPitchingStats - Whether to show pitching (true) or batting (false) columns
+ * @param {number} [props.gamesPerPage=10] - Number of games per page
  */
 const GameLogSection = memo(function GameLogSection({
   gameLog,

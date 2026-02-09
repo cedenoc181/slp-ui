@@ -1,8 +1,59 @@
+/**
+ * ============================================================================
+ * PLAYER PROFILE HEADER COMPONENT
+ * ============================================================================
+ * 
+ * PURPOSE:
+ * Displays the main player identity section at the top of the Player Profile
+ * page. Shows the player's photo, name, team, position, and bio information.
+ * 
+ * PARENT COMPONENT:
+ * - playerProfileStats.jsx (main Player Profile page)
+ * 
+ * DATA SOURCES:
+ * - playerInfo: Player info object from playerStatsService
+ * 
+ * KEY FEATURES:
+ * 1. Player Photo: Headshot from MLB static CDN
+ * 2. Jersey Number: Displayed as overlay on photo
+ * 3. Player Identity: Name, position, team with logo
+ * 4. Status Badge: Active/Inactive or injury status
+ * 5. Quick Stats: Bats, Throws, Age, Height, Weight, Debut date
+ * 6. TWP Toggle: For two-way players, switch between batting/pitching views
+ * 
+ * TWO-WAY PLAYER (TWP) SUPPORT:
+ * - Shows toggle buttons when isTwoWay is true
+ * - Allows switching between batting and pitching views
+ * - Toggle state managed by parent via setTwoWayViewMode
+ * 
+ * EXTERNAL RESOURCES:
+ * - Player headshots: MLB static CDN (img.mlbstatic.com)
+ * - Team logos: MLB static CDN (www.mlbstatic.com/team-logos)
+ * 
+ * HELPER FUNCTIONS:
+ * - getTeamLogoUrl(teamId): Returns URL for team logo SVG
+ * - getPlayerHeadshotUrl(mlbId): Returns URL for player headshot
+ * - formatDate: Passed from parent to format debut date
+ * 
+ * PERFORMANCE NOTES:
+ * - Wrapped in React.memo to prevent unnecessary re-renders
+ * - Image onError handler hides broken images
+ * 
+ * ============================================================================
+ */
+
 import React, { memo } from 'react';
 
 /**
- * Player Profile Header Component
- * Displays player photo, name, team, position, quick stats, and TWP toggle
+ * PlayerProfileHeader - Displays player identity and bio information
+ * 
+ * @param {Object} props
+ * @param {Object} props.playerInfo - Player info object with all bio data
+ * @param {number} props.playerAge - Calculated player age (fallback for current_age)
+ * @param {boolean} props.isTwoWay - Whether player is a two-way player
+ * @param {string} props.twoWayViewMode - 'batting' or 'pitching' for TWP
+ * @param {Function} props.setTwoWayViewMode - Callback to switch TWP view
+ * @param {Function} props.formatDate - Function to format date strings
  */
 const PlayerProfileHeader = memo(function PlayerProfileHeader({
   playerInfo,
