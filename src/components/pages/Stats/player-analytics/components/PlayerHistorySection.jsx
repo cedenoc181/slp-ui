@@ -20,12 +20,14 @@
  * 1. Team Timeline: Visual timeline showing teams played for with tenure info
  * 2. Injury List: Chronological list of IL stints with recovery status
  * 3. Responsive Layout: Two-column layout on desktop, stacked on mobile
+ * 4. Team Navigation: Click on a team to view their Team Analytics page
  * 
  * TEAM HISTORY LOGIC:
  * - Groups roster entries by team_id
  * - Calculates year ranges (e.g., "2019 - Present")
  * - Shows total games played per team
  * - Sorts by most recent first
+ * - Clicking a team navigates to /team-analytics/{urlName}?season={endYear}
  * 
  * INJURY HISTORY LOGIC:
  * - Shows injury description, date, and duration
@@ -36,7 +38,8 @@
  * - getTeamLogoUrl(mlbTeamId): Returns URL for team logo image
  * 
  * DEPENDENCIES:
- * - TEAM_METADATA from apiConstants for MLB team ID lookup
+ * - TEAM_METADATA from apiConstants for MLB team ID lookup and urlName
+ * - useNavigate from react-router-dom for team navigation
  * 
  * PERFORMANCE NOTES:
  * - Wrapped in React.memo to prevent unnecessary re-renders
@@ -46,6 +49,7 @@
  */
 
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { TEAM_METADATA } from '../../../../../data/constants/apiConstants';
 
 /**
@@ -63,6 +67,24 @@ const PlayerHistorySection = React.memo(function PlayerHistorySection({
   playerInfo,
   getTeamLogoUrl,
 }) {
+  const navigate = useNavigate();
+
+  /**
+   * Navigates to the Team Analytics page for the selected team
+   * Uses the later year (endYear) of the player's tenure for the season param
+   * Scrolls to top of page after navigation
+   * 
+   * @param {string} teamAbbreviation - Team abbreviation (e.g., "NYY", "LAD")
+   * @param {number} endYear - The most recent year of the player's tenure with this team
+   */
+  const handleTeamClick = (teamAbbreviation, endYear) => {
+    const teamData = TEAM_METADATA[teamAbbreviation];
+    if (teamData?.urlName) {
+      navigate(`/team-analytics/${teamData.urlName}?season=${endYear}`);
+      window.scrollTo(0, 0);
+    }
+  };
+
   /**
    * Groups roster history by team and calculates tenure statistics
    * Returns array sorted by most recent team first
@@ -130,6 +152,16 @@ const PlayerHistorySection = React.memo(function PlayerHistorySection({
               <div 
                 key={team.teamId} 
                 className={`pps-timeline-item ${idx === 0 ? 'current' : ''}`}
+                onClick={() => handleTeamClick(team.teamAbbreviation, team.endYear)}
+                style={{ cursor: 'pointer' }}
+                role="button"
+                tabIndex={0}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    handleTeamClick(team.teamAbbreviation, team.endYear);
+                  }
+                }}
+                title={`View ${team.teamName} ${team.endYear} season`}
               >
                 {/* Timeline dot marker */}
                 <div className="pps-timeline-marker"></div>
@@ -171,30 +203,52 @@ const PlayerHistorySection = React.memo(function PlayerHistorySection({
             ))
           ) : (
             // Fallback: Show current team if no roster history available
-            <div className="pps-timeline-item current">
-              <div className="pps-timeline-marker"></div>
-              <div className="pps-timeline-content">
-                <div className="pps-timeline-team">
-                  {playerInfo?.current_team?.mlb_team_id && (
-                    <img 
-                      src={getTeamLogoUrl(playerInfo.current_team.mlb_team_id)} 
-                      alt={playerInfo.current_team?.team_name || ''}
-                      className="pps-timeline-team-logo"
-                    />
-                  )}
-                  <div className="pps-timeline-team-info">
-                    <span className="pps-timeline-team-name">
-                      {playerInfo?.current_team?.team_name || 'Current Team'}
-                    </span>
-                    <span className="pps-timeline-years">
-                      {playerInfo?.first_active_season 
-                        ? `${playerInfo.first_active_season} - Present` 
-                        : 'Present'}
-                    </span>
+            (() => {
+              // Find team abbreviation from TEAM_METADATA by matching mlbId or team name
+              const currentTeamAbbr = Object.keys(TEAM_METADATA).find(
+                abbr => TEAM_METADATA[abbr].mlbId === playerInfo?.current_team?.mlb_team_id
+              );
+              const currentSeason = new Date().getFullYear();
+              
+              return (
+                <div 
+                  className="pps-timeline-item current"
+                  onClick={() => currentTeamAbbr && handleTeamClick(currentTeamAbbr, currentSeason)}
+                  style={{ cursor: currentTeamAbbr ? 'pointer' : 'default' }}
+                  role={currentTeamAbbr ? 'button' : undefined}
+                  tabIndex={currentTeamAbbr ? 0 : undefined}
+                  onKeyDown={(e) => {
+                    if (currentTeamAbbr && (e.key === 'Enter' || e.key === ' ')) {
+                      handleTeamClick(currentTeamAbbr, currentSeason);
+                    }
+                  }}
+                  title={currentTeamAbbr ? `View ${playerInfo?.current_team?.team_name} ${currentSeason} season` : undefined}
+                >
+                  <div className="pps-timeline-marker"></div>
+                  <div className="pps-timeline-content">
+                    <div className="pps-timeline-team">
+                      {playerInfo?.current_team?.mlb_team_id && (
+                        <img 
+                          src={getTeamLogoUrl(playerInfo.current_team.mlb_team_id)} 
+                          alt={playerInfo.current_team?.team_name || ''}
+                          className="pps-timeline-team-logo"
+                        />
+                      )}
+                      <div className="pps-timeline-team-info">
+                        <span className="pps-timeline-team-name">
+                          {playerInfo?.current_team?.team_name || 'Current Team'}
+                        </span>
+                        <span className="pps-timeline-years">
+                          {playerInfo?.first_active_season 
+                            ? `${playerInfo.first_active_season} - Present` 
+                            : 'Present'}
+                        </span>
+                      </div>
+                    </div>
                   </div>
                 </div>
-              </div>
-            </div>
+              );
+            })()
           )}
         </div>
       </section>
