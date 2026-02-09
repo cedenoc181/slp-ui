@@ -7,6 +7,19 @@ import rosterService from '../../../../data/services/rosterService';
 import gamesService from '../../../../data/services/gamesService';
 import '../../../../styles/stats-page-styling/player-profile.css';
 
+// Minimum loading duration to prevent flash (in ms)
+const MIN_LOADING_DURATION = 400;
+
+// Helper to ensure minimum loading time for smoother UX
+const withMinLoadingTime = async (promise, startTime) => {
+  const result = await promise;
+  const elapsed = Date.now() - startTime;
+  if (elapsed < MIN_LOADING_DURATION) {
+    await new Promise(resolve => setTimeout(resolve, MIN_LOADING_DURATION - elapsed));
+  }
+  return result;
+};
+
 // Helper to extract MLB ID from name slug (e.g., "aaron-judge-592450" -> 592450)
 // Also handles raw numeric IDs for backwards compatibility
 const extractMlbIdFromSlug = (slug) => {
@@ -34,12 +47,20 @@ function PlayerProfileStats() {
   }, [nameSlug]);
   
   // Initialize season from URL params or default
+  // MLB season starts April 1st - before that, default to previous year
   const [selectedSeason, setSelectedSeason] = useState(() => {
     const seasonParam = searchParams.get('season');
     if (seasonParam && SEASONS.includes(seasonParam)) {
       return seasonParam;
     }
-    return '2025';
+    // Determine default season based on current date
+    // If before April 1st, use previous year (no data for current year yet)
+    const now = new Date();
+    const currentYear = now.getFullYear();
+    const aprilFirst = new Date(currentYear, 3, 1); // Month is 0-indexed, so 3 = April
+    const defaultSeason = now < aprilFirst ? String(currentYear - 1) : String(currentYear);
+    // Use calculated default if available in SEASONS, otherwise use most recent available season
+    return SEASONS.includes(defaultSeason) ? defaultSeason : SEASONS[0];
   });
 
   // State for active tabs/filters
@@ -208,6 +229,7 @@ function PlayerProfileStats() {
     const fetchGameLogs = async () => {
       if (!playerInfo?.id) return;
       
+      const startTime = Date.now();
       setGameLogLoading(true);
       try {
         const pos = playerInfo.position_abbreviation || playerInfo.position || playerInfo.primary_position;
@@ -244,6 +266,13 @@ function PlayerProfileStats() {
         // API returns { games: [...] }
         const games = response?.games || [];
         console.log('Main Game Log games count:', games.length);
+        
+        // Ensure minimum loading time for smoother UX
+        const elapsed = Date.now() - startTime;
+        if (elapsed < MIN_LOADING_DURATION) {
+          await new Promise(resolve => setTimeout(resolve, MIN_LOADING_DURATION - elapsed));
+        }
+        
         setGameLog(Array.isArray(games) ? games : []);
         // Reset to page 1 when fetching new data
         setGameLogPage(1);
@@ -263,6 +292,7 @@ function PlayerProfileStats() {
     const fetchRecentFormGameLogs = async () => {
       if (!playerInfo?.id) return;
       
+      const startTime = Date.now();
       setRecentFormLoading(true);
       try {
         const pos = playerInfo.position_abbreviation || playerInfo.position || playerInfo.primary_position;
@@ -273,6 +303,9 @@ function PlayerProfileStats() {
         
         console.log('Recent Form fetch - position:', pos, 'isPitcher:', isPitcherPos, 'isTruelyTwoWay:', isTruelyTwoWay, 'is_two_way flag:', playerInfo.is_two_way, 'seasonType:', recentFormSeasonType);
         
+        let battingGames = [];
+        let pitchingGames = [];
+        
         if (isTruelyTwoWay) {
           // For true TWP (like Ohtani), fetch BOTH batting and pitching game logs
           const [battingResponse, pitchingResponse] = await Promise.all([
@@ -280,11 +313,9 @@ function PlayerProfileStats() {
             gamesService.getPitcherGameLogs(playerInfo.id, selectedSeason, recentFormSeasonType).catch(() => ({ games: [] })),
           ]);
           
-          const battingGames = battingResponse?.games || [];
-          const pitchingGames = pitchingResponse?.games || [];
+          battingGames = battingResponse?.games || [];
+          pitchingGames = pitchingResponse?.games || [];
           console.log('TWP Recent Form - batting games:', battingGames.length, 'pitching games:', pitchingGames.length);
-          setRecentFormGameLog(Array.isArray(battingGames) ? battingGames : []);
-          setPitchingRecentFormGameLog(Array.isArray(pitchingGames) ? pitchingGames : []);
         } else if (isPitcherPos) {
           // Regular pitcher - fetch pitcher game logs into recentFormGameLog
           console.log('Fetching pitcher game logs for player:', playerInfo.id, 'season:', selectedSeason, 'seasonType:', recentFormSeasonType);
@@ -296,8 +327,7 @@ function PlayerProfileStats() {
           console.log('Pitcher Recent Form FULL response:', JSON.stringify(response));
           const games = response?.games || response || [];
           console.log('Pitcher Recent Form games:', games.length, 'isArray:', Array.isArray(games));
-          setRecentFormGameLog(Array.isArray(games) ? games : []);
-          setPitchingRecentFormGameLog([]);
+          battingGames = Array.isArray(games) ? games : [];
         } else {
           const response = await gamesService.getBatterGameLogs(
             playerInfo.id,
@@ -306,9 +336,17 @@ function PlayerProfileStats() {
           );
           const games = response?.games || [];
           console.log('Batter Recent Form games:', games.length);
-          setRecentFormGameLog(Array.isArray(games) ? games : []);
-          setPitchingRecentFormGameLog([]);
+          battingGames = Array.isArray(games) ? games : [];
         }
+        
+        // Ensure minimum loading time for smoother UX
+        const elapsed = Date.now() - startTime;
+        if (elapsed < MIN_LOADING_DURATION) {
+          await new Promise(resolve => setTimeout(resolve, MIN_LOADING_DURATION - elapsed));
+        }
+        
+        setRecentFormGameLog(battingGames);
+        setPitchingRecentFormGameLog(pitchingGames);
       } catch (err) {
         console.error('Error fetching recent form game logs:', err);
         setRecentFormGameLog([]);
@@ -329,9 +367,22 @@ function PlayerProfileStats() {
         return;
       }
       
+      const startTime = Date.now();
       const internalPlayerId = playerInfo.id;
       console.log('Fetching stats for internal player ID:', internalPlayerId, 'season:', selectedSeason);
       setStatsLoading(true);
+      
+      // Variables to hold results before setting state
+      let seasonStatsResult = null;
+      let careerStatsResult = [];
+      let vsHandSplitsResult = [];
+      let homeRoadSplitsResult = [];
+      let monthlyPerformanceResult = null;
+      let pitchingSeasonStatsResult = null;
+      let pitchingCareerStatsResult = [];
+      let pitchingVsHandSplitsResult = [];
+      let pitchingHomeRoadSplitsResult = [];
+      let pitchingMonthlyPerformanceResult = null;
       
       try {
         // Determine player type based on position
@@ -352,11 +403,11 @@ function PlayerProfileStats() {
             playerStatsService.getPitcherMonthlyPerformance(internalPlayerId, selectedSeason).catch((e) => { console.error('getPitcherMonthlyPerformance error:', e); return null; }),
           ]);
           console.log('Pitcher stats results - current:', current, 'career:', career, 'vsHand:', vsHand, 'homeRoad:', homeRoad, 'monthly:', monthly);
-          setSeasonStats(current);
-          setCareerStats(career);
-          setVsHandSplits(vsHand);
-          setHomeRoadSplits(homeRoad);
-          setMonthlyPerformance(monthly);
+          seasonStatsResult = current;
+          careerStatsResult = career;
+          vsHandSplitsResult = vsHand;
+          homeRoadSplitsResult = homeRoad;
+          monthlyPerformanceResult = monthly;
         } else if (isTwoWay) {
           // Two-way player: fetch BOTH batting AND pitching stats
           console.log('Fetching BOTH batting and pitching stats for two-way player...');
@@ -378,19 +429,17 @@ function PlayerProfileStats() {
             playerStatsService.getPitcherMonthlyPerformance(internalPlayerId, selectedSeason).catch(() => null),
           ]);
           
-          // Store batting stats in regular state
-          setSeasonStats(currentBatting);
-          setCareerStats(careerBatting);
-          setVsHandSplits(vsHandBatting);
-          setHomeRoadSplits(homeRoadBatting);
-          setMonthlyPerformance(monthlyBatting);
-          
-          // Store pitching stats in separate TWP state
-          setPitchingSeasonStats(currentPitching);
-          setPitchingCareerStats(careerPitching);
-          setPitchingVsHandSplits(vsHandPitching);
-          setPitchingHomeRoadSplits(homeRoadPitching);
-          setPitchingMonthlyPerformance(monthlyPitching);
+          // Store results in variables
+          seasonStatsResult = currentBatting;
+          careerStatsResult = careerBatting;
+          vsHandSplitsResult = vsHandBatting;
+          homeRoadSplitsResult = homeRoadBatting;
+          monthlyPerformanceResult = monthlyBatting;
+          pitchingSeasonStatsResult = currentPitching;
+          pitchingCareerStatsResult = careerPitching;
+          pitchingVsHandSplitsResult = vsHandPitching;
+          pitchingHomeRoadSplitsResult = homeRoadPitching;
+          pitchingMonthlyPerformanceResult = monthlyPitching;
           
           console.log('TWP stats - batting:', currentBatting, 'pitching:', currentPitching);
         } else {
@@ -406,12 +455,30 @@ function PlayerProfileStats() {
               return null;
             }),
           ]);
-          setSeasonStats(current);
-          setCareerStats(career);
-          setVsHandSplits(vsHand);
-          setHomeRoadSplits(homeRoad);
-          setMonthlyPerformance(monthly);
+          seasonStatsResult = current;
+          careerStatsResult = career;
+          vsHandSplitsResult = vsHand;
+          homeRoadSplitsResult = homeRoad;
+          monthlyPerformanceResult = monthly;
         }
+        
+        // Ensure minimum loading time for smoother UX
+        const elapsed = Date.now() - startTime;
+        if (elapsed < MIN_LOADING_DURATION) {
+          await new Promise(resolve => setTimeout(resolve, MIN_LOADING_DURATION - elapsed));
+        }
+        
+        // Set all state at once after minimum loading time
+        setSeasonStats(seasonStatsResult);
+        setCareerStats(careerStatsResult);
+        setVsHandSplits(vsHandSplitsResult);
+        setHomeRoadSplits(homeRoadSplitsResult);
+        setMonthlyPerformance(monthlyPerformanceResult);
+        setPitchingSeasonStats(pitchingSeasonStatsResult);
+        setPitchingCareerStats(pitchingCareerStatsResult);
+        setPitchingVsHandSplits(pitchingVsHandSplitsResult);
+        setPitchingHomeRoadSplits(pitchingHomeRoadSplitsResult);
+        setPitchingMonthlyPerformance(pitchingMonthlyPerformanceResult);
       } catch (err) {
         console.error('Error fetching player stats:', err);
       } finally {
@@ -563,9 +630,17 @@ function PlayerProfileStats() {
 
   // Get available seasons from career stats (only seasons the player has data for)
   const availableSeasons = useMemo(() => {
+    // Helper to get the appropriate default season (previous year if before April 1st)
+    const getDefaultSeason = () => {
+      const now = new Date();
+      const currentYear = now.getFullYear();
+      const aprilFirst = new Date(currentYear, 3, 1);
+      return now < aprilFirst ? String(currentYear - 1) : String(currentYear);
+    };
+    
     if (!careerStats || careerStats.length === 0) {
-      // If no career stats loaded yet, show current year as fallback
-      return [new Date().getFullYear().toString()];
+      // If no career stats loaded yet, show appropriate season as fallback
+      return [getDefaultSeason()];
     }
     
     // Extract unique seasons from career stats, filter for regular season only
@@ -575,7 +650,7 @@ function PlayerProfileStats() {
       .filter((v, i, a) => a.indexOf(v) === i) // unique
       .sort((a, b) => parseInt(b) - parseInt(a)); // descending (most recent first)
     
-    return seasons.length > 0 ? seasons : [new Date().getFullYear().toString()];
+    return seasons.length > 0 ? seasons : [getDefaultSeason()];
   }, [careerStats]);
 
   // Auto-select the most recent available season when career stats load
@@ -739,11 +814,12 @@ function PlayerProfileStats() {
   }, [activeMonthlyPerformance]);
 
   // Transform career stats API data into yearly chart format (regular season only - season_type: 2)
+  // For TWP: uses activeCareerStats which switches between batting and pitching career stats
   const getYearlyChartData = useMemo(() => {
-    if (!careerStats || careerStats.length === 0) return {};
+    if (!activeCareerStats || activeCareerStats.length === 0) return {};
     
     // Filter to only include regular season stats (season_type: 2 or "2")
-    const regularSeasonStats = careerStats.filter(season => 
+    const regularSeasonStats = activeCareerStats.filter(season => 
       season.season_type === 2 || season.season_type === '2' || season.season_type === 'R'
     );
     
@@ -765,7 +841,7 @@ function PlayerProfileStats() {
     };
 
     // Pitcher metrics
-    const pitcherMetrics = ['era', 'whip', 'so', 'wins', 'ip', 'k_per_9', 'bb_per_9'];
+    const pitcherMetrics = ['era', 'whip', 'so', 'wins', 'ip', 'k_per_9', 'bb_per_9', 'quality_starts'];
     const pitcherFieldMappings = {
       era: ['era', 'ERA'],
       whip: ['whip', 'WHIP'],
@@ -773,7 +849,8 @@ function PlayerProfileStats() {
       wins: ['wins', 'w', 'W'],
       ip: ['ip', 'innings_pitched', 'IP'],
       k_per_9: ['k_per_9', 'k9', 'strikeouts_per_9'],
-      bb_per_9: ['bb_per_9', 'bb9', 'walks_per_9']
+      bb_per_9: ['bb_per_9', 'bb9', 'walks_per_9'],
+      quality_starts: ['quality_starts', 'qs', 'QS']
     };
 
     // Determine which metrics to use based on player type
@@ -800,7 +877,7 @@ function PlayerProfileStats() {
     });
     
     return result;
-  }, [careerStats, showPitchingStats]);
+  }, [activeCareerStats, showPitchingStats]);
 
   // Calculate recent form stats from game log (L5, L10, L30 rolling averages for pitchers OR L7, L15, L30 for batters)
   // For postseason/spring training, still compare against regular season baseline
@@ -2639,12 +2716,12 @@ function PlayerProfileStats() {
                                     <td>{game.at_bats}</td>
                                     <td className={game.hits > 0 ? 'pps-highlight' : ''}>{game.hits}</td>
                                     <td className={game.home_runs > 0 ? 'pps-highlight pps-hr' : ''}>{game.home_runs}</td>
-                                    <td>{game.rbis}</td>
+                                    <td className={game.rbis > 0 ? 'pps-highlight' : ''}>{game.rbis}</td>
                                     <td>{game.runs}</td>
                                     <td>{game.walks}</td>
                                     <td>{game.strikeouts}</td>
-                                    <td>{game.stolen_bases}</td>
-                                    <td>{game.total_bases}</td>
+                                    <td className={game.stolen_bases > 0 ? 'pps-highlight' : ''}>{game.stolen_bases}</td>
+                                    <td className={game.total_bases > 0 ? 'pps-highlight' : ''}>{game.total_bases}</td>
                                   </>
                                 )}
                               </tr>
