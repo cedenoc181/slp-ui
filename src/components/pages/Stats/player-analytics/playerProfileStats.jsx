@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect, useCallback, useRef } from 'react';
+import React, { useState, useMemo, useEffect, useCallback, useRef, startTransition } from 'react';
 import { useParams, useSearchParams } from 'react-router-dom';
 import { SEASONS, TEAM_METADATA } from '../../../../data/constants/apiConstants';
 import playerStatsService from '../../../../data/services/playerStatsServices';
@@ -41,9 +41,7 @@ function PlayerProfileStats() {
   
   // Extract MLB ID from the SEO-friendly slug
   const mlbIdFromSlug = useMemo(() => {
-    const id = extractMlbIdFromSlug(nameSlug);
-    console.log('Extracted MLB ID from slug:', nameSlug, '->', id);
-    return id;
+    return extractMlbIdFromSlug(nameSlug);
   }, [nameSlug]);
   
   // Initialize season from URL params or default
@@ -68,6 +66,13 @@ function PlayerProfileStats() {
   const [activeSplitsTab, setActiveSplitsTab] = useState('handedness'); // handedness, homeAway
   const [seasonDropdownOpen, setSeasonDropdownOpen] = useState(false);
   const seasonDropdownRef = useRef(null);
+  const careerFetchAbortRef = useRef(null); // Abort controller for career data fetches
+  const currentPlayerIdRef = useRef(null); // Track current player to prevent stale updates
+  const isFetchingCareerRef = useRef(false); // Prevent multiple simultaneous career fetches
+  const statsFetchIdRef = useRef(0); // Increment on each stats fetch to detect stale responses
+  const gameLogFetchIdRef = useRef(0); // Increment on each game log fetch to detect stale responses
+  const recentFormFetchIdRef = useRef(0); // Increment on each recent form fetch to detect stale responses
+  const isMountedRef = useRef(true); // Track if component is mounted
   const [gameLogSeasonType, setGameLogSeasonType] = useState('R'); // R (Regular), S (Spring Training), P (Postseason)
   const [gameLogPage, setGameLogPage] = useState(1); // Current page for game log pagination
   const gamesPerPage = 10; // Number of games per page
@@ -117,12 +122,22 @@ function PlayerProfileStats() {
   const [performanceTrend, setPerformanceTrend] = useState([]);
 
   // Sync season FROM URL params when they change
+  // Note: Only depends on searchParams - we check selectedSeason inside but don't include it
+  // in deps to avoid loops. This is intentional: we only want to react to URL changes.
   useEffect(() => {
     const seasonParam = searchParams.get('season');
-    if (seasonParam && SEASONS.includes(seasonParam) && seasonParam !== selectedSeason) {
-      setSelectedSeason(seasonParam);
+    if (seasonParam && SEASONS.includes(seasonParam)) {
+      setSelectedSeason(prev => prev !== seasonParam ? seasonParam : prev);
     }
-  }, [searchParams, selectedSeason]);
+  }, [searchParams]);
+
+  // Track component mount state to prevent updates after unmount
+  useEffect(() => {
+    isMountedRef.current = true;
+    return () => {
+      isMountedRef.current = false;
+    };
+  }, []);
 
   // Close season dropdown when clicking outside
   useEffect(() => {
@@ -158,9 +173,7 @@ function PlayerProfileStats() {
       
       try {
         // Use MLB ID from slug to fetch player info
-        console.log('Fetching player info for MLB ID:', mlbIdFromSlug);
         const data = await playerStatsService.getPlayerInfoByMlbId(mlbIdFromSlug);
-        console.log('Player info response:', data);
         
         // Handle different response formats - API might return data nested or flat
         const playerData = data?.player || data;
@@ -182,6 +195,41 @@ function PlayerProfileStats() {
     
     fetchPlayerInfo();
   }, [mlbIdFromSlug]);
+
+  // Reset career-related state when player changes (ensures stale data doesn't persist)
+  useEffect(() => {
+    if (playerInfo?.id) {
+      // Abort any pending career data fetches for previous player
+      if (careerFetchAbortRef.current) {
+        careerFetchAbortRef.current.abort();
+        careerFetchAbortRef.current = null;
+      }
+      
+      // Reset fetch-in-progress flag
+      isFetchingCareerRef.current = false;
+      
+      // Invalidate all in-flight fetches by incrementing their IDs
+      statsFetchIdRef.current++;
+      gameLogFetchIdRef.current++;
+      recentFormFetchIdRef.current++;
+      
+      // Update current player ID ref
+      currentPlayerIdRef.current = playerInfo.id;
+      
+      // Reset career totals and splits so they get refetched for the new player
+      setCareerTotals(null);
+      setPitchingCareerTotals(null);
+      setVsHandSplitsCareer(null);
+      setHomeRoadSplitsCareer(null);
+      setPitchingVsHandSplitsCareer(null);
+      setPitchingHomeRoadSplitsCareer(null);
+      // Reset loading states
+      setCareerTotalsLoading(false);
+      setCareerSplitsLoading(false);
+      // Reset to current stats tab when loading new player
+      setActiveStatsTab('current');
+    }
+  }, [playerInfo?.id]); // Only trigger when player ID actually changes
 
   // Fetch player injury history when playerInfo loads
   useEffect(() => {
@@ -226,46 +274,51 @@ function PlayerProfileStats() {
 
   // Fetch game logs when player, season, season type, or TWP view mode changes
   useEffect(() => {
+    if (!playerInfo?.id) return;
+    
+    // Increment fetch ID to invalidate any in-flight requests
+    const fetchId = ++gameLogFetchIdRef.current;
+    const internalPlayerId = playerInfo.id;
+    
+    // Helper to check if this fetch is still valid
+    const isStillValid = () => 
+      isMountedRef.current && 
+      gameLogFetchIdRef.current === fetchId && 
+      currentPlayerIdRef.current === internalPlayerId;
+    
     const fetchGameLogs = async () => {
-      if (!playerInfo?.id) return;
-      
       const startTime = Date.now();
       setGameLogLoading(true);
       try {
         const pos = playerInfo.position_abbreviation || playerInfo.position || playerInfo.primary_position;
-        const isPitcher = pos === 'P' || pos === 'SP' || pos === 'RP' || pos === 'Pitcher' || pos === 'Starting Pitcher' || pos === 'Relief Pitcher';
+        const isPitcherType = pos === 'P' || pos === 'SP' || pos === 'RP' || pos === 'Pitcher' || pos === 'Starting Pitcher' || pos === 'Relief Pitcher';
         // Only consider true TWP (position explicitly set to TWP) for game log fetching
         const isTruelyTwoWay = pos === 'TWP' || pos === 'Two-Way Player';
         
         // For TWP: use twoWayViewMode to determine which game logs to fetch
         // For pitchers: always fetch pitcher logs. For batters: always fetch batter logs.
-        const shouldFetchPitcherLogs = isTruelyTwoWay ? twoWayViewMode === 'pitching' : isPitcher;
-        
-        console.log('Game Log fetch - position:', pos, 'isPitcher:', isPitcher, 'isTruelyTwoWay:', isTruelyTwoWay, 'twoWayViewMode:', twoWayViewMode, 'shouldFetchPitcherLogs:', shouldFetchPitcherLogs, 'seasonType:', gameLogSeasonType);
+        const shouldFetchPitcherLogs = isTruelyTwoWay ? twoWayViewMode === 'pitching' : isPitcherType;
         
         let response;
         if (shouldFetchPitcherLogs) {
-          console.log('Fetching PITCHER game logs for main Game Log section...');
           response = await gamesService.getPitcherGameLogs(
-            playerInfo.id,
+            internalPlayerId,
             selectedSeason,
             gameLogSeasonType
-            // No limit - load all games
           );
-          console.log('Main Game Log pitcher response:', response);
         } else {
-          console.log('Fetching BATTER game logs for main Game Log section...');
           response = await gamesService.getBatterGameLogs(
-            playerInfo.id,
+            internalPlayerId,
             selectedSeason,
             gameLogSeasonType
-            // No limit - load all games (up to 162 for regular season)
           );
         }
         
+        // Check if still valid before proceeding
+        if (!isStillValid()) return;
+        
         // API returns { games: [...] }
         const games = response?.games || [];
-        console.log('Main Game Log games count:', games.length);
         
         // Ensure minimum loading time for smoother UX
         const elapsed = Date.now() - startTime;
@@ -273,35 +326,52 @@ function PlayerProfileStats() {
           await new Promise(resolve => setTimeout(resolve, MIN_LOADING_DURATION - elapsed));
         }
         
+        // Final check before setting state
+        if (!isStillValid()) return;
+        
         setGameLog(Array.isArray(games) ? games : []);
-        // Reset to page 1 when fetching new data
         setGameLogPage(1);
       } catch (err) {
-        console.error('Error fetching game logs:', err);
-        setGameLog([]);
+        if (isStillValid()) {
+          console.error('Error fetching game logs:', err);
+          setGameLog([]);
+        }
       } finally {
-        setGameLogLoading(false);
+        if (isStillValid()) {
+          setGameLogLoading(false);
+        }
       }
     };
     
     fetchGameLogs();
+    
+    return () => {
+      gameLogFetchIdRef.current++;
+    };
   }, [playerInfo, selectedSeason, gameLogSeasonType, twoWayViewMode]);
 
   // Fetch game logs for Recent Form section (independent from Game Log section)
   useEffect(() => {
+    if (!playerInfo?.id) return;
+    
+    // Increment fetch ID to invalidate any in-flight requests
+    const fetchId = ++recentFormFetchIdRef.current;
+    const internalPlayerId = playerInfo.id;
+    
+    // Helper to check if this fetch is still valid
+    const isStillValid = () => 
+      isMountedRef.current && 
+      recentFormFetchIdRef.current === fetchId && 
+      currentPlayerIdRef.current === internalPlayerId;
+    
     const fetchRecentFormGameLogs = async () => {
-      if (!playerInfo?.id) return;
-      
       const startTime = Date.now();
       setRecentFormLoading(true);
       try {
         const pos = playerInfo.position_abbreviation || playerInfo.position || playerInfo.primary_position;
         const isPitcherPos = pos === 'P' || pos === 'SP' || pos === 'RP' || pos === 'Pitcher' || pos === 'Starting Pitcher' || pos === 'Relief Pitcher';
         // Only consider true TWP (position explicitly set to TWP) for separate game log fetching
-        // Regular pitchers with is_two_way flag should still use pitcher game logs
         const isTruelyTwoWay = pos === 'TWP' || pos === 'Two-Way Player';
-        
-        console.log('Recent Form fetch - position:', pos, 'isPitcher:', isPitcherPos, 'isTruelyTwoWay:', isTruelyTwoWay, 'is_two_way flag:', playerInfo.is_two_way, 'seasonType:', recentFormSeasonType);
         
         let battingGames = [];
         let pitchingGames = [];
@@ -309,33 +379,36 @@ function PlayerProfileStats() {
         if (isTruelyTwoWay) {
           // For true TWP (like Ohtani), fetch BOTH batting and pitching game logs
           const [battingResponse, pitchingResponse] = await Promise.all([
-            gamesService.getBatterGameLogs(playerInfo.id, selectedSeason, recentFormSeasonType).catch(() => ({ games: [] })),
-            gamesService.getPitcherGameLogs(playerInfo.id, selectedSeason, recentFormSeasonType).catch(() => ({ games: [] })),
+            gamesService.getBatterGameLogs(internalPlayerId, selectedSeason, recentFormSeasonType).catch(() => ({ games: [] })),
+            gamesService.getPitcherGameLogs(internalPlayerId, selectedSeason, recentFormSeasonType).catch(() => ({ games: [] })),
           ]);
+          
+          // Check if still valid
+          if (!isStillValid()) return;
           
           battingGames = battingResponse?.games || [];
           pitchingGames = pitchingResponse?.games || [];
-          console.log('TWP Recent Form - batting games:', battingGames.length, 'pitching games:', pitchingGames.length);
         } else if (isPitcherPos) {
-          // Regular pitcher - fetch pitcher game logs into recentFormGameLog
-          console.log('Fetching pitcher game logs for player:', playerInfo.id, 'season:', selectedSeason, 'seasonType:', recentFormSeasonType);
           const response = await gamesService.getPitcherGameLogs(
-            playerInfo.id,
+            internalPlayerId,
             selectedSeason,
             recentFormSeasonType
           );
-          console.log('Pitcher Recent Form FULL response:', JSON.stringify(response));
+          
+          if (!isStillValid()) return;
+          
           const games = response?.games || response || [];
-          console.log('Pitcher Recent Form games:', games.length, 'isArray:', Array.isArray(games));
           battingGames = Array.isArray(games) ? games : [];
         } else {
           const response = await gamesService.getBatterGameLogs(
-            playerInfo.id,
+            internalPlayerId,
             selectedSeason,
             recentFormSeasonType
           );
+          
+          if (!isStillValid()) return;
+          
           const games = response?.games || [];
-          console.log('Batter Recent Form games:', games.length);
           battingGames = Array.isArray(games) ? games : [];
         }
         
@@ -345,31 +418,49 @@ function PlayerProfileStats() {
           await new Promise(resolve => setTimeout(resolve, MIN_LOADING_DURATION - elapsed));
         }
         
+        // Final check before setting state
+        if (!isStillValid()) return;
+        
         setRecentFormGameLog(battingGames);
         setPitchingRecentFormGameLog(pitchingGames);
       } catch (err) {
-        console.error('Error fetching recent form game logs:', err);
-        setRecentFormGameLog([]);
-        setPitchingRecentFormGameLog([]);
+        if (isStillValid()) {
+          console.error('Error fetching recent form game logs:', err);
+          setRecentFormGameLog([]);
+          setPitchingRecentFormGameLog([]);
+        }
       } finally {
-        setRecentFormLoading(false);
+        if (isStillValid()) {
+          setRecentFormLoading(false);
+        }
       }
     };
     
     fetchRecentFormGameLogs();
+    
+    return () => {
+      recentFormFetchIdRef.current++;
+    };
   }, [playerInfo, selectedSeason, recentFormSeasonType]);
 
   // Fetch season stats, career stats, and splits when player info or season changes
   useEffect(() => {
+    if (!playerInfo?.id) {
+      return;
+    }
+    
+    // Increment fetch ID to invalidate any in-flight requests
+    const fetchId = ++statsFetchIdRef.current;
+    const internalPlayerId = playerInfo.id;
+    
+    // Helper to check if this fetch is still valid
+    const isStillValid = () => 
+      isMountedRef.current && 
+      statsFetchIdRef.current === fetchId && 
+      currentPlayerIdRef.current === internalPlayerId;
+    
     const fetchPlayerStats = async () => {
-      if (!playerInfo?.id) {
-        console.log('Skipping stats fetch - no playerInfo.id. playerInfo:', playerInfo);
-        return;
-      }
-      
       const startTime = Date.now();
-      const internalPlayerId = playerInfo.id;
-      console.log('Fetching stats for internal player ID:', internalPlayerId, 'season:', selectedSeason);
       setStatsLoading(true);
       
       // Variables to hold results before setting state
@@ -387,30 +478,29 @@ function PlayerProfileStats() {
       try {
         // Determine player type based on position
         const pos = playerInfo.position_abbreviation || playerInfo.position || playerInfo.primary_position;
-        const isPitcher = pos === 'P' || pos === 'SP' || pos === 'RP' || pos === 'Pitcher' || pos === 'Starting Pitcher' || pos === 'Relief Pitcher';
-        const isTwoWay = pos === 'TWP' || pos === 'Two-Way Player' || playerInfo.is_two_way;
-        
-        console.log('Player type detection - position:', pos, 'isPitcher:', isPitcher, 'isTwoWay:', isTwoWay);
+        const isPitcherType = pos === 'P' || pos === 'SP' || pos === 'RP' || pos === 'Pitcher' || pos === 'Starting Pitcher' || pos === 'Relief Pitcher';
+        const isTwoWayType = pos === 'TWP' || pos === 'Two-Way Player' || playerInfo.is_two_way;
         
         // Fetch current season stats
-        if (isPitcher && !isTwoWay) {
-          console.log('Fetching PITCHER stats...');
+        if (isPitcherType && !isTwoWayType) {
           const [current, career, vsHand, homeRoad, monthly] = await Promise.all([
-            playerStatsService.getPitcherCurrentStats(internalPlayerId, selectedSeason).catch((e) => { console.error('getPitcherCurrentStats error:', e); return null; }),
-            playerStatsService.getPitcherCareerStats(internalPlayerId).catch((e) => { console.error('getPitcherCareerStats error:', e); return []; }),
-            playerStatsService.getPitcherVsHandSplits(internalPlayerId, selectedSeason).catch((e) => { console.error('getPitcherVsHandSplits error:', e); return []; }),
-            playerStatsService.getPitcherHomeRoadSplits(internalPlayerId, selectedSeason).catch((e) => { console.error('getPitcherHomeRoadSplits error:', e); return []; }),
-            playerStatsService.getPitcherMonthlyPerformance(internalPlayerId, selectedSeason).catch((e) => { console.error('getPitcherMonthlyPerformance error:', e); return null; }),
+            playerStatsService.getPitcherCurrentStats(internalPlayerId, selectedSeason).catch(() => null),
+            playerStatsService.getPitcherCareerStats(internalPlayerId).catch(() => []),
+            playerStatsService.getPitcherVsHandSplits(internalPlayerId, selectedSeason).catch(() => []),
+            playerStatsService.getPitcherHomeRoadSplits(internalPlayerId, selectedSeason).catch(() => []),
+            playerStatsService.getPitcherMonthlyPerformance(internalPlayerId, selectedSeason).catch(() => null),
           ]);
-          console.log('Pitcher stats results - current:', current, 'career:', career, 'vsHand:', vsHand, 'homeRoad:', homeRoad, 'monthly:', monthly);
+          
+          // Check if still valid before storing results
+          if (!isStillValid()) return;
+          
           seasonStatsResult = current;
           careerStatsResult = career;
           vsHandSplitsResult = vsHand;
           homeRoadSplitsResult = homeRoad;
           monthlyPerformanceResult = monthly;
-        } else if (isTwoWay) {
+        } else if (isTwoWayType) {
           // Two-way player: fetch BOTH batting AND pitching stats
-          console.log('Fetching BOTH batting and pitching stats for two-way player...');
           const [
             currentBatting, careerBatting, vsHandBatting, homeRoadBatting, monthlyBatting,
             currentPitching, careerPitching, vsHandPitching, homeRoadPitching, monthlyPitching
@@ -429,6 +519,9 @@ function PlayerProfileStats() {
             playerStatsService.getPitcherMonthlyPerformance(internalPlayerId, selectedSeason).catch(() => null),
           ]);
           
+          // Check if still valid before storing results
+          if (!isStillValid()) return;
+          
           // Store results in variables
           seasonStatsResult = currentBatting;
           careerStatsResult = careerBatting;
@@ -440,21 +533,19 @@ function PlayerProfileStats() {
           pitchingVsHandSplitsResult = vsHandPitching;
           pitchingHomeRoadSplitsResult = homeRoadPitching;
           pitchingMonthlyPerformanceResult = monthlyPitching;
-          
-          console.log('TWP stats - batting:', currentBatting, 'pitching:', currentPitching);
         } else {
           // Batter only
-          console.log('Fetching BATTER stats...');
           const [current, career, vsHand, homeRoad, monthly] = await Promise.all([
             playerStatsService.getBatterCurrentStats(internalPlayerId, selectedSeason).catch(() => null),
             playerStatsService.getBatterCareerStats(internalPlayerId).catch(() => []),
             playerStatsService.getBatterVsHandSplits(internalPlayerId, selectedSeason).catch(() => []),
             playerStatsService.getBatterHomeRoadSplits(internalPlayerId, selectedSeason).catch(() => []),
-            playerStatsService.getBatterMonthlyPerformance(internalPlayerId, selectedSeason).catch((err) => {
-              console.error('Monthly performance API error:', err);
-              return null;
-            }),
+            playerStatsService.getBatterMonthlyPerformance(internalPlayerId, selectedSeason).catch(() => null),
           ]);
+          
+          // Check if still valid before storing results
+          if (!isStillValid()) return;
+          
           seasonStatsResult = current;
           careerStatsResult = career;
           vsHandSplitsResult = vsHand;
@@ -468,6 +559,9 @@ function PlayerProfileStats() {
           await new Promise(resolve => setTimeout(resolve, MIN_LOADING_DURATION - elapsed));
         }
         
+        // Final check before setting state
+        if (!isStillValid()) return;
+        
         // Set all state at once after minimum loading time
         setSeasonStats(seasonStatsResult);
         setCareerStats(careerStatsResult);
@@ -480,13 +574,22 @@ function PlayerProfileStats() {
         setPitchingHomeRoadSplits(pitchingHomeRoadSplitsResult);
         setPitchingMonthlyPerformance(pitchingMonthlyPerformanceResult);
       } catch (err) {
-        console.error('Error fetching player stats:', err);
+        if (isStillValid()) {
+          console.error('Error fetching player stats:', err);
+        }
       } finally {
-        setStatsLoading(false);
+        if (isStillValid()) {
+          setStatsLoading(false);
+        }
       }
     };
     
     fetchPlayerStats();
+    
+    // Cleanup: invalidate this fetch if effect re-runs or unmounts
+    return () => {
+      statsFetchIdRef.current++;
+    };
   }, [playerInfo, selectedSeason]);
 
   // Helper to determine if player is a pitcher
@@ -551,16 +654,44 @@ function PlayerProfileStats() {
   }, [isTwoWay, twoWayViewMode, pitchingHomeRoadSplitsCareer, homeRoadSplitsCareer]);
 
   // Fetch career totals and career splits when Career tab is selected
+  // Uses refs to avoid stale closure issues and prevent state updates for wrong player
+  // Uses startTransition to make the tab switch non-blocking
   const handleCareerTabClick = useCallback(async () => {
-    setActiveStatsTab('career');
+    // Switch tab using startTransition to prevent blocking the UI
+    startTransition(() => {
+      setActiveStatsTab('career');
+    });
+    
+    // Guard: prevent multiple simultaneous fetches
+    if (isFetchingCareerRef.current) {
+      return;
+    }
     
     if (!playerInfo?.id) return;
     
     const internalPlayerId = playerInfo.id;
+    const playerIdAtFetchStart = internalPlayerId;
     
-    // Fetch career totals if not already loaded
-    if (!careerTotals) {
+    // Helper to check if we should still update state (player hasn't changed)
+    const isStillCurrentPlayer = () => currentPlayerIdRef.current === playerIdAtFetchStart;
+    
+    // Check if we already have data for this player (skip fetch if cached)
+    // careerTotals being non-null means we already fetched for this player
+    if (careerTotals !== null && currentPlayerIdRef.current === internalPlayerId) {
+      // Data already loaded, just switch tab
+      return;
+    }
+    
+    // Mark as fetching
+    isFetchingCareerRef.current = true;
+    
+    // Use startTransition for loading state to keep UI responsive
+    startTransition(() => {
       setCareerTotalsLoading(true);
+    });
+    
+    try {
+      // Fetch career totals
       try {
         let totals;
         if (isPitcher && !isTwoWay) {
@@ -568,65 +699,83 @@ function PlayerProfileStats() {
         } else {
           totals = await playerStatsService.getBatterCareerTotals(internalPlayerId);
         }
-        setCareerTotals(totals);
+        if (isStillCurrentPlayer()) {
+          setCareerTotals(totals);
+        }
       } catch (err) {
-        console.error('Error fetching career totals:', err);
-        setCareerTotals(null);
+        if (isStillCurrentPlayer()) {
+          console.error('Error fetching career totals:', err);
+          setCareerTotals(null);
+        }
       } finally {
-        setCareerTotalsLoading(false);
+        if (isStillCurrentPlayer()) {
+          setCareerTotalsLoading(false);
+        }
       }
-    }
-    
-    // For TWP, also fetch pitching career totals if not already loaded
-    if (isTwoWay && !pitchingCareerTotals) {
-      try {
-        const pitchingTotals = await playerStatsService.getPitcherCareerTotals(internalPlayerId);
-        setPitchingCareerTotals(pitchingTotals);
-      } catch (err) {
-        console.error('Error fetching pitching career totals for TWP:', err);
-        setPitchingCareerTotals(null);
+      
+      // For TWP, also fetch pitching career totals
+      if (isTwoWay && isStillCurrentPlayer()) {
+        try {
+          const pitchingTotals = await playerStatsService.getPitcherCareerTotals(internalPlayerId);
+          if (isStillCurrentPlayer()) {
+            setPitchingCareerTotals(pitchingTotals);
+          }
+        } catch (err) {
+          if (isStillCurrentPlayer()) {
+            setPitchingCareerTotals(null);
+          }
+        }
       }
-    }
-    
-    // Fetch career splits if not already loaded
-    if (!vsHandSplitsCareer && !homeRoadSplitsCareer) {
-      setCareerSplitsLoading(true);
-      try {
-        let vsHandCareer, homeRoadCareer;
-        if (isPitcher && !isTwoWay) {
-          [vsHandCareer, homeRoadCareer] = await Promise.all([
+      
+      // Fetch career splits
+      if (isStillCurrentPlayer()) {
+        setCareerSplitsLoading(true);
+        try {
+          let vsHandCareer, homeRoadCareer;
+          if (isPitcher && !isTwoWay) {
+            [vsHandCareer, homeRoadCareer] = await Promise.all([
+              playerStatsService.getPitcherVsHandSplitsCareerTotals(internalPlayerId).catch(() => null),
+              playerStatsService.getPitcherHomeRoadSplitsCareerTotals(internalPlayerId).catch(() => null),
+            ]);
+          } else {
+            [vsHandCareer, homeRoadCareer] = await Promise.all([
+              playerStatsService.getBatterVsHandSplitsCareerTotals(internalPlayerId).catch(() => null),
+              playerStatsService.getBatterHomeRoadSplitsCareerTotals(internalPlayerId).catch(() => null),
+            ]);
+          }
+          if (isStillCurrentPlayer()) {
+            setVsHandSplitsCareer(vsHandCareer);
+            setHomeRoadSplitsCareer(homeRoadCareer);
+          }
+        } catch (err) {
+          // Silently fail for splits
+        } finally {
+          if (isStillCurrentPlayer()) {
+            setCareerSplitsLoading(false);
+          }
+        }
+      }
+      
+      // For TWP, also fetch pitching career splits
+      if (isTwoWay && isStillCurrentPlayer()) {
+        try {
+          const [pitchingVsHandCareer, pitchingHomeRoadCareer] = await Promise.all([
             playerStatsService.getPitcherVsHandSplitsCareerTotals(internalPlayerId).catch(() => null),
             playerStatsService.getPitcherHomeRoadSplitsCareerTotals(internalPlayerId).catch(() => null),
           ]);
-        } else {
-          [vsHandCareer, homeRoadCareer] = await Promise.all([
-            playerStatsService.getBatterVsHandSplitsCareerTotals(internalPlayerId).catch(() => null),
-            playerStatsService.getBatterHomeRoadSplitsCareerTotals(internalPlayerId).catch(() => null),
-          ]);
+          if (isStillCurrentPlayer()) {
+            setPitchingVsHandSplitsCareer(pitchingVsHandCareer);
+            setPitchingHomeRoadSplitsCareer(pitchingHomeRoadCareer);
+          }
+        } catch (err) {
+          // Silently fail for pitching splits
         }
-        setVsHandSplitsCareer(vsHandCareer);
-        setHomeRoadSplitsCareer(homeRoadCareer);
-      } catch (err) {
-        console.error('Error fetching career splits:', err);
-      } finally {
-        setCareerSplitsLoading(false);
       }
+    } finally {
+      // Always clear the fetching flag
+      isFetchingCareerRef.current = false;
     }
-    
-    // For TWP, also fetch pitching career splits if not already loaded
-    if (isTwoWay && !pitchingVsHandSplitsCareer && !pitchingHomeRoadSplitsCareer) {
-      try {
-        const [pitchingVsHandCareer, pitchingHomeRoadCareer] = await Promise.all([
-          playerStatsService.getPitcherVsHandSplitsCareerTotals(internalPlayerId).catch(() => null),
-          playerStatsService.getPitcherHomeRoadSplitsCareerTotals(internalPlayerId).catch(() => null),
-        ]);
-        setPitchingVsHandSplitsCareer(pitchingVsHandCareer);
-        setPitchingHomeRoadSplitsCareer(pitchingHomeRoadCareer);
-      } catch (err) {
-        console.error('Error fetching pitching career splits for TWP:', err);
-      }
-    }
-  }, [playerInfo, careerTotals, vsHandSplitsCareer, homeRoadSplitsCareer, isPitcher, isTwoWay, pitchingCareerTotals, pitchingVsHandSplitsCareer, pitchingHomeRoadSplitsCareer]);
+  }, [playerInfo?.id, isPitcher, isTwoWay, careerTotals]); // Added careerTotals to check cache
 
   // Get available seasons from career stats (only seasons the player has data for)
   const availableSeasons = useMemo(() => {
@@ -654,12 +803,18 @@ function PlayerProfileStats() {
   }, [careerStats]);
 
   // Auto-select the most recent available season when career stats load
+  // Note: Only depends on availableSeasons - we use functional update to avoid loops
   useEffect(() => {
-    if (availableSeasons.length > 0 && !availableSeasons.includes(selectedSeason)) {
-      // Current selected season is not in available seasons, switch to most recent
-      setSelectedSeason(availableSeasons[0]);
+    if (availableSeasons.length > 0) {
+      setSelectedSeason(prev => {
+        // Only update if current selection is not in available seasons
+        if (!availableSeasons.includes(prev)) {
+          return availableSeasons[0];
+        }
+        return prev;
+      });
     }
-  }, [availableSeasons, selectedSeason]);
+  }, [availableSeasons]);
 
   // Calculate player age
   const playerAge = useMemo(() => {
@@ -747,13 +902,10 @@ function PlayerProfileStats() {
   // Transform monthly performance API data into chart format
   // For TWP: uses activeMonthlyPerformance which switches based on batting/pitching toggle
   const getMonthlyChartData = useMemo(() => {
-    console.log('activeMonthlyPerformance:', activeMonthlyPerformance);
-    
     if (!activeMonthlyPerformance) return {};
     
     // API returns data under 'monthly_stats' or 'batting' object with full month names
     const statsData = activeMonthlyPerformance.monthly_stats || activeMonthlyPerformance.batting || activeMonthlyPerformance.pitching || activeMonthlyPerformance;
-    console.log('statsData:', statsData);
     
     if (!statsData || typeof statsData !== 'object') return {};
     
@@ -809,7 +961,6 @@ function PlayerProfileStats() {
         });
     });
     
-    console.log('getMonthlyChartData result:', result);
     return result;
   }, [activeMonthlyPerformance]);
 
@@ -892,18 +1043,12 @@ function PlayerProfileStats() {
     // Only use separate pitching game log for true TWP players
     const activeGameLog = showPitchingStats && isTruelyTwoWay ? pitchingRecentFormGameLog : recentFormGameLog;
     
-    console.log('recentFormStats calculation - showPitchingStats:', showPitchingStats, 'isTwoWay:', isTwoWay, 'isTruelyTwoWay:', isTruelyTwoWay, 'position:', pos);
-    console.log('recentFormStats - recentFormGameLog length:', recentFormGameLog?.length, 'pitchingRecentFormGameLog length:', pitchingRecentFormGameLog?.length);
-    console.log('recentFormStats - activeGameLog length:', activeGameLog?.length);
-    
     if (!activeGameLog || activeGameLog.length === 0) {
-      console.log('recentFormStats returning null - no game log data');
       return null;
     }
     
     // Sort games by date (most recent first)
     const sortedGames = [...activeGameLog].sort((a, b) => new Date(b.date) - new Date(a.date));
-    console.log('recentFormStats - sortedGames first game:', sortedGames[0]);
     
     // ========== PITCHER STATS CALCULATION ==========
     if (showPitchingStats) {
@@ -1014,7 +1159,6 @@ function PlayerProfileStats() {
         isPostseasonView: recentFormSeasonType !== 'R',
         isPitcher: true,
       };
-      console.log('recentFormStats - returning pitcher stats:', pitcherResult);
       return pitcherResult;
     }
     
