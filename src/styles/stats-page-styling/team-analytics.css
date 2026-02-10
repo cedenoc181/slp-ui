@@ -909,6 +909,23 @@
   align-items: flex-start;
   padding: 7px 0;
   border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  transition: background-color 0.2s ease, transform 0.15s ease;
+}
+
+.leader-row.clickable {
+  cursor: pointer;
+  padding: 7px 8px;
+  margin: 0 -8px;
+  border-radius: 6px;
+}
+
+.leader-row.clickable:hover {
+  background-color: rgba(255, 255, 255, 0.08);
+  transform: translateX(4px);
+}
+
+.leader-row.clickable:active {
+  transform: translateX(2px);
 }
 
 .leader-row:last-child {

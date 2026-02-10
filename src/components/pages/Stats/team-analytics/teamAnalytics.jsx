@@ -253,6 +253,22 @@ function TeamAnalytics() {
     };
   }, []);
 
+  /**
+   * Navigate to a player's profile page from leader rows
+   * @param {Object} leaderData - Leader data object containing name_slug or player_mlb_id
+   * @param {boolean} isPitching - Whether to show pitching view on player profile
+   */
+  const handleLeaderClick = (leaderData, isPitching = false) => {
+    if (!leaderData) return;
+    
+    const playerSlug = leaderData.name_slug || leaderData.player_mlb_id;
+    if (playerSlug) {
+      const viewParam = isPitching ? '&view=pitching' : '';
+      navigate(`/player/${playerSlug}?season=${selectedSeason}${viewParam}`);
+      window.scrollTo(0, 0);
+    }
+  };
+
   // ========== Data Helpers ==========
   
   // Get injuries based on current timeframe
@@ -1102,21 +1118,33 @@ function TeamAnalytics() {
             {leadersToggle === 'batting' ? (
               battingLeaders ? (
                 <div className="leaders-content">
-                  <div className="leader-row">
+                  <div 
+                    className="leader-row clickable" 
+                    onClick={(e) => { e.stopPropagation(); handleLeaderClick(battingLeaders.home_runs, false); }}
+                    title={`View ${battingLeaders.home_runs?.player_name || 'player'} profile`}
+                  >
                     <span className="leader-player">{battingLeaders.home_runs?.player_name || 'N/A'}</span>
                     <div className="leader-info">
                       <span className="leader-stat-label">Home Runs</span>
                       <span className="leader-value">{battingLeaders.home_runs?.value ?? 0}</span>
                     </div>
                   </div>
-                  <div className="leader-row">
+                  <div 
+                    className="leader-row clickable" 
+                    onClick={(e) => { e.stopPropagation(); handleLeaderClick(battingLeaders.rbis, false); }}
+                    title={`View ${battingLeaders.rbis?.player_name || 'player'} profile`}
+                  >
                     <span className="leader-player">{battingLeaders.rbis?.player_name || 'N/A'}</span>
                     <div className="leader-info">
                       <span className="leader-stat-label">RBI</span>
                       <span className="leader-value">{battingLeaders.rbis?.value ?? 0}</span>
                     </div>
                   </div>
-                  <div className="leader-row">
+                  <div 
+                    className="leader-row clickable" 
+                    onClick={(e) => { e.stopPropagation(); handleLeaderClick(battingLeaders.avg, false); }}
+                    title={`View ${battingLeaders.avg?.player_name || 'player'} profile`}
+                  >
                     <span className="leader-player">{battingLeaders.avg?.player_name || 'N/A'}</span>
                     <div className="leader-info">
                       <span className="leader-stat-label">Batting Avg</span>
@@ -1129,7 +1157,11 @@ function TeamAnalytics() {
                       </span>
                     </div>
                   </div>
-                  <div className="leader-row">
+                  <div 
+                    className="leader-row clickable" 
+                    onClick={(e) => { e.stopPropagation(); handleLeaderClick(battingLeaders.ops, false); }}
+                    title={`View ${battingLeaders.ops?.player_name || 'player'} profile`}
+                  >
                     <span className="leader-player">{battingLeaders.ops?.player_name || 'N/A'}</span>
                     <div className="leader-info">
                       <span className="leader-stat-label">OPS</span>
@@ -1142,7 +1174,11 @@ function TeamAnalytics() {
                       </span>
                     </div>
                   </div>
-                  <div className="leader-row">
+                  <div 
+                    className="leader-row clickable" 
+                    onClick={(e) => { e.stopPropagation(); handleLeaderClick(battingLeaders.stolen_bases, false); }}
+                    title={`View ${battingLeaders.stolen_bases?.player_name || 'player'} profile`}
+                  >
                     <span className="leader-player">{battingLeaders.stolen_bases?.player_name || 'N/A'}</span>
                     <div className="leader-info">
                       <span className="leader-stat-label">Stolen Bases</span>
@@ -1156,7 +1192,11 @@ function TeamAnalytics() {
             ) : (
               pitchingLeaders ? (
                 <div className="leaders-content">
-                  <div className="leader-row">
+                  <div 
+                    className="leader-row clickable" 
+                    onClick={(e) => { e.stopPropagation(); handleLeaderClick(pitchingLeaders.era, true); }}
+                    title={`View ${pitchingLeaders.era?.player_name || 'player'} profile`}
+                  >
                     <span className="leader-player">{pitchingLeaders.era?.player_name || 'N/A'}</span>
                     <div className="leader-info">
                       <span className="leader-stat-label">ERA</span>
@@ -1169,21 +1209,33 @@ function TeamAnalytics() {
                       </span>
                     </div>
                   </div>
-                  <div className="leader-row">
+                  <div 
+                    className="leader-row clickable" 
+                    onClick={(e) => { e.stopPropagation(); handleLeaderClick(pitchingLeaders.strikeouts, true); }}
+                    title={`View ${pitchingLeaders.strikeouts?.player_name || 'player'} profile`}
+                  >
                     <span className="leader-player">{pitchingLeaders.strikeouts?.player_name || 'N/A'}</span>
                     <div className="leader-info">
                       <span className="leader-stat-label">Strikeouts</span>
                       <span className="leader-value">{pitchingLeaders.strikeouts?.value ?? 0}</span>
                     </div>
                   </div>
-                  <div className="leader-row">
+                  <div 
+                    className="leader-row clickable" 
+                    onClick={(e) => { e.stopPropagation(); handleLeaderClick(pitchingLeaders.wins, true); }}
+                    title={`View ${pitchingLeaders.wins?.player_name || 'player'} profile`}
+                  >
                     <span className="leader-player">{pitchingLeaders.wins?.player_name || 'N/A'}</span>
                     <div className="leader-info">
                       <span className="leader-stat-label">Wins</span>
                       <span className="leader-value">{pitchingLeaders.wins?.value ?? 0}</span>
                     </div>
                   </div>
-                  <div className="leader-row">
+                  <div 
+                    className="leader-row clickable" 
+                    onClick={(e) => { e.stopPropagation(); handleLeaderClick(pitchingLeaders.whip, true); }}
+                    title={`View ${pitchingLeaders.whip?.player_name || 'player'} profile`}
+                  >
                     <span className="leader-player">{pitchingLeaders.whip?.player_name || 'N/A'}</span>
                     <div className="leader-info">
                       <span className="leader-stat-label">WHIP</span>
@@ -1196,7 +1248,11 @@ function TeamAnalytics() {
                       </span>
                     </div>
                   </div>
-                  <div className="leader-row">
+                  <div 
+                    className="leader-row clickable" 
+                    onClick={(e) => { e.stopPropagation(); handleLeaderClick(pitchingLeaders.opponent_avg, true); }}
+                    title={`View ${pitchingLeaders.opponent_avg?.player_name || 'player'} profile`}
+                  >
                     <span className="leader-player">{pitchingLeaders.opponent_avg?.player_name || 'N/A'}</span>
                     <div className="leader-info">
                       <span className="leader-stat-label">Opp AVG</span>

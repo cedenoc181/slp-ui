@@ -101,7 +101,14 @@ function PlayerProfileStats() {
   
   const [trendTimeframe, setTrendTimeframe] = useState('5y'); // 1y, 3y, 5y, career
   const [selectedChartMetric, setSelectedChartMetric] = useState('hr'); // hr, h, avg, ops, bb, so
-  const [twoWayViewMode, setTwoWayViewMode] = useState('batting'); // batting (default), pitching - for TWP players
+  
+  // Initialize twoWayViewMode from URL 'view' param (for links from team leaders, etc.)
+  // Supports: ?view=pitching or ?view=batting (default: batting)
+  const getInitialViewMode = () => {
+    const viewParam = searchParams.get('view');
+    return viewParam === 'pitching' ? 'pitching' : 'batting';
+  };
+  const [twoWayViewMode, setTwoWayViewMode] = useState(getInitialViewMode); // batting (default), pitching - for TWP players
 
   // Loading states
   const [playerLoading, setPlayerLoading] = useState(true);
