@@ -72,16 +72,72 @@ const TeamGameLogSection = memo(function TeamGameLogSection({
   }, [navigate, selectedSeason]);
 
   /**
+   * Map common team nicknames/aliases to their standard names
+   */
+  const TEAM_NICKNAME_MAP = {
+    'd-backs': 'diamondbacks',
+    'dbacks': 'diamondbacks',
+    'halos': 'angels',
+    'bronx bombers': 'yankees',
+    'tribe': 'guardians',
+    'nats': 'nationals',
+    'phils': 'phillies',
+    'cards': 'cardinals',
+    'bucs': 'pirates',
+    'fish': 'marlins',
+    'cubbies': 'cubs',
+    'brew crew': 'brewers',
+    'jays': 'blue jays',
+    'o\'s': 'orioles',
+    'sox': 'red sox', // Default to Red Sox, but context needed for White Sox
+  };
+
+  /**
+   * Normalize team name and resolve nicknames to standard names
+   */
+  const normalizeTeamName = (name) => {
+    if (!name) return '';
+    let normalized = name.toLowerCase().trim();
+    
+    // Check if this is a known alias and map it
+    if (TEAM_NICKNAME_MAP[normalized]) {
+      normalized = TEAM_NICKNAME_MAP[normalized];
+    }
+    
+    return normalized;
+  };
+
+  /**
+   * Get the core team identifier (last word of team name, or mapped nickname)
+   * e.g., "Arizona Diamondbacks" -> "diamondbacks", "D-backs" -> "diamondbacks"
+   */
+  const getCoreTeamName = (name) => {
+    if (!name) return '';
+    let normalized = name.toLowerCase().trim();
+    
+    // Check if this is a known alias and map it
+    if (TEAM_NICKNAME_MAP[normalized]) {
+      return TEAM_NICKNAME_MAP[normalized];
+    }
+    
+    // Get the last word (team nickname from full name)
+    const words = normalized.split(' ');
+    return words[words.length - 1];
+  };
+
+  /**
    * Find team URL name by team nickname (e.g., "Red Sox" -> "boston-red-sox")
    */
   const getTeamUrlByNickname = useCallback((nickname) => {
     if (!nickname) return null;
-    const normalizedNickname = nickname.toLowerCase().trim();
+    const coreTeamName = getCoreTeamName(nickname);
     
-    // Find team where name contains the nickname
+    // Find team where core name matches
     const team = TEAMS.find(t => {
-      const teamName = t.name.toLowerCase();
-      return teamName.includes(normalizedNickname) || normalizedNickname.includes(teamName.split(' ').pop());
+      const teamCoreName = getCoreTeamName(t.name);
+      return teamCoreName === coreTeamName || 
+             t.name.toLowerCase().includes(coreTeamName) ||
+             coreTeamName.includes(teamCoreName);
     });
     
     return team?.urlName || null;
@@ -108,29 +164,15 @@ const TeamGameLogSection = memo(function TeamGameLogSection({
   const games = Array.isArray(teamGames) ? teamGames : [];
 
   /**
-   * Normalize team name for comparison (handles partial matches)
-   * e.g., "Dodgers" matches "Los Angeles Dodgers"
-   */
-  const normalizeTeamName = (name) => {
-    if (!name) return '';
-    return name.toLowerCase().trim();
-  };
-
-  /**
    * Check if team name matches (supports full name or nickname)
-   * e.g., "Dodgers" or "Los Angeles Dodgers"
+   * Uses core team name extraction to handle aliases like "D-backs" = "Diamondbacks"
    */
   const teamNameMatches = (apiTeamName, selectedTeamName) => {
-    const apiNormalized = normalizeTeamName(apiTeamName);
-    const selectedNormalized = normalizeTeamName(selectedTeamName);
+    const apiCore = getCoreTeamName(apiTeamName);
+    const selectedCore = getCoreTeamName(selectedTeamName);
     
-    // Direct match
-    if (apiNormalized === selectedNormalized) return true;
-    
-    // Check if one contains the other (handles "Dodgers" vs "Los Angeles Dodgers")
-    if (apiNormalized.includes(selectedNormalized) || selectedNormalized.includes(apiNormalized)) return true;
-    
-    return false;
+    // Compare core team names (both resolved through nickname map)
+    return apiCore === selectedCore;
   };
 
   /**
