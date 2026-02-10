@@ -4,7 +4,26 @@
  * ============================================================================
  * 
  * This file serves as the central export point for all Player Profile
- * sub-components. Import from this index for cleaner imports.
+ * sub-components, hooks, and utilities.
+ * 
+ * STRUCTURE:
+ * components/
+ * ├── index.js              <- This file
+ * ├── PlayerProfileHeader.jsx
+ * ├── RecentFormSection.jsx
+ * ├── SeasonStatsSection.jsx
+ * ├── SplitsSection.jsx
+ * ├── PlayerHistorySection.jsx
+ * ├── GameLogSection.jsx
+ * ├── hooks/
+ * │   ├── index.js
+ * │   ├── usePlayerProfile.js
+ * │   └── useGameLogs.js
+ * └── utils/
+ *     ├── index.js
+ *     ├── playerProfileUtils.js
+ *     ├── chartDataUtils.js
+ *     └── recentFormCalculations.js
  * 
  * COMPONENT OVERVIEW:
  * 
@@ -34,15 +53,14 @@
  *    - Paginated game-by-game log
  *    - Season type filter
  * 
- * USAGE:
- * import { 
- *   PlayerProfileHeader,
- *   RecentFormSection,
- *   SeasonStatsSection,
- *   SplitsSection,
- *   PlayerHistorySection,
- *   GameLogSection 
- * } from './components';
+ * HOOKS:
+ * - usePlayerProfile: Player info, stats, career data fetching
+ * - useGameLogs: Game log and recent form data fetching
+ * 
+ * UTILITIES:
+ * - playerProfileUtils: Slug parsing, formatting, player type checks
+ * - chartDataUtils: Chart metric options and data transformations
+ * - recentFormCalculations: Rolling stats and form status calculations
  * 
  * ============================================================================
  */
