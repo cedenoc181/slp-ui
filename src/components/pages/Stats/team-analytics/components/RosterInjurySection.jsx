@@ -25,9 +25,9 @@ function RosterInjurySection({
 }) {
   const filteredRoster = getFilteredRoster(roster, rosterFilter);
   const rosterCounts = getRosterCounts(roster);
-  const injuries = getInjuriesForTimeframe(injuriesFullSeason?.injuries, timeframe);
-  const injuryCounts = getInjuryCounts(injuries, (injury) => isStillInjured(injury));
-  const sortedInjuries = sortInjuries(injuries, injuryFilter, (injury) => isStillInjured(injury));
+  const injuries = getInjuriesForTimeframe(injuriesFullSeason, timeframe);
+  const injuryCounts = getInjuryCounts(injuries);
+  const sortedInjuries = sortInjuries(injuries, injuryFilter);
 
   return (
     <div className="roster-injury-section">
