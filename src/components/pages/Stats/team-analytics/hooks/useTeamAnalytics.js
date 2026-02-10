@@ -88,6 +88,9 @@ export function useTeamAnalytics() {
   const [roster, setRoster] = useState(null);
   const [teamSplits, setTeamSplits] = useState(null);
   const [teamGames, setTeamGames] = useState([]);
+  
+  // Available season types for game log (based on which have games)
+  const [availableSeasonTypes, setAvailableSeasonTypes] = useState(['R', 'S', 'P']);
 
   // Injury Data
   const [injuriesFullSeason, setInjuriesFullSeason] = useState(null);
@@ -174,6 +177,30 @@ export function useTeamAnalytics() {
     }
   }, []);
 
+  // ========== Check Available Season Types for Game Log ==========
+  const checkAvailableSeasonTypes = useCallback(async (teamId, season) => {
+    try {
+      // Check postseason games availability
+      const postseasonGames = await gamesService.getTeamGames(teamId, season, 'P');
+      const hasPostseason = postseasonGames && postseasonGames.length > 0;
+      
+      // Regular and Spring Training are always shown, postseason only if games exist
+      const types = ['R', 'S'];
+      if (hasPostseason) {
+        types.push('P');
+      }
+      setAvailableSeasonTypes(types);
+      
+      // If currently on postseason but no games, switch to regular season
+      if (gameLogSeasonType === 'P' && !hasPostseason) {
+        setGameLogSeasonType('R');
+      }
+    } catch (err) {
+      console.warn('Failed to check season types:', err);
+      setAvailableSeasonTypes(['R', 'S']); // Default to just regular and spring
+    }
+  }, [gameLogSeasonType]);
+
   // ========== Effects ==========
 
   // Sync selectedTeam when URL changes
@@ -207,8 +234,9 @@ export function useTeamAnalytics() {
     if (teamId) {
       fetchTeamData(teamId, selectedSeason);
       fetchTeamGames(teamId, selectedSeason, gameLogSeasonType);
+      checkAvailableSeasonTypes(teamId, selectedSeason);
     }
-  }, [selectedTeam, selectedSeason, fetchTeamData, fetchTeamGames, gameLogSeasonType]);
+  }, [selectedTeam, selectedSeason, fetchTeamData, fetchTeamGames, checkAvailableSeasonTypes, gameLogSeasonType]);
 
   // Footer intersection observer
   useEffect(() => {
@@ -345,6 +373,7 @@ export function useTeamAnalytics() {
     teamGamesLoading,
     gameLogSeasonType,
     setGameLogSeasonType,
+    availableSeasonTypes,
 
     // Toggle States
     leadersToggle,

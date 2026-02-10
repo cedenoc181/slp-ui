@@ -76,6 +76,7 @@ function TeamAnalytics() {
     teamGamesLoading,
     gameLogSeasonType,
     setGameLogSeasonType,
+    availableSeasonTypes,
 
     // Toggle States
     leadersToggle,
@@ -224,6 +225,7 @@ function TeamAnalytics() {
           setSeasonType={setGameLogSeasonType}
           currentTeamName={currentTeamName}
           teamMlbId={teamMlbId}
+          availableSeasonTypes={availableSeasonTypes}
         />
       </div>
     </div>

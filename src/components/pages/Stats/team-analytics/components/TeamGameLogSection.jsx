@@ -41,6 +41,7 @@ import { TEAMS } from '../../../../../data/constants/apiConstants';
  * @param {Function} props.setSeasonType - Callback to change season type
  * @param {string} props.currentTeamName - Team name for display
  * @param {number} props.teamMlbId - MLB team ID to determine home/away
+ * @param {Array} [props.availableSeasonTypes] - Season types that have games available
  * @param {number} [props.gamesPerPage=10] - Number of games per page
  */
 const TeamGameLogSection = memo(function TeamGameLogSection({
@@ -51,6 +52,7 @@ const TeamGameLogSection = memo(function TeamGameLogSection({
   setSeasonType,
   currentTeamName,
   teamMlbId,
+  availableSeasonTypes = ['R', 'S', 'P'],
   gamesPerPage = 10,
 }) {
   const navigate = useNavigate();
@@ -208,9 +210,15 @@ const TeamGameLogSection = memo(function TeamGameLogSection({
             value={seasonType}
             onChange={handleSeasonTypeChange}
           >
-            <option value="R">Regular Season</option>
-            <option value="S">Spring Training</option>
-            <option value="P">Postseason</option>
+            {availableSeasonTypes.includes('R') && (
+              <option value="R">Regular Season</option>
+            )}
+            {availableSeasonTypes.includes('S') && (
+              <option value="S">Spring Training</option>
+            )}
+            {availableSeasonTypes.includes('P') && (
+              <option value="P">Postseason</option>
+            )}
           </select>
         </div>
       </div>
