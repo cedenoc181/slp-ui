@@ -50,10 +50,22 @@ const RecentFormSection = React.memo(function RecentFormSection({
   selectedSeason,
   recentFormSeasonType,
   setRecentFormSeasonType,
+  availableSeasonTypes = ['R'],
   recentFormStats,
   recentFormLoading,
   showPitchingStats,
 }) {
+  // Season type options with labels
+  const SEASON_TYPE_OPTIONS = [
+    { value: 'R', label: 'Regular Season' },
+    { value: 'S', label: 'Spring Training' },
+    { value: 'P', label: 'Postseason' },
+  ];
+  
+  // Filter to only show available season types
+  const filteredSeasonTypeOptions = SEASON_TYPE_OPTIONS.filter(
+    option => availableSeasonTypes.includes(option.value)
+  );
   return (
     <section className="pps-section pps-recent-form-section">
       {/* ========== SECTION HEADER ========== */}
@@ -68,16 +80,24 @@ const RecentFormSection = React.memo(function RecentFormSection({
         
         {/* ========== CONTROLS: Season Type Filter + Form Badge ========== */}
         <div className="pps-recent-form-controls">
-          {/* Season Type Dropdown - Independent from Game Log section */}
-          <select 
-            className="pps-season-type-filter"
-            value={recentFormSeasonType}
-            onChange={(e) => setRecentFormSeasonType(e.target.value)}
-          >
-            <option value="R">Regular Season</option>
-            <option value="S">Spring Training</option>
-            <option value="P">Postseason</option>
-          </select>
+          {/* Season Type Dropdown - Only shows season types with available data */}
+          {filteredSeasonTypeOptions.length > 1 ? (
+            <select 
+              className="pps-season-type-filter"
+              value={recentFormSeasonType}
+              onChange={(e) => setRecentFormSeasonType(e.target.value)}
+            >
+              {filteredSeasonTypeOptions.map(option => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
+          ) : (
+            <span className="pps-season-type-label">
+              {filteredSeasonTypeOptions[0]?.label || 'Regular Season'}
+            </span>
+          )}
           
           {/* Form Status Badge - Visual indicator of player's current form */}
           {recentFormStats && (

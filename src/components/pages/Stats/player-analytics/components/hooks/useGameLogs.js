@@ -60,6 +60,7 @@ export const useGameLogs = ({ playerInfo, selectedSeason, twoWayViewMode }) => {
   const [pitchingRecentFormGameLog, setPitchingRecentFormGameLog] = useState([]);
   const [recentFormLoading, setRecentFormLoading] = useState(false);
   const [recentFormSeasonType, setRecentFormSeasonType] = useState('R');
+  const [availableRecentFormSeasonTypes, setAvailableRecentFormSeasonTypes] = useState(['R']); // Track which season types have data
 
   // ============================================================================
   // MOUNT TRACKING
@@ -252,6 +253,56 @@ export const useGameLogs = ({ playerInfo, selectedSeason, twoWayViewMode }) => {
   }, [playerInfo?.id, selectedSeason, recentFormSeasonType]);
 
   // ============================================================================
+  // CHECK AVAILABLE SEASON TYPES FOR RECENT FORM
+  // ============================================================================
+  useEffect(() => {
+    if (!playerInfo?.id) return;
+    
+    const checkAvailableSeasonTypes = async () => {
+      const internalPlayerId = playerInfo.id;
+      const pos = getPlayerPosition(playerInfo);
+      const isPitcherPos = isPitcherPosition(pos);
+      const isTruelyTwoWay = isTwoWayPosition(pos);
+      
+      // Determine which service to use
+      const fetchService = (isPitcherPos && !isTruelyTwoWay)
+        ? gamesService.getPitcherGameLogs
+        : gamesService.getBatterGameLogs;
+      
+      const seasonTypes = ['R', 'S', 'P']; // Regular, Spring, Postseason
+      const available = [];
+      
+      // Check each season type in parallel
+      const checks = await Promise.all(
+        seasonTypes.map(async (type) => {
+          try {
+            const response = await fetchService(internalPlayerId, selectedSeason, type);
+            const games = response?.games || [];
+            return { type, hasGames: Array.isArray(games) && games.length > 0 };
+          } catch {
+            return { type, hasGames: false };
+          }
+        })
+      );
+      
+      checks.forEach(({ type, hasGames }) => {
+        if (hasGames) available.push(type);
+      });
+      
+      // Default to Regular if nothing available
+      const result = available.length > 0 ? available : ['R'];
+      setAvailableRecentFormSeasonTypes(result);
+      
+      // If current selection is not available, switch to first available
+      if (!result.includes(recentFormSeasonType)) {
+        setRecentFormSeasonType(result[0]);
+      }
+    };
+    
+    checkAvailableSeasonTypes();
+  }, [playerInfo?.id, selectedSeason]);
+
+  // ============================================================================
   // RETURN
   // ============================================================================
   return {
@@ -269,6 +320,7 @@ export const useGameLogs = ({ playerInfo, selectedSeason, twoWayViewMode }) => {
     recentFormLoading,
     recentFormSeasonType,
     setRecentFormSeasonType,
+    availableRecentFormSeasonTypes,
   };
 };
 

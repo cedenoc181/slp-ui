@@ -182,6 +182,7 @@ function PlayerProfileStats() {
     recentFormLoading,
     recentFormSeasonType,
     setRecentFormSeasonType,
+    availableRecentFormSeasonTypes,
   } = useGameLogs({ playerInfo, selectedSeason, twoWayViewMode });
 
   // ========== COMPUTED: SHOW PITCHING STATS ==========
@@ -405,6 +406,7 @@ function PlayerProfileStats() {
             selectedSeason={selectedSeason}
             recentFormSeasonType={recentFormSeasonType}
             setRecentFormSeasonType={setRecentFormSeasonType}
+            availableSeasonTypes={availableRecentFormSeasonTypes}
             recentFormStats={recentFormStats}
             recentFormLoading={recentFormLoading}
             showPitchingStats={showPitchingStats}

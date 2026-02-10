@@ -387,6 +387,18 @@
   min-width: 160px;
 }
 
+/* Season Type Label (when only one option available) */
+.pps-recent-form-controls .pps-season-type-label {
+  min-width: 160px;
+  padding: 0.6rem 1rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--pps-text-secondary, #94a3b8);
+  background: rgba(15, 23, 42, 0.3);
+  border: 1px solid rgba(99, 102, 241, 0.2);
+  border-radius: 8px;
+}
+
 /* Hot/Cold Form Badge */
 .pps-form-badge {
   display: flex;
