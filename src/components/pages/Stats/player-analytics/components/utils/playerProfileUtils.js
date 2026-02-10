@@ -33,6 +33,31 @@ export const extractMlbIdFromSlug = (slug) => {
   return match ? parseInt(match[1], 10) : null;
 };
 
+/**
+ * Check if the slug is a name-only slug (no numeric ID)
+ * @param {string} slug - The URL slug
+ * @returns {boolean} - True if this is a name-only slug
+ */
+export const isNameOnlySlug = (slug) => {
+  if (!slug) return false;
+  // Not a number-only slug and doesn't end with a numeric ID
+  return !/^\d+$/.test(slug) && !/-\d+$/.test(slug);
+};
+
+/**
+ * Convert a name slug to a searchable name
+ * e.g., "chris-tillman" -> "Chris Tillman"
+ * @param {string} slug - The URL slug
+ * @returns {string} - The player name in title case
+ */
+export const slugToPlayerName = (slug) => {
+  if (!slug) return '';
+  return slug
+    .split('-')
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(' ');
+};
+
 // ============================================================================
 // DATE & TIME UTILITIES
 // ============================================================================

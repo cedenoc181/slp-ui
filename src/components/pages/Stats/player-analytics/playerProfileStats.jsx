@@ -12,7 +12,7 @@
 // ============================================================================
 
 import React, { useState, useMemo, useEffect, useCallback, useRef, startTransition } from 'react';
-import { useParams, useSearchParams } from 'react-router-dom';
+import { useParams, useSearchParams, useNavigate } from 'react-router-dom';
 import { SEASONS } from '../../../../data/constants/apiConstants';
 import '../../../../styles/stats-page-styling/player-profile.css';
 
@@ -38,6 +38,8 @@ import { usePlayerProfile, useGameLogs } from './components/hooks';
 // ============================================================================
 import {
   extractMlbIdFromSlug,
+  isNameOnlySlug,
+  slugToPlayerName,
   formatDate,
   calculatePlayerAge,
   getTeamLogoUrl,
@@ -57,6 +59,11 @@ import {
 } from './components/utils';
 
 // ============================================================================
+// SERVICES
+// ============================================================================
+import playerStatsService from '../../../../data/services/playerStatsServices';
+
+// ============================================================================
 // CONSTANTS
 // ============================================================================
 const GAMES_PER_PAGE = 10;
@@ -66,10 +73,53 @@ const GAMES_PER_PAGE = 10;
 // ============================================================================
 function PlayerProfileStats() {
   const { nameSlug } = useParams();
+  const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   
   // ========== URL PARAMS ==========
   const mlbIdFromSlug = useMemo(() => extractMlbIdFromSlug(nameSlug), [nameSlug]);
+  
+  // ========== NAME LOOKUP STATE ==========
+  const [resolvedMlbId, setResolvedMlbId] = useState(null);
+  const [lookupLoading, setLookupLoading] = useState(false);
+  const [lookupError, setLookupError] = useState(null);
+  
+  // Resolve name-only slugs to MLB IDs
+  useEffect(() => {
+    const lookupByName = async () => {
+      if (mlbIdFromSlug) {
+        // Already have MLB ID from slug
+        setResolvedMlbId(mlbIdFromSlug);
+        return;
+      }
+      
+      if (isNameOnlySlug(nameSlug)) {
+        // Need to lookup by name
+        setLookupLoading(true);
+        setLookupError(null);
+        try {
+          const playerName = slugToPlayerName(nameSlug);
+          const result = await playerStatsService.lookupPlayer({ fullName: playerName });
+          if (result && result.mlb_id) {
+            // Redirect to proper URL with MLB ID for better bookmarking
+            const season = searchParams.get('season') || '2025';
+            navigate(`/player/${result.mlb_id}?season=${season}`, { replace: true });
+          } else {
+            setLookupError(`Player "${playerName}" not found`);
+          }
+        } catch (err) {
+          setLookupError('Failed to find player');
+        } finally {
+          setLookupLoading(false);
+        }
+      }
+    };
+    
+    lookupByName();
+  }, [nameSlug, mlbIdFromSlug, navigate, searchParams]);
+  
+  // Use resolved MLB ID or direct slug ID
+  const effectiveMlbId = resolvedMlbId || mlbIdFromSlug;
   
   // ========== SEASON STATE ==========
   const [selectedSeason, setSelectedSeason] = useState(() => getInitialSeason(searchParams));
@@ -114,7 +164,7 @@ function PlayerProfileStats() {
     teamHistory,
     injuryHistory,
     fetchCareerData,
-  } = usePlayerProfile(mlbIdFromSlug, selectedSeason, isPitcher, isTwoWay);
+  } = usePlayerProfile(effectiveMlbId, selectedSeason, isPitcher, isTwoWay);
 
   // Sync playerInfo to local state for type checking
   useEffect(() => {
@@ -286,6 +336,31 @@ function PlayerProfileStats() {
     });
     await fetchCareerData();
   }, [fetchCareerData]);
+
+  // ========== NAME LOOKUP LOADING STATE ==========
+  if (lookupLoading) {
+    return (
+      <div className="pps-page">
+        <div className="pps-loading-container">
+          <div className="pps-loading-spinner"></div>
+          <span>Finding player...</span>
+        </div>
+      </div>
+    );
+  }
+
+  // ========== NAME LOOKUP ERROR STATE ==========
+  if (lookupError) {
+    return (
+      <div className="pps-page">
+        <div className="pps-error-container">
+          <span className="pps-error-icon">⚠️</span>
+          <h2>Player Not Found</h2>
+          <p>{lookupError}</p>
+        </div>
+      </div>
+    );
+  }
 
   // ========== LOADING STATE ==========
   if (playerLoading) {

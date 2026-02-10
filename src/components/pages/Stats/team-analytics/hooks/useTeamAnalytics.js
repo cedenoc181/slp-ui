@@ -64,6 +64,7 @@ export function useTeamAnalytics() {
   const [teamStatsToggle, setTeamStatsToggle] = useState('batting');
   const [rosterFilter, setRosterFilter] = useState('all');
   const [injuryFilter, setInjuryFilter] = useState('all');
+  const [gameLogSeasonType, setGameLogSeasonType] = useState('R'); // R, S, P
   const [hideFloatingFilters, setHideFloatingFilters] = useState(false);
   const [isChartSectionVisible, setIsChartSectionVisible] = useState(false);
   const chartSectionRef = useRef(null);
@@ -72,6 +73,7 @@ export function useTeamAnalytics() {
   // ========== API Data State ==========
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [teamGamesLoading, setTeamGamesLoading] = useState(false);
 
   // Raw API Data
   const [teamSeasonData, setTeamSeasonData] = useState(null);
@@ -85,6 +87,7 @@ export function useTeamAnalytics() {
   const [awayGames, setAwayGames] = useState(null);
   const [roster, setRoster] = useState(null);
   const [teamSplits, setTeamSplits] = useState(null);
+  const [teamGames, setTeamGames] = useState([]);
 
   // Injury Data
   const [injuriesFullSeason, setInjuriesFullSeason] = useState(null);
@@ -155,6 +158,22 @@ export function useTeamAnalytics() {
     }
   }, []);
 
+  // ========== Fetch Team Games (separate for season type switching) ==========
+  const fetchTeamGames = useCallback(async (teamId, season, seasonType) => {
+    setTeamGamesLoading(true);
+    try {
+      console.log(`📡 Fetching team games for ${teamId}, ${season}, ${seasonType}...`);
+      const gamesData = await gamesService.getTeamGames(teamId, season, seasonType);
+      setTeamGames(gamesData || []);
+      console.log('✅ Team games fetched successfully!');
+    } catch (err) {
+      console.warn('Team games fetch failed:', err);
+      setTeamGames([]);
+    } finally {
+      setTeamGamesLoading(false);
+    }
+  }, []);
+
   // ========== Effects ==========
 
   // Sync selectedTeam when URL changes
@@ -186,8 +205,9 @@ export function useTeamAnalytics() {
     const teamId = getTeamIdFromAbbr(selectedTeam);
     if (teamId) {
       fetchTeamData(teamId, selectedSeason);
+      fetchTeamGames(teamId, selectedSeason, gameLogSeasonType);
     }
-  }, [selectedTeam, selectedSeason, fetchTeamData]);
+  }, [selectedTeam, selectedSeason, fetchTeamData, fetchTeamGames, gameLogSeasonType]);
 
   // Footer intersection observer
   useEffect(() => {
@@ -262,6 +282,7 @@ export function useTeamAnalytics() {
 
   const currentTeam = useMemo(() => getTeamByAbbr(selectedTeam), [selectedTeam]);
   const currentTeamName = currentTeam?.name || 'Team';
+  const teamMlbId = currentTeam?.mlbId || null;
   const shouldHideFloatingFilters = hideFloatingFilters || !isChartSectionVisible;
 
   return {
@@ -276,6 +297,7 @@ export function useTeamAnalytics() {
     setSelectedSeason,
     currentTeam,
     currentTeamName,
+    teamMlbId,
     handleTeamChange,
 
     // Timeframe
@@ -307,6 +329,12 @@ export function useTeamAnalytics() {
     roster,
     teamSplits,
     injuriesFullSeason,
+
+    // Team Games (Game Log)
+    teamGames,
+    teamGamesLoading,
+    gameLogSeasonType,
+    setGameLogSeasonType,
 
     // Toggle States
     leadersToggle,

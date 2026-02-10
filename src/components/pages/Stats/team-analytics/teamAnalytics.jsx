@@ -19,6 +19,7 @@ import {
   PerformanceSplitsSection,
   TeamInfoGrid,
   RosterInjurySection,
+  TeamGameLogSection,
 } from './components';
 
 // Utils
@@ -40,6 +41,7 @@ function TeamAnalytics() {
     setSelectedSeason,
     currentTeam,
     currentTeamName,
+    teamMlbId,
     handleTeamChange,
 
     // Timeframe
@@ -68,6 +70,12 @@ function TeamAnalytics() {
     last10Games,
     roster,
     injuriesFullSeason,
+
+    // Team Games (Game Log)
+    teamGames,
+    teamGamesLoading,
+    gameLogSeasonType,
+    setGameLogSeasonType,
 
     // Toggle States
     leadersToggle,
@@ -205,6 +213,17 @@ function TeamAnalytics() {
           timeframe={timeframe}
           injuryFilter={injuryFilter}
           setInjuryFilter={setInjuryFilter}
+        />
+
+        {/* Team Game Log */}
+        <TeamGameLogSection
+          teamGames={teamGames}
+          loading={teamGamesLoading}
+          selectedSeason={selectedSeason}
+          seasonType={gameLogSeasonType}
+          setSeasonType={setGameLogSeasonType}
+          currentTeamName={currentTeamName}
+          teamMlbId={teamMlbId}
         />
       </div>
     </div>

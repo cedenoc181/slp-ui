@@ -1540,3 +1540,291 @@
     font-size: 11px;
   }
 }
+
+/* ============================================
+   Team Game Log Section
+   ============================================ */
+
+.team-game-log-section.pps-section {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 16px;
+  padding: 1.5rem;
+  margin-top: 2rem;
+}
+
+.team-game-log-section .pps-section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.team-game-log-section .pps-section-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #fff;
+  margin: 0 0 0.25rem 0;
+}
+
+.team-game-log-section .pps-section-subtitle {
+  font-size: 0.875rem;
+  color: rgba(255, 255, 255, 0.6);
+  margin: 0;
+}
+
+.team-game-log-section .pps-game-log-filters {
+  display: flex;
+  gap: 0.75rem;
+}
+
+.team-game-log-section .pps-season-type-filter {
+  padding: 0.5rem 1.5rem 0.5rem 0.75rem;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 8px;
+  color: #fff;
+  font-size: 0.85rem;
+  cursor: pointer;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 12 12'%3E%3Cpath fill='%23aaa' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 8px center;
+}
+
+.team-game-log-section .pps-season-type-filter option {
+  background: #1e1e1e;
+  color: #fff;
+}
+
+.team-game-log-section .pps-game-log-container {
+  overflow: hidden;
+  position: relative;
+}
+
+.team-game-log-section .pps-game-log-table-wrapper {
+  overflow-x: auto;
+  overflow-y: auto;
+  max-height: 500px;
+  margin-bottom: 1rem;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 10px;
+  padding: 0.5rem;
+}
+
+.team-game-log-section .pps-game-log-table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 700px;
+}
+
+.team-game-log-section .pps-game-log-table thead {
+  background: rgba(30, 30, 30, 0.98);
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+
+.team-game-log-section .pps-game-log-table th {
+  padding: 0.75rem 0.5rem;
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.6);
+  text-transform: uppercase;
+  text-align: center;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.team-game-log-section .pps-game-log-table th:first-child,
+.team-game-log-section .pps-game-log-table td:first-child {
+  text-align: left;
+  padding-left: 1rem;
+}
+
+.team-game-log-section .pps-game-log-table td {
+  padding: 0.75rem 0.5rem;
+  font-size: 0.9rem;
+  text-align: center;
+  color: #ffffff;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+.team-game-log-section .pps-game-log-table tbody tr:hover {
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.team-game-log-section .pps-game-date {
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.team-game-log-section .pps-game-opponent {
+  font-weight: 600;
+}
+
+.team-game-log-section .pps-home-away-indicator {
+  color: rgba(255, 255, 255, 0.5);
+  margin-right: 0.35rem;
+  font-size: 0.8rem;
+}
+
+.team-game-log-section .pps-game-result {
+  font-weight: 700;
+}
+
+.team-game-log-section .pps-game-result.win,
+.team-game-log-section .win {
+  color: #4CAF50;
+}
+
+.team-game-log-section .pps-game-result.loss,
+.team-game-log-section .loss {
+  color: #F44336;
+}
+
+.team-game-log-section .pps-game-score .win {
+  color: #4CAF50;
+}
+
+.team-game-log-section .pps-game-score .loss {
+  color: #F44336;
+}
+
+.team-game-log-section .pps-highlight {
+  color: #42a5f5;
+  font-weight: 700;
+}
+
+.team-game-log-section .pps-positive {
+  color: #4CAF50;
+  font-weight: 600;
+}
+
+.team-game-log-section .pps-negative {
+  color: #F44336;
+  font-weight: 600;
+}
+
+.team-game-log-section .pps-danger {
+  color: #F44336;
+}
+
+/* Pagination */
+.team-game-log-section .pps-pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem 0;
+}
+
+.team-game-log-section .pps-pagination-btn {
+  padding: 0.5rem 1rem;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 6px;
+  color: #fff;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.team-game-log-section .pps-pagination-btn:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.15);
+}
+
+.team-game-log-section .pps-pagination-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.team-game-log-section .pps-pagination-info {
+  font-size: 0.85rem;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+/* No Data State */
+.team-game-log-section .pps-no-data-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem 1rem;
+  text-align: center;
+}
+
+.team-game-log-section .pps-no-data-icon {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+  opacity: 0.5;
+}
+
+.team-game-log-section .pps-no-data-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.8);
+  margin: 0 0 0.5rem 0;
+}
+
+.team-game-log-section .pps-no-data-text {
+  font-size: 0.9rem;
+  color: rgba(255, 255, 255, 0.5);
+  margin: 0;
+}
+
+/* Loading State */
+.team-game-log-section .pps-stats-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 0.9rem;
+}
+
+/* Clickable player name in game log */
+.team-game-log-section .clickable-player-name {
+  cursor: pointer;
+  color: rgba(255, 255, 255, 0.9);
+  transition: color 0.2s ease, transform 0.15s ease;
+  display: inline-block;
+}
+
+.team-game-log-section .clickable-player-name:hover {
+  color: #64b5f6;
+  transform: translateX(2px);
+}
+
+.team-game-log-section .clickable-player-name:active {
+  transform: translateX(1px);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .team-game-log-section .pps-section-header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .team-game-log-section .pps-game-log-filters {
+    width: 100%;
+  }
+
+  .team-game-log-section .pps-season-type-filter {
+    flex: 1;
+  }
+
+  .team-game-log-section .pps-game-log-table th,
+  .team-game-log-section .pps-game-log-table td {
+    padding: 0.5rem 0.35rem;
+    font-size: 0.8rem;
+  }
+
+  .team-game-log-section .pps-pagination {
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+}

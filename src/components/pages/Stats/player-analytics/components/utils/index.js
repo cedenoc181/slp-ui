@@ -8,6 +8,8 @@
 export {
   MIN_LOADING_DURATION,
   extractMlbIdFromSlug,
+  isNameOnlySlug,
+  slugToPlayerName,
   withMinLoadingTime,
   formatDate,
   calculatePlayerAge,

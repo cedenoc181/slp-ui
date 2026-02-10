@@ -9,3 +9,4 @@ export { default as FloatingChartFilters } from './FloatingChartFilters';
 export { default as PerformanceSplitsSection } from './PerformanceSplitsSection';
 export { default as TeamInfoGrid } from './TeamInfoGrid';
 export { default as RosterInjurySection } from './RosterInjurySection';
+export { default as TeamGameLogSection } from './TeamGameLogSection';
