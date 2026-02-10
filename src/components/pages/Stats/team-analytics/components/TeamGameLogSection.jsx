@@ -28,6 +28,7 @@
 
 import React, { memo, useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { TEAMS } from '../../../../../data/constants/apiConstants';
 
 /**
  * TeamGameLogSection - Displays paginated game-by-game team performance log
@@ -67,6 +68,30 @@ const TeamGameLogSection = memo(function TeamGameLogSection({
     navigate(`/player/${playerSlug}?season=${selectedSeason}`);
     window.scrollTo(0, 0);
   }, [navigate, selectedSeason]);
+
+  /**
+   * Find team URL name by team nickname (e.g., "Red Sox" -> "boston-red-sox")
+   */
+  const getTeamUrlByNickname = useCallback((nickname) => {
+    if (!nickname) return null;
+    const normalizedNickname = nickname.toLowerCase().trim();
+    
+    // Find team where name contains the nickname
+    const team = TEAMS.find(t => {
+      const teamName = t.name.toLowerCase();
+      return teamName.includes(normalizedNickname) || normalizedNickname.includes(teamName.split(' ').pop());
+    });
+    
+    return team?.urlName || null;
+  }, []);
+
+  // Handle team click - navigate to team analytics
+  const handleTeamClick = useCallback((teamName) => {
+    const teamUrl = getTeamUrlByNickname(teamName);
+    if (!teamUrl) return;
+    navigate(`/team-analytics/${teamUrl}?season=${selectedSeason}`);
+    window.scrollTo(0, 0);
+  }, [navigate, selectedSeason, getTeamUrlByNickname]);
 
   // Get season type label
   const getSeasonTypeLabel = () => {
@@ -235,7 +260,13 @@ const TeamGameLogSection = memo(function TeamGameLogSection({
                           <td className="pps-game-date">{formattedDate}</td>
                           <td className="pps-game-opponent">
                             <span className="pps-home-away-indicator">{homeAwayIndicator}</span>
-                            {gameData.opponent}
+                            <span 
+                              className="clickable-team-name"
+                              onClick={() => handleTeamClick(gameData.opponent)}
+                              title={`View ${gameData.opponent} analytics`}
+                            >
+                              {gameData.opponent}
+                            </span>
                           </td>
                           <td className={`pps-game-result ${resultClass}`}>{result}</td>
                           <td className="pps-game-score">

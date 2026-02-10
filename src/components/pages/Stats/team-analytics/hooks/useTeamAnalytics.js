@@ -34,7 +34,7 @@ import {
 export function useTeamAnalytics() {
   const { teamName } = useParams();
   const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
 
   // Initialize selectedTeam from URL param
   const getInitialTeam = () => {
@@ -56,7 +56,7 @@ export function useTeamAnalytics() {
 
   // ========== UI State ==========
   const [selectedTeam, setSelectedTeam] = useState(getInitialTeam);
-  const [selectedSeason, setSelectedSeason] = useState(getInitialSeason);
+  const [selectedSeason, setSelectedSeasonState] = useState(getInitialSeason);
   const [timeframe, setTimeframe] = useState('season');
   const [chartFilter, setChartFilter] = useState('season');
   const [isFilterChanging, setIsFilterChanging] = useState(false);
@@ -192,11 +192,12 @@ export function useTeamAnalytics() {
     }
   }, [teamName, navigate, selectedTeam]);
 
-  // Sync selectedSeason when URL query param changes
+  // Sync selectedSeason when URL query param changes (e.g., from browser back/forward)
   useEffect(() => {
     const seasonParam = searchParams.get('season');
     if (seasonParam && SEASONS.includes(seasonParam) && seasonParam !== selectedSeason) {
-      setSelectedSeason(seasonParam);
+      // Use the state setter directly to avoid circular URL updates
+      setSelectedSeasonState(seasonParam);
     }
   }, [searchParams, selectedSeason]);
 
@@ -277,6 +278,15 @@ export function useTeamAnalytics() {
   const retryFetch = useCallback(() => {
     fetchTeamData(getTeamIdFromAbbr(selectedTeam), selectedSeason);
   }, [fetchTeamData, selectedTeam, selectedSeason]);
+
+  // ========== Season Change Handler (updates state + URL) ==========
+  const setSelectedSeason = useCallback((newSeason) => {
+    setSelectedSeasonState(newSeason);
+    // Update URL with new season parameter
+    const newParams = new URLSearchParams(searchParams);
+    newParams.set('season', newSeason);
+    setSearchParams(newParams, { replace: true });
+  }, [searchParams, setSearchParams]);
 
   // ========== Computed Values ==========
 

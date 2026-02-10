@@ -1802,6 +1802,23 @@
   transform: translateX(1px);
 }
 
+/* Clickable team name in game log */
+.team-game-log-section .clickable-team-name {
+  cursor: pointer;
+  color: rgba(255, 255, 255, 0.9);
+  transition: color 0.2s ease, transform 0.15s ease;
+  display: inline-block;
+}
+
+.team-game-log-section .clickable-team-name:hover {
+  color: #64b5f6;
+  transform: translateX(2px);
+}
+
+.team-game-log-section .clickable-team-name:active {
+  transform: translateX(1px);
+}
+
 /* Responsive */
 @media (max-width: 768px) {
   .team-game-log-section .pps-section-header {
