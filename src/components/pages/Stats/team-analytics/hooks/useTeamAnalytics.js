@@ -68,7 +68,16 @@ export function useTeamAnalytics() {
   const [hideFloatingFilters, setHideFloatingFilters] = useState(false);
   const [isChartSectionVisible, setIsChartSectionVisible] = useState(false);
   const chartSectionRef = useRef(null);
+
+  // ========== TRANSITION LOADING STATE ==========
+  // Full-page loading overlay when switching teams
+  const [transitionLoading, setTransitionLoading] = useState(false);
+  const [transitionMessage, setTransitionMessage] = useState('Loading...');
+  const transitionTimeoutRef = useRef(null);
   const filterChangeTimeoutRef = useRef(null);
+  
+  // Track current fetch to prevent double-fetching
+  const currentFetchRef = useRef(null);
 
   // ========== API Data State ==========
   const [loading, setLoading] = useState(true);
@@ -96,10 +105,16 @@ export function useTeamAnalytics() {
   const [injuriesFullSeason, setInjuriesFullSeason] = useState(null);
   const [injuriesFirstHalf, setInjuriesFirstHalf] = useState(null);
   const [injuriesSecondHalf, setInjuriesSecondHalf] = useState(null);
+  
+  // Track if this is the initial load (show skeleton) vs team switch (show overlay only)
+  const isInitialLoadRef = useRef(true);
 
   // ========== Fetch All Team Data ==========
-  const fetchTeamData = useCallback(async (teamId, season) => {
-    setLoading(true);
+  const fetchTeamData = useCallback(async (teamId, season, isTeamSwitch = false) => {
+    // Only show full loading skeleton on initial load, not team switches
+    if (!isTeamSwitch) {
+      setLoading(true);
+    }
     setError(null);
 
     try {
@@ -153,11 +168,20 @@ export function useTeamAnalytics() {
       setInjuriesSecondHalf(injuriesSecondHalfData);
 
       console.log('✅ All data fetched successfully!');
+      
+      // First hide the main loading state so the page can render
+      setLoading(false);
+      
+      // Give React a brief moment to render, then hide transition overlay
+      setTimeout(() => {
+        setTransitionLoading(false);
+      }, 100);
+      
     } catch (err) {
       console.error('❌ Error fetching team data:', err);
       setError(err.message || 'Failed to load team data. Please try again.');
-    } finally {
       setLoading(false);
+      setTransitionLoading(false);
     }
   }, []);
 
@@ -203,8 +227,12 @@ export function useTeamAnalytics() {
 
   // ========== Effects ==========
 
-  // Sync selectedTeam when URL changes
+  // Sync selectedTeam when URL changes (e.g., browser back/forward, direct URL entry)
+  // Skip if we're in the middle of a transition (handleTeamChange already set the state)
   useEffect(() => {
+    // Skip sync during transition - handleTeamChange already handled it
+    if (transitionLoading) return;
+    
     if (teamName) {
       const team = getTeamByUrlName(teamName);
       if (team) {
@@ -217,7 +245,7 @@ export function useTeamAnalytics() {
     } else {
       navigate('/team-analytics/los-angeles-dodgers', { replace: true });
     }
-  }, [teamName, navigate, selectedTeam]);
+  }, [teamName, navigate, selectedTeam, transitionLoading]);
 
   // Sync selectedSeason when URL query param changes (e.g., from browser back/forward)
   useEffect(() => {
@@ -231,11 +259,23 @@ export function useTeamAnalytics() {
   // Fetch data when team or season changes
   useEffect(() => {
     const teamId = getTeamIdFromAbbr(selectedTeam);
-    if (teamId) {
-      fetchTeamData(teamId, selectedSeason);
-      fetchTeamGames(teamId, selectedSeason, gameLogSeasonType);
-      checkAvailableSeasonTypes(teamId, selectedSeason);
-    }
+    if (!teamId) return;
+    
+    // Create a unique key for this fetch to prevent duplicates
+    const fetchKey = `${teamId}-${selectedSeason}`;
+    
+    // Skip if we're already fetching this exact combination
+    if (currentFetchRef.current === fetchKey) return;
+    currentFetchRef.current = fetchKey;
+    
+    // After initial load, subsequent fetches are team switches
+    const isTeamSwitch = !isInitialLoadRef.current;
+    fetchTeamData(teamId, selectedSeason, isTeamSwitch);
+    fetchTeamGames(teamId, selectedSeason, gameLogSeasonType);
+    checkAvailableSeasonTypes(teamId, selectedSeason);
+    
+    // Mark that initial load is done
+    isInitialLoadRef.current = false;
   }, [selectedTeam, selectedSeason, fetchTeamData, fetchTeamGames, checkAvailableSeasonTypes, gameLogSeasonType]);
 
   // Footer intersection observer
@@ -276,8 +316,22 @@ export function useTeamAnalytics() {
   const handleTeamChange = useCallback((teamId) => {
     const team = getTeamByAbbr(teamId);
     if (team) {
+      // Show transition loading overlay immediately
+      setTransitionLoading(true);
+      setTransitionMessage(`Loading ${team.name} analytics...`);
+      
+      // Clear any existing timeout
+      if (transitionTimeoutRef.current) {
+        clearTimeout(transitionTimeoutRef.current);
+      }
+      
+      // Reset fetch ref to allow the new fetch
+      currentFetchRef.current = null;
+      
       setSelectedTeam(teamId);
       navigate(`/team-analytics/${team.urlName}`);
+      
+      // Note: The overlay will be hidden by fetchTeamData after data loads and renders
     }
   }, [navigate]);
 
@@ -353,6 +407,11 @@ export function useTeamAnalytics() {
     loading,
     error,
     retryFetch,
+
+    // Transition Loading (team switch overlay)
+    transitionLoading,
+    transitionMessage,
+    setTransitionLoading,
 
     // Raw Data
     teamSeasonData,

@@ -60,6 +60,10 @@ function TeamAnalytics() {
     error,
     retryFetch,
 
+    // Transition Loading (team switch overlay)
+    transitionLoading,
+    transitionMessage,
+
     // Raw Data
     teamSeasonData,
     teamMonthlyData,
@@ -136,6 +140,16 @@ function TeamAnalytics() {
   // ========== Render ==========
   return (
     <div className="team-analytics-page">
+      {/* Transition Loading Overlay - Shows during team change */}
+      {transitionLoading && (
+        <div className="ta-transition-overlay">
+          <div className="ta-transition-content">
+            <div className="ta-loading-spinner"></div>
+            <span>{transitionMessage}</span>
+          </div>
+        </div>
+      )}
+
       {/* Header Section */}
       <TeamAnalyticsHeader
         currentTeam={currentTeam}
