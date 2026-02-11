@@ -5,7 +5,7 @@
 // Handles player info, season/career stats, splits, and history.
 // ============================================================================
 
-import { useState, useEffect, useRef, useCallback, startTransition } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import playerStatsService from '../../../../../../data/services/playerStatsServices';
 import injuryService from '../../../../../../data/services/injuryService';
 import rosterService from '../../../../../../data/services/rosterService';
@@ -26,6 +26,7 @@ export const usePlayerProfile = (mlbIdFromSlug, selectedSeason, isPitcher, isTwo
   const careerFetchAbortRef = useRef(null);
   const currentPlayerIdRef = useRef(null);
   const isFetchingCareerRef = useRef(false);
+  const hasCareerDataRef = useRef(false); // Track if career data was fetched
   const statsFetchIdRef = useRef(0);
   const isMountedRef = useRef(true);
 
@@ -78,6 +79,33 @@ export const usePlayerProfile = (mlbIdFromSlug, selectedSeason, isPitcher, isTwo
   // FETCH PLAYER INFO
   // ============================================================================
   useEffect(() => {
+    // Reset all state immediately when MLB ID changes
+    setPlayerInfo(null);
+    setSeasonStats(null);
+    setCareerStats([]);
+    setCareerTotals(null);
+    setVsHandSplits([]);
+    setHomeRoadSplits([]);
+    setVsHandSplitsCareer(null);
+    setHomeRoadSplitsCareer(null);
+    setMonthlyPerformance(null);
+    setPitchingSeasonStats(null);
+    setPitchingCareerStats([]);
+    setPitchingVsHandSplits([]);
+    setPitchingHomeRoadSplits([]);
+    setPitchingMonthlyPerformance(null);
+    setPitchingCareerTotals(null);
+    setPitchingVsHandSplitsCareer(null);
+    setPitchingHomeRoadSplitsCareer(null);
+    setTeamHistory([]);
+    setInjuryHistory([]);
+    
+    // Reset refs
+    hasCareerDataRef.current = false;
+    isFetchingCareerRef.current = false;
+    statsFetchIdRef.current++;
+    currentPlayerIdRef.current = null;
+    
     const fetchPlayerInfo = async () => {
       if (!mlbIdFromSlug) {
         console.warn('No MLB ID provided');
@@ -121,6 +149,7 @@ export const usePlayerProfile = (mlbIdFromSlug, selectedSeason, isPitcher, isTwo
       }
       
       isFetchingCareerRef.current = false;
+      hasCareerDataRef.current = false; // Reset career data flag for new player
       statsFetchIdRef.current++;
       currentPlayerIdRef.current = playerInfo.id;
       
@@ -140,40 +169,60 @@ export const usePlayerProfile = (mlbIdFromSlug, selectedSeason, isPitcher, isTwo
   // FETCH INJURY HISTORY
   // ============================================================================
   useEffect(() => {
+    if (!playerInfo?.id) return;
+    
+    let isCancelled = false;
+    const playerId = playerInfo.id;
+    
     const fetchInjuryHistory = async () => {
-      if (!playerInfo?.id) return;
-      
       try {
-        const response = await injuryService.getPlayerInjuryHistory(playerInfo.id);
+        const response = await injuryService.getPlayerInjuryHistory(playerId);
+        if (isCancelled || currentPlayerIdRef.current !== playerId) return;
         const injuries = response?.injuries || [];
         setInjuryHistory(Array.isArray(injuries) ? injuries : []);
       } catch (err) {
-        console.error('Error fetching injury history:', err);
-        setInjuryHistory([]);
+        if (!isCancelled) {
+          console.error('Error fetching injury history:', err);
+          setInjuryHistory([]);
+        }
       }
     };
     
     fetchInjuryHistory();
+    
+    return () => {
+      isCancelled = true;
+    };
   }, [playerInfo?.id]);
 
   // ============================================================================
   // FETCH TEAM HISTORY
   // ============================================================================
   useEffect(() => {
+    if (!playerInfo?.id) return;
+    
+    let isCancelled = false;
+    const playerId = playerInfo.id;
+    
     const fetchTeamHistory = async () => {
-      if (!playerInfo?.id) return;
-      
       try {
-        const response = await rosterService.getPlayerRosterHistory(playerInfo.id);
+        const response = await rosterService.getPlayerRosterHistory(playerId);
+        if (isCancelled || currentPlayerIdRef.current !== playerId) return;
         const seasons = response?.seasons || [];
         setTeamHistory(Array.isArray(seasons) ? seasons : []);
       } catch (err) {
-        console.error('Error fetching team history:', err);
-        setTeamHistory([]);
+        if (!isCancelled) {
+          console.error('Error fetching team history:', err);
+          setTeamHistory([]);
+        }
       }
     };
     
     fetchTeamHistory();
+    
+    return () => {
+      isCancelled = true;
+    };
   }, [playerInfo?.id]);
 
   // ============================================================================
@@ -289,82 +338,94 @@ export const usePlayerProfile = (mlbIdFromSlug, selectedSeason, isPitcher, isTwo
   // FETCH CAREER DATA (ON DEMAND)
   // ============================================================================
   const fetchCareerData = useCallback(async () => {
+    // Early returns - prevent duplicate fetches
     if (isFetchingCareerRef.current || !playerInfo?.id) return;
-    if (careerTotals !== null && currentPlayerIdRef.current === playerInfo.id) return;
+    if (hasCareerDataRef.current && currentPlayerIdRef.current === playerInfo.id) return;
     
     isFetchingCareerRef.current = true;
     const playerIdAtFetchStart = playerInfo.id;
     
-    const isStillCurrentPlayer = () => currentPlayerIdRef.current === playerIdAtFetchStart;
+    // Determine player type from playerInfo directly (not from hook params)
+    const pos = playerInfo.position_abbreviation || playerInfo.position || playerInfo.primary_position;
+    const isPlayerPitcher = pos === 'P' || pos === 'SP' || pos === 'RP' || 
+                            pos === 'Pitcher' || pos === 'Starting Pitcher' || pos === 'Relief Pitcher';
+    const isPlayerTwoWay = pos === 'TWP' || pos === 'Two-Way Player' || playerInfo.is_two_way;
     
-    startTransition(() => {
-      setCareerTotalsLoading(true);
-    });
+    const isStillCurrentPlayer = () => 
+      isMountedRef.current && currentPlayerIdRef.current === playerIdAtFetchStart;
+    
+    setCareerTotalsLoading(true);
     
     try {
       // Fetch career totals
       let totals;
-      if (isPitcher && !isTwoWay) {
+      if (isPlayerPitcher && !isPlayerTwoWay) {
         totals = await playerStatsService.getPitcherCareerTotals(playerInfo.id);
       } else {
         totals = await playerStatsService.getBatterCareerTotals(playerInfo.id);
       }
       
-      if (isStillCurrentPlayer()) {
-        setCareerTotals(totals);
-        setCareerTotalsLoading(false);
-      }
+      if (!isStillCurrentPlayer()) return;
+      
+      setCareerTotals(totals);
+      setCareerTotalsLoading(false);
       
       // For TWP, also fetch pitching career totals
-      if (isTwoWay && isStillCurrentPlayer()) {
+      if (isPlayerTwoWay) {
         const pitchingTotals = await playerStatsService.getPitcherCareerTotals(playerInfo.id);
-        if (isStillCurrentPlayer()) {
-          setPitchingCareerTotals(pitchingTotals);
-        }
+        if (!isStillCurrentPlayer()) return;
+        setPitchingCareerTotals(pitchingTotals);
       }
       
       // Fetch career splits
-      if (isStillCurrentPlayer()) {
-        setCareerSplitsLoading(true);
-        
-        let vsHandCareer, homeRoadCareer;
-        if (isPitcher && !isTwoWay) {
-          [vsHandCareer, homeRoadCareer] = await Promise.all([
-            playerStatsService.getPitcherVsHandSplitsCareerTotals(playerInfo.id).catch(() => null),
-            playerStatsService.getPitcherHomeRoadSplitsCareerTotals(playerInfo.id).catch(() => null),
-          ]);
-        } else {
-          [vsHandCareer, homeRoadCareer] = await Promise.all([
-            playerStatsService.getBatterVsHandSplitsCareerTotals(playerInfo.id).catch(() => null),
-            playerStatsService.getBatterHomeRoadSplitsCareerTotals(playerInfo.id).catch(() => null),
-          ]);
-        }
-        
-        if (isStillCurrentPlayer()) {
-          setVsHandSplitsCareer(vsHandCareer);
-          setHomeRoadSplitsCareer(homeRoadCareer);
-          setCareerSplitsLoading(false);
-        }
+      if (!isStillCurrentPlayer()) return;
+      
+      setCareerSplitsLoading(true);
+      
+      let vsHandCareer, homeRoadCareer;
+      if (isPlayerPitcher && !isPlayerTwoWay) {
+        [vsHandCareer, homeRoadCareer] = await Promise.all([
+          playerStatsService.getPitcherVsHandSplitsCareerTotals(playerInfo.id).catch(() => null),
+          playerStatsService.getPitcherHomeRoadSplitsCareerTotals(playerInfo.id).catch(() => null),
+        ]);
+      } else {
+        [vsHandCareer, homeRoadCareer] = await Promise.all([
+          playerStatsService.getBatterVsHandSplitsCareerTotals(playerInfo.id).catch(() => null),
+          playerStatsService.getBatterHomeRoadSplitsCareerTotals(playerInfo.id).catch(() => null),
+        ]);
       }
       
+      if (!isStillCurrentPlayer()) return;
+      
+      setVsHandSplitsCareer(vsHandCareer);
+      setHomeRoadSplitsCareer(homeRoadCareer);
+      setCareerSplitsLoading(false);
+      
       // For TWP, fetch pitching career splits
-      if (isTwoWay && isStillCurrentPlayer()) {
+      if (isPlayerTwoWay) {
         const [pitchingVsHandCareer, pitchingHomeRoadCareer] = await Promise.all([
           playerStatsService.getPitcherVsHandSplitsCareerTotals(playerInfo.id).catch(() => null),
           playerStatsService.getPitcherHomeRoadSplitsCareerTotals(playerInfo.id).catch(() => null),
         ]);
         
-        if (isStillCurrentPlayer()) {
-          setPitchingVsHandSplitsCareer(pitchingVsHandCareer);
-          setPitchingHomeRoadSplitsCareer(pitchingHomeRoadCareer);
-        }
+        if (!isStillCurrentPlayer()) return;
+        
+        setPitchingVsHandSplitsCareer(pitchingVsHandCareer);
+        setPitchingHomeRoadSplitsCareer(pitchingHomeRoadCareer);
       }
+      
+      // Mark career data as fetched for this player
+      hasCareerDataRef.current = true;
     } catch (err) {
       console.error('Error fetching career data:', err);
+      if (isStillCurrentPlayer()) {
+        setCareerTotalsLoading(false);
+        setCareerSplitsLoading(false);
+      }
     } finally {
       isFetchingCareerRef.current = false;
     }
-  }, [playerInfo?.id, isPitcher, isTwoWay, careerTotals]);
+  }, [playerInfo]);
 
   // ============================================================================
   // RETURN

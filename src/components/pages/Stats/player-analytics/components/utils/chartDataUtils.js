@@ -105,7 +105,8 @@ export const formatChartValue = (value, metricKey) => {
  */
 export const getMaxChartValue = (data) => {
   if (!data || data.length === 0) return 1;
-  return Math.max(...data.map(d => d.value));
+  const max = Math.max(...data.map(d => d.value || 0));
+  return max > 0 ? max : 1; // Prevent division by zero
 };
 
 // ============================================================================

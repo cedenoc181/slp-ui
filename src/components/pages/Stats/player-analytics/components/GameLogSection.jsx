@@ -41,6 +41,89 @@
  */
 
 import React, { memo, useState, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { TEAMS } from '../../../../../data/constants/apiConstants';
+
+// ============================================================================
+// TEAM NAME MAPPING
+// ============================================================================
+
+/**
+ * Nickname aliases that map to standard team names
+ * Handles cases like "D-backs" -> "Diamondbacks"
+ */
+const TEAM_NICKNAME_MAP = {
+  'd-backs': 'diamondbacks',
+  'dbacks': 'diamondbacks',
+  'd backs': 'diamondbacks',
+  'cubbies': 'cubs',
+  'halos': 'angels',
+  'bronx bombers': 'yankees',
+  'tribe': 'guardians',
+  'amazins': 'mets',
+  'fish': 'marlins',
+  'brew crew': 'brewers',
+  'buccos': 'pirates',
+  'cards': 'cardinals',
+  'white sox': 'whitesox',
+  'red sox': 'redsox',
+  'a\'s': 'athletics',
+  'jays': 'bluejays',
+  'blue jays': 'bluejays',
+};
+
+/**
+ * Normalize team name by removing common prefixes and handling aliases
+ */
+const normalizeTeamName = (name) => {
+  if (!name) return '';
+  const lower = name.toLowerCase().trim();
+  
+  // Check alias map first
+  if (TEAM_NICKNAME_MAP[lower]) {
+    return TEAM_NICKNAME_MAP[lower];
+  }
+  
+  // Extract last word (the team nickname) - handles "Los Angeles Dodgers" -> "dodgers"
+  const words = lower.split(/\s+/);
+  const lastWord = words[words.length - 1];
+  
+  // Check if last word is in alias map
+  if (TEAM_NICKNAME_MAP[lastWord]) {
+    return TEAM_NICKNAME_MAP[lastWord];
+  }
+  
+  return lastWord;
+};
+
+/**
+ * Get team URL name from opponent name (handles abbreviations, nicknames, and full names)
+ */
+const getTeamUrl = (opponentName) => {
+  if (!opponentName) return null;
+  
+  const input = opponentName.trim();
+  const inputUpper = input.toUpperCase();
+  const inputLower = input.toLowerCase();
+  
+  // First, check if it's a team abbreviation (e.g., "NYY", "LAD", "ARI")
+  const teamByAbbr = TEAMS.find(t => t.id?.toUpperCase() === inputUpper);
+  if (teamByAbbr) {
+    return teamByAbbr.urlName;
+  }
+  
+  // Check normalized nickname
+  const normalized = normalizeTeamName(opponentName);
+  
+  // Find team by matching normalized name against urlName or name
+  const team = TEAMS.find(t => {
+    const teamUrlNormalized = t.urlName?.toLowerCase().split('-').pop();
+    const teamNameNormalized = normalizeTeamName(t.name);
+    return teamUrlNormalized === normalized || teamNameNormalized === normalized;
+  });
+  
+  return team?.urlName || null;
+};
 
 /**
  * GameLogSection - Displays paginated game-by-game performance log
@@ -63,6 +146,7 @@ const GameLogSection = memo(function GameLogSection({
   showPitchingStats,
   gamesPerPage = 10,
 }) {
+  const navigate = useNavigate();
   const [gameLogPage, setGameLogPage] = useState(1);
   
   // Reset page when season type changes
@@ -70,6 +154,15 @@ const GameLogSection = memo(function GameLogSection({
     setGameLogSeasonType(e.target.value);
     setGameLogPage(1);
   }, [setGameLogSeasonType]);
+
+  // Navigate to team analytics page
+  const handleTeamClick = useCallback((opponentName, season) => {
+    const teamUrl = getTeamUrl(opponentName);
+    if (teamUrl) {
+      navigate(`/team-analytics/${teamUrl}?season=${season}`);
+      window.scrollTo(0, 0);
+    }
+  }, [navigate]);
 
   return (
     <section className="pps-section">
@@ -161,7 +254,15 @@ const GameLogSection = memo(function GameLogSection({
                           <td className="pps-game-date">{formattedDate}</td>
                           <td className="pps-game-opponent">
                             <span className="pps-home-away-indicator">{game.is_home ? 'vs' : '@'}</span>
-                            {game.opponent}
+                            <span 
+                              className="pps-clickable-team-name"
+                              onClick={() => handleTeamClick(game.opponent, selectedSeason)}
+                              role="button"
+                              tabIndex={0}
+                              onKeyDown={(e) => e.key === 'Enter' && handleTeamClick(game.opponent, selectedSeason)}
+                            >
+                              {game.opponent}
+                            </span>
                           </td>
                           <td className={`pps-game-result ${resultClass}`}>
                             {result} {playerScore}-{oppScore}

@@ -89,7 +89,9 @@ const SeasonStatsSection = React.memo(function SeasonStatsSection({
   formatChartValue,
 }) {
   // Determine which stats object to use based on active tab
-  const displayStats = activeStatsTab === 'career' ? activeCareerTotals : activeSeasonStats;
+  // Safety: ensure displayStats is an object, not an array
+  const rawStats = activeStatsTab === 'career' ? activeCareerTotals : activeSeasonStats;
+  const displayStats = Array.isArray(rawStats) ? rawStats[0] : rawStats;
   const isLoading = statsLoading || (activeStatsTab === 'career' && careerTotalsLoading);
 
   return (
@@ -352,7 +354,8 @@ const SeasonStatsSection = React.memo(function SeasonStatsSection({
                   // Get chart data from parent's memoized function
                   const chartData = getChartData();
                   
-                  if (!chartData || chartData.length === 0) {
+                  // Safety check for valid chart data
+                  if (!chartData || !Array.isArray(chartData) || chartData.length === 0) {
                     return (
                       <div className="pps-chart-no-data">
                         No {activeStatsTab === 'career' ? 'career' : 'monthly'} data available
@@ -360,19 +363,22 @@ const SeasonStatsSection = React.memo(function SeasonStatsSection({
                     );
                   }
                   
-                  // Calculate max value for bar height scaling
-                  const maxValue = getMaxValue(chartData);
+                  // Limit chart data to prevent performance issues
+                  const displayData = chartData.slice(0, 25);
                   
-                  return chartData.map(({ period, value }) => (
+                  // Calculate max value for bar height scaling (with floor of 1 to prevent division by zero)
+                  const maxValue = Math.max(getMaxValue(displayData), 1);
+                  
+                  return displayData.map(({ period, value }) => (
                     <div key={period} className="pps-comparison-bar-group">
                       <div 
                         className="pps-comparison-bar"
                         style={{ 
                           // CSS variable used for bar height animation
-                          '--bar-height': `${(value / maxValue) * 100}%`
+                          '--bar-height': `${Math.min(((value || 0) / maxValue) * 100, 100)}%`
                         }}
                       >
-                        <span className="pps-bar-value">{formatChartValue(value)}</span>
+                        <span className="pps-bar-value">{formatChartValue(value || 0)}</span>
                       </div>
                       <span className="pps-bar-label">{period}</span>
                     </div>

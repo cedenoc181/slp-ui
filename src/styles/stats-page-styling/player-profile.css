@@ -920,6 +920,23 @@
   margin-right: 4px;
   font-weight: 500;
 }
+
+/* Clickable Team Name in Game Log */
+.pps-clickable-team-name {
+  cursor: pointer;
+  color: var(--pps-accent-blue, #42A5F5);
+  transition: color 0.2s ease, text-decoration 0.2s ease;
+}
+.pps-clickable-team-name:hover {
+  color: #64B5F6;
+  text-decoration: underline;
+}
+.pps-clickable-team-name:focus {
+  outline: 2px solid var(--pps-accent-blue, #42A5F5);
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
 .pps-game-result { font-weight: 600; white-space: nowrap; }
 .pps-game-result.win { color: var(--pps-success); }
 .pps-game-result.loss { color: var(--pps-danger); }

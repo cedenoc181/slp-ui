@@ -73,13 +73,25 @@ export const useGameLogs = ({ playerInfo, selectedSeason, twoWayViewMode }) => {
   }, []);
 
   // ============================================================================
-  // TRACK CURRENT PLAYER
+  // TRACK CURRENT PLAYER AND RESET STATE
   // ============================================================================
   useEffect(() => {
     if (playerInfo?.id) {
-      currentPlayerIdRef.current = playerInfo.id;
-      // Reset pagination when player changes
-      setGameLogPage(1);
+      // If player changed, reset all state
+      if (currentPlayerIdRef.current !== playerInfo.id) {
+        currentPlayerIdRef.current = playerInfo.id;
+        
+        // Increment fetch IDs to invalidate any in-flight requests
+        gameLogFetchIdRef.current++;
+        recentFormFetchIdRef.current++;
+        
+        // Reset all state for new player
+        setGameLog([]);
+        setGameLogPage(1);
+        setRecentFormGameLog([]);
+        setPitchingRecentFormGameLog([]);
+        setAvailableRecentFormSeasonTypes(['R']);
+      }
     }
   }, [playerInfo?.id]);
 
@@ -258,8 +270,10 @@ export const useGameLogs = ({ playerInfo, selectedSeason, twoWayViewMode }) => {
   useEffect(() => {
     if (!playerInfo?.id) return;
     
+    let isCancelled = false;
+    const internalPlayerId = playerInfo.id;
+    
     const checkAvailableSeasonTypes = async () => {
-      const internalPlayerId = playerInfo.id;
       const pos = getPlayerPosition(playerInfo);
       const isPitcherPos = isPitcherPosition(pos);
       const isTruelyTwoWay = isTwoWayPosition(pos);
@@ -270,36 +284,47 @@ export const useGameLogs = ({ playerInfo, selectedSeason, twoWayViewMode }) => {
         : gamesService.getBatterGameLogs;
       
       const seasonTypes = ['R', 'S', 'P']; // Regular, Spring, Postseason
-      const available = [];
       
-      // Check each season type in parallel
-      const checks = await Promise.all(
-        seasonTypes.map(async (type) => {
-          try {
-            const response = await fetchService(internalPlayerId, selectedSeason, type);
-            const games = response?.games || [];
-            return { type, hasGames: Array.isArray(games) && games.length > 0 };
-          } catch {
-            return { type, hasGames: false };
-          }
-        })
-      );
-      
-      checks.forEach(({ type, hasGames }) => {
-        if (hasGames) available.push(type);
-      });
-      
-      // Default to Regular if nothing available
-      const result = available.length > 0 ? available : ['R'];
-      setAvailableRecentFormSeasonTypes(result);
-      
-      // If current selection is not available, switch to first available
-      if (!result.includes(recentFormSeasonType)) {
-        setRecentFormSeasonType(result[0]);
+      try {
+        // Check each season type in parallel
+        const checks = await Promise.all(
+          seasonTypes.map(async (type) => {
+            try {
+              const response = await fetchService(internalPlayerId, selectedSeason, type);
+              const games = response?.games || [];
+              return { type, hasGames: Array.isArray(games) && games.length > 0 };
+            } catch {
+              return { type, hasGames: false };
+            }
+          })
+        );
+        
+        // Check if this effect was cancelled while awaiting
+        if (isCancelled || currentPlayerIdRef.current !== internalPlayerId) return;
+        
+        const available = checks
+          .filter(({ hasGames }) => hasGames)
+          .map(({ type }) => type);
+        
+        // Default to Regular if nothing available
+        const result = available.length > 0 ? available : ['R'];
+        setAvailableRecentFormSeasonTypes(result);
+        
+        // If current selection is not available, switch to first available
+        setRecentFormSeasonType(prev => result.includes(prev) ? prev : result[0]);
+      } catch (err) {
+        // Silently handle errors - just use default
+        if (!isCancelled) {
+          setAvailableRecentFormSeasonTypes(['R']);
+        }
       }
     };
     
     checkAvailableSeasonTypes();
+    
+    return () => {
+      isCancelled = true;
+    };
   }, [playerInfo?.id, selectedSeason]);
 
   // ============================================================================

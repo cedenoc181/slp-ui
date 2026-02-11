@@ -11,7 +11,7 @@
 // - Sub-components: See ./components/index.js
 // ============================================================================
 
-import React, { useState, useMemo, useEffect, useCallback, useRef, startTransition } from 'react';
+import React, { useState, useMemo, useEffect, useCallback, useRef } from 'react';
 import { useParams, useSearchParams, useNavigate } from 'react-router-dom';
 import { SEASONS } from '../../../../data/constants/apiConstants';
 import '../../../../styles/stats-page-styling/player-profile.css';
@@ -287,6 +287,14 @@ function PlayerProfileStats() {
   }, [recentFormGameLog, pitchingRecentFormGameLog, recentFormSeasonType, activeSeasonStats, showPitchingStats, playerInfo]);
 
   // ========== EFFECTS ==========
+  // Reset UI state when player changes (nameSlug changes)
+  useEffect(() => {
+    setActiveStatsTab('current');
+    setActiveSplitsTab('handedness');
+    setSeasonDropdownOpen(false);
+    setPlayerInfoState(null);
+  }, [nameSlug]);
+
   // Sync season from URL params
   useEffect(() => {
     const seasonParam = searchParams.get('season');
@@ -331,11 +339,9 @@ function PlayerProfileStats() {
     setSearchParams(newParams, { replace: true });
   }, [searchParams, setSearchParams]);
 
-  const handleCareerTabClick = useCallback(async () => {
-    startTransition(() => {
-      setActiveStatsTab('career');
-    });
-    await fetchCareerData();
+  const handleCareerTabClick = useCallback(() => {
+    setActiveStatsTab('career');
+    fetchCareerData();
   }, [fetchCareerData]);
 
   // ========== NAME LOOKUP LOADING STATE ==========
