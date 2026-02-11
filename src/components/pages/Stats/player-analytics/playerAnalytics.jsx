@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import BatterStats from './batterStats';
 import PitcherStats from './pitcherStats';
@@ -13,6 +13,19 @@ import '../../../../styles/stats-page-styling/player-analytics.css';
 function PlayerAnalytics() {
   const [metricType, setMetricType] = useState('batting');
   const [searchParams, setSearchParams] = useSearchParams();
+  
+  // ========== TRANSITION LOADING STATE ==========
+  const [transitionLoading, setTransitionLoading] = useState(true); // Start with overlay visible
+  const [transitionMessage, setTransitionMessage] = useState('Loading Player Analytics...');
+  const transitionTimeoutRef = useRef(null);
+  
+  // Show initial loading overlay on mount, then hide after page renders
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setTransitionLoading(false);
+    }, 1200);
+    return () => clearTimeout(timer);
+  }, []);
   
   // Initialize state from URL params or defaults
   const [selectedTeam, setSelectedTeam] = useState(() => {
@@ -56,19 +69,68 @@ function PlayerAnalytics() {
     }
   }, [searchParams, selectedTeam, selectedSeason]);
 
+  // Listen for nav click event from Header to show loading overlay
+  useEffect(() => {
+    const handleNavClick = () => {
+      setTransitionLoading(true);
+      setTransitionMessage('Loading Player Analytics...');
+      
+      // Auto-hide after a short delay
+      setTimeout(() => {
+        setTransitionLoading(false);
+      }, 500);
+    };
+    
+    window.addEventListener('player-analytics-nav-click', handleNavClick);
+    return () => window.removeEventListener('player-analytics-nav-click', handleNavClick);
+  }, []);
+
   // Update URL when dropdown selections change
   const handleTeamChange = (newTeam) => {
+    // Get team name for message
+    const team = newTeam === 'ALL' 
+      ? { name: 'MLB (All Teams)' } 
+      : getTeamByAbbr(newTeam);
+    
+    // Show transition loading overlay
+    setTransitionLoading(true);
+    setTransitionMessage(`Loading ${team?.name || 'team'} players...`);
+    
+    // Clear any existing timeout
+    if (transitionTimeoutRef.current) {
+      clearTimeout(transitionTimeoutRef.current);
+    }
+    
     setSelectedTeam(newTeam);
     const newParams = new URLSearchParams(searchParams);
     newParams.set('team', newTeam);
     setSearchParams(newParams, { replace: true });
+    
+    // Auto-hide after data renders
+    transitionTimeoutRef.current = setTimeout(() => {
+      setTransitionLoading(false);
+    }, 1500);
   };
 
   const handleSeasonChange = (newSeason) => {
+    // Show transition loading overlay
+    setTransitionLoading(true);
+    setTransitionMessage(`Loading ${newSeason} season...`);
+    
+    // Clear any existing timeout
+    if (transitionTimeoutRef.current) {
+      clearTimeout(transitionTimeoutRef.current);
+    }
+    
     setSelectedSeason(newSeason);
     const newParams = new URLSearchParams(searchParams);
     newParams.set('season', newSeason);
     setSearchParams(newParams, { replace: true });
+    
+    // Auto-hide after data renders
+    transitionTimeoutRef.current = setTimeout(() => {
+      setTransitionLoading(false);
+    }, 1500);
   };
 
   // Get current team object
@@ -91,6 +153,16 @@ function PlayerAnalytics() {
 
   return (
     <div className="player-analytics-page">
+      {/* Transition Loading Overlay - Shows during team/season change */}
+      {transitionLoading && (
+        <div className="pa-transition-overlay">
+          <div className="pa-transition-content">
+            <div className="pa-loading-spinner"></div>
+            <span>{transitionMessage}</span>
+          </div>
+        </div>
+      )}
+
       {/* Header - Mirrored from Team Analytics */}
       <div className="analytics-header">
         <div className="container">

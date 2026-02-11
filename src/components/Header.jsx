@@ -106,9 +106,12 @@ function Header() {
   const handleNavClick = (path) => {
     closeMenu();
     
-    // Dispatch a custom event for team-analytics to show loading overlay
+    // Dispatch custom events for analytics pages to show loading overlay
     if (path === '/team-analytics' && location.pathname.startsWith('/team-analytics')) {
       window.dispatchEvent(new CustomEvent('team-analytics-nav-click'));
+    }
+    if (path === '/player-analytics' && location.pathname.startsWith('/player-analytics')) {
+      window.dispatchEvent(new CustomEvent('player-analytics-nav-click'));
     }
     
     navigate(path);
