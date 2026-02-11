@@ -220,14 +220,19 @@ const PITCHER_FIELD_MAPPINGS = {
  * @returns {object} - Object with metric keys and array of {period, value} data
  */
 export const transformYearlyChartData = (careerStats, showPitchingStats) => {
-  if (!careerStats || careerStats.length === 0) return {};
+  if (!careerStats || !Array.isArray(careerStats) || careerStats.length === 0) return {};
   
   // Filter to only include regular season stats (season_type: 2 or "2")
-  const regularSeasonStats = careerStats.filter(season => 
-    season.season_type === 2 || season.season_type === '2' || season.season_type === 'R'
+  let regularSeasonStats = careerStats.filter(season => 
+    season && (season.season_type === 2 || season.season_type === '2' || season.season_type === 'R')
   );
   
   if (regularSeasonStats.length === 0) return {};
+  
+  // AGGRESSIVE LIMIT: Only use last 10 years to prevent browser crashes
+  regularSeasonStats = regularSeasonStats
+    .sort((a, b) => (parseInt(a.season || a.year) || 0) - (parseInt(b.season || b.year) || 0))
+    .slice(-10);
   
   const result = {};
   

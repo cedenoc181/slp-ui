@@ -39,7 +39,7 @@
  * ============================================================================
  */
 
-import React from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 
 /**
  * SeasonStatsSection - Displays season/career statistics with chart
@@ -93,6 +93,67 @@ const SeasonStatsSection = React.memo(function SeasonStatsSection({
   const rawStats = activeStatsTab === 'career' ? activeCareerTotals : activeSeasonStats;
   const displayStats = Array.isArray(rawStats) ? rawStats[0] : rawStats;
   const isLoading = statsLoading || (activeStatsTab === 'career' && careerTotalsLoading);
+  
+  // Staged rendering to prevent browser crash on career data load
+  // Stage 1: Show loading, Stage 2: Show stats cards, Stage 3: Show chart
+  const [renderStage, setRenderStage] = useState(0);
+  const [visibleBars, setVisibleBars] = useState(0);
+  const renderStageRef = useRef(0);
+  
+  // Reset render stages when switching tabs or loading state changes
+  useEffect(() => {
+    // Reset to stage 0
+    setRenderStage(0);
+    setVisibleBars(0);
+    renderStageRef.current = 0;
+    
+    // If still loading, don't proceed
+    if (isLoading) return;
+    
+    // Stage 1: Show stats cards after short delay
+    const stage1Timer = setTimeout(() => {
+      if (renderStageRef.current === 0) {
+        renderStageRef.current = 1;
+        setRenderStage(1);
+      }
+    }, 200);
+    
+    // Stage 2: Show chart container after longer delay (skip chart for career to prevent crash)
+    const stage2Timer = setTimeout(() => {
+      if (renderStageRef.current === 1) {
+        renderStageRef.current = 2;
+        setRenderStage(2);
+      }
+    }, activeStatsTab === 'career' ? 1500 : 500); // Much longer for career
+    
+    return () => {
+      clearTimeout(stage1Timer);
+      clearTimeout(stage2Timer);
+    };
+  }, [activeStatsTab, isLoading]);
+  
+  // Progressive bar rendering - only after stage 2 and for non-career views
+  useEffect(() => {
+    if (renderStage < 2) return;
+    
+    // For career view, limit to just 10 bars max and render slowly
+    const maxBars = activeStatsTab === 'career' ? 10 : 12;
+    
+    const chartData = getChartData();
+    const totalBars = Math.min(chartData?.length || 0, maxBars);
+    
+    if (visibleBars >= totalBars) return;
+    
+    // Add bars one at a time for career, faster for season
+    const delay = activeStatsTab === 'career' ? 150 : 30;
+    const barsToAdd = activeStatsTab === 'career' ? 1 : 3;
+    
+    const barTimer = setTimeout(() => {
+      setVisibleBars(prev => Math.min(prev + barsToAdd, totalBars));
+    }, delay);
+    
+    return () => clearTimeout(barTimer);
+  }, [renderStage, visibleBars, getChartData, activeStatsTab]);
 
   return (
     <section className="pps-section">
@@ -124,9 +185,8 @@ const SeasonStatsSection = React.memo(function SeasonStatsSection({
                   key={season}
                   className="pps-dropdown-item"
                   onClick={() => {
-                    setActiveStatsTab('current');
-                    handleSeasonChange(season);
                     setSeasonDropdownOpen(false);
+                    handleSeasonChange(season); // This handles transition loading and sets tab
                   }}
                 >
                   {season}
@@ -135,17 +195,26 @@ const SeasonStatsSection = React.memo(function SeasonStatsSection({
             </div>
           )}
           
-          {/* Career Tab Button */}
+          {/* Career Tab Button - disabled while loading */}
           <button
-            className={`pps-tab-btn ${activeStatsTab === 'career' ? 'active' : ''}`}
+            className={`pps-tab-btn ${activeStatsTab === 'career' ? 'active' : ''} ${careerTotalsLoading ? 'loading' : ''}`}
             onClick={handleCareerTabClick}
+            disabled={careerTotalsLoading || isLoading}
           >
-            Career
+            {careerTotalsLoading ? 'Loading...' : 'Career'}
           </button>
         </div>
       </div>
       
       {/* ========== STATS CARDS GRID ========== */}
+      {/* Only render stats after stage 1 to prevent overwhelming the browser */}
+      {renderStage < 1 && !isLoading ? (
+        <div className="pps-stats-grid">
+          <div className="pps-stats-card">
+            <div className="pps-stats-loading">Preparing statistics...</div>
+          </div>
+        </div>
+      ) : (
       <div className="pps-stats-grid">
         {showPitchingStats ? (
           /* ========== PITCHER STATS CARDS ========== */
@@ -319,6 +388,7 @@ const SeasonStatsSection = React.memo(function SeasonStatsSection({
           </>
         )}
       </div>
+      )}
 
       {/* ========== COMPARISON CHART ========== */}
       {/* Bar chart showing selected metric over time */}
@@ -345,8 +415,12 @@ const SeasonStatsSection = React.memo(function SeasonStatsSection({
         </div>
         
         <div className="pps-comparison-chart-container">
-          {statsLoading ? (
+          {isLoading ? (
             <div className="pps-chart-loading">Loading chart data...</div>
+          ) : renderStage < 2 ? (
+            <div className="pps-chart-loading">
+              {activeStatsTab === 'career' ? 'Preparing career chart...' : 'Preparing chart...'}
+            </div>
           ) : (
             <div className="pps-chart-placeholder">
               <div className="pps-comparison-bars">
@@ -363,13 +437,24 @@ const SeasonStatsSection = React.memo(function SeasonStatsSection({
                     );
                   }
                   
-                  // Limit chart data to prevent performance issues
-                  const displayData = chartData.slice(0, 25);
+                  // AGGRESSIVE limit for career to prevent crash - only 10 bars max
+                  const maxBars = activeStatsTab === 'career' ? 10 : 12;
+                  const displayData = chartData.slice(-maxBars); // Take most recent years
+                  
+                  // Only show bars that have been progressively loaded
+                  const barsToShow = displayData.slice(0, visibleBars);
+                  
+                  // If no bars to show yet, show placeholder
+                  if (barsToShow.length === 0) {
+                    return (
+                      <div className="pps-chart-loading">Rendering bars...</div>
+                    );
+                  }
                   
                   // Calculate max value for bar height scaling (with floor of 1 to prevent division by zero)
-                  const maxValue = Math.max(getMaxValue(displayData), 1);
+                  const maxValue = Math.max(getMaxValue(barsToShow), 1);
                   
-                  return displayData.map(({ period, value }) => (
+                  return barsToShow.map(({ period, value }) => (
                     <div key={period} className="pps-comparison-bar-group">
                       <div 
                         className="pps-comparison-bar"

@@ -11,6 +11,20 @@ import injuryService from '../../../../../../data/services/injuryService';
 import rosterService from '../../../../../../data/services/rosterService';
 import { MIN_LOADING_DURATION } from '../utils/playerProfileUtils';
 
+// ============================================================================
+// HELPER: Limit career stats to prevent browser crashes
+// ============================================================================
+const MAX_CAREER_YEARS = 12; // Only keep last 12 years of career stats
+const limitCareerStats = (stats) => {
+  if (!Array.isArray(stats) || stats.length === 0) return [];
+  // Sort by season descending and take only the most recent years
+  return stats
+    .slice()
+    .sort((a, b) => (parseInt(b.season || b.year) || 0) - (parseInt(a.season || a.year) || 0))
+    .slice(0, MAX_CAREER_YEARS)
+    .reverse(); // Put back in ascending order
+};
+
 /**
  * Custom hook for managing player profile data
  * @param {number} mlbIdFromSlug - MLB ID extracted from URL slug
@@ -261,7 +275,7 @@ export const usePlayerProfile = (mlbIdFromSlug, selectedSeason, isPitcher, isTwo
           if (!isStillValid()) return;
           
           setSeasonStats(current);
-          setCareerStats(career);
+          setCareerStats(limitCareerStats(career));
           setVsHandSplits(vsHand);
           setHomeRoadSplits(homeRoad);
           setMonthlyPerformance(monthly);
@@ -283,12 +297,12 @@ export const usePlayerProfile = (mlbIdFromSlug, selectedSeason, isPitcher, isTwo
           if (!isStillValid()) return;
           
           setSeasonStats(results[0]);
-          setCareerStats(results[1]);
+          setCareerStats(limitCareerStats(results[1]));
           setVsHandSplits(results[2]);
           setHomeRoadSplits(results[3]);
           setMonthlyPerformance(results[4]);
           setPitchingSeasonStats(results[5]);
-          setPitchingCareerStats(results[6]);
+          setPitchingCareerStats(limitCareerStats(results[6]));
           setPitchingVsHandSplits(results[7]);
           setPitchingHomeRoadSplits(results[8]);
           setPitchingMonthlyPerformance(results[9]);
@@ -305,7 +319,7 @@ export const usePlayerProfile = (mlbIdFromSlug, selectedSeason, isPitcher, isTwo
           if (!isStillValid()) return;
           
           setSeasonStats(current);
-          setCareerStats(career);
+          setCareerStats(limitCareerStats(career));
           setVsHandSplits(vsHand);
           setHomeRoadSplits(homeRoad);
           setMonthlyPerformance(monthly);
@@ -357,25 +371,42 @@ export const usePlayerProfile = (mlbIdFromSlug, selectedSeason, isPitcher, isTwo
     setCareerTotalsLoading(true);
     
     try {
+      // Small initial delay to let the UI update before heavy fetching
+      await new Promise(resolve => setTimeout(resolve, 100));
+      
+      if (!isStillCurrentPlayer()) return;
+      
+      // Fetch career totals with timeout to prevent hanging
+      const fetchWithTimeout = async (promise, timeoutMs = 10000) => {
+        const timeout = new Promise((_, reject) => 
+          setTimeout(() => reject(new Error('Request timeout')), timeoutMs)
+        );
+        return Promise.race([promise, timeout]);
+      };
+      
       // Fetch career totals
       let totals;
       if (isPlayerPitcher && !isPlayerTwoWay) {
-        totals = await playerStatsService.getPitcherCareerTotals(playerInfo.id);
+        totals = await fetchWithTimeout(playerStatsService.getPitcherCareerTotals(playerInfo.id));
       } else {
-        totals = await playerStatsService.getBatterCareerTotals(playerInfo.id);
+        totals = await fetchWithTimeout(playerStatsService.getBatterCareerTotals(playerInfo.id));
       }
       
       if (!isStillCurrentPlayer()) return;
       
+      // Batch these updates together
       setCareerTotals(totals);
       setCareerTotalsLoading(false);
       
       // For TWP, also fetch pitching career totals
       if (isPlayerTwoWay) {
-        const pitchingTotals = await playerStatsService.getPitcherCareerTotals(playerInfo.id);
+        const pitchingTotals = await fetchWithTimeout(playerStatsService.getPitcherCareerTotals(playerInfo.id));
         if (!isStillCurrentPlayer()) return;
         setPitchingCareerTotals(pitchingTotals);
       }
+      
+      // Give React a chance to process updates before fetching more
+      await new Promise(resolve => setTimeout(resolve, 0));
       
       // Fetch career splits
       if (!isStillCurrentPlayer()) return;
@@ -385,13 +416,13 @@ export const usePlayerProfile = (mlbIdFromSlug, selectedSeason, isPitcher, isTwo
       let vsHandCareer, homeRoadCareer;
       if (isPlayerPitcher && !isPlayerTwoWay) {
         [vsHandCareer, homeRoadCareer] = await Promise.all([
-          playerStatsService.getPitcherVsHandSplitsCareerTotals(playerInfo.id).catch(() => null),
-          playerStatsService.getPitcherHomeRoadSplitsCareerTotals(playerInfo.id).catch(() => null),
+          fetchWithTimeout(playerStatsService.getPitcherVsHandSplitsCareerTotals(playerInfo.id)).catch(() => null),
+          fetchWithTimeout(playerStatsService.getPitcherHomeRoadSplitsCareerTotals(playerInfo.id)).catch(() => null),
         ]);
       } else {
         [vsHandCareer, homeRoadCareer] = await Promise.all([
-          playerStatsService.getBatterVsHandSplitsCareerTotals(playerInfo.id).catch(() => null),
-          playerStatsService.getBatterHomeRoadSplitsCareerTotals(playerInfo.id).catch(() => null),
+          fetchWithTimeout(playerStatsService.getBatterVsHandSplitsCareerTotals(playerInfo.id)).catch(() => null),
+          fetchWithTimeout(playerStatsService.getBatterHomeRoadSplitsCareerTotals(playerInfo.id)).catch(() => null),
         ]);
       }
       
@@ -404,8 +435,8 @@ export const usePlayerProfile = (mlbIdFromSlug, selectedSeason, isPitcher, isTwo
       // For TWP, fetch pitching career splits
       if (isPlayerTwoWay) {
         const [pitchingVsHandCareer, pitchingHomeRoadCareer] = await Promise.all([
-          playerStatsService.getPitcherVsHandSplitsCareerTotals(playerInfo.id).catch(() => null),
-          playerStatsService.getPitcherHomeRoadSplitsCareerTotals(playerInfo.id).catch(() => null),
+          fetchWithTimeout(playerStatsService.getPitcherVsHandSplitsCareerTotals(playerInfo.id)).catch(() => null),
+          fetchWithTimeout(playerStatsService.getPitcherHomeRoadSplitsCareerTotals(playerInfo.id)).catch(() => null),
         ]);
         
         if (!isStillCurrentPlayer()) return;

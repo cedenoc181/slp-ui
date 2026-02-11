@@ -40,6 +40,37 @@
   color: var(--pps-text-secondary);
 }
 
+/* Transition Overlay - Full page loading during heavy operations */
+.pps-transition-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(18, 18, 18, 0.95);
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  backdrop-filter: blur(4px);
+  animation: pps-fade-in 0.2s ease-out;
+}
+
+.pps-transition-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.5rem;
+  color: var(--pps-text-primary);
+  font-size: 1.1rem;
+  font-weight: 500;
+}
+
+@keyframes pps-fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
 .pps-loading-spinner {
   width: 48px;
   height: 48px;
@@ -268,6 +299,13 @@
 }
 
 .pps-tab-btn.active { background: var(--pps-primary-color); color: #fff; }
+
+.pps-tab-btn:disabled,
+.pps-tab-btn.loading {
+  opacity: 0.6;
+  cursor: not-allowed;
+  pointer-events: none;
+}
 
 /* Season Dropdown Button */
 .pps-dropdown-btn {

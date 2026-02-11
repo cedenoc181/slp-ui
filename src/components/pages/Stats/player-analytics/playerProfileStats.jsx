@@ -67,6 +67,7 @@ import playerStatsService from '../../../../data/services/playerStatsServices';
 // CONSTANTS
 // ============================================================================
 const GAMES_PER_PAGE = 10;
+const CAREER_CLICK_DEBOUNCE_MS = 1000; // 1 second debounce to prevent rapid clicks
 
 // ============================================================================
 // MAIN COMPONENT
@@ -129,8 +130,15 @@ function PlayerProfileStats() {
   const [activeSplitsTab, setActiveSplitsTab] = useState('handedness');
   const [seasonDropdownOpen, setSeasonDropdownOpen] = useState(false);
   const seasonDropdownRef = useRef(null);
+  const lastCareerClickRef = useRef(0);
   const [selectedChartMetric, setSelectedChartMetric] = useState('hr');
   const [twoWayViewMode, setTwoWayViewMode] = useState(() => getInitialViewMode(searchParams));
+  
+  // ========== TRANSITION LOADING STATE ==========
+  // Full-page loading overlay to prevent browser crashes during heavy data operations
+  const [transitionLoading, setTransitionLoading] = useState(false);
+  const [transitionMessage, setTransitionMessage] = useState('Loading...');
+  const transitionTimeoutRef = useRef(null);
 
   // ========== PLAYER TYPE FLAGS (Pre-compute for hooks) ==========
   const [playerInfoState, setPlayerInfoState] = useState(null);
@@ -170,6 +178,42 @@ function PlayerProfileStats() {
   useEffect(() => {
     if (playerInfo) setPlayerInfoState(playerInfo);
   }, [playerInfo]);
+  
+  // Show transition loading when player changes (navigating to new player)
+  useEffect(() => {
+    if (effectiveMlbId) {
+      setTransitionLoading(true);
+      setTransitionMessage('Loading player profile...');
+      
+      // Clear any existing timeout
+      if (transitionTimeoutRef.current) {
+        clearTimeout(transitionTimeoutRef.current);
+      }
+      
+      // Give browser time to garbage collect and prepare
+      transitionTimeoutRef.current = setTimeout(() => {
+        setTransitionLoading(false);
+      }, 1500); // 1.5 second delay on player change
+    }
+    
+    return () => {
+      if (transitionTimeoutRef.current) {
+        clearTimeout(transitionTimeoutRef.current);
+      }
+    };
+  }, [effectiveMlbId]);
+  
+  // Hide transition when player data is ready (but not before minimum time)
+  useEffect(() => {
+    if (!playerLoading && !statsLoading && playerInfo) {
+      // Keep the transition loading visible for a minimum time
+      const minDelay = setTimeout(() => {
+        setTransitionLoading(false);
+      }, 500);
+      
+      return () => clearTimeout(minDelay);
+    }
+  }, [playerLoading, statsLoading, playerInfo]);
 
   // ========== GAME LOGS (CUSTOM HOOK) ==========
   const {
@@ -333,16 +377,87 @@ function PlayerProfileStats() {
 
   // ========== HANDLERS ==========
   const handleSeasonChange = useCallback((newSeason) => {
-    setSelectedSeason(newSeason);
-    const newParams = new URLSearchParams(searchParams);
-    newParams.set('season', newSeason);
-    setSearchParams(newParams, { replace: true });
+    // Show transition overlay during season change
+    setTransitionLoading(true);
+    setTransitionMessage(`Loading ${newSeason} season...`);
+    
+    // Clear any existing timeout
+    if (transitionTimeoutRef.current) {
+      clearTimeout(transitionTimeoutRef.current);
+    }
+    
+    // Delay the actual data change to let browser prepare
+    transitionTimeoutRef.current = setTimeout(() => {
+      setActiveStatsTab('current'); // Switch back from career if needed
+      setSelectedSeason(newSeason);
+      const newParams = new URLSearchParams(searchParams);
+      newParams.set('season', newSeason);
+      setSearchParams(newParams, { replace: true });
+      
+      // Hide overlay after another delay for data to settle
+      setTimeout(() => {
+        setTransitionLoading(false);
+      }, 800);
+    }, 300);
   }, [searchParams, setSearchParams]);
 
   const handleCareerTabClick = useCallback(() => {
-    setActiveStatsTab('career');
-    fetchCareerData();
-  }, [fetchCareerData]);
+    // Debounce rapid clicks to prevent multiple fetches
+    const now = Date.now();
+    if (now - lastCareerClickRef.current < CAREER_CLICK_DEBOUNCE_MS) {
+      return;
+    }
+    lastCareerClickRef.current = now;
+    
+    // If already on career tab or loading, do nothing
+    if (activeStatsTab === 'career' || transitionLoading) {
+      return;
+    }
+    
+    // Show transition overlay during career load
+    setTransitionLoading(true);
+    setTransitionMessage('Loading career statistics...');
+    
+    // Clear any existing timeout
+    if (transitionTimeoutRef.current) {
+      clearTimeout(transitionTimeoutRef.current);
+    }
+    
+    // Delay the actual data fetch to let browser prepare
+    transitionTimeoutRef.current = setTimeout(() => {
+      setActiveStatsTab('career');
+      
+      // Don't fetch if already have career data
+      if (!careerTotalsLoading) {
+        fetchCareerData();
+      }
+      
+      // Hide overlay after data has time to settle - extra long for career
+      setTimeout(() => {
+        setTransitionLoading(false);
+      }, 2000); // 2 seconds for career data to prevent crashes
+    }, 500); // Longer initial delay
+  }, [fetchCareerData, careerTotalsLoading, activeStatsTab, transitionLoading]);
+
+  // Handler for two-way player mode toggle with transition loading
+  const handleTwoWayViewModeChange = useCallback((newMode) => {
+    if (transitionLoading || newMode === twoWayViewMode) return;
+    
+    setTransitionLoading(true);
+    setTransitionMessage(newMode === 'pitching' ? 'Loading pitching stats...' : 'Loading batting stats...');
+    
+    if (transitionTimeoutRef.current) {
+      clearTimeout(transitionTimeoutRef.current);
+    }
+    
+    transitionTimeoutRef.current = setTimeout(() => {
+      setTwoWayViewMode(newMode);
+      
+      setTimeout(() => {
+        setTransitionLoading(false);
+      }, 800);
+    }, 300);
+  }, [transitionLoading, twoWayViewMode]);
 
   // ========== NAME LOOKUP LOADING STATE ==========
   if (lookupLoading) {
@@ -397,12 +512,22 @@ function PlayerProfileStats() {
   // ========== RENDER ==========
   return (
     <div className="pps-page">
+      {/* Transition Loading Overlay - Shows during heavy data operations */}
+      {transitionLoading && (
+        <div className="pps-transition-overlay">
+          <div className="pps-transition-content">
+            <div className="pps-loading-spinner"></div>
+            <span>{transitionMessage}</span>
+          </div>
+        </div>
+      )}
+      
       <PlayerProfileHeader
         playerInfo={playerInfo}
         playerAge={playerAge}
         isTwoWay={isTwoWay}
         twoWayViewMode={twoWayViewMode}
-        setTwoWayViewMode={setTwoWayViewMode}
+        setTwoWayViewMode={handleTwoWayViewModeChange}
         formatDate={formatDate}
       />
 
