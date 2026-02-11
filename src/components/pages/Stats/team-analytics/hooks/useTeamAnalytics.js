@@ -248,13 +248,17 @@ export function useTeamAnalytics() {
   }, [teamName, navigate, selectedTeam, transitionLoading]);
 
   // Sync selectedSeason when URL query param changes (e.g., from browser back/forward)
+  // Skip if we're in the middle of a transition (setSelectedSeason already handled it)
   useEffect(() => {
+    // Skip sync during transition - setSelectedSeason already handled it
+    if (transitionLoading) return;
+    
     const seasonParam = searchParams.get('season');
     if (seasonParam && SEASONS.includes(seasonParam) && seasonParam !== selectedSeason) {
       // Use the state setter directly to avoid circular URL updates
       setSelectedSeasonState(seasonParam);
     }
-  }, [searchParams, selectedSeason]);
+  }, [searchParams, selectedSeason, transitionLoading]);
 
   // Fetch data when team or season changes
   useEffect(() => {
@@ -311,6 +315,22 @@ export function useTeamAnalytics() {
     };
   }, []);
 
+  // Listen for nav click event from Header to show loading overlay
+  useEffect(() => {
+    const handleNavClick = () => {
+      setTransitionLoading(true);
+      setTransitionMessage('Loading Team Analytics...');
+      
+      // Auto-hide after a short delay (page is already loaded, just scrolling to top)
+      setTimeout(() => {
+        setTransitionLoading(false);
+      }, 500);
+    };
+    
+    window.addEventListener('team-analytics-nav-click', handleNavClick);
+    return () => window.removeEventListener('team-analytics-nav-click', handleNavClick);
+  }, []);
+
   // ========== Handlers ==========
 
   const handleTeamChange = useCallback((teamId) => {
@@ -363,11 +383,25 @@ export function useTeamAnalytics() {
 
   // ========== Season Change Handler (updates state + URL) ==========
   const setSelectedSeason = useCallback((newSeason) => {
+    // Show transition loading overlay immediately
+    setTransitionLoading(true);
+    setTransitionMessage(`Loading ${newSeason} season...`);
+    
+    // Clear any existing timeout
+    if (transitionTimeoutRef.current) {
+      clearTimeout(transitionTimeoutRef.current);
+    }
+    
+    // Reset fetch ref to allow the new fetch
+    currentFetchRef.current = null;
+    
     setSelectedSeasonState(newSeason);
     // Update URL with new season parameter
     const newParams = new URLSearchParams(searchParams);
     newParams.set('season', newSeason);
     setSearchParams(newParams, { replace: true });
+    
+    // Note: The overlay will be hidden by fetchTeamData after data loads and renders
   }, [searchParams, setSearchParams]);
 
   // ========== Computed Values ==========

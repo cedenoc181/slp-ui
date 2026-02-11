@@ -105,6 +105,12 @@ function Header() {
 
   const handleNavClick = (path) => {
     closeMenu();
+    
+    // Dispatch a custom event for team-analytics to show loading overlay
+    if (path === '/team-analytics' && location.pathname.startsWith('/team-analytics')) {
+      window.dispatchEvent(new CustomEvent('team-analytics-nav-click'));
+    }
+    
     navigate(path);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
