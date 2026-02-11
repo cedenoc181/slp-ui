@@ -377,15 +377,11 @@ export function useBatterStats({ teamId = 'ALL', teamDbId = null, season = '2025
           extractedTeamName = data.team.team_name;
         }
 
-        const playerMlbId = data.player_mlb_id || data.mlb_id;
         return {
           key: cat.key,
           label: cat.label,
           format: cat.format,
           playerName: data.player_name || 'Unknown',
-          playerId: data.id || data.player_id || null,
-          playerMlbId: playerMlbId,
-          playerSlug: data.name_slug || playerMlbId,
           teamName: extractedTeamName,
           value: data.value ?? 0,
           leagueAvg: data.league_avg ?? 0,

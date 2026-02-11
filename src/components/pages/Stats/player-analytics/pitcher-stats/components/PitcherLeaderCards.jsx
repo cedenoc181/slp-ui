@@ -30,7 +30,12 @@ function PitcherLeaderCards({
       ) : leaderCategories.length > 0 ? (
         <div className="pitcher-leader-cards">
           {leaderCategories.map((cat, idx) => (
-            <div key={idx} className={`pitcher-card ${idx === 0 ? 'pitcher-card-featured' : ''}`}>
+            <Link
+              key={idx}
+              to={`/player/${cat.playerSlug}?season=${season}`}
+              className={`pitcher-card pitcher-card-link ${idx === 0 ? 'pitcher-card-featured' : ''}`}
+              onClick={() => window.scrollTo(0, 0)}
+            >
               <div className="pitcher-card-top">
                 <span className="pitcher-category">{cat.category}</span>
                 <span className="pitcher-stat-label">{cat.statLabel}</span>
@@ -45,19 +50,13 @@ function PitcherLeaderCards({
                     />
                   </div>
                 )}
-                <Link
-                  to={`/player/${cat.playerSlug}?season=${season}`}
-                  className="player-profile-link"
-                  onClick={() => window.scrollTo(0, 0)}
-                >
-                  <span className="pitcher-player">{cat.player}</span>
-                </Link>
+                <span className="pitcher-player">{cat.player}</span>
                 {!isTeamSelected && cat.team && (
                   <span className="pitcher-team">{cat.team}</span>
                 )}
               </div>
               <div className="pitcher-value">{cat.value}</div>
-            </div>
+            </Link>
           ))}
         </div>
       ) : (

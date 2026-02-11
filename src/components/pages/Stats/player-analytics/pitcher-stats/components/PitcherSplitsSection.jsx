@@ -6,7 +6,6 @@
 // ============================================================================
 
 import React, { useCallback } from 'react';
-import { Link } from 'react-router-dom';
 import { getTeamLogoByName } from '../../shared/utils';
 
 function PitcherSplitsSection({
@@ -14,7 +13,6 @@ function PitcherSplitsSection({
   teamName,
   splitsLoading,
   splitsDisplayData,
-  season,
 }) {
   // Format value based on type
   const formatValue = useCallback((val, fmt) => {
@@ -28,7 +26,7 @@ function PitcherSplitsSection({
 
   // Render split item with horizontal bar chart
   const renderSplitItem = useCallback((split) => {
-    const { key, label, format, inverse, playerName, playerId, teamName: splitTeamName, value, leagueAvg } = split;
+    const { key, label, format, inverse, playerName, teamName: splitTeamName, value, leagueAvg } = split;
 
     const displayValue = formatValue(value, format);
     const displayAvg = formatValue(leagueAvg, format);
@@ -64,17 +62,7 @@ function PitcherSplitsSection({
                 onError={(e) => { e.target.style.display = 'none'; }}
               />
             )}
-            {playerId ? (
-              <Link
-                to={`/player/${playerId}?season=${season}`}
-                className="player-profile-link split-bar-name"
-                onClick={() => window.scrollTo(0, 0)}
-              >
-                {playerName}
-              </Link>
-            ) : (
-              <span className="split-bar-name">{playerName}</span>
-            )}
+            <span className="split-bar-name">{playerName}</span>
           </div>
         </div>
         <div className="split-bar-chart">
@@ -98,7 +86,7 @@ function PitcherSplitsSection({
         </div>
       </div>
     );
-  }, [formatValue, season]);
+  }, [formatValue]);
 
   return (
     <div className="pitcher-splits-card">

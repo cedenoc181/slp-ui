@@ -6,7 +6,6 @@
 // ============================================================================
 
 import React, { useCallback } from 'react';
-import { Link } from 'react-router-dom';
 import { getTeamLogoByName } from '../../shared/utils';
 
 function BatterSplitsSection({
@@ -14,7 +13,6 @@ function BatterSplitsSection({
   teamName,
   splitsLoading,
   splitsDisplayData,
-  season,
 }) {
   // Format value based on type
   const formatValue = useCallback((val, fmt) => {
@@ -25,7 +23,7 @@ function BatterSplitsSection({
 
   // Render split item with horizontal bar chart
   const renderSplitItem = useCallback((split) => {
-    const { key, label, format, playerName, playerId, playerMlbId, playerSlug, teamName: splitTeamName, value, leagueAvg } = split;
+    const { key, label, format, playerName, teamName: splitTeamName, value, leagueAvg } = split;
 
     // Ensure teamName is a string
     const safeTeamName = typeof splitTeamName === 'string' ? splitTeamName : '';
@@ -58,17 +56,7 @@ function BatterSplitsSection({
                 onError={(e) => { e.target.style.display = 'none'; }}
               />
             )}
-            {playerSlug ? (
-              <Link
-                to={`/player/${playerSlug}?season=${season}`}
-                className="player-profile-link split-bar-name"
-                onClick={() => window.scrollTo(0, 0)}
-              >
-                {playerName}
-              </Link>
-            ) : (
-              <span className="split-bar-name">{playerName}</span>
-            )}
+            <span className="split-bar-name">{playerName}</span>
           </div>
         </div>
         <div className="split-bar-chart">
@@ -90,7 +78,7 @@ function BatterSplitsSection({
         </div>
       </div>
     );
-  }, [formatValue, season]);
+  }, [formatValue]);
 
   return (
     <div className="batter-splits-card">

@@ -30,7 +30,12 @@ function BatterLeaderCards({
       ) : leaderCategories.length > 0 ? (
         <div className="batter-leader-cards">
           {leaderCategories.map((cat, idx) => (
-            <div key={idx} className="batter-card">
+            <Link
+              key={idx}
+              to={`/player/${cat.playerSlug}?season=${season}`}
+              className="batter-card batter-card-link"
+              onClick={() => window.scrollTo(0, 0)}
+            >
               <div className="batter-card-top">
                 <span className="batter-category">{cat.category}</span>
                 <span className="batter-stat-label">{cat.statLabel}</span>
@@ -45,19 +50,13 @@ function BatterLeaderCards({
                     />
                   </div>
                 )}
-                <Link
-                  to={`/player/${cat.playerSlug}?season=${season}`}
-                  className="player-profile-link"
-                  onClick={() => window.scrollTo(0, 0)}
-                >
-                  <span className="batter-player">{cat.player}</span>
-                </Link>
+                <span className="batter-player">{cat.player}</span>
                 {!isTeamSelected && cat.team && typeof cat.team === 'string' && (
                   <span className="batter-team">{cat.team}</span>
                 )}
                 <span className="batter-value">{cat.value}</span>
               </div>
-            </div>
+            </Link>
           ))}
         </div>
       ) : (

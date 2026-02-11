@@ -380,14 +380,13 @@ export function usePitcherStats({ teamId = 'ALL', teamDbId = null, season = '202
       .map(cat => {
         const data = dataByCategory[cat.key];
         if (!data) return null;
-
+        
         return {
           key: cat.key,
           label: cat.label,
           format: cat.format,
           inverse: cat.inverse, // true if lower is better (e.g., ERA)
           playerName: data.player_name || 'Unknown',
-          playerId: data.id || null,
           teamName: data.team_name || '',
           value: data.value ?? 0,
           leagueAvg: data.league_avg ?? 0,
