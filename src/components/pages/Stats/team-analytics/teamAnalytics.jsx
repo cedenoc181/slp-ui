@@ -53,6 +53,7 @@ function TeamAnalytics() {
     isFilterChanging,
     handleChartFilterChange,
     chartSectionRef,
+    standingsSectionRef,
     shouldHideFloatingFilters,
 
     // Loading/Error
@@ -201,6 +202,7 @@ function TeamAnalytics() {
 
         {/* Team Info Grid: Standings, Leaders, Stats */}
         <TeamInfoGrid
+          standingsSectionRef={standingsSectionRef}
           record={record}
           streak={streak}
           ranks={ranks}

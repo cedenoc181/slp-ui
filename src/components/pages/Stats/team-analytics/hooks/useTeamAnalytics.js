@@ -67,7 +67,9 @@ export function useTeamAnalytics() {
   const [gameLogSeasonType, setGameLogSeasonType] = useState('R'); // R, S, P
   const [hideFloatingFilters, setHideFloatingFilters] = useState(false);
   const [isChartSectionVisible, setIsChartSectionVisible] = useState(false);
+  const [isStandingsSectionVisible, setIsStandingsSectionVisible] = useState(false);
   const chartSectionRef = useRef(null);
+  const standingsSectionRef = useRef(null);
 
   // ========== TRANSITION LOADING STATE ==========
   // Full-page loading overlay when switching teams
@@ -306,6 +308,25 @@ export function useTeamAnalytics() {
     return () => observer.disconnect();
   }, [loading]);
 
+  // Standings section intersection observer - hide floating filters when standings appears (mobile only)
+  useEffect(() => {
+    const target = standingsSectionRef.current;
+    if (!target) return;
+    const isMobile = () => window.innerWidth <= 480;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (isMobile()) {
+          setIsStandingsSectionVisible(entries[0].isIntersecting);
+        } else {
+          setIsStandingsSectionVisible(false);
+        }
+      },
+      { root: null, threshold: 0.2 }
+    );
+    observer.observe(target);
+    return () => observer.disconnect();
+  }, [loading]);
+
   // Cleanup timeout on unmount
   useEffect(() => {
     return () => {
@@ -409,7 +430,7 @@ export function useTeamAnalytics() {
   const currentTeam = useMemo(() => getTeamByAbbr(selectedTeam), [selectedTeam]);
   const currentTeamName = currentTeam?.name || 'Team';
   const teamMlbId = currentTeam?.mlbId || null;
-  const shouldHideFloatingFilters = hideFloatingFilters || !isChartSectionVisible;
+  const shouldHideFloatingFilters = hideFloatingFilters || !isChartSectionVisible || isStandingsSectionVisible;
 
   return {
     // URL/Navigation
@@ -435,6 +456,7 @@ export function useTeamAnalytics() {
     isFilterChanging,
     handleChartFilterChange,
     chartSectionRef,
+    standingsSectionRef,
     shouldHideFloatingFilters,
 
     // Loading/Error

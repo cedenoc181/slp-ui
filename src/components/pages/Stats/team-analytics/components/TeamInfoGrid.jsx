@@ -6,6 +6,7 @@ import { getStreakString, isWinningStreak } from '../utils';
  * Team info grid: Standings, Leaders, and Stats cards
  */
 function TeamInfoGrid({
+  standingsSectionRef,
   record,
   streak,
   ranks,
@@ -25,7 +26,7 @@ function TeamInfoGrid({
   const navigate = useNavigate();
 
   return (
-    <div className="team-info-grid">
+    <div className="team-info-grid" ref={standingsSectionRef}>
       {/* Team Standings */}
       <div className="section-card">
         <div className="card-header">

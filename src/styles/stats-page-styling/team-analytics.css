@@ -179,6 +179,14 @@
     min-width: 100px;
   }
 
+  .team-analytics-page .ta-dropdown-menu {
+    left: 50%;
+    transform: translateX(-50%);
+  }
+
+  .stat-card.highlight {
+    margin-top: 1rem;
+  }
 
   .team-analytics-page .timeframe-tabs {
     display: flex;
@@ -186,6 +194,10 @@
     align-items: center;
     width: fit-content !important;
     margin: 0 auto !important;
+  }
+
+  .team-game-log-section.pps-section {
+    margin-bottom: 0;
   }
 }
 
@@ -850,14 +862,22 @@
 
 @media (max-width: 480px) {
   .chart-filters.floating-remote {
-    padding: 8px 10px;
-    gap: 4px;
-    bottom: 12px;
+    position: fixed;
+    bottom: 20px;
     left: 10px;
     right: 10px;
     transform: none;
     width: calc(100% - 20px);
+    padding: 10px 12px;
+    gap: 6px;
     justify-content: center;
+    border-radius: 12px;
+    z-index: 1000;
+  }
+
+  /* Keep transform: none on mobile even when hidden */
+  .chart-filters.floating-remote.floating-hidden {
+    transform: none;
   }
 
   .chart-filter-btn {
@@ -869,10 +889,6 @@
 
   .filter-icon {
     display: none;
-  }
-
-  .chart-filters.floating-remote.floating-hidden {
-    transform: translateY(20px);
   }
 }
 
@@ -1659,28 +1675,12 @@
   .bar-win-pct {
     font-size: 9px;
   }
-
-  /* Floating Filters Responsive */
-  .chart-filters.floating-remote {
-    padding: 8px 10px;
-    gap: 6px;
-    bottom: 16px;
-    border-radius: 14px;
-  }
-
-  .chart-filter-btn {
-    padding: 8px 12px;
-    font-size: 12px;
-  }
-
-  .filter-icon {
-    display: none;
-  }
 }
 
 @media (max-width: 480px) {
   .team-analytics-page .container {
     padding: 0 0.75rem;
+    padding-bottom: 2rem;
   }
 
   /* Header - Extra small screens */
