@@ -643,16 +643,26 @@
   }
 
   .header-content {
-    gap: 0.75rem; /* Further reduced gap for mobile */
+    gap: 0.5rem;
+    justify-content: space-between;
+    align-items: center;
   }
 
   .logo {
-    margin-right: 0.5rem;
+    order: 1;
+    flex-shrink: 0;
+    margin-right: 0;
   }
 
   .logo img {
-    width: 60px;
-    height: 45px;
+    width: 50px;
+    height: 38px;
+  }
+
+  .hamburger {
+    order: 3;
+    flex-shrink: 0;
+    margin-left: 0;
   }
 
   .nav {
@@ -660,8 +670,17 @@
   }
 
   .nav-search {
-    max-width: 200px;
-    margin-left: 0.25rem;
+    order: 2;
+    flex: 1;
+    max-width: none;
+    width: 80%;
+    margin: 0 0.5rem;
+    display: flex;
+    justify-content: center;
+  }
+
+  .nav-search input {
+    width: 100%;
   }
 }
 
@@ -674,11 +693,11 @@
   }
 
   .header-content {
-    gap: 0.5rem; /* Minimal gap for extra small screens */
+    gap: 0.4rem;
   }
 
   .logo {
-    margin-right: 0.25rem;
+    margin-right: 0;
   }
 
   .logo img {
@@ -690,6 +709,6 @@
   }
 
   .nav-search {
-    margin-left: 0;
+    margin: 0 0.25rem;
   }
 }

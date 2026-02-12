@@ -624,35 +624,77 @@
      ============================================ */
 @media screen and (max-width: 480px) {
     .hero {
-      padding: 2.5rem 0;
+      padding: 1.5rem 0 1.75rem;
     }
   
     .hero h1 {
-      font-size: 2rem;
-      padding: 0.875rem 1.25rem;
-      letter-spacing: 0.5px;
+      font-size: 1.5rem;
+      padding: 0.65rem 0.9rem;
+      letter-spacing: 0.3px;
+      margin-bottom: 0.5rem;
+      border-radius: 8px;
     }
   
     .hero-subtitle {
-      font-size: 1rem;
-      margin-bottom: 1.25rem;
+      font-size: 0.85rem;
+      margin-bottom: 0.75rem;
+      line-height: 1.4;
+      padding: 0 0.5rem;
+    }
+
+    /* Stats strip - compact for mobile */
+    .hero-stats-strip {
+      gap: 0.75rem;
+      margin: 1rem 0;
+      padding: 0.75rem 1rem;
+      border-radius: 10px;
+    }
+
+    .hero-stat-number {
+      font-size: 1.1rem;
+    }
+
+    .hero-stat-label {
+      font-size: 0.65rem;
+    }
+
+    .hero-stat-divider {
+      width: 40px;
+      height: 1px;
+    }
+
+    /* CTA button - appropriately sized for mobile touch */
+    .hero-cta-group {
+      margin-top: 1rem;
+      margin-bottom: 1rem;
+    }
+
+    .hero-cta-primary {
+      padding: 0.7rem 1.25rem;
+      font-size: 0.85rem;
+      border-radius: 8px;
+    }
+
+    .hero-cta-primary svg {
+      width: 16px;
+      height: 16px;
     }
   
     .hero-chart-left {
-        width: 350px;
-        height: 350px;
+      display: none;
     }
+
     /* Keep baseball but make it tiny and very subtle */
     .baseball-icon {
-      width: 30px;
-      height: 30px;
-      opacity: 0.12;
+      width: 25px;
+      height: 25px;
+      opacity: 0.1;
       animation: bounceBaseballMobile 24s linear infinite;
     }
   
     .cta-button {
-      font-size: 0.9rem;
-      padding: 0.75rem 1.5rem;
+      font-size: 0.8rem;
+      padding: 0.6rem 1.25rem;
     }
   
     .glow-spot {
@@ -684,23 +726,60 @@
      RESPONSIVE - EXTRA SMALL (375px)
      ============================================ */
   @media screen and (max-width: 375px) {
+    .hero {
+      padding: 1.25rem 0 1.5rem;
+    }
+
     .hero h1 {
-      font-size: 1.75rem;
-      padding: 0.75rem 1rem;
+      font-size: 1.3rem;
+      padding: 0.5rem 0.75rem;
+      letter-spacing: 0.2px;
     }
   
     .hero-subtitle {
+      font-size: 0.8rem;
+      margin-bottom: 0.5rem;
+      padding: 0 0.25rem;
+    }
+
+    /* Stats strip - even more compact */
+    .hero-stats-strip {
+      gap: 0.5rem;
+      margin: 0.75rem 0;
+      padding: 0.6rem 0.75rem;
+    }
+
+    .hero-stat-number {
       font-size: 0.95rem;
     }
 
+    .hero-stat-label {
+      font-size: 0.6rem;
+    }
+
+    .hero-stat-divider {
+      width: 30px;
+    }
+
+    /* CTA button - minimum touch target size (44px) */
+    .hero-cta-group {
+      margin-top: 0.75rem;
+      margin-bottom: 0.75rem;
+    }
+
+    .hero-cta-primary {
+      padding: 0.6rem 1rem;
+      font-size: 0.8rem;
+      min-height: 44px;
+    }
+
     .hero-chart-left {
-        width: 300px;
-        height: 300px;
+      display: none;
     }
 
     .cta-button {
-      font-size: 0.85rem;
-      padding: 0.65rem 1.25rem;
+      font-size: 0.75rem;
+      padding: 0.55rem 1rem;
     }
   
     /* Hide baseball on very small screens */

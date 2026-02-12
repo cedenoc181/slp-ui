@@ -476,16 +476,39 @@
 
 @media (max-width: 768px) {
   .stats-preview {
-    padding: 3rem 0;
+    padding: 2.5rem 0;
   }
 
   .stats-preview-header {
     flex-direction: column;
-    align-items: flex-start;
+    align-items: center;
+    text-align: center;
+    gap: 1rem;
+  }
+
+  .header-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
   }
 
   .header-content h2 {
-    font-size: 1.5rem;
+    font-size: 1.4rem;
+    margin: 0.4rem 0;
+  }
+
+  .header-content p {
+    font-size: 0.9rem;
+    line-height: 1.4;
+  }
+
+  .section-badge {
+    font-size: 0.7rem;
+    padding: 0.35rem 0.7rem;
+  }
+
+  .view-all-link {
+    font-size: 0.85rem;
   }
 
   .stats-preview-grid {
@@ -506,6 +529,14 @@
     text-align: center;
   }
 
+  .cta-content h3 {
+    font-size: 1.1rem;
+  }
+
+  .cta-content p {
+    font-size: 0.85rem;
+  }
+
   .leader-stats-group {
     gap: 0.5rem;
   }
@@ -516,19 +547,153 @@
 }
 
 @media (max-width: 480px) {
+  .stats-preview {
+    padding: 2rem 0;
+  }
+
+  .stats-preview-header {
+    margin-bottom: 1.5rem;
+    gap: 0.75rem;
+  }
+
+  .header-content h2 {
+    font-size: 1.2rem;
+    margin: 0.3rem 0;
+  }
+
+  .header-content p {
+    font-size: 0.8rem;
+    padding: 0 0.5rem;
+  }
+
+  .section-badge {
+    font-size: 0.65rem;
+    padding: 0.3rem 0.6rem;
+  }
+
+  .badge-icon {
+    font-size: 0.75rem;
+  }
+
+  .view-all-link {
+    font-size: 0.8rem;
+  }
+
   .preview-card {
-    padding: 1.25rem;
+    padding: 1rem;
+    border-radius: 12px;
+  }
+
+  .card-header h3 {
+    font-size: 0.95rem;
   }
 
   .leader-row {
-    padding: 0.5rem 0.65rem;
+    padding: 0.5rem 0.5rem;
+  }
+
+  .leader-rank {
+    font-size: 0.7rem;
+    min-width: 22px;
   }
 
   .leader-name {
-    font-size: 0.85rem;
+    font-size: 0.8rem;
   }
 
-  .stat-value {
+  .leader-team {
+    font-size: 0.65rem;
+  }
+
+  .mini-stat {
+    min-width: 36px;
+  }
+
+  .mini-value {
+    font-size: 0.75rem;
+  }
+
+  .mini-label {
+    font-size: 0.55rem;
+  }
+
+  .quick-stats-grid {
+    gap: 0.75rem;
+  }
+
+  .quick-stat-value {
+    font-size: 1.25rem;
+  }
+
+  .quick-stat-label {
+    font-size: 0.65rem;
+  }
+
+  .stats-preview-cta {
+    padding: 1.25rem;
+    margin-top: 1rem;
+    border-radius: 12px;
+  }
+
+  .cta-content h3 {
     font-size: 1rem;
+  }
+
+  .cta-content p {
+    font-size: 0.8rem;
+  }
+
+  .cta-button {
+    padding: 0.7rem 1.25rem;
+    font-size: 0.85rem;
+  }
+}
+
+/* Extra small screens */
+@media (max-width: 375px) {
+  .stats-preview {
+    padding: 1.5rem 0;
+  }
+
+  .header-content h2 {
+    font-size: 1.1rem;
+  }
+
+  .header-content p {
+    font-size: 0.75rem;
+  }
+
+  .preview-card {
+    padding: 0.85rem;
+  }
+
+  .leader-row {
+    padding: 0.4rem;
+  }
+
+  .leader-name {
+    font-size: 0.75rem;
+  }
+
+  .mini-value {
+    font-size: 0.7rem;
+  }
+
+  .quick-stat-value {
+    font-size: 1.1rem;
+  }
+
+  .stats-preview-cta {
+    padding: 1rem;
+  }
+
+  .cta-content h3 {
+    font-size: 0.95rem;
+  }
+
+  .cta-button {
+    padding: 0.6rem 1rem;
+    font-size: 0.8rem;
+    min-height: 44px;
   }
 }
