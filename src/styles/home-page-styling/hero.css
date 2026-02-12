@@ -633,6 +633,8 @@
       letter-spacing: 0.3px;
       margin-bottom: 0.5rem;
       border-radius: 8px;
+      backdrop-filter: none;
+      -webkit-backdrop-filter: none;
     }
   
     .hero-subtitle {
@@ -684,12 +686,23 @@
       display: none;
     }
 
-    /* Keep baseball but make it tiny and very subtle */
+    /* Disable all animations on mobile to reduce CPU/GPU load */
     .baseball-icon {
-      width: 25px;
-      height: 25px;
-      opacity: 0.1;
-      animation: bounceBaseballMobile 24s linear infinite;
+      display: none;
+    }
+
+    .floating-stat {
+      display: none;
+    }
+
+    .glow-spot {
+      display: none;
+    }
+
+    /* Disable backdrop-filter on mobile */
+    .hero-stats-strip {
+      backdrop-filter: none;
+      -webkit-backdrop-filter: none;
     }
   
     .cta-button {

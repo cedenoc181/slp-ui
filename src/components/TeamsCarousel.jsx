@@ -79,15 +79,21 @@ function TeamsCarousel() {
         // Get all team IDs (1-30)
         const teamIds = Object.values(TEAM_IDS);
         
-        // Fetch all teams in parallel
-        const teamPromises = teamIds.map(teamId => 
-          teamsService.getTeamSeason(teamId).catch(err => {
-            console.warn(`Failed to fetch team ${teamId}:`, err);
-            return null;
-          })
-        );
+        // Fetch teams in batches to reduce browser load
+        const BATCH_SIZE = 6;
+        const results = [];
         
-        const results = await Promise.all(teamPromises);
+        for (let i = 0; i < teamIds.length; i += BATCH_SIZE) {
+          const batch = teamIds.slice(i, i + BATCH_SIZE);
+          const batchPromises = batch.map(teamId => 
+            teamsService.getTeamSeason(teamId).catch(err => {
+              console.warn(`Failed to fetch team ${teamId}:`, err);
+              return null;
+            })
+          );
+          const batchResults = await Promise.all(batchPromises);
+          results.push(...batchResults);
+        }
         
         // Transform API data to carousel format
         const transformedTeams = results

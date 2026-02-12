@@ -96,6 +96,13 @@
   align-items: center;
   justify-content: center;
   backdrop-filter: blur(4px);
+}
+
+@media (max-width: 768px) {
+  .ta-transition-overlay {
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
   animation: ta-fade-in 0.2s ease-out;
 }
 
