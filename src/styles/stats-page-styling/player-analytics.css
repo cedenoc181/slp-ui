@@ -51,8 +51,8 @@
   .pa-transition-overlay {
     backdrop-filter: none;
     -webkit-backdrop-filter: none;
+    animation: pa-fade-in 0.2s ease-out;
   }
-  animation: pa-fade-in 0.2s ease-out;
 }
 
 .pa-transition-content {

@@ -21,6 +21,7 @@ function Header() {
   const [searchSuggestions, setSearchSuggestions] = useState([]);
   const [isSearchFocused, setIsSearchFocused] = useState(false);
   const [isSearchingPlayers, setIsSearchingPlayers] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
   const searchDebounceRef = useRef(null);
   const navigate = useNavigate();
   const location = useLocation();
@@ -62,6 +63,16 @@ function Header() {
       (article.tags || []).forEach((tag) => tags.add(tag));
     });
     return Array.from(tags);
+  }, []);
+
+  // Detect mobile viewport
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth <= 1024);
+    };
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
   }, []);
 
   // Detect scroll
@@ -439,8 +450,8 @@ function Header() {
           {/* Stats Dropdown - NEW */}
           <div 
             className="nav-dropdown"
-            onMouseEnter={() => setActiveDropdown('stats')}
-            onMouseLeave={() => setActiveDropdown(null)}
+            onMouseEnter={() => !isMobile && setActiveDropdown('stats')}
+            onMouseLeave={() => !isMobile && setActiveDropdown(null)}
           >
             <button 
               type="button" 
@@ -480,8 +491,8 @@ function Header() {
           {/* Insights Dropdown - UPDATED (removed Team Analytics) */}
           <div 
             className="nav-dropdown"
-            onMouseEnter={() => setActiveDropdown('insights')}
-            onMouseLeave={() => setActiveDropdown(null)}
+            onMouseEnter={() => !isMobile && setActiveDropdown('insights')}
+            onMouseLeave={() => !isMobile && setActiveDropdown(null)}
           >
             <button 
               type="button" 
@@ -521,8 +532,8 @@ function Header() {
           {/* Education Dropdown */}
           <div 
             className="nav-dropdown"
-            onMouseEnter={() => setActiveDropdown('education')}
-            onMouseLeave={() => setActiveDropdown(null)}
+            onMouseEnter={() => !isMobile && setActiveDropdown('education')}
+            onMouseLeave={() => !isMobile && setActiveDropdown(null)}
           >
             <button 
               type="button" 

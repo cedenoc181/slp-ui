@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React from 'react';
 import { TEAMS, SEASONS } from '../../../../../data/constants/apiConstants';
 
 /**
@@ -14,27 +14,6 @@ function TeamAnalyticsHeader({
   handleTeamChange,
   setSelectedSeason,
 }) {
-  const [teamDropdownOpen, setTeamDropdownOpen] = useState(false);
-  const [seasonDropdownOpen, setSeasonDropdownOpen] = useState(false);
-  const teamDropdownRef = useRef(null);
-  const seasonDropdownRef = useRef(null);
-
-  // Close dropdowns when clicking outside
-  useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (teamDropdownRef.current && !teamDropdownRef.current.contains(event.target)) {
-        setTeamDropdownOpen(false);
-      }
-      if (seasonDropdownRef.current && !seasonDropdownRef.current.contains(event.target)) {
-        setSeasonDropdownOpen(false);
-      }
-    };
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
-
-  const selectedTeamName = TEAMS.find(t => t.id === selectedTeam)?.name || 'Select Team';
-
   return (
     <div className="analytics-header">
       <div className="container">
@@ -49,64 +28,28 @@ function TeamAnalyticsHeader({
               <h1>{currentTeamName}</h1>
             </div>
             <div className="selectors-row">
-              {/* Custom Team Dropdown */}
-              <div className="team-selector ta-dropdown-wrapper" ref={teamDropdownRef}>
-                <button
-                  className={`ta-dropdown-btn team-dropdown ${teamDropdownOpen ? 'active' : ''}`}
-                  onClick={() => {
-                    setTeamDropdownOpen(!teamDropdownOpen);
-                    setSeasonDropdownOpen(false);
-                  }}
+              <div className="team-selector">
+                <select 
+                  value={selectedTeam} 
+                  onChange={(e) => handleTeamChange(e.target.value)}
+                  className="team-dropdown"
                 >
-                  {selectedTeamName}
-                  <span className={`ta-dropdown-arrow ${teamDropdownOpen ? 'open' : ''}`}>▼</span>
-                </button>
-                {teamDropdownOpen && (
-                  <div className="ta-dropdown-menu">
-                    {TEAMS.filter(team => team.id !== selectedTeam).map(team => (
-                      <button
-                        key={team.id}
-                        className="ta-dropdown-item"
-                        onClick={() => {
-                          handleTeamChange(team.id);
-                          setTeamDropdownOpen(false);
-                        }}
-                      >
-                        {team.name}
-                      </button>
-                    ))}
-                  </div>
-                )}
+                  {TEAMS.map(team => (
+                    <option key={team.id} value={team.id}>{team.name}</option>
+                  ))}
+                </select>
               </div>
 
-              {/* Custom Season Dropdown */}
-              <div className="season-selector ta-dropdown-wrapper" ref={seasonDropdownRef}>
-                <button
-                  className={`ta-dropdown-btn season-dropdown ${seasonDropdownOpen ? 'active' : ''}`}
-                  onClick={() => {
-                    setSeasonDropdownOpen(!seasonDropdownOpen);
-                    setTeamDropdownOpen(false);
-                  }}
+              <div className="season-selector">
+                <select 
+                  value={selectedSeason} 
+                  onChange={(e) => setSelectedSeason(e.target.value)}
+                  className="season-dropdown"
                 >
-                  {selectedSeason}
-                  <span className={`ta-dropdown-arrow ${seasonDropdownOpen ? 'open' : ''}`}>▼</span>
-                </button>
-                {seasonDropdownOpen && (
-                  <div className="ta-dropdown-menu">
-                    {SEASONS.filter(season => season !== selectedSeason).map(season => (
-                      <button
-                        key={season}
-                        className="ta-dropdown-item"
-                        onClick={() => {
-                          setSelectedSeason(season);
-                          setSeasonDropdownOpen(false);
-                        }}
-                      >
-                        {season}
-                      </button>
-                    ))}
-                  </div>
-                )}
+                  {SEASONS.map(season => (
+                    <option key={season} value={season}>{season}</option>
+                  ))}
+                </select>
               </div>
             </div>
           </div>
