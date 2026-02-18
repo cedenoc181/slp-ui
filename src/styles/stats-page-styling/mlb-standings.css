@@ -817,13 +817,76 @@
   }
 
   .season-tabs {
-    margin: auto;
+    display: flex;
+    flex-direction: column;
     justify-content: center;
-    width: 345px;
+    align-items: center;
+    gap: 1rem;
+    width: fit-content !important;
+    margin: 0 auto;
+  }
+
+  .season-dropdown-wrapper {
+    width: fit-content;
+    order: 2;
+  }
+
+  .season-type-wrapper {
+    width: fit-content;
+    order: 1;
+  }
+
+  .season-dropdown {
+    min-width: 100px;
+    width: auto;
+    height: 36px;
+    padding: 6px 12px;
+    padding-right: 28px;
+    font-size: 13px;
+    text-align: center;
   }
 
   .season-type-dropdown {
-    margin-top: 0.75rem;
+    min-width: 160px;
+    width: auto;
+    height: 36px;
+    padding: 6px 12px;
+    padding-right: 28px;
+    font-size: 13px;
+    text-align: center;
+    margin-top: 0;
+  }
+
+  .league-toggle {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: fit-content !important;
+    height: auto;
+    padding: 4px;
+    margin: 1.5rem auto 0;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 10px;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  }
+
+  .league-toggle .league-btn {
+    padding: 8px 14px;
+    font-size: 14px;
+    border-radius: 8px;
+    white-space: normal;
+    line-height: 1.2;
+    max-width: 90px;
+    text-align: center;
+  }
+
+  .league-toggle:focus-within {
+    border-color: var(--standings-primary-color, #1976D2);
+    box-shadow: 0 0 0 3px rgba(25, 118, 210, 0.2);
+  }
+
+  .league-btn:focus {
+    outline: none;
   }
 
   .standings-table td.rank-col,
