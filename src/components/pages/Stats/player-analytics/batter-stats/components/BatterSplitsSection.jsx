@@ -73,7 +73,7 @@ function BatterSplitsSection({
           </div>
           <div className="split-bar-values">
             <span className="split-bar-value">{displayValue}</span>
-            <span className="split-bar-avg">Avg: {displayAvg}</span>
+            <span className="split-bar-avg">MLB-avg: {displayAvg}</span>
           </div>
         </div>
       </div>

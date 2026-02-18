@@ -81,7 +81,7 @@ function PitcherSplitsSection({
             <span className={`split-bar-value${isAboveAvg ? '' : ' poor-performance'}`}>
               {displayValue}
             </span>
-            <span className="split-bar-avg">Avg: {displayAvg}</span>
+            <span className="split-bar-avg">MLB-avg: {displayAvg}</span>
           </div>
         </div>
       </div>
