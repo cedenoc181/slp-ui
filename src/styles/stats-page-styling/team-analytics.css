@@ -296,7 +296,6 @@
 .team-analytics-page .season-dropdown {
   padding: 10px 16px;
   padding-right: 36px;
-  background: rgba(255, 255, 255, 0.08);
   border: 1px solid rgba(255, 255, 255, 0.15);
   border-radius: 8px;
   color: var(--text-primary, #fff);
@@ -315,12 +314,20 @@
   min-width: 120px;
 }
 
-.team-analytics-page .team-dropdown {
+ .analytics-header .team-dropdown {
   min-width: 200px;
+  background-color: rgba(25, 118, 210, 0.15);
+  border-color: rgba(25, 118, 210, 0.3);
+}
+
+.analytics-header .team-dropdown:hover {
+  background-color: rgba(25, 118, 210, 0.25) !important;
+  border-color: rgba(25, 118, 210, 0.4);
 }
 
 .team-analytics-page .season-dropdown {
   min-width: 100px;
+  background: rgba(255, 255, 255, 0.08);
 }
 
 .team-analytics-page .team-dropdown:hover,

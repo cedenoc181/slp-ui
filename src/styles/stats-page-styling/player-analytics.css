@@ -466,6 +466,14 @@
     font-size: 12px;
     border-radius: 6px;
   }
+
+  .hot-pitcher-item, .hot-pitcher-header{
+    gap: 0.5rem !important;
+  }
+
+  .hot-batter-item, .hot-batter-header {
+    gap: 0.5rem !important;
+  }
 }
 
 /* Mobile Small Screens - 430px and below */
