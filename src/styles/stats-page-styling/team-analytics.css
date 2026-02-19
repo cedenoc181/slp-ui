@@ -2,6 +2,7 @@
    Team Analytics Page - Main Styles
    ============================================ */
 
+/* === Base Page Styles === */
 .team-analytics-page {
   min-height: 100vh;
   background: var(--bg-primary, #121212);
@@ -16,7 +17,7 @@
   background-image: none !important;
 }
 
-/* Override header gradient for team analytics - use direct child selector */
+/* Override header gradient for team analytics */
 .team-analytics-page > .analytics-header,
 .team-analytics-page .analytics-header:not(.season-selector):not(.team-selector) {
   background: linear-gradient(180deg, rgba(25, 118, 210, 0.15) 0%, transparent 100%) !important;
@@ -30,6 +31,20 @@
   background: none !important;
   padding: 0 !important;
   border: none !important;
+}
+
+/* ============================================
+   Container
+   ============================================ */
+
+.team-analytics-page .container {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 1.5rem;
+}
+
+.team-analytics-page .analytics-content {
+  padding: 2rem 0;
 }
 
 /* ============================================
@@ -98,124 +113,6 @@
   backdrop-filter: blur(4px);
 }
 
-@media (max-width: 768px) {
-  .ta-transition-overlay {
-    backdrop-filter: none;
-    -webkit-backdrop-filter: none;
-  }
-
-  /* Header Mobile Optimization */
-  .team-analytics-page .header-content {
-    flex-direction: column;
-    align-items: center;
-    gap: 1rem;
-    padding: 1rem 0;
-  }
-
-  .team-analytics-page .team-selector-wrapper {
-    width: 100%;
-    align-items: center;
-    gap: 0.75rem;
-  }
-
-  .team-analytics-page .team-header-inline {
-    justify-content: center;
-    gap: 0.75rem;
-  }
-
-  .team-analytics-page .team-header-inline h1 {
-    font-size: 1.35rem;
-  }
-
-  .team-analytics-page .team-logo-image {
-    width: 44px;
-    height: 44px;
-  }
-
-  .team-analytics-page .selectors-row {
-    width: 100%;
-    justify-content: center;
-    gap: 0.75rem;
-  }
-
-  .team-analytics-page .timeframe-tabs {
-    width: 100%;
-    justify-content: center;
-    padding: 4px;
-  }
-
-  .team-analytics-page .timeframe-tabs .tab {
-    flex: 1;
-    text-align: center;
-    padding: 8px 10px;
-    font-size: 12px;
-  }
-}
-
-/* Mobile Small Screens - 430px and below */
-@media (max-width: 430px) {
-  .team-analytics-page .team-selector-wrapper {
-    margin: 0 auto;
-  }
-
-  .team-analytics-page .selectors-row {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    gap: 0.5rem;
-    width: fit-content !important;
-    /* margin: 0 auto !important; */
-  }
-
-  .team-analytics-page .team-dropdown,
-  .team-analytics-page .season-dropdown {
-    width: auto;
-    min-width: 100px;
-    text-align: center;
-  }
-
-  .stat-card.highlight {
-    margin-top: 1rem;
-  }
-
-  .team-analytics-page .timeframe-tabs {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    width: fit-content !important;
-    height: 40px;
-    margin: 0 auto !important;
-    border: 1px solid rgba(255, 255, 255, 0.15);
-    transition: border-color 0.15s ease, box-shadow 0.15s ease;
-  }
-
-  .team-analytics-page .timeframe-tabs:focus-within {
-    border-color: var(--primary-color, #1976D2);
-    box-shadow: 0 0 0 3px rgba(25, 118, 210, 0.2);
-  }
-
-  .team-analytics-page .timeframe-tabs .tab:focus {
-    outline: none;
-  }
-
-  .team-game-log-section.pps-section {
-    margin-bottom: 0;
-  }
-
-  .team-analytics-page .header-content{
-    gap: 1.5rem !important;
-  }
-
-  .team-analytics-page .analytics-header {
-    padding-bottom: 0 !important;
-  }
-
-  .team-analytics-page .analytics-header .container {
-    padding-bottom: 1rem;
-  }
-}
-
 .ta-transition-content {
   display: flex;
   flex-direction: column;
@@ -224,11 +121,6 @@
   color: var(--text-primary, #ffffff);
   font-size: 1.1rem;
   font-weight: 500;
-}
-
-@keyframes ta-fade-in {
-  from { opacity: 0; }
-  to { opacity: 1; }
 }
 
 .ta-loading-spinner {
@@ -291,7 +183,7 @@
   position: relative;
 }
 
-/* Team Analytics Dropdown Styles - Scoped to prevent conflicts */
+/* Team Analytics Dropdown Styles */
 .team-analytics-page .team-dropdown,
 .team-analytics-page .season-dropdown {
   padding: 10px 16px;
@@ -308,13 +200,12 @@
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23aaa' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
   background-repeat: no-repeat;
   background-position: right 12px center;
-  /* Simplified transition */
   transition: background-color 0.15s ease, border-color 0.15s ease;
   height: auto;
   min-width: 120px;
 }
 
- .analytics-header .team-dropdown {
+.analytics-header .team-dropdown {
   min-width: 200px;
   background-color: rgba(25, 118, 210, 0.15);
   border-color: rgba(25, 118, 210, 0.3);
@@ -349,7 +240,7 @@
   color: #fff;
 }
 
-/* Timeframe Tabs - Team Analytics Specific */
+/* Timeframe Tabs */
 .team-analytics-page .timeframe-tabs {
   display: flex;
   gap: 8px;
@@ -368,7 +259,6 @@
   font-size: 14px;
   font-weight: 500;
   cursor: pointer;
-  /* Simplified transition */
   transition: background-color 0.15s ease, color 0.15s ease;
   flex: none;
 }
@@ -381,20 +271,6 @@
 .team-analytics-page .timeframe-tabs .tab.active {
   background: var(--primary-color, #1976D2);
   color: #fff;
-}
-
-/* ============================================
-   Container
-   ============================================ */
-
-.team-analytics-page .container {
-  max-width: 1400px;
-  margin: 0 auto;
-  padding: 0 1.5rem;
-}
-
-.team-analytics-page .analytics-content {
-  padding: 2rem 0;
 }
 
 /* ============================================
@@ -413,7 +289,6 @@
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 12px;
   padding: 1.25rem;
-  /* Simplified transition */
   transition: background-color 0.15s ease, border-color 0.15s ease;
 }
 
@@ -473,7 +348,6 @@
   color: #F44336;
 }
 
-/* MLB Rank Value - Optional enhanced styling */
 .team-stat-value.rank-value {
   font-weight: 800;
   color: #64B5F6;
@@ -498,7 +372,6 @@
 
 .section-card.clickable-card {
   cursor: pointer;
-  /* Simplified transition - no transform */
   transition: background-color 0.15s ease, border-color 0.15s ease;
 }
 
@@ -588,7 +461,6 @@
   display: flex;
   align-items: flex-start;
   justify-content: center;
-  /* Simplified transition - removed transform */
   transition: opacity 0.15s ease;
   position: relative;
   cursor: pointer;
@@ -688,7 +560,6 @@
   z-index: 1000;
   opacity: 1;
   visibility: visible;
-  /* Simplified transition - removed transform animation */
   transition: opacity 0.2s ease, visibility 0.2s ease;
 }
 
@@ -712,7 +583,6 @@
   font-size: 14px;
   font-weight: 600;
   cursor: pointer;
-  /* Simplified transition - no transform */
   transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease;
   white-space: nowrap;
 }
@@ -739,7 +609,6 @@
   line-height: 1;
 }
 
-/* Floating remote indicator dot */
 .chart-filters.floating-remote::before {
   content: '';
   position: absolute;
@@ -752,7 +621,6 @@
   border-radius: 2px;
 }
 
-/* Floating Remote - Changing/Disabled State */
 .chart-filters.floating-remote.changing {
   pointer-events: none;
   opacity: 0.7;
@@ -765,19 +633,12 @@
   pointer-events: none;
 }
 
-.chart-filter-btn:disabled:hover,
-.chart-filter-btn[aria-disabled="true"]:hover {
-  transform: none;
-  background: rgba(255, 255, 255, 0.05);
-}
-
 .chart-filter-btn:disabled.active,
 .chart-filter-btn[aria-disabled="true"].active {
   background: var(--primary-color, #1976D2);
   opacity: 0.8;
 }
 
-/* Removed complex loading animation for performance */
 .chart-filters.floating-remote.changing::after {
   content: '';
   position: absolute;
@@ -788,58 +649,6 @@
   height: 2px;
   background: var(--primary-color, #1976D2);
   opacity: 0.6;
-}
-
-/* Responsive adjustments for floating remote */
-@media (max-width: 768px) {
-  .chart-filters.floating-remote {
-    padding: 10px 12px;
-    gap: 6px;
-    bottom: 16px;
-    border-radius: 14px;
-  }
-
-  .chart-filter-btn {
-    padding: 10px 14px;
-    font-size: 13px;
-    border-radius: 8px;
-  }
-
-  .filter-icon {
-    font-size: 14px;
-  }
-}
-
-@media (max-width: 480px) {
-  .chart-filters.floating-remote {
-    position: fixed;
-    bottom: 20px;
-    left: 10px;
-    right: 10px;
-    transform: none;
-    width: calc(100% - 20px);
-    padding: 10px 12px;
-    gap: 6px;
-    justify-content: center;
-    border-radius: 12px;
-    z-index: 1000;
-  }
-
-  /* Keep transform: none on mobile even when hidden */
-  .chart-filters.floating-remote.floating-hidden {
-    transform: none;
-  }
-
-  .chart-filter-btn {
-    padding: 8px 12px;
-    font-size: 12px;
-    flex: 1;
-    justify-content: center;
-  }
-
-  .filter-icon {
-    display: none;
-  }
 }
 
 /* ============================================
@@ -1525,184 +1334,6 @@
   border-radius: 4px;
 }
 
-/* Responsive adjustments */
-@media (max-width: 768px) {
-  .season-phase-divider {
-    min-width: 30px;
-    padding: 0 4px;
-  }
-
-  .phase-text {
-    font-size: 8px;
-    letter-spacing: 0.5px;
-    padding: 6px 0;
-  }
-
-  .divider-line {
-    min-height: 40px;
-  }
-}
-
-@media (max-width: 480px) {
-  .season-phase-divider {
-    min-width: 24px;
-    padding: 0 2px;
-  }
-
-  .phase-text {
-    font-size: 7px;
-  }
-}
-
-/* ============================================
-   Responsive Styles
-   ============================================ */
-
-@media (max-width: 1024px) {
-  .roster-injury-section {
-    grid-template-columns: 1fr;
-  }
-
-  .roster-card,
-  .injury-card {
-    height: auto;
-    max-height: 450px;
-  }
-
-  .team-info-grid {
-    grid-template-columns: 1fr;
-  }
-}
-
-@media (max-width: 768px) {
-  /* Note: Header styles are consolidated in the earlier 768px media query */
-
-  .overview-section {
-    grid-template-columns: repeat(2, 1fr);
-  }
-
-  .stat-value {
-    font-size: 1.5rem;
-  }
-
-  .splits-section {
-    grid-template-columns: 1fr;
-  }
-
-  /* Chart Responsive */
-  .bar-chart {
-    gap: 6px;
-    padding: 15px 10px;
-    height: 240px;
-  }
-
-  .bar-group {
-    min-width: 40px;
-  }
-
-  .bar {
-    width: 14px;
-  }
-
-  .bar-wrapper {
-    height: 130px;
-  }
-
-  .bar-label {
-    font-size: 8px;
-    top: 4px;
-  }
-
-  .bar-month {
-    font-size: 10px;
-    margin-top: 8px;
-  }
-
-  .bar-record {
-    font-size: 9px;
-  }
-
-  .bar-win-pct {
-    font-size: 9px;
-  }
-}
-
-@media (max-width: 480px) {
-  .team-analytics-page .container {
-    padding: 0 0.75rem;
-    padding-bottom: 2rem;
-  }
-
-  /* Header - Extra small screens */
-  .team-analytics-page .header-content {
-    gap: 0.75rem;
-    padding: 0.75rem 0;
-  }
-
-  .team-analytics-page .team-header-inline h1 {
-    font-size: 1.15rem;
-  }
-
-  .team-analytics-page .team-logo-image {
-    width: 38px;
-    height: 38px;
-  }
-
-  .team-analytics-page .timeframe-tabs {
-    padding: 3px;
-    border-radius: 8px;
-  }
-
-  .team-analytics-page .timeframe-tabs .tab {
-    padding: 7px 8px;
-    font-size: 11px;
-    border-radius: 6px;
-  }
-
-  .overview-section {
-    grid-template-columns: 1fr;
-  }
-
-  .last-10-stats {
-    grid-template-columns: repeat(2, 1fr);
-  }
-
-  .split-stats {
-    flex-wrap: wrap;
-    gap: 8px;
-  }
-
-  .progress-bar {
-    width: 60px;
-  }
-
-  .chart-filter-btn {
-    padding: 6px 10px;
-    font-size: 11px;
-  }
-}
-
-/* Extra small screens (375px and below) */
-@media (max-width: 375px) {
-  .team-analytics-page .header-content {
-    gap: 0.5rem;
-  }
-
-  .team-analytics-page .team-header-inline h1 {
-    font-size: 1rem;
-  }
-
-  .team-analytics-page .team-logo-image {
-    width: 32px;
-    height: 32px;
-  }
-
-  .team-analytics-page .timeframe-tabs .tab {
-    padding: 6px 6px;
-    font-size: 10px;
-  }
-}
-
 /* ============================================
    Team Game Log Section
    ============================================ */
@@ -1981,8 +1612,220 @@
   transform: translateX(1px);
 }
 
-/* Responsive */
-@media (max-width: 768px) {
+
+/* ============================================
+   TABLET RESPONSIVE STYLES (768px - 1024px)
+   ============================================ */
+
+@media (min-width: 768px) and (max-width: 1024px) {
+  .team-analytics-page .analytics-content {
+    padding: 1.5rem 1rem;
+  }
+
+  .team-analytics-page .header-content {
+    display: grid !important;
+    grid-template-columns: 1fr auto;
+    grid-template-rows: auto auto;
+    align-items: center;
+    gap: 1.5rem;
+  }
+
+  .team-analytics-page .team-selector-wrapper {
+    display: contents !important;
+  }
+
+  .team-analytics-page .team-header-inline {
+    grid-column: 1 / -1;
+    grid-row: 1;
+    justify-content: center;
+  }
+
+  .team-analytics-page .selectors-row {
+    grid-column: 1;
+    grid-row: 2;
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: flex-start !important;
+    align-self: center;
+    gap: 0.75rem;
+  }
+
+  .team-analytics-page .team-selector,
+  .team-analytics-page .season-selector {
+    display: flex !important;
+    align-items: flex-start !important;
+  }
+
+  .team-analytics-page .team-dropdown,
+  .team-analytics-page .season-dropdown {
+    align-self: center;
+  }
+
+  .team-analytics-page .timeframe-tabs {
+    grid-column: 2;
+    grid-row: 2;
+    display: flex;
+    align-self: flex-start;
+    padding: 0px;
+  }
+
+  .roster-injury-section {
+    grid-template-columns: 1fr;
+  }
+
+  .roster-card,
+  .injury-card {
+    height: auto;
+    max-height: 450px;
+  }
+
+  .team-info-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+
+/* ============================================
+   MOBILE RESPONSIVE STYLES (767px and below)
+   ============================================ */
+
+@media (max-width: 767px) {
+  .ta-transition-overlay {
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
+
+  /* Header Mobile Optimization */
+  .team-analytics-page .header-content {
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem 0;
+  }
+
+  .team-analytics-page .team-selector-wrapper {
+    width: 100%;
+    align-items: center;
+    gap: 0.75rem;
+  }
+
+  .team-analytics-page .team-header-inline {
+    justify-content: center;
+    gap: 0.75rem;
+  }
+
+  .team-analytics-page .team-header-inline h1 {
+    font-size: 1.35rem;
+  }
+
+  .team-analytics-page .team-logo-image {
+    width: 44px;
+    height: 44px;
+  }
+
+  .team-analytics-page .selectors-row {
+    width: 100%;
+    justify-content: center;
+    gap: 0.75rem;
+  }
+
+  .team-analytics-page .timeframe-tabs {
+    width: 100%;
+    justify-content: center;
+    padding: 4px;
+  }
+
+  .team-analytics-page .timeframe-tabs .tab {
+    flex: 1;
+    text-align: center;
+    padding: 8px 10px;
+    font-size: 12px;
+  }
+
+  .overview-section {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .stat-value {
+    font-size: 1.5rem;
+  }
+
+  .splits-section {
+    grid-template-columns: 1fr;
+  }
+
+  /* Chart Responsive */
+  .bar-chart {
+    gap: 6px;
+    padding: 15px 10px;
+    height: 240px;
+  }
+
+  .bar-group {
+    min-width: 40px;
+  }
+
+  .bar {
+    width: 14px;
+  }
+
+  .bar-wrapper {
+    height: 130px;
+  }
+
+  .bar-label {
+    font-size: 8px;
+    top: 4px;
+  }
+
+  .bar-month {
+    font-size: 10px;
+    margin-top: 8px;
+  }
+
+  .bar-record {
+    font-size: 9px;
+  }
+
+  .bar-win-pct {
+    font-size: 9px;
+  }
+
+  /* Floating Remote */
+  .chart-filters.floating-remote {
+    padding: 10px 12px;
+    gap: 6px;
+    bottom: 16px;
+    border-radius: 14px;
+  }
+
+  .chart-filter-btn {
+    padding: 10px 14px;
+    font-size: 13px;
+    border-radius: 8px;
+  }
+
+  .filter-icon {
+    font-size: 14px;
+  }
+
+  /* Season Phase Dividers */
+  .season-phase-divider {
+    min-width: 30px;
+    padding: 0 4px;
+  }
+
+  .phase-text {
+    font-size: 8px;
+    letter-spacing: 0.5px;
+    padding: 6px 0;
+  }
+
+  .divider-line {
+    min-height: 40px;
+  }
+
+  /* Game Log */
   .team-game-log-section .pps-section-header {
     flex-direction: column;
     align-items: stretch;
@@ -2005,5 +1848,200 @@
   .team-game-log-section .pps-pagination {
     flex-wrap: wrap;
     gap: 0.5rem;
+  }
+}
+
+
+/* ============================================
+   SMALL MOBILE STYLES (480px and below)
+   ============================================ */
+
+@media (max-width: 480px) {
+  .team-analytics-page .container {
+    padding: 0 0.75rem;
+    padding-bottom: 2rem;
+  }
+
+  .team-analytics-page .header-content {
+    gap: 0.75rem;
+    padding: 0.75rem 0;
+  }
+
+  .team-analytics-page .team-header-inline h1 {
+    font-size: 1.15rem;
+  }
+
+  .team-analytics-page .team-logo-image {
+    width: 38px;
+    height: 38px;
+  }
+
+  .team-analytics-page .timeframe-tabs {
+    padding: 3px;
+    border-radius: 8px;
+  }
+
+  .team-analytics-page .timeframe-tabs .tab {
+    padding: 7px 8px;
+    font-size: 11px;
+    border-radius: 6px;
+  }
+
+  .overview-section {
+    grid-template-columns: 1fr;
+  }
+
+  .last-10-stats {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .split-stats {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .progress-bar {
+    width: 60px;
+  }
+
+  .chart-filter-btn {
+    padding: 6px 10px;
+    font-size: 11px;
+  }
+
+  /* Floating Remote */
+  .chart-filters.floating-remote {
+    position: fixed;
+    bottom: 20px;
+    left: 10px;
+    right: 10px;
+    transform: none;
+    width: calc(100% - 20px);
+    padding: 10px 12px;
+    gap: 6px;
+    justify-content: center;
+    border-radius: 12px;
+    z-index: 1000;
+  }
+
+  .chart-filters.floating-remote.floating-hidden {
+    transform: none;
+  }
+
+  .chart-filter-btn {
+    padding: 8px 12px;
+    font-size: 12px;
+    flex: 1;
+    justify-content: center;
+  }
+
+  .filter-icon {
+    display: none;
+  }
+
+  /* Season Phase Dividers */
+  .season-phase-divider {
+    min-width: 24px;
+    padding: 0 2px;
+  }
+
+  .phase-text {
+    font-size: 7px;
+  }
+}
+
+
+/* ============================================
+   EXTRA SMALL MOBILE STYLES (430px and below)
+   ============================================ */
+
+@media (max-width: 430px) {
+  .team-analytics-page .team-selector-wrapper {
+    margin: 0 auto;
+  }
+
+  .team-analytics-page .selectors-row {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 0.5rem;
+    width: fit-content !important;
+  }
+
+  .team-analytics-page .team-dropdown,
+  .team-analytics-page .season-dropdown {
+    width: auto;
+    min-width: 100px;
+    text-align: center;
+  }
+
+  .stat-card.highlight {
+    margin-top: 1rem;
+  }
+
+  .roster-injury-section {
+    grid-template-columns: 1fr;
+  }
+
+  .team-analytics-page .timeframe-tabs {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: fit-content !important;
+    height: 40px;
+    margin: 0 auto !important;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  }
+
+  .team-analytics-page .timeframe-tabs:focus-within {
+    border-color: var(--primary-color, #1976D2);
+    box-shadow: 0 0 0 3px rgba(25, 118, 210, 0.2);
+  }
+
+  .team-analytics-page .timeframe-tabs .tab:focus {
+    outline: none;
+  }
+
+  .team-game-log-section.pps-section {
+    margin-bottom: 0;
+  }
+
+  .team-analytics-page .header-content {
+    gap: 1.5rem !important;
+  }
+
+  .team-analytics-page .analytics-header {
+    padding-bottom: 0 !important;
+  }
+
+  .team-analytics-page .analytics-header .container {
+    padding-bottom: 1rem;
+  }
+}
+
+
+/* ============================================
+   EXTRA SMALL SCREENS (375px and below)
+   ============================================ */
+
+@media (max-width: 375px) {
+  .team-analytics-page .header-content {
+    gap: 0.5rem;
+  }
+
+  .team-analytics-page .team-header-inline h1 {
+    font-size: 1rem;
+  }
+
+  .team-analytics-page .team-logo-image {
+    width: 32px;
+    height: 32px;
+  }
+
+  .team-analytics-page .timeframe-tabs .tab {
+    padding: 6px 6px;
+    font-size: 10px;
   }
 }
