@@ -12,17 +12,14 @@ import rosterService from '../../../../../../data/services/rosterService';
 import { MIN_LOADING_DURATION } from '../utils/playerProfileUtils';
 
 // ============================================================================
-// HELPER: Limit career stats to prevent browser crashes
+// HELPER: Sort career stats by season (ascending order)
 // ============================================================================
-const MAX_CAREER_YEARS = 12; // Only keep last 12 years of career stats
 const limitCareerStats = (stats) => {
   if (!Array.isArray(stats) || stats.length === 0) return [];
-  // Sort by season descending and take only the most recent years
+  // Sort by season ascending (oldest to newest)
   return stats
     .slice()
-    .sort((a, b) => (parseInt(b.season || b.year) || 0) - (parseInt(a.season || a.year) || 0))
-    .slice(0, MAX_CAREER_YEARS)
-    .reverse(); // Put back in ascending order
+    .sort((a, b) => (parseInt(a.season || a.year) || 0) - (parseInt(b.season || b.year) || 0));
 };
 
 /**

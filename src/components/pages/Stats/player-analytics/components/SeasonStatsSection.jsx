@@ -118,13 +118,13 @@ const SeasonStatsSection = React.memo(function SeasonStatsSection({
       }
     }, 200);
     
-    // Stage 2: Show chart container after longer delay (skip chart for career to prevent crash)
+    // Stage 2: Show chart container after short delay
     const stage2Timer = setTimeout(() => {
       if (renderStageRef.current === 1) {
         renderStageRef.current = 2;
         setRenderStage(2);
       }
-    }, activeStatsTab === 'career' ? 1500 : 500); // Much longer for career
+    }, 500);
     
     return () => {
       clearTimeout(stage1Timer);
@@ -132,21 +132,18 @@ const SeasonStatsSection = React.memo(function SeasonStatsSection({
     };
   }, [activeStatsTab, isLoading]);
   
-  // Progressive bar rendering - only after stage 2 and for non-career views
+  // Progressive bar rendering - only after stage 2
   useEffect(() => {
     if (renderStage < 2) return;
     
-    // For career view, limit to just 10 bars max and render slowly
-    const maxBars = activeStatsTab === 'career' ? 10 : 12;
-    
     const chartData = getChartData();
-    const totalBars = Math.min(chartData?.length || 0, maxBars);
+    const totalBars = chartData?.length || 0;
     
     if (visibleBars >= totalBars) return;
     
-    // Add bars one at a time for career, faster for season
-    const delay = activeStatsTab === 'career' ? 150 : 30;
-    const barsToAdd = activeStatsTab === 'career' ? 1 : 3;
+    // Render bars progressively
+    const delay = 30;
+    const barsToAdd = 3;
     
     const barTimer = setTimeout(() => {
       setVisibleBars(prev => Math.min(prev + barsToAdd, totalBars));
@@ -437,9 +434,8 @@ const SeasonStatsSection = React.memo(function SeasonStatsSection({
                     );
                   }
                   
-                  // AGGRESSIVE limit for career to prevent crash - only 10 bars max
-                  const maxBars = activeStatsTab === 'career' ? 10 : 12;
-                  const displayData = chartData.slice(-maxBars); // Take most recent years
+                  // Show all available data
+                  const displayData = chartData;
                   
                   // Only show bars that have been progressively loaded
                   const barsToShow = displayData.slice(0, visibleBars);

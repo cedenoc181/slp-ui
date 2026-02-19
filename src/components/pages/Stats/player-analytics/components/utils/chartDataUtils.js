@@ -229,10 +229,9 @@ export const transformYearlyChartData = (careerStats, showPitchingStats) => {
   
   if (regularSeasonStats.length === 0) return {};
   
-  // AGGRESSIVE LIMIT: Only use last 10 years to prevent browser crashes
+  // Sort by year ascending
   regularSeasonStats = regularSeasonStats
-    .sort((a, b) => (parseInt(a.season || a.year) || 0) - (parseInt(b.season || b.year) || 0))
-    .slice(-10);
+    .sort((a, b) => (parseInt(a.season || a.year) || 0) - (parseInt(b.season || b.year) || 0));
   
   const result = {};
   
