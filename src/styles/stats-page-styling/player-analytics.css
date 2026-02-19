@@ -338,6 +338,19 @@
   animation: spin 1s linear infinite;
 }
 
+/* ============================================
+   Player Profile Link
+   ============================================ */
+.player-profile-link {
+  color: inherit;
+  text-decoration: none;
+}
+
+.player-profile-link:hover {
+  color: var(--pa-primary-color, #1976D2);
+  text-decoration: underline;
+}
+
 @keyframes spin {
   to {
     transform: rotate(360deg);
@@ -477,10 +490,15 @@
     border-radius: 6px;
   }
 
-  .hot-pitcher-item, .hot-pitcher-header{
-    gap: 0.5rem !important;
+  .split-bar-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
   }
 
+  .split-bar-item {
+    padding: 0.875rem;
+  }
 }
 
 /* Mobile Small Screens - 430px and below */
@@ -548,7 +566,9 @@
     padding: 6px 10px;
   }
 
-
+  .player-profile-link {
+    font-size: 0.75rem;
+  }
 }
 
 /* ============================================
