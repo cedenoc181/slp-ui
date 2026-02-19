@@ -389,11 +389,6 @@
   cursor: pointer;
 }
 
-.team-logo {
-  margin-right: 0.5rem;
-  opacity: 0.8;
-}
-
 .clinch-badge,
 .wildcard-clinch {
   display: inline-block;
@@ -699,6 +694,87 @@
 }
 
 /* ============================================
+   Team Logo Image Styles
+   ============================================ */
+.team-logo-img {
+  width: 36px;
+  height: 36px;
+  margin-right: 0.5rem;
+  vertical-align: middle;
+  object-fit: contain;
+  background: rgba(255, 255, 255, 0.9);
+  border-radius: 50%;
+  padding: 5px;
+}
+
+.power-team-name .team-logo-img,
+.league-power-team-name .team-logo-img {
+  width: 28px;
+  height: 28px;
+}
+
+/* ============================================
+   Loading & Error States
+   ============================================ */
+.standings-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem 1rem;
+  color: var(--standings-text-secondary);
+  gap: 1rem;
+}
+
+.standings-loading .loading-spinner {
+  width: 40px;
+  height: 40px;
+  border: 3px solid rgba(255, 255, 255, 0.1);
+  border-top-color: var(--standings-primary-color);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.standings-error {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem 1rem;
+  color: var(--standings-danger);
+  background: rgba(244, 67, 54, 0.1);
+  border-radius: 8px;
+  margin: 1rem 0;
+}
+
+/* ============================================
+   Run Differential Styles
+   ============================================ */
+.positive-diff {
+  color: var(--standings-success) !important;
+  font-weight: 600;
+}
+
+.negative-diff {
+  color: var(--standings-danger) !important;
+  font-weight: 600;
+}
+
+.run-diff.positive {
+  color: var(--standings-success);
+  font-weight: 700;
+}
+
+.run-diff.negative {
+  color: var(--standings-danger);
+  font-weight: 700;
+}
+/* ============================================
    Hide on Mobile
    ============================================ */
 .hide-mobile {
@@ -899,12 +975,22 @@
   td.wcgb {
     width: 5% !important;
   }
+
+  .team-logo-img {
+    width: 28px;
+    height: 28px;
+  }
 }
 
 @media (max-width: 390px) {
   .standings-table td.streak,
   td.wcgb {
     width: 1% !important;
+  }
+  
+  .team-logo-img {
+    width: 24px;
+    height: 24px;
   }
 }
 
@@ -914,81 +1000,4 @@
   }
 }
 
-/* ============================================
-   Team Logo Image Styles
-   ============================================ */
-.team-logo-img {
-  width: 24px;
-  height: 24px;
-  margin-right: 0.5rem;
-  vertical-align: middle;
-  object-fit: contain;
-}
 
-.power-team-name .team-logo-img,
-.league-power-team-name .team-logo-img {
-  width: 28px;
-  height: 28px;
-}
-
-/* ============================================
-   Loading & Error States
-   ============================================ */
-.standings-loading {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 3rem 1rem;
-  color: var(--standings-text-secondary);
-  gap: 1rem;
-}
-
-.standings-loading .loading-spinner {
-  width: 40px;
-  height: 40px;
-  border: 3px solid rgba(255, 255, 255, 0.1);
-  border-top-color: var(--standings-primary-color);
-  border-radius: 50%;
-  animation: spin 1s linear infinite;
-}
-
-@keyframes spin {
-  to {
-    transform: rotate(360deg);
-  }
-}
-
-.standings-error {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 2rem 1rem;
-  color: var(--standings-danger);
-  background: rgba(244, 67, 54, 0.1);
-  border-radius: 8px;
-  margin: 1rem 0;
-}
-
-/* ============================================
-   Run Differential Styles
-   ============================================ */
-.positive-diff {
-  color: var(--standings-success) !important;
-  font-weight: 600;
-}
-
-.negative-diff {
-  color: var(--standings-danger) !important;
-  font-weight: 600;
-}
-
-.run-diff.positive {
-  color: var(--standings-success);
-  font-weight: 700;
-}
-
-.run-diff.negative {
-  color: var(--standings-danger);
-  font-weight: 700;
-}
