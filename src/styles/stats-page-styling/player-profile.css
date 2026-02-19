@@ -1056,6 +1056,8 @@
   .pps-trend-summary { flex-direction: row; justify-content: space-around; }
   .pps-two-column { grid-template-columns: 1fr; }
   .pps-trend-insight { grid-template-columns: repeat(2, 1fr); }
+  .pps-splits-comparison { grid-template-columns: 1fr; }
+  .pps-split-vs-divider { order: 0; width: 100%; border-radius: 4px; height: auto; padding: 0.25rem; font-size: 0.8rem; }
 }
 
 @media (max-width: 768px) {
@@ -1072,10 +1074,8 @@
   .pps-stats-card { overflow-x: auto; }
   .pps-stats-table { min-width: 400px; }
   .pps-stat-row { grid-template-columns: repeat(auto-fit, minmax(40px, 1fr)); flex-wrap: nowrap; }
-  .pps-splits-comparison { grid-template-columns: 1fr; }
   .pps-split-card { overflow-x: auto; -webkit-overflow-scrolling: touch; }
   .pps-split-stats { min-width: 280px; flex-wrap: nowrap; }
-  .pps-split-vs-divider { order: 0; width: 100%; border-radius: 4px; height: auto; padding: 0.25rem; font-size: 0.8rem; }
   .pps-streak-row { grid-template-columns: 1fr; }
   .pps-streak-card { padding: 0.75rem; }
   .pps-streak-value { font-size: 1.5rem; }
