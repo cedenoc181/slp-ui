@@ -1075,7 +1075,7 @@
   .pps-splits-comparison { grid-template-columns: 1fr; }
   .pps-split-card { overflow-x: auto; -webkit-overflow-scrolling: touch; }
   .pps-split-stats { min-width: 280px; flex-wrap: nowrap; }
-  .pps-split-vs-divider { order: -1; width: 100%; border-radius: 4px; height: auto; padding: 0.25rem; font-size: 0.8rem; }
+  .pps-split-vs-divider { order: 0; width: 100%; border-radius: 4px; height: auto; padding: 0.25rem; font-size: 0.8rem; }
   .pps-streak-row { grid-template-columns: 1fr; }
   .pps-streak-card { padding: 0.75rem; }
   .pps-streak-value { font-size: 1.5rem; }
@@ -1097,4 +1097,23 @@
   .pps-insight-item { padding: 0.75rem 0.5rem; }
   .pps-insight-label { font-size: 0.65rem; }
   .pps-insight-value { font-size: 0.95rem; }
+  .pps-comparison-bars{overflow-x: scroll; gap: 0.5rem;}
+}
+
+@media (max-width: 390px) {
+.pps-comparison-chart h4 { 
+  font-size: 0.8rem; 
+}
+
+.pps-comparison-bar {
+  width: 25px;
+}
+
+.pps-metric-select {
+  width: 40%;
+}
+}
+
+@media (max-width: 330px) {
+
 }

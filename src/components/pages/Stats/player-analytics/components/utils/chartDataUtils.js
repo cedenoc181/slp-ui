@@ -17,7 +17,7 @@ export const BATTER_CHART_METRICS = {
   h: { label: 'Hits', short: 'H' },
   rbi: { label: 'RBIs', short: 'RBI' },
   r: { label: 'Runs', short: 'R' },
-  avg: { label: 'Batting Average', short: 'AVG' },
+  avg: { label: 'Batting AVG', short: 'AVG' },
   ops: { label: 'OPS', short: 'OPS' },
   bb: { label: 'Walks', short: 'BB' },
   so: { label: 'Strikeouts', short: 'SO' }
