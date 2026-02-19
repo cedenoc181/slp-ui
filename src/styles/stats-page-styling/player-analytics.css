@@ -481,9 +481,6 @@
     gap: 0.5rem !important;
   }
 
-  .hot-batter-item, .hot-batter-header {
-    gap: 0.5rem !important;
-  }
 }
 
 /* Mobile Small Screens - 430px and below */
@@ -551,22 +548,7 @@
     padding: 6px 10px;
   }
 
-  .hot-bats-toggle {
-    padding: 6px 12px;
-    overflow-x: scroll;
-  }
-  .hot-batter-logo {
-    max-width: fit-content;
-    max-height: fit-content;
-  }
-  .hot-batter-item {
-    padding: 0.25rem 0.5rem;  
-  }
 
-  .hot-bats-card {
-    margin-bottom: 0rem;
-    padding-bottom: 0.25rem;
-  }
 }
 
 /* ============================================
