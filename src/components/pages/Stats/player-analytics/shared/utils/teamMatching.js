@@ -17,6 +17,19 @@ export const findTeamByName = (teamName) => {
   
   const teamNameLower = teamName.toLowerCase().trim();
   
+  // Handle multi-word nicknames that could be confused (Red Sox vs White Sox)
+  const multiWordNicknames = {
+    'red sox': 'Boston Red Sox',
+    'white sox': 'Chicago White Sox',
+    'blue jays': 'Toronto Blue Jays',
+  };
+  
+  // Check for multi-word nickname exact match first
+  if (multiWordNicknames[teamNameLower]) {
+    const exactMatch = TEAMS.find(t => t.name === multiWordNicknames[teamNameLower]);
+    if (exactMatch) return exactMatch;
+  }
+  
   return TEAMS.find(t => {
     const nameLower = t.name.toLowerCase();
     const urlNameLower = t.urlName.toLowerCase();
@@ -35,6 +48,7 @@ export const findTeamByName = (teamName) => {
     const fullNameWords = nameLower.split(' ');
     
     // 2-word match (e.g., "Red Sox" matches "Boston Red Sox")
+    // Must match exactly to avoid Red Sox/White Sox confusion
     if (apiWords.length >= 2) {
       const lastTwoApi = apiWords.slice(-2).join(' ');
       const lastTwoFull = fullNameWords.slice(-2).join(' ');
@@ -42,16 +56,22 @@ export const findTeamByName = (teamName) => {
     }
     
     // 1-word match (e.g., "Yankees" matches "New York Yankees")
-    if (apiWords.length === 1) {
+    // Skip single word "sox" to avoid Red Sox/White Sox confusion
+    if (apiWords.length === 1 && apiWords[0] !== 'sox') {
       const lastWordFull = fullNameWords[fullNameWords.length - 1];
       if (apiWords[0] === lastWordFull) return true;
     }
     
     // Partial match - team name ends with API name (e.g., "Angels")
-    if (nameLower.endsWith(teamNameLower)) return true;
+    // Skip if API name contains "sox" to avoid confusion
+    if (!teamNameLower.includes('sox') && nameLower.endsWith(teamNameLower)) return true;
     
-    // Partial match - API name contains city or team name
-    if (nameLower.includes(teamNameLower) || teamNameLower.includes(nameLower.split(' ').pop())) return true;
+    // Partial match - full name contains API name as complete word sequence
+    // More strict: API name must be a complete match at the end, not just a substring
+    if (apiWords.length === 1 && apiWords[0] !== 'sox') {
+      const lastWordFull = fullNameWords[fullNameWords.length - 1];
+      if (teamNameLower === lastWordFull) return true;
+    }
     
     return false;
   });
