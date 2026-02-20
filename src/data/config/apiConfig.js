@@ -1,9 +1,9 @@
 const apiConfig = {
   development: {
-    baseUrl: 'http://127.0.0.1:8000',
+    baseUrl: 'https://slp-production-ff09.up.railway.app',
   },
   production: {
-    baseUrl: 'https://api.spa-server.com',
+    baseUrl: 'https://slp-production-ff09.up.railway.app',
   },
 };
 
