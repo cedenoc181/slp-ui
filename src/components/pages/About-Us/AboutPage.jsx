@@ -154,7 +154,7 @@ function AboutPage() {
             <h3>Ready to Explore?</h3>
             <p>Dive into our analytics tools and discover new insights about the game you love.</p>
             <div className="cta-buttons">
-              <Link to="/standings" className="cta-btn primary" onClick={() => window.scrollTo(0, 0)}>
+              <Link to="/mlb-standings" className="cta-btn primary" onClick={() => window.scrollTo(0, 0)}>
                 View Standings
               </Link>
               <Link to="/glossary" className="cta-btn secondary" onClick={() => window.scrollTo(0, 0)}>
