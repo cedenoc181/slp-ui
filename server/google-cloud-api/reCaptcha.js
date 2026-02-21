@@ -13,9 +13,35 @@ const fetch = (...args) =>
 
 const app = express();
 app.use(express.json());
+
+// CORS configuration - allow multiple origins
+const allowedOrigins = [
+  'https://www.sandlotpicks.com',
+  'https://sandlotpicks.com',
+  'https://www.sandlotpicksanalytics.com',
+  'https://sandlotpicksanalytics.com',
+  'http://localhost:3000',
+  'http://localhost:3001',
+];
+
 app.use(
   cors({
-    origin: process.env.CLIENT_ORIGIN || '*',
+    origin: (origin, callback) => {
+      // Allow requests with no origin (mobile apps, curl, etc.)
+      if (!origin) return callback(null, true);
+      
+      if (allowedOrigins.includes(origin)) {
+        return callback(null, true);
+      }
+      
+      // If CLIENT_ORIGIN is set and matches, allow it
+      if (process.env.CLIENT_ORIGIN && origin === process.env.CLIENT_ORIGIN) {
+        return callback(null, true);
+      }
+      
+      return callback(new Error('Not allowed by CORS'));
+    },
+    credentials: true,
   })
 );
 
@@ -24,9 +50,12 @@ const RECAPTCHA_SECRET =
   process.env.RECAPTCHA_SECRET ||
   process.env.RECAPTCHA_SECRET_KEY;
 const SENDGRID_API_KEY = process.env.SENDGRID_API_KEY;
-const SENDGRID_TEMPLATE_ID = process.env.SENDGRID_TEMPLATE_ID;
-const SENDGRID_WAITLIST_TEMPLATE_ID = process.env.SENDGRID_WAITLIST_TEMPLATE_ID;
-const CONTACT_TO_EMAIL = process.env.CONTACT_TO_EMAIL || process.env.SENDGRID_TO_EMAIL;
+const SENDGRID_TEMPLATE_ID = process.env.SENDGRID_TEMPLATE_ID; // Contact form admin notification
+const SENDGRID_CONTACT_USER_TEMPLATE_ID = process.env.SENDGRID_CONTACT_USER_TEMPLATE_ID; // Contact form user confirmation
+// Waitlist email templates
+const SENDGRID_WAITLIST_USER_TEMPLATE_ID = process.env.SENDGRID_WAITLIST_USER_TEMPLATE_ID; // Confirmation email to user
+const SENDGRID_WAITLIST_ADMIN_TEMPLATE_ID = process.env.SENDGRID_WAITLIST_ADMIN_TEMPLATE_ID; // Notification email to admin
+const CONTACT_TO_EMAIL = process.env.CONTACT_TO_EMAIL || process.env.SENDGRID_TO_EMAIL; // Also used for waitlist admin notifications
 const CONTACT_FROM_EMAIL =
   process.env.CONTACT_FROM_EMAIL || process.env.SENDGRID_FROM_EMAIL || 'no-reply@sandlotpicks.com';
 
@@ -173,14 +202,75 @@ ${formData.message || ''}`,
   return { sent: true };
 };
 
-// Send waitlist confirmation email
-const sendWaitlistEmail = async (email) => {
+// Send contact form confirmation email to user
+const sendContactUserEmail = async (formData) => {
+  if (!SENDGRID_API_KEY || !CONTACT_FROM_EMAIL || !formData.email) {
+    console.warn('SendGrid not configured or no user email, skipping contact user email');
+    return { sent: false, error: 'Email not configured' };
+  }
+
+  const usesTemplate = Boolean(SENDGRID_CONTACT_USER_TEMPLATE_ID);
+
+  const payload = usesTemplate
+    ? {
+        personalizations: [
+          {
+            to: [{ email: formData.email }],
+            dynamic_template_data: {
+              name: formData.name || 'there',
+              issueType: formData.issueType || 'General',
+            },
+          },
+        ],
+        from: { email: CONTACT_FROM_EMAIL, name: 'Sandlot Picks' },
+        template_id: SENDGRID_CONTACT_USER_TEMPLATE_ID,
+      }
+    : {
+        personalizations: [
+          {
+            to: [{ email: formData.email }],
+          },
+        ],
+        from: { email: CONTACT_FROM_EMAIL, name: 'Sandlot Picks' },
+        subject: "We've received your message!",
+        content: [
+          {
+            type: 'text/html',
+            value: `
+              <h2>Thanks for reaching out, ${formData.name || 'there'}!</h2>
+              <p>We've received your message regarding: <strong>${formData.issueType || 'General Inquiry'}</strong></p>
+              <p>Our team will review your submission and get back to you as soon as possible.</p>
+              <p>Best regards,<br>The Sandlot Picks Team</p>
+            `,
+          },
+        ],
+      };
+
+  const resp = await fetch('https://api.sendgrid.com/v3/mail/send', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${SENDGRID_API_KEY}`,
+    },
+    body: JSON.stringify(payload),
+  });
+
+  if (!resp.ok) {
+    const detail = await resp.text();
+    throw new Error(`SendGrid contact user email error ${resp.status}: ${detail}`);
+  }
+
+  return { sent: true };
+};
+
+// Send waitlist confirmation email to user
+const sendWaitlistUserEmail = async (email) => {
   if (!SENDGRID_API_KEY || !CONTACT_FROM_EMAIL) {
-    console.warn('SendGrid not configured, skipping waitlist email');
+    console.warn('SendGrid not configured, skipping waitlist user email');
     return { sent: false, error: 'SendGrid not configured' };
   }
 
-  const usesTemplate = Boolean(SENDGRID_WAITLIST_TEMPLATE_ID);
+  const usesTemplate = Boolean(SENDGRID_WAITLIST_USER_TEMPLATE_ID);
 
   const payload = usesTemplate
     ? {
@@ -193,7 +283,7 @@ const sendWaitlistEmail = async (email) => {
           },
         ],
         from: { email: CONTACT_FROM_EMAIL, name: 'Sandlot Picks' },
-        template_id: SENDGRID_WAITLIST_TEMPLATE_ID,
+        template_id: SENDGRID_WAITLIST_USER_TEMPLATE_ID,
       }
     : {
         personalizations: [
@@ -227,7 +317,67 @@ const sendWaitlistEmail = async (email) => {
 
   if (!resp.ok) {
     const detail = await resp.text();
-    throw new Error(`SendGrid error ${resp.status}: ${detail}`);
+    throw new Error(`SendGrid user email error ${resp.status}: ${detail}`);
+  }
+
+  return { sent: true };
+};
+
+// Send waitlist notification email to admin
+const sendWaitlistAdminEmail = async (userEmail) => {
+  if (!SENDGRID_API_KEY || !CONTACT_FROM_EMAIL || !CONTACT_TO_EMAIL) {
+    console.warn('SendGrid or admin email not configured, skipping admin notification');
+    return { sent: false, error: 'Admin email not configured' };
+  }
+
+  const usesTemplate = Boolean(SENDGRID_WAITLIST_ADMIN_TEMPLATE_ID);
+
+  const payload = usesTemplate
+    ? {
+        personalizations: [
+          {
+            to: [{ email: CONTACT_TO_EMAIL }],
+            dynamic_template_data: {
+              email: userEmail,
+              signedUpAt: new Date().toISOString(),
+            },
+          },
+        ],
+        from: { email: CONTACT_FROM_EMAIL, name: 'Sandlot Picks Waitlist' },
+        template_id: SENDGRID_WAITLIST_ADMIN_TEMPLATE_ID,
+      }
+    : {
+        personalizations: [
+          {
+            to: [{ email: CONTACT_TO_EMAIL }],
+          },
+        ],
+        from: { email: CONTACT_FROM_EMAIL, name: 'Sandlot Picks Waitlist' },
+        subject: `New Waitlist Signup: ${userEmail}`,
+        content: [
+          {
+            type: 'text/html',
+            value: `
+              <h2>New Waitlist Signup!</h2>
+              <p><strong>Email:</strong> ${userEmail}</p>
+              <p><strong>Signed up at:</strong> ${new Date().toLocaleString()}</p>
+            `,
+          },
+        ],
+      };
+
+  const resp = await fetch('https://api.sendgrid.com/v3/mail/send', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${SENDGRID_API_KEY}`,
+    },
+    body: JSON.stringify(payload),
+  });
+
+  if (!resp.ok) {
+    const detail = await resp.text();
+    throw new Error(`SendGrid admin email error ${resp.status}: ${detail}`);
   }
 
   return { sent: true };
@@ -241,19 +391,29 @@ app.post('/api/contact', async (req, res) => {
       return res.status(400).json({ success: false, ...verification });
     }
 
-    let emailResult = { sent: false };
+    // Send notification email to admin
+    let adminEmailResult = { sent: false };
     try {
-      emailResult = await sendContactEmail(formData);
+      adminEmailResult = await sendContactEmail(formData);
     } catch (err) {
-      console.error('Contact email send error', err);
-      emailResult = { sent: false, error: err.message };
+      console.error('Contact admin email send error', err);
+      adminEmailResult = { sent: false, error: err.message };
+    }
+
+    // Send confirmation email to user
+    let userEmailResult = { sent: false };
+    try {
+      userEmailResult = await sendContactUserEmail(formData);
+    } catch (err) {
+      console.error('Contact user email send error', err);
+      userEmailResult = { sent: false, error: err.message };
     }
 
     return res.json({
       success: true,
       score: verification.score,
-      emailSent: emailResult.sent,
-      emailError: emailResult.error,
+      adminEmailSent: adminEmailResult.sent,
+      userEmailSent: userEmailResult.sent,
     });
   } catch (err) {
     console.error('Contact submit error', err);
@@ -283,19 +443,31 @@ app.post('/api/waitlist', async (req, res) => {
       });
     }
 
-    // Send confirmation email
-    let emailResult = { sent: false };
+    const normalizedEmail = email.toLowerCase().trim();
+
+    // Send confirmation email to user
+    let userEmailResult = { sent: false };
     try {
-      emailResult = await sendWaitlistEmail(email.toLowerCase().trim());
+      userEmailResult = await sendWaitlistUserEmail(normalizedEmail);
     } catch (err) {
-      console.error('Waitlist email send error:', err);
-      emailResult = { sent: false, error: err.message };
+      console.error('Waitlist user email send error:', err);
+      userEmailResult = { sent: false, error: err.message };
+    }
+
+    // Send notification email to admin
+    let adminEmailResult = { sent: false };
+    try {
+      adminEmailResult = await sendWaitlistAdminEmail(normalizedEmail);
+    } catch (err) {
+      console.error('Waitlist admin email send error:', err);
+      adminEmailResult = { sent: false, error: err.message };
     }
 
     return res.json({
       success: true,
       message: "You're on the list!",
-      emailSent: emailResult.sent,
+      userEmailSent: userEmailResult.sent,
+      adminEmailSent: adminEmailResult.sent,
     });
   } catch (err) {
     console.error('Waitlist submit error:', err);
