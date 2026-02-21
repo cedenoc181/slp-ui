@@ -15,7 +15,8 @@ function PredictionsTeaser() {
     setErrorMessage('');
     
     try {
-      const res = await fetch('/api/waitlist', {
+      const apiBase = process.env.REACT_APP_API_BASE || '';
+      const res = await fetch(`${apiBase}/api/waitlist`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email })

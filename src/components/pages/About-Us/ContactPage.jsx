@@ -42,7 +42,8 @@ function ContactPage() {
     }
     setIsSubmitting(true);
     try {
-      const res = await fetch('/api/contact', {
+      const apiBase = process.env.REACT_APP_API_BASE || '';
+      const res = await fetch(`${apiBase}/api/contact`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
