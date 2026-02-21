@@ -2,6 +2,8 @@
 const express = require('express');
 const cors = require('cors');
 const dotenv = require('dotenv');
+const fs = require('fs');
+const path = require('path');
 
 dotenv.config();
 
@@ -23,9 +25,44 @@ const RECAPTCHA_SECRET =
   process.env.RECAPTCHA_SECRET_KEY;
 const SENDGRID_API_KEY = process.env.SENDGRID_API_KEY;
 const SENDGRID_TEMPLATE_ID = process.env.SENDGRID_TEMPLATE_ID;
+const SENDGRID_WAITLIST_TEMPLATE_ID = process.env.SENDGRID_WAITLIST_TEMPLATE_ID;
 const CONTACT_TO_EMAIL = process.env.CONTACT_TO_EMAIL || process.env.SENDGRID_TO_EMAIL;
 const CONTACT_FROM_EMAIL =
   process.env.CONTACT_FROM_EMAIL || process.env.SENDGRID_FROM_EMAIL || 'no-reply@sandlotpicks.com';
+
+// Waitlist storage file
+const WAITLIST_FILE = path.join(__dirname, 'waitlist-emails.json');
+
+// Read waitlist emails from file
+const getWaitlistEmails = () => {
+  try {
+    if (fs.existsSync(WAITLIST_FILE)) {
+      const data = fs.readFileSync(WAITLIST_FILE, 'utf8');
+      return JSON.parse(data);
+    }
+  } catch (err) {
+    console.error('Error reading waitlist file:', err);
+  }
+  return [];
+};
+
+// Save email to waitlist file
+const addToWaitlist = (email) => {
+  const emails = getWaitlistEmails();
+  const normalizedEmail = email.toLowerCase().trim();
+  
+  if (emails.some(entry => entry.email === normalizedEmail)) {
+    return { added: false, reason: 'duplicate' };
+  }
+  
+  emails.push({
+    email: normalizedEmail,
+    signedUpAt: new Date().toISOString()
+  });
+  
+  fs.writeFileSync(WAITLIST_FILE, JSON.stringify(emails, null, 2));
+  return { added: true };
+};
 
 const verifyRecaptcha = async ({ token, expectedAction = 'contact_submit' }) => {
   if (!token) {
@@ -136,6 +173,66 @@ ${formData.message || ''}`,
   return { sent: true };
 };
 
+// Send waitlist confirmation email
+const sendWaitlistEmail = async (email) => {
+  if (!SENDGRID_API_KEY || !CONTACT_FROM_EMAIL) {
+    console.warn('SendGrid not configured, skipping waitlist email');
+    return { sent: false, error: 'SendGrid not configured' };
+  }
+
+  const usesTemplate = Boolean(SENDGRID_WAITLIST_TEMPLATE_ID);
+
+  const payload = usesTemplate
+    ? {
+        personalizations: [
+          {
+            to: [{ email }],
+            dynamic_template_data: {
+              email: email,
+            },
+          },
+        ],
+        from: { email: CONTACT_FROM_EMAIL, name: 'Sandlot Picks' },
+        template_id: SENDGRID_WAITLIST_TEMPLATE_ID,
+      }
+    : {
+        personalizations: [
+          {
+            to: [{ email }],
+          },
+        ],
+        from: { email: CONTACT_FROM_EMAIL, name: 'Sandlot Picks' },
+        subject: "You're on the Sandlot Picks Waitlist!",
+        content: [
+          {
+            type: 'text/html',
+            value: `
+              <h2>Welcome to the Sandlot Picks Waitlist!</h2>
+              <p>Thanks for signing up! You'll be among the first to know when our AI-powered MLB predictions go live for the 2026 season.</p>
+              <p>Stay tuned for updates!</p>
+              <p>- The Sandlot Picks Team</p>
+            `,
+          },
+        ],
+      };
+
+  const resp = await fetch('https://api.sendgrid.com/v3/mail/send', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${SENDGRID_API_KEY}`,
+    },
+    body: JSON.stringify(payload),
+  });
+
+  if (!resp.ok) {
+    const detail = await resp.text();
+    throw new Error(`SendGrid error ${resp.status}: ${detail}`);
+  }
+
+  return { sent: true };
+};
+
 app.post('/api/contact', async (req, res) => {
   try {
     const { captchaToken, expectedAction = 'contact_submit', ...formData } = req.body || {};
@@ -160,6 +257,48 @@ app.post('/api/contact', async (req, res) => {
     });
   } catch (err) {
     console.error('Contact submit error', err);
+    return res.status(500).json({ success: false, message: 'Server error' });
+  }
+});
+
+// Waitlist signup endpoint (no reCAPTCHA required)
+app.post('/api/waitlist', async (req, res) => {
+  try {
+    const { email } = req.body || {};
+    
+    // Validate email
+    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      return res.status(400).json({ 
+        success: false, 
+        message: 'Please provide a valid email address' 
+      });
+    }
+
+    // Check for duplicate and add to waitlist
+    const addResult = addToWaitlist(email);
+    if (!addResult.added) {
+      return res.status(409).json({ 
+        success: false, 
+        message: 'This email is already on the waitlist' 
+      });
+    }
+
+    // Send confirmation email
+    let emailResult = { sent: false };
+    try {
+      emailResult = await sendWaitlistEmail(email.toLowerCase().trim());
+    } catch (err) {
+      console.error('Waitlist email send error:', err);
+      emailResult = { sent: false, error: err.message };
+    }
+
+    return res.json({
+      success: true,
+      message: "You're on the list!",
+      emailSent: emailResult.sent,
+    });
+  } catch (err) {
+    console.error('Waitlist submit error:', err);
     return res.status(500).json({ success: false, message: 'Server error' });
   }
 });

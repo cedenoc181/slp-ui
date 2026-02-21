@@ -5,19 +5,40 @@ function PredictionsTeaser() {
   const [email, setEmail] = useState('');
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!email) return;
 
     setIsSubmitting(true);
+    setErrorMessage('');
     
-    // Simulate API call - replace with actual endpoint later
-    setTimeout(() => {
+    try {
+      const res = await fetch('/api/waitlist', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email })
+      });
+      
+      const data = await res.json();
+      
+      if (!res.ok) {
+        if (res.status === 409) {
+          setErrorMessage('This email is already on the waitlist!');
+        } else {
+          setErrorMessage(data.message || 'Something went wrong. Please try again.');
+        }
+        return;
+      }
+      
       setIsSubmitted(true);
-      setIsSubmitting(false);
       setEmail('');
-    }, 1000);
+    } catch (err) {
+      setErrorMessage('Unable to connect. Please try again later.');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   // Mock prediction data for preview
@@ -194,6 +215,11 @@ function PredictionsTeaser() {
                     )}
                   </button>
                 </div>
+                {errorMessage && (
+                  <span className="form-error">
+                    {errorMessage}
+                  </span>
+                )}
                 <span className="form-disclaimer">
                   🔒 No spam, ever. Unsubscribe anytime.
                 </span>
