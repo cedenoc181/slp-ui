@@ -47,7 +47,7 @@ function PlayerAnalytics() {
   // Add "All Teams" option to the teams list
   const teamsWithAll = useMemo(() => {
     return [
-      { id: 'ALL', name: 'MLB (All Teams)', mlbId: null, urlName: 'all-teams' },
+      { id: 'ALL', name: 'MLB Leaders', mlbId: null, urlName: 'all-teams' },
       ...TEAMS
     ];
   }, []);
@@ -89,7 +89,7 @@ function PlayerAnalytics() {
   const handleTeamChange = (newTeam) => {
     // Get team name for message
     const team = newTeam === 'ALL' 
-      ? { name: 'MLB (All Teams)' } 
+      ? { name: 'MLB Leaders' } 
       : getTeamByAbbr(newTeam);
     
     // Show transition loading overlay
@@ -136,7 +136,7 @@ function PlayerAnalytics() {
   // Get current team object
   const currentTeam = useMemo(() => {
     if (selectedTeam === 'ALL') {
-      return { id: 'ALL', name: 'MLB (All Teams)', mlbId: null };
+      return { id: 'ALL', name: 'MLB Leaders', mlbId: null };
     }
     const team = getTeamByAbbr(selectedTeam);
     return team || null;

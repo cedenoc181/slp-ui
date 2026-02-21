@@ -1,9 +1,9 @@
 const apiConfig = {
   development: {
-    baseUrl: 'https://slp-production-ff09.up.railway.app',
+    baseUrl: 'https://www.sandlotpicksanalytics.com',
   },
   production: {
-    baseUrl: 'https://slp-production-ff09.up.railway.app',
+    baseUrl: 'https://www.sandlotpicksanalytics.com',
   },
 };
 
