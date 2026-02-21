@@ -90,6 +90,14 @@
   font-weight: 700;
 }
 
+.section-subtitle {
+  font-size: 1.1rem;
+  color: #546A7B;
+  margin-bottom: 2rem;
+  line-height: 1.6;
+  font-weight: 400;
+}
+
 /* Step Cards */
 .step-card {
   display: flex;

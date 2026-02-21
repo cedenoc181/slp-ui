@@ -16,7 +16,7 @@ function HowToUsePage() {
         return (
           <div key={section.title}>
             <h2>{section.title}</h2>
-            {section.content && <p>{section.content}</p>}
+            {section.content && <p className="section-subtitle">{section.content}</p>}
           </div>
         );
 
@@ -44,16 +44,6 @@ function HowToUsePage() {
                       {link.text}
                     </Link>
                   ))}
-                  {step.cta && (
-                    <a
-                      href={step.cta.url}
-                      target={step.cta.external ? "_blank" : "_self"}
-                      rel={step.cta.external ? "noopener noreferrer" : ""}
-                      className="discord-join-btn"
-                    >
-                      {step.cta.text}
-                    </a>
-                  )}
                 </div>
               </div>
             ))}
@@ -83,60 +73,6 @@ function HowToUsePage() {
                 {faq.footer && <p>{faq.footer}</p>}
               </div>
             ))}
-          </div>
-        );
-
-      case 'screenshots':
-        return (
-          <div key="screenshots" className="discord-screenshots">
-            <h3>{section.title}</h3>
-            <div className="screenshot-grid">
-              {section.images.map((img, idx) => (
-                <div key={idx} className="screenshot-card">
-                  <div className="screenshot-wrapper">
-                    <img
-                      src={require(`../../../assets/images/${img.src}`)}
-                      alt={img.alt}
-                    />
-                  </div>
-                  <p>{img.caption}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-        );
-
-      case 'cta':
-        return (
-          <div key="cta" className="cta-box">
-            <h3>{section.title}</h3>
-            <p>{section.description}</p>
-            <a
-              href={section.button.url}
-              target={section.button.external ? "_blank" : "_self"}
-              rel={section.button.external ? "noopener noreferrer" : ""}
-              className="discord-cta-btn"
-            >
-              {section.button.text}
-            </a>
-          </div>
-        );
-
-      case 'prediction-example':
-        return (
-          <div key="prediction-example" className="info-card">
-            <h3>{section.title}</h3>
-            <p>{section.description}</p>
-            <div className="prediction-example">
-              <div className="example-header">Example Prediction:</div>
-              <div className="example-content">
-                <p><strong>Player:</strong> {section.example.player}</p>
-                <p><strong>Prop:</strong> {section.example.prop}</p>
-                <p><strong>Prediction:</strong> {section.example.prediction}</p>
-                <p><strong>Confidence:</strong> {section.example.confidence}</p>
-                <p><strong>STD:</strong> {section.example.std}</p>
-              </div>
-            </div>
           </div>
         );
 
