@@ -23,6 +23,7 @@ import NotFound from './components/NotFound';
 import AboutPage from './components/pages/About-Us/AboutPage';
 import FeaturesPage from './components/pages/About-Us/FeaturesPage';
 import ContactPage from './components/pages/About-Us/ContactPage';
+import UnsubscribePage from './components/pages/About-Us/UnsubscribePage';
 
 // Account page imports//
 import AccountPage from './components/pages/Account/AccountPage';
@@ -164,6 +165,9 @@ function App() {
           {/* legal routes */}
           <Route path="/terms-of-use" element={<TermsOfUse />} />
           <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+
+          {/* Unsubscribe route */}
+          <Route path="/unsubscribe" element={<UnsubscribePage />} />
 
           {/* 404 Catch-all route - must be last */}
           <Route path="*" element={<NotFound />} />

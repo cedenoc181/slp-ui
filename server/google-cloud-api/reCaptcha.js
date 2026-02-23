@@ -67,9 +67,11 @@ const CONTACT_FROM_EMAIL =
 const addToWaitlist = async (email) => {
   const normalizedEmail = email.toLowerCase().trim();
 
-  const { error } = await supabase
+  const { data, error } = await supabase
     .from('waitlist')
-    .insert({ email: normalizedEmail, source: 'sandlotpicks_prediction_waitlist_2026' });
+    .insert({ email: normalizedEmail, source: 'sandlotpicks_prediction_waitlist_2026' })
+    .select('unsubscribe_token')
+    .single();
 
   if (error) {
     // Postgres unique constraint violation
@@ -79,7 +81,7 @@ const addToWaitlist = async (email) => {
     throw new Error(`Supabase insert error: ${error.message}`);
   }
 
-  return { added: true };
+  return { added: true, unsubscribeToken: data.unsubscribe_token };
 };
 
 const verifyRecaptcha = async ({ token, expectedAction = 'contact_submit' }) => {
@@ -253,11 +255,14 @@ const sendContactUserEmail = async (formData) => {
 };
 
 // Send waitlist confirmation email to user
-const sendWaitlistUserEmail = async (email) => {
+const sendWaitlistUserEmail = async (email, unsubscribeToken) => {
   if (!SENDGRID_API_KEY || !CONTACT_FROM_EMAIL) {
     console.warn('SendGrid not configured, skipping waitlist user email');
     return { sent: false, error: 'SendGrid not configured' };
   }
+
+  const SERVER_URL = process.env.SERVER_URL || 'https://sandlot-recaptcha-212818618323.us-east4.run.app';
+  const unsubscribeUrl = `${SERVER_URL}/api/unsubscribe?token=${unsubscribeToken}`;
 
   const usesTemplate = Boolean(SENDGRID_WAITLIST_USER_TEMPLATE_ID);
 
@@ -268,6 +273,7 @@ const sendWaitlistUserEmail = async (email) => {
             to: [{ email }],
             dynamic_template_data: {
               email: email,
+              unsubscribe_url: unsubscribeUrl,
             },
           },
         ],
@@ -290,6 +296,9 @@ const sendWaitlistUserEmail = async (email) => {
               <p>Thanks for signing up! You'll be among the first to know when our AI-powered MLB predictions go live for the 2026 season.</p>
               <p>Stay tuned for updates!</p>
               <p>- The Sandlot Picks Team</p>
+              <p style="margin-top:24px;font-size:12px;color:#6b7690;">
+                <a href="${unsubscribeUrl}" style="color:#6b7690;">Unsubscribe</a>
+              </p>
             `,
           },
         ],
@@ -437,7 +446,7 @@ app.post('/api/waitlist', async (req, res) => {
     // Send confirmation email to user
     let userEmailResult = { sent: false };
     try {
-      userEmailResult = await sendWaitlistUserEmail(normalizedEmail);
+      userEmailResult = await sendWaitlistUserEmail(normalizedEmail, addResult.unsubscribeToken);
     } catch (err) {
       console.error('Waitlist user email send error:', err);
       userEmailResult = { sent: false, error: err.message };
@@ -461,6 +470,34 @@ app.post('/api/waitlist', async (req, res) => {
   } catch (err) {
     console.error('Waitlist submit error:', err);
     return res.status(500).json({ success: false, message: 'Server error' });
+  }
+});
+
+// Unsubscribe endpoint — linked from waitlist confirmation emails
+app.get('/api/unsubscribe', async (req, res) => {
+  const { token } = req.query;
+  const FRONTEND_URL = 'https://www.sandlotpicks.com';
+
+  if (!token) {
+    return res.redirect(`${FRONTEND_URL}/unsubscribe?status=invalid`);
+  }
+
+  try {
+    const { error } = await supabase
+      .from('waitlist')
+      .update({ unsubscribed_at: new Date().toISOString() })
+      .eq('unsubscribe_token', token)
+      .is('unsubscribed_at', null);
+
+    if (error) {
+      console.error('Unsubscribe error:', error);
+      return res.redirect(`${FRONTEND_URL}/unsubscribe?status=error`);
+    }
+
+    return res.redirect(`${FRONTEND_URL}/unsubscribe?status=success`);
+  } catch (err) {
+    console.error('Unsubscribe error:', err);
+    return res.redirect(`${FRONTEND_URL}/unsubscribe?status=error`);
   }
 });
 
