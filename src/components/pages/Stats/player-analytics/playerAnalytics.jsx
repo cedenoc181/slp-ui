@@ -12,8 +12,11 @@ import {
 import '../../../../styles/stats-page-styling/player-analytics.css';
 
 function PlayerAnalytics() {
-  const [metricType, setMetricType] = useState('batting');
   const [searchParams, setSearchParams] = useSearchParams();
+  const [metricType, setMetricType] = useState(() => {
+    const tabParam = searchParams.get('tab');
+    return tabParam === 'pitching' ? 'pitching' : 'batting';
+  });
   
   // ========== TRANSITION LOADING STATE ==========
   const [transitionLoading, setTransitionLoading] = useState(true); // Start with overlay visible
@@ -57,6 +60,7 @@ function PlayerAnalytics() {
   useEffect(() => {
     const teamParam = searchParams.get('team');
     const seasonParam = searchParams.get('season');
+    const tabParam = searchParams.get('tab');
 
     if (teamParam) {
       const isValidTeam = teamParam === 'ALL' || TEAMS.some((t) => t.id === teamParam);
@@ -67,6 +71,10 @@ function PlayerAnalytics() {
 
     if (seasonParam && SEASONS.includes(seasonParam) && seasonParam !== selectedSeason) {
       setSelectedSeason(seasonParam);
+    }
+
+    if (tabParam === 'pitching' || tabParam === 'batting') {
+      setMetricType(tabParam);
     }
   }, [searchParams, selectedTeam, selectedSeason]);
 

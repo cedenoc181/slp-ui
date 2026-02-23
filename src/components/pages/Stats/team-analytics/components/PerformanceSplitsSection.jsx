@@ -173,14 +173,14 @@ function PerformanceSplitsSection({
         <div className="splits-grid">
           {recordSplits ? (
             <>
-              <SplitRow 
-                label="vs Left-Handed Pitching" 
-                data={vsLeft} 
+              <SplitRow
+                label={<><span className="split-label-full">vs Left-Handed Pitching</span><span className="split-label-short">vs LHP</span></>}
+                data={vsLeft}
                 chartFilter={chartFilter}
               />
-              <SplitRow 
-                label="vs Right-Handed Pitching" 
-                data={vsRight} 
+              <SplitRow
+                label={<><span className="split-label-full">vs Right-Handed Pitching</span><span className="split-label-short">vs RHP</span></>}
+                data={vsRight}
                 chartFilter={chartFilter}
               />
               {/* Division Splits */}

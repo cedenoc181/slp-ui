@@ -688,6 +688,8 @@
   border-bottom: none;
 }
 
+.split-label-short { display: none; }
+
 .split-label {
   display: flex;
   align-items: center;
@@ -1855,6 +1857,11 @@
 /* ============================================
    SMALL MOBILE STYLES (480px and below)
    ============================================ */
+
+@media (max-width: 768px) {
+  .split-label-full { display: none; }
+  .split-label-short { display: inline; }
+}
 
 @media (max-width: 480px) {
   .team-analytics-page .container {
