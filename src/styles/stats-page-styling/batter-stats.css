@@ -1023,6 +1023,10 @@
   .hot-bar-underline {
     display: block;
   }
+
+  .hot-bats-toggle {
+  overflow-x: scroll;
+}
 }
 
 
@@ -1038,8 +1042,8 @@
 }
 .hot-bats-toggle {
   padding: 6px 12px;
-  overflow-x: scroll;
 }
+
 .hot-batter-logo {
   max-width: 30px;
   max-height: 30px;

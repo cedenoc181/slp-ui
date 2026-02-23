@@ -1,8 +1,8 @@
 const fs = require('fs');
 const path = require('path');
 
-const MAIN_FILE = path.join(__dirname, '../src/data/article.json');
-const MORE_FILE = path.join(__dirname, '../src/data/moreArticles.json');
+const MAIN_FILE = path.join(__dirname, '../src/data/contentData/article.json');
+const MORE_FILE = path.join(__dirname, '../src/data/contentData/moreArticles.json');
 const ARTICLES_PER_PAGE = 4;
 
 function organizeArticles() {
