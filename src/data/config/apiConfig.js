@@ -13,7 +13,7 @@ export const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || apiConfig[envi
 
 export default {
   baseUrl: API_BASE_URL,
-  timeout: 30000,
+  timeout: 60000, // 60 seconds for cold starts
   headers: {
     'Content-Type': 'application/json',
   },
