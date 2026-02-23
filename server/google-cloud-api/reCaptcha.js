@@ -2,10 +2,14 @@
 const express = require('express');
 const cors = require('cors');
 const dotenv = require('dotenv');
-const fs = require('fs');
-const path = require('path');
+const { createClient } = require('@supabase/supabase-js');
 
 dotenv.config();
+
+const supabase = createClient(
+  process.env.SUPABASE_URL,
+  process.env.SUPABASE_SERVICE_ROLE_KEY
+);
 
 // Use built-in fetch in modern Node; fall back to node-fetch if needed.
 const fetch = (...args) =>
@@ -59,37 +63,22 @@ const CONTACT_TO_EMAIL = process.env.CONTACT_TO_EMAIL || process.env.SENDGRID_TO
 const CONTACT_FROM_EMAIL =
   process.env.CONTACT_FROM_EMAIL || process.env.SENDGRID_FROM_EMAIL || 'no-reply@sandlotpicks.com';
 
-// Waitlist storage file
-const WAITLIST_FILE = path.join(__dirname, 'waitlist-emails.json');
-
-// Read waitlist emails from file
-const getWaitlistEmails = () => {
-  try {
-    if (fs.existsSync(WAITLIST_FILE)) {
-      const data = fs.readFileSync(WAITLIST_FILE, 'utf8');
-      return JSON.parse(data);
-    }
-  } catch (err) {
-    console.error('Error reading waitlist file:', err);
-  }
-  return [];
-};
-
-// Save email to waitlist file
-const addToWaitlist = (email) => {
-  const emails = getWaitlistEmails();
+// Add email to Supabase waitlist table
+const addToWaitlist = async (email) => {
   const normalizedEmail = email.toLowerCase().trim();
-  
-  if (emails.some(entry => entry.email === normalizedEmail)) {
-    return { added: false, reason: 'duplicate' };
+
+  const { error } = await supabase
+    .from('waitlist')
+    .insert({ email: normalizedEmail, source: 'sandlotpicks_prediction_waitlist_2026' });
+
+  if (error) {
+    // Postgres unique constraint violation
+    if (error.code === '23505') {
+      return { added: false, reason: 'duplicate' };
+    }
+    throw new Error(`Supabase insert error: ${error.message}`);
   }
-  
-  emails.push({
-    email: normalizedEmail,
-    signedUpAt: new Date().toISOString()
-  });
-  
-  fs.writeFileSync(WAITLIST_FILE, JSON.stringify(emails, null, 2));
+
   return { added: true };
 };
 
@@ -435,7 +424,7 @@ app.post('/api/waitlist', async (req, res) => {
     }
 
     // Check for duplicate and add to waitlist
-    const addResult = addToWaitlist(email);
+    const addResult = await addToWaitlist(email);
     if (!addResult.added) {
       return res.status(409).json({ 
         success: false, 
