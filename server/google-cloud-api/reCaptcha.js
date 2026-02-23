@@ -3,6 +3,7 @@ const express = require('express');
 const cors = require('cors');
 const dotenv = require('dotenv');
 const { createClient } = require('@supabase/supabase-js');
+const { randomUUID } = require('crypto');
 
 dotenv.config();
 
@@ -74,8 +75,32 @@ const addToWaitlist = async (email) => {
     .single();
 
   if (error) {
-    // Postgres unique constraint violation
+    // Postgres unique constraint violation — email already exists
     if (error.code === '23505') {
+      // Check if the existing row was previously unsubscribed
+      const { data: existing, error: fetchError } = await supabase
+        .from('waitlist')
+        .select('unsubscribed_at')
+        .eq('email', normalizedEmail)
+        .single();
+
+      if (fetchError) throw new Error(`Supabase fetch error: ${fetchError.message}`);
+
+      if (existing.unsubscribed_at) {
+        // Re-activate: clear unsubscribed_at and issue a fresh token
+        const newToken = randomUUID();
+        const { data: updated, error: updateError } = await supabase
+          .from('waitlist')
+          .update({ unsubscribed_at: null, unsubscribe_token: newToken })
+          .eq('email', normalizedEmail)
+          .select('unsubscribe_token')
+          .single();
+
+        if (updateError) throw new Error(`Supabase resubscribe error: ${updateError.message}`);
+        return { added: true, resubscribed: true, unsubscribeToken: updated.unsubscribe_token };
+      }
+
+      // Still active — genuine duplicate
       return { added: false, reason: 'duplicate' };
     }
     throw new Error(`Supabase insert error: ${error.message}`);
