@@ -22,6 +22,7 @@ import {
   SEASONS,
   SEASON_TYPES,
   PLAYER_ROLES,
+  DEFAULT_SEASON,
   getTeamByAbbr,
   getTeamByUrlName,
   getTeamIdFromAbbr,
@@ -51,7 +52,7 @@ export function useTeamAnalytics() {
     if (seasonParam && SEASONS.includes(seasonParam)) {
       return seasonParam;
     }
-    return '2025';
+    return DEFAULT_SEASON;
   };
 
   // ========== UI State ==========

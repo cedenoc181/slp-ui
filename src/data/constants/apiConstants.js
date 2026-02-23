@@ -30,7 +30,7 @@ export const DEFAULT_SEASON = '2025';
 
 export const SEASON_RANGE = {
   START: 2010,
-  END: 2025,
+  END: 2026,
 };
 
 // Generate seasons array: ['2025', '2024', ... '2010']

@@ -9,6 +9,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import teamLeadersService from '../../../../../../data/services/teamLeadersService';
 import leagueLeadersService from '../../../../../../data/services/leagueLeadersService';
 import { formatEra, formatWhip, formatOppAvg, formatIP } from '../../shared/utils';
+import { DEFAULT_SEASON } from '../../../../../../data/constants/apiConstants';
 
 // ============================================================================
 // Constants
@@ -38,7 +39,7 @@ export const SPLITS_CATEGORIES = [
 // Hook Implementation
 // ============================================================================
 
-export function usePitcherStats({ teamId = 'ALL', teamDbId = null, season = '2025' }) {
+export function usePitcherStats({ teamId = 'ALL', teamDbId = null, season = DEFAULT_SEASON }) {
   const isTeamSelected = teamId !== 'ALL';
 
   // ========== STATE FOR ALL DATA ==========

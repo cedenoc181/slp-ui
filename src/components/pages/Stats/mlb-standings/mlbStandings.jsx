@@ -2,21 +2,22 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import '../../../../styles/stats-page-styling/mlb-standings.css';
 import teamsService from '../../../../data/services/teamsService';
-import { TEAM_METADATA } from '../../../../data/constants/apiConstants';
+import { TEAM_METADATA, SEASONS, DEFAULT_SEASON, SEASON_RANGE } from '../../../../data/constants/apiConstants';
 import MLBStandingsPostseason from './mlbStandingsPostseason';
 import MLBStandingsSpringTraining from './mlbStandingsSpringTraning';
 
 function MLBStandings() {
   const [selectedLeague, setSelectedLeague] = useState('AL'); // 'AL' or 'NL' for regular, 'Cactus' or 'Grapefruit' for spring
-  const [selectedSeason, setSelectedSeason] = useState('2025');
+  const [selectedSeason, setSelectedSeason] = useState(DEFAULT_SEASON);
   const [seasonType, setSeasonType] = useState('regular'); // 'regular', 'postseason', 'spring'
   const [standingsData, setStandingsData] = useState(null);
   const [standingsLoading, setStandingsLoading] = useState(false);
   const [standingsError, setStandingsError] = useState(null);
+  const [fallbackSeason, setFallbackSeason] = useState(null); // Set when selected season has no data
   const navigate = useNavigate();
 
-  // Available seasons - 2025 back to 2010
-  const availableSeasons = ['2025', '2024', '2023', '2022', '2021', '2020', '2019', '2018', '2017', '2016', '2015', '2014', '2013', '2012', '2011', '2010'];
+  // Available seasons - driven by SEASON_RANGE in apiConstants
+  const availableSeasons = SEASONS;
 
   // LocalStorage key for storing previous rankings
   const getStorageKey = (season) => `mlb-power-rankings-${season}`;
@@ -59,6 +60,11 @@ function MLBStandings() {
     return Date.now() - timestamp > WEEK_IN_MS;
   };
 
+  // Check if API response has actual standings data
+  const hasStandingsData = (data) => {
+    return data && Object.keys(data).length > 0 && Object.values(data).some(div => div && div.length > 0);
+  };
+
   // Fetch standings data when season changes
   useEffect(() => {
     const fetchStandings = async () => {
@@ -66,13 +72,26 @@ function MLBStandings() {
 
       setStandingsLoading(true);
       setStandingsError(null);
+      setFallbackSeason(null);
 
       try {
-        const data = await teamsService.getTeamRegularSeasonStandings(selectedSeason);
-        
+        let data = await teamsService.getTeamRegularSeasonStandings(selectedSeason);
+        let seasonUsed = selectedSeason;
+
+        // If no data for selected season, fall back to the prior year
+        if (!hasStandingsData(data)) {
+          const prevYear = String(parseInt(selectedSeason) - 1);
+          const fallbackData = await teamsService.getTeamRegularSeasonStandings(prevYear);
+          if (hasStandingsData(fallbackData)) {
+            data = fallbackData;
+            seasonUsed = prevYear;
+            setFallbackSeason(prevYear);
+          }
+        }
+
         // Before setting new data, check if we should update the "last week" snapshot
-        const storedData = loadPreviousRankings(selectedSeason);
-        
+        const storedData = loadPreviousRankings(seasonUsed);
+
         if (data) {
           const newRankings = Object.values(data).flat();
           const rankingsToSave = newRankings.map(team => ({
@@ -82,15 +101,12 @@ function MLBStandings() {
           }));
 
           if (!storedData) {
-            // First time loading - save initial snapshot
-            saveCurrentRankings(selectedSeason, rankingsToSave);
+            saveCurrentRankings(seasonUsed, rankingsToSave);
           } else if (isSnapshotExpired(storedData.timestamp)) {
-            // Snapshot is older than a week - update to current as new baseline
-            saveCurrentRankings(selectedSeason, rankingsToSave);
+            saveCurrentRankings(seasonUsed, rankingsToSave);
           }
-          // If snapshot exists and is less than a week old, keep it as "last week" reference
         }
-        
+
         setStandingsData(data);
       } catch (error) {
         console.error('Error fetching standings:', error);
@@ -256,17 +272,18 @@ function MLBStandings() {
   // Handle season type change
   const handleSeasonTypeChange = (type) => {
     setSeasonType(type);
-    
-    // Reset league selection based on season type
+
+    // Reset league selection and season based on season type
     if (type === 'spring') {
-      setSelectedLeague('Cactus'); // Default to Cactus League for Spring Training
+      setSelectedLeague('Cactus');
+      setSelectedSeason(String(SEASON_RANGE.END)); // Spring training defaults to current year
     } else if (type === 'postseason') {
-      setSelectedLeague('Playoff'); // Single playoff bracket
+      setSelectedLeague('Playoff');
+      setSelectedSeason(DEFAULT_SEASON);
     } else {
-      setSelectedLeague('AL'); // Default to AL for regular season
+      setSelectedLeague('AL');
+      setSelectedSeason(DEFAULT_SEASON);
     }
-    
-    console.log(`Season type changed to: ${type}`);
   };
 
   // Get league display name based on season type
@@ -383,9 +400,16 @@ function MLBStandings() {
         ) : (
           // Render Regular Season Standings
           <>
+            {/* Fallback Notice */}
+            {fallbackSeason && (
+              <div style={{ background: '#fff8e1', border: '1px solid #ffe082', borderRadius: '8px', padding: '10px 16px', marginBottom: '12px', fontSize: '14px', color: '#7c5a00' }}>
+                No data available for the {selectedSeason} season yet. Showing {fallbackSeason} standings.
+              </div>
+            )}
+
             {/* Season Display Banner */}
             <div className="season-banner">
-              <span className="season-year">{selectedSeason} Season</span>
+              <span className="season-year">{fallbackSeason || selectedSeason} Season</span>
               <span className="season-league">
                 {getLeagueDisplayName()} • Regular Season
               </span>
@@ -454,8 +478,8 @@ function MLBStandings() {
                           <td className="losses">{team.losses}</td>
                           <td className="pct">{team.pct.toFixed(3)}</td>
                           <td className="gb">{team.gb}</td>
-                          <td className={`streak ${team.streak.startsWith('W') ? 'win-streak' : 'loss-streak'}`}>
-                            {team.streak}
+                          <td className={`streak ${team.streak?.startsWith('W') ? 'win-streak' : 'loss-streak'}`}>
+                            {team.streak ?? '-'}
                           </td>
                           <td className="hide-mobile">{team.last10}</td>
                           <td className={`hide-mobile ${team.runDifferential >= 0 ? 'positive-diff' : 'negative-diff'}`}>
@@ -513,8 +537,8 @@ function MLBStandings() {
                           <td className="losses">{team.losses}</td>
                           <td className="pct">{team.pct.toFixed(3)}</td>
                           <td className="gb">{team.gb}</td>
-                          <td className={`streak ${team.streak.startsWith('W') ? 'win-streak' : 'loss-streak'}`}>
-                            {team.streak}
+                          <td className={`streak ${team.streak?.startsWith('W') ? 'win-streak' : 'loss-streak'}`}>
+                            {team.streak ?? '-'}
                           </td>
                           <td className="hide-mobile">{team.last10}</td>
                           <td className={`hide-mobile ${team.runDifferential >= 0 ? 'positive-diff' : 'negative-diff'}`}>
@@ -572,8 +596,8 @@ function MLBStandings() {
                           <td className="losses">{team.losses}</td>
                           <td className="pct">{team.pct.toFixed(3)}</td>
                           <td className="gb">{team.gb}</td>
-                          <td className={`streak ${team.streak.startsWith('W') ? 'win-streak' : 'loss-streak'}`}>
-                            {team.streak}
+                          <td className={`streak ${team.streak?.startsWith('W') ? 'win-streak' : 'loss-streak'}`}>
+                            {team.streak ?? '-'}
                           </td>
                           <td className="hide-mobile">{team.last10}</td>
                           <td className={`hide-mobile ${team.runDifferential >= 0 ? 'positive-diff' : 'negative-diff'}`}>

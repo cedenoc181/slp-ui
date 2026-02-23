@@ -13,7 +13,7 @@
 
 import React, { useState, useMemo, useEffect, useCallback, useRef } from 'react';
 import { useParams, useSearchParams, useNavigate } from 'react-router-dom';
-import { SEASONS } from '../../../../data/constants/apiConstants';
+import { SEASONS, DEFAULT_SEASON } from '../../../../data/constants/apiConstants';
 import '../../../../styles/stats-page-styling/player-profile.css';
 
 // ============================================================================
@@ -103,7 +103,7 @@ function PlayerProfileStats() {
           const result = await playerStatsService.lookupPlayer({ fullName: playerName });
           if (result && result.mlb_id) {
             // Redirect to proper URL with MLB ID for better bookmarking
-            const season = searchParams.get('season') || '2025';
+            const season = searchParams.get('season') || DEFAULT_SEASON;
             navigate(`/player/${result.mlb_id}?season=${season}`, { replace: true });
           } else {
             setLookupError(`Player "${playerName}" not found`);

@@ -2,9 +2,10 @@ import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import BatterStats from './batterStats';
 import PitcherStats from './pitcherStats';
-import { 
-  TEAMS, 
+import {
+  TEAMS,
   SEASONS,
+  DEFAULT_SEASON,
   getTeamByAbbr,
   getTeamIdFromAbbr,
 } from '../../../../data/constants/apiConstants';
@@ -41,7 +42,7 @@ function PlayerAnalytics() {
     if (seasonParam && SEASONS.includes(seasonParam)) {
       return seasonParam;
     }
-    return '2025';
+    return DEFAULT_SEASON;
   });
 
   // Add "All Teams" option to the teams list

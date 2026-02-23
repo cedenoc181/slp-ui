@@ -8,6 +8,7 @@
 // ============================================================================
 
 import React, { useEffect, useState, useMemo } from 'react';
+import { DEFAULT_SEASON } from '../../../../data/constants/apiConstants';
 import '../../../../styles/stats-page-styling/batter-stats.css';
 
 // Custom hook for data fetching
@@ -25,7 +26,7 @@ import {
 // Component
 // ============================================================================
 
-function BatterStats({ teamId = 'ALL', teamDbId = null, season = '2025', teamName = 'MLB' }) {
+function BatterStats({ teamId = 'ALL', teamDbId = null, season = DEFAULT_SEASON, teamName = 'MLB' }) {
   // Local state for hot metric selection
   const [hotMetric, setHotMetric] = useState('home_runs');
   const [isMobile, setIsMobile] = useState(false);
