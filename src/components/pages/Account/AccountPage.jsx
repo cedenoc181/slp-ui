@@ -3,9 +3,9 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../../context/AuthContext';
 
 function AccountPage() {
-  const { isAuthenticated, login } = useAuth();
+  const { isAuthenticated, loading, login, register } = useAuth();
   const navigate = useNavigate();
-  
+
   // Form states
   const [loginEmail, setLoginEmail] = useState('');
   const [loginPassword, setLoginPassword] = useState('');
@@ -13,50 +13,78 @@ function AccountPage() {
   const [registerPassword, setRegisterPassword] = useState('');
   const [registerConfirm, setRegisterConfirm] = useState('');
   const [error, setError] = useState('');
+  const [registerSuccess, setRegisterSuccess] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
     window.scrollTo(0, 0);
-    // If already authenticated, redirect to settings
-    if (isAuthenticated) {
+    if (!loading && isAuthenticated) {
       navigate('/account/settings');
     }
-  }, [isAuthenticated, navigate]);
+  }, [isAuthenticated, loading, navigate]);
 
-  const handleLogin = (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault();
     setError('');
-    
+
     if (!loginEmail || !loginPassword) {
       setError('Please enter both email and password');
       return;
     }
-    
-    // Mock login - in production, this would call an API
-    login(loginEmail);
+
+    setSubmitting(true);
+    try {
+      await login(loginEmail, loginPassword);
+      // Redirect handled by useEffect when isAuthenticated flips
+    } catch (err) {
+      setError(mapAuthError(err?.message));
+    } finally {
+      setSubmitting(false);
+    }
   };
 
-  const handleRegister = (e) => {
+  const handleRegister = async (e) => {
     e.preventDefault();
     setError('');
-    
+
     if (!registerEmail || !registerPassword || !registerConfirm) {
       setError('Please fill in all fields');
       return;
     }
-    
+
     if (registerPassword !== registerConfirm) {
       setError('Passwords do not match');
       return;
     }
-    
+
     if (registerPassword.length < 6) {
       setError('Password must be at least 6 characters');
       return;
     }
-    
-    // Mock registration - in production, this would call an API
-    login(registerEmail);
+
+    setSubmitting(true);
+    try {
+      await register(registerEmail, registerPassword);
+      setRegisterSuccess(true);
+    } catch (err) {
+      setError(mapAuthError(err?.message));
+    } finally {
+      setSubmitting(false);
+    }
   };
+
+  // Map Supabase error messages to user-friendly text
+  function mapAuthError(msg) {
+    if (!msg) return 'Something went wrong. Please try again.';
+    if (msg.includes('Invalid login credentials')) return 'Incorrect email or password. Please try again.';
+    if (msg.includes('Email not confirmed')) return 'Please confirm your email before signing in. Check your inbox.';
+    if (msg.includes('User already registered')) return 'An account with this email already exists. Try signing in.';
+    if (msg.includes('Password should be at least')) return 'Password must be at least 6 characters.';
+    if (msg.includes('Unable to validate email')) return 'Please enter a valid email address.';
+    return msg;
+  }
+
+  if (loading) return null;
 
   return (
     <section className="account-page">
@@ -89,13 +117,13 @@ function AccountPage() {
             </div>
             <h2>Sign In</h2>
             <p>Already have an account? Sign in to access your personalized dashboard and saved analytics.</p>
-            
+
             <form className="auth-form" onSubmit={handleLogin}>
               <div className="form-group">
                 <label htmlFor="login-email">Email</label>
-                <input 
-                  type="email" 
-                  id="login-email" 
+                <input
+                  type="email"
+                  id="login-email"
                   placeholder="your.email@example.com"
                   value={loginEmail}
                   onChange={(e) => setLoginEmail(e.target.value)}
@@ -103,16 +131,16 @@ function AccountPage() {
               </div>
               <div className="form-group">
                 <label htmlFor="login-password">Password</label>
-                <input 
-                  type="password" 
-                  id="login-password" 
+                <input
+                  type="password"
+                  id="login-password"
                   placeholder="••••••••"
                   value={loginPassword}
                   onChange={(e) => setLoginPassword(e.target.value)}
                 />
               </div>
-              <button type="submit" className="auth-btn primary">
-                Sign In
+              <button type="submit" className="auth-btn primary" disabled={submitting}>
+                {submitting ? 'Signing in…' : 'Sign In'}
               </button>
             </form>
           </div>
@@ -129,42 +157,53 @@ function AccountPage() {
             </div>
             <h2>Create Account</h2>
             <p>Sign up for free to unlock Player Analytics, Team Analytics, and personalized features.</p>
-            
-            <form className="auth-form" onSubmit={handleRegister}>
-              <div className="form-group">
-                <label htmlFor="register-email">Email</label>
-                <input 
-                  type="email" 
-                  id="register-email" 
-                  placeholder="your.email@example.com"
-                  value={registerEmail}
-                  onChange={(e) => setRegisterEmail(e.target.value)}
-                />
+
+            {registerSuccess ? (
+              <div className="register-success">
+                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                  <polyline points="22 4 12 14.01 9 11.01"/>
+                </svg>
+                <p><strong>Check your email!</strong></p>
+                <p>We sent a confirmation link to <strong>{registerEmail}</strong>. Click it to activate your account, then sign in.</p>
               </div>
-              <div className="form-group">
-                <label htmlFor="register-password">Password</label>
-                <input 
-                  type="password" 
-                  id="register-password" 
-                  placeholder="••••••••"
-                  value={registerPassword}
-                  onChange={(e) => setRegisterPassword(e.target.value)}
-                />
-              </div>
-              <div className="form-group">
-                <label htmlFor="register-confirm">Confirm Password</label>
-                <input 
-                  type="password" 
-                  id="register-confirm" 
-                  placeholder="••••••••"
-                  value={registerConfirm}
-                  onChange={(e) => setRegisterConfirm(e.target.value)}
-                />
-              </div>
-              <button type="submit" className="auth-btn secondary">
-                Create Free Account
-              </button>
-            </form>
+            ) : (
+              <form className="auth-form" onSubmit={handleRegister}>
+                <div className="form-group">
+                  <label htmlFor="register-email">Email</label>
+                  <input
+                    type="email"
+                    id="register-email"
+                    placeholder="your.email@example.com"
+                    value={registerEmail}
+                    onChange={(e) => setRegisterEmail(e.target.value)}
+                  />
+                </div>
+                <div className="form-group">
+                  <label htmlFor="register-password">Password</label>
+                  <input
+                    type="password"
+                    id="register-password"
+                    placeholder="••••••••"
+                    value={registerPassword}
+                    onChange={(e) => setRegisterPassword(e.target.value)}
+                  />
+                </div>
+                <div className="form-group">
+                  <label htmlFor="register-confirm">Confirm Password</label>
+                  <input
+                    type="password"
+                    id="register-confirm"
+                    placeholder="••••••••"
+                    value={registerConfirm}
+                    onChange={(e) => setRegisterConfirm(e.target.value)}
+                  />
+                </div>
+                <button type="submit" className="auth-btn secondary" disabled={submitting}>
+                  {submitting ? 'Creating account…' : 'Create Free Account'}
+                </button>
+              </form>
+            )}
           </div>
         </div>
 

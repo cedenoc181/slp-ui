@@ -29,6 +29,10 @@ import UnsubscribePage from './components/pages/About-Us/UnsubscribePage';
 import AccountPage from './components/pages/Account/AccountPage';
 import SettingsPage from './components/pages/Account/SettingsPage';
 
+// Admin page imports//
+import AdminPage from './components/pages/Admin/AdminPage';
+import ArticleEditor from './components/pages/Admin/ArticleEditor';
+
 // Education page imports//
 import Glossary from './components/pages/Education/GlossaryPage';
 import FAQPage from './components/pages/Education/FAQPage';
@@ -48,6 +52,8 @@ import PrivacyPolicy from './components/legal/PrivacyPolicy';
 
 // Stats page imports//
 import MLBStandings from './components/pages/Stats/mlb-standings/mlbStandings';
+import MLBSchedule from './components/pages/Stats/mlb-schedule/mlbSchedule';
+import MatchupDetail from './components/pages/Stats/mlb-schedule/MatchupDetail';
 import TeamAnalytics from './components/pages/Stats/team-analytics/teamAnalytics';
 import PlayerAnalytics from './components/pages/Stats/player-analytics/playerAnalytics';
 import PlayerProfileStats from './components/pages/Stats/player-analytics/playerProfileStats';
@@ -64,6 +70,7 @@ import './styles/home-page-styling/hero.css';
 import './styles/home-page-styling/footer.css';
 
 // Stats-page-styles//
+import './styles/stats-page-styling/mlb-schedule.css';
 import './styles/stats-page-styling/team-analytics.css';
 import './styles/stats-page-styling/mlb-standings.css';
 import './styles/stats-page-styling/player-analytics.css';
@@ -90,6 +97,9 @@ import './styles/more-page-styling/contact-page.css';
 //Account-page-styles//
 import './styles/account-page-styling/account-page.css';
 import './styles/account-page-styling/settings-page.css';
+
+//Admin-page-styles//
+import './styles/admin-page-styling/admin.css';
 
 // Legal-page-styles//
 import './styles/legal-page-styling/legal.css';
@@ -143,6 +153,8 @@ function App() {
           <Route path="/account/settings" element={<SettingsPage />} />
 
           {/* Stats routes */}
+          <Route path="/mlb-schedule" element={<MLBSchedule />} />
+          <Route path="/mlb-schedule/:gameId" element={<MatchupDetail />} />
           <Route path="/mlb-standings" element={<MLBStandings />} />
           <Route path="/team-analytics" element={<TeamAnalytics />} />
           <Route path="/team-analytics/:teamName" element={<TeamAnalytics />} />
@@ -165,6 +177,11 @@ function App() {
           {/* legal routes */}
           <Route path="/terms-of-use" element={<TermsOfUse />} />
           <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+
+          {/* Admin routes (URL-only, access-controlled in component) */}
+          <Route path="/admin" element={<AdminPage />} />
+          <Route path="/admin/new" element={<ArticleEditor />} />
+          <Route path="/admin/edit/:id" element={<ArticleEditor />} />
 
           {/* Unsubscribe route */}
           <Route path="/unsubscribe" element={<UnsubscribePage />} />

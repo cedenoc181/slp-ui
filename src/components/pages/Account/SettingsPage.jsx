@@ -1,41 +1,44 @@
 import { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../../context/AuthContext';
 
 function SettingsPage() {
-  const { isAuthenticated, user, logout } = useAuth();
+  const { isAuthenticated, loading, user, logout, updateProfile } = useAuth();
   const navigate = useNavigate();
 
   useEffect(() => {
     window.scrollTo(0, 0);
-    // If not authenticated, redirect to login
-    if (!isAuthenticated) {
+    if (!loading && !isAuthenticated) {
       navigate('/account');
     }
-  }, [isAuthenticated, navigate]);
+  }, [isAuthenticated, loading, navigate]);
 
-  // Mock user settings state (would come from auth/API in production)
   const [settings, setSettings] = useState({
-    // Profile Settings
-    displayName: user?.displayName || '',
+    displayName: '',
     favoriteTeam: '',
-    
-    // Notification Preferences
+    // These remain "coming soon"
     emailUpdates: true,
     weeklyDigest: false,
     breakingNews: true,
-    
-    // Display Preferences
     theme: 'system',
     defaultSeason: '2025',
     compactTables: false,
-    
-    // Privacy Settings
     profileVisible: true,
     shareActivity: false,
   });
 
-  const [saveStatus, setSaveStatus] = useState(null);
+  // Populate fields once user profile is loaded
+  useEffect(() => {
+    if (user) {
+      setSettings(prev => ({
+        ...prev,
+        displayName: user.displayName || '',
+        favoriteTeam: user.favoriteTeam || '',
+      }));
+    }
+  }, [user]);
+
+  const [saveStatus, setSaveStatus] = useState(null); // null | 'saving' | 'saved' | 'error'
 
   const mlbTeams = [
     { id: '', name: 'Select a team...' },
@@ -79,21 +82,30 @@ function SettingsPage() {
     }));
   };
 
-  const handleSaveSettings = (e) => {
+  const handleSaveSettings = async (e) => {
     e.preventDefault();
-    // Mock save - would call API in production
     setSaveStatus('saving');
-    setTimeout(() => {
+    try {
+      await updateProfile({
+        display_name: settings.displayName.trim() || null,
+        favorite_team: settings.favoriteTeam || null,
+      });
       setSaveStatus('saved');
       setTimeout(() => setSaveStatus(null), 3000);
-    }, 1000);
+    } catch (err) {
+      console.error('Failed to save profile:', err);
+      setSaveStatus('error');
+      setTimeout(() => setSaveStatus(null), 3000);
+    }
   };
 
-  const handleLogout = () => {
-    logout();
+  const handleLogout = async () => {
+    await logout();
     navigate('/');
     window.scrollTo(0, 0);
   };
+
+  if (loading) return null;
 
   return (
     <section className="settings-page">
@@ -159,7 +171,7 @@ function SettingsPage() {
                 <h2>Profile Settings</h2>
                 <p>Customize how you appear on the platform</p>
               </div>
-              
+
               <div className="settings-group">
                 <div className="setting-item">
                   <label htmlFor="displayName">Display Name</label>
@@ -171,7 +183,6 @@ function SettingsPage() {
                     onChange={handleInputChange}
                     placeholder="Enter your display name"
                     maxLength={30}
-                    disabled
                   />
                   <span className="setting-hint">This name will be visible on your profile</span>
                 </div>
@@ -183,7 +194,6 @@ function SettingsPage() {
                     name="favoriteTeam"
                     value={settings.favoriteTeam}
                     onChange={handleInputChange}
-                    disabled
                   >
                     {mlbTeams.map(team => (
                       <option key={team.id} value={team.id}>{team.name}</option>
@@ -200,7 +210,7 @@ function SettingsPage() {
                 <h2>Notification Preferences</h2>
                 <p>Control what updates you receive</p>
               </div>
-              
+
               <div className="settings-group">
                 <div className="setting-item toggle">
                   <div className="setting-info">
@@ -208,14 +218,8 @@ function SettingsPage() {
                     <span className="setting-hint">Receive important platform updates and announcements</span>
                   </div>
                   <label className="toggle-switch">
-                    <input
-                      type="checkbox"
-                      id="emailUpdates"
-                      name="emailUpdates"
-                      checked={settings.emailUpdates}
-                      onChange={handleInputChange}
-                      disabled
-                    />
+                    <input type="checkbox" id="emailUpdates" name="emailUpdates"
+                      checked={settings.emailUpdates} onChange={handleInputChange} disabled />
                     <span className="toggle-slider"></span>
                   </label>
                 </div>
@@ -226,14 +230,8 @@ function SettingsPage() {
                     <span className="setting-hint">Get a summary of top MLB stats and insights each week</span>
                   </div>
                   <label className="toggle-switch">
-                    <input
-                      type="checkbox"
-                      id="weeklyDigest"
-                      name="weeklyDigest"
-                      checked={settings.weeklyDigest}
-                      onChange={handleInputChange}
-                      disabled
-                    />
+                    <input type="checkbox" id="weeklyDigest" name="weeklyDigest"
+                      checked={settings.weeklyDigest} onChange={handleInputChange} disabled />
                     <span className="toggle-slider"></span>
                   </label>
                 </div>
@@ -244,14 +242,8 @@ function SettingsPage() {
                     <span className="setting-hint">Instant notifications for major MLB news and updates</span>
                   </div>
                   <label className="toggle-switch">
-                    <input
-                      type="checkbox"
-                      id="breakingNews"
-                      name="breakingNews"
-                      checked={settings.breakingNews}
-                      onChange={handleInputChange}
-                      disabled
-                    />
+                    <input type="checkbox" id="breakingNews" name="breakingNews"
+                      checked={settings.breakingNews} onChange={handleInputChange} disabled />
                     <span className="toggle-slider"></span>
                   </label>
                 </div>
@@ -264,17 +256,11 @@ function SettingsPage() {
                 <h2>Display Preferences</h2>
                 <p>Customize how you view the platform</p>
               </div>
-              
+
               <div className="settings-group">
                 <div className="setting-item">
                   <label htmlFor="theme">Theme</label>
-                  <select
-                    id="theme"
-                    name="theme"
-                    value={settings.theme}
-                    onChange={handleInputChange}
-                    disabled
-                  >
+                  <select id="theme" name="theme" value={settings.theme} onChange={handleInputChange} disabled>
                     <option value="system">System Default</option>
                     <option value="light">Light</option>
                     <option value="dark">Dark</option>
@@ -284,13 +270,7 @@ function SettingsPage() {
 
                 <div className="setting-item">
                   <label htmlFor="defaultSeason">Default Season</label>
-                  <select
-                    id="defaultSeason"
-                    name="defaultSeason"
-                    value={settings.defaultSeason}
-                    onChange={handleInputChange}
-                    disabled
-                  >
+                  <select id="defaultSeason" name="defaultSeason" value={settings.defaultSeason} onChange={handleInputChange} disabled>
                     <option value="2025">2025</option>
                     <option value="2024">2024</option>
                     <option value="2023">2023</option>
@@ -304,14 +284,8 @@ function SettingsPage() {
                     <span className="setting-hint">Display denser tables with more data visible</span>
                   </div>
                   <label className="toggle-switch">
-                    <input
-                      type="checkbox"
-                      id="compactTables"
-                      name="compactTables"
-                      checked={settings.compactTables}
-                      onChange={handleInputChange}
-                      disabled
-                    />
+                    <input type="checkbox" id="compactTables" name="compactTables"
+                      checked={settings.compactTables} onChange={handleInputChange} disabled />
                     <span className="toggle-slider"></span>
                   </label>
                 </div>
@@ -324,7 +298,7 @@ function SettingsPage() {
                 <h2>Privacy Settings</h2>
                 <p>Control your data and visibility</p>
               </div>
-              
+
               <div className="settings-group">
                 <div className="setting-item toggle">
                   <div className="setting-info">
@@ -332,14 +306,8 @@ function SettingsPage() {
                     <span className="setting-hint">Allow others to see your profile and favorite team</span>
                   </div>
                   <label className="toggle-switch">
-                    <input
-                      type="checkbox"
-                      id="profileVisible"
-                      name="profileVisible"
-                      checked={settings.profileVisible}
-                      onChange={handleInputChange}
-                      disabled
-                    />
+                    <input type="checkbox" id="profileVisible" name="profileVisible"
+                      checked={settings.profileVisible} onChange={handleInputChange} disabled />
                     <span className="toggle-slider"></span>
                   </label>
                 </div>
@@ -350,14 +318,8 @@ function SettingsPage() {
                     <span className="setting-hint">Allow analytics to improve platform recommendations</span>
                   </div>
                   <label className="toggle-switch">
-                    <input
-                      type="checkbox"
-                      id="shareActivity"
-                      name="shareActivity"
-                      checked={settings.shareActivity}
-                      onChange={handleInputChange}
-                      disabled
-                    />
+                    <input type="checkbox" id="shareActivity" name="shareActivity"
+                      checked={settings.shareActivity} onChange={handleInputChange} disabled />
                     <span className="toggle-slider"></span>
                   </label>
                 </div>
@@ -370,16 +332,21 @@ function SettingsPage() {
                 <h2>Account Management</h2>
                 <p>Manage your account security and data</p>
               </div>
-              
+
               <div className="settings-group">
+                <div className="account-action">
+                  <div className="action-info">
+                    <h4>Email Address</h4>
+                    <p>{user?.email}</p>
+                  </div>
+                </div>
+
                 <div className="account-action">
                   <div className="action-info">
                     <h4>Change Password</h4>
                     <p>Update your account password for security</p>
                   </div>
-                  <button type="button" className="action-btn" disabled>
-                    Change Password
-                  </button>
+                  <button type="button" className="action-btn" disabled>Change Password</button>
                 </div>
 
                 <div className="account-action">
@@ -387,9 +354,7 @@ function SettingsPage() {
                     <h4>Export Data</h4>
                     <p>Download a copy of your account data</p>
                   </div>
-                  <button type="button" className="action-btn" disabled>
-                    Export Data
-                  </button>
+                  <button type="button" className="action-btn" disabled>Export Data</button>
                 </div>
 
                 <div className="account-action danger">
@@ -397,28 +362,21 @@ function SettingsPage() {
                     <h4>Delete Account</h4>
                     <p>Permanently delete your account and all data</p>
                   </div>
-                  <button type="button" className="action-btn danger" disabled>
-                    Delete Account
-                  </button>
+                  <button type="button" className="action-btn danger" disabled>Delete Account</button>
                 </div>
               </div>
             </section>
 
             {/* Save Button */}
             <div className="settings-footer">
-              <div className="coming-soon-notice">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <circle cx="12" cy="12" r="10"/>
-                  <line x1="12" y1="8" x2="12" y2="12"/>
-                  <line x1="12" y1="16" x2="12.01" y2="16"/>
-                </svg>
-                <span>Account settings will be available once you create an account</span>
-              </div>
-              <button type="submit" className="save-btn" disabled>
-                {saveStatus === 'saving' ? 'Saving...' : 'Save Changes'}
+              <button type="submit" className="save-btn" disabled={saveStatus === 'saving'}>
+                {saveStatus === 'saving' ? 'Saving…' : 'Save Changes'}
               </button>
               {saveStatus === 'saved' && (
-                <span className="save-success">✓ Settings saved successfully</span>
+                <span className="save-success">✓ Profile saved successfully</span>
+              )}
+              {saveStatus === 'error' && (
+                <span className="save-error">✗ Failed to save. Please try again.</span>
               )}
             </div>
           </form>

@@ -29,8 +29,9 @@
     "test": "react-scripts test",
     "eject": "react-scripts eject",
     "server": "node server/google-cloud-api/reCaptcha.js",
-    "predeploy": "npm run organize-articles && npm run build",
+    "predeploy": "npm run sync-content && npm run build",
     "deploy": "gh-pages -d build",
+    "sync-content": "node scripts/syncContentFromSupabase.js",
     "organize-articles": "node scripts/manageArticles.js",
     "postbuild": "react-snap"
   },
