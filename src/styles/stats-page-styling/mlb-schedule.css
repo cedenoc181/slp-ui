@@ -97,7 +97,7 @@
   grid-template-columns: 1fr auto 1fr auto 24px;
   align-items: center;
   gap: 1rem;
-  background: #1e1e1e;
+  background: #262626;
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 12px;
   padding: 1rem 1.25rem;
@@ -132,7 +132,7 @@
   height: 44px;
   object-fit: contain;
   flex-shrink: 0;
-  filter: drop-shadow(0 0 7px rgba(255, 255, 255, 0.45));
+  filter: brightness(1.15) drop-shadow(0 0 8px rgba(255, 255, 255, 0.5));
 }
 
 .matchup-team-info {

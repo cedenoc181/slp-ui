@@ -33,6 +33,16 @@ function formatGameDate(dateStr) {
   return d.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
 }
 
+// Format pitcher name as "J. Smith"
+function formatPitcherName(fullName) {
+  if (!fullName) return 'TBD';
+  const parts = fullName.trim().split(/\s+/);
+  if (parts.length < 2) return fullName;
+  const firstInitial = parts[0].charAt(0).toUpperCase();
+  const lastName = parts.slice(1).join(' ');
+  return `${firstInitial}. ${lastName}`;
+}
+
 // ─── Matchup Row ─────────────────────────────────────────────────────────────
 function MatchupRow({ game, onClick, showDate }) {
   const awayMlbId = getTeamMlbId(game.away_team_id);
@@ -106,9 +116,9 @@ function MatchupRow({ game, onClick, showDate }) {
         <div className="matchup-meta">
           <div className="matchup-pitchers">
             <span className="pitcher-label">SP:</span>
-            <span className="pitcher-name">{game.away_sp_name || 'TBD'}</span>
+            <span className="pitcher-name">{formatPitcherName(game.away_sp_name)}</span>
             <span className="pitcher-sep">vs</span>
-            <span className="pitcher-name">{game.home_sp_name || 'TBD'}</span>
+            <span className="pitcher-name">{formatPitcherName(game.home_sp_name)}</span>
           </div>
         </div>
       )}
