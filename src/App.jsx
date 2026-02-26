@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, useLocation, matchPath } from 'react-router-dom';
 import ReactGA from 'react-ga4';
 import { AuthProvider } from './context/AuthContext';
 
@@ -118,14 +118,72 @@ function HomePage() {
   );
 }
 
+const PAGE_TITLES = [
+  { path: '/',                          title: 'Home' },
+  { path: '/mlb-schedule',             title: 'MLB Schedule' },
+  { path: '/mlb-schedule/:gameId',     title: 'Matchup Detail' },
+  { path: '/mlb-standings',            title: 'MLB Standings' },
+  { path: '/team-analytics',           title: 'Team Analytics' },
+  { path: '/team-analytics/:teamName', title: 'Team Analytics', param: 'teamName' },
+  { path: '/player-analytics',         title: 'Player Analytics' },
+  { path: '/player/:nameSlug',         title: 'Player Profile', param: 'nameSlug' },
+  { path: '/sandlot-insider',          title: 'Sandlot Insider' },
+  { path: '/sandlot-insider/:slug',    title: 'Sandlot Insider Article' },
+  { path: '/blogs',                    title: 'Blogs' },
+  { path: '/blogs/:slug',              title: 'Blog Post' },
+  { path: '/data-science',             title: 'Data Science' },
+  { path: '/glossary',                 title: 'Glossary' },
+  { path: '/faqs',                     title: 'FAQs' },
+  { path: '/how-to-use',              title: 'How To Use' },
+  { path: '/responsible-gaming',       title: 'Responsible Gaming' },
+  { path: '/about',                    title: 'About Us' },
+  { path: '/features',                 title: 'Features' },
+  { path: '/contact',                  title: 'Contact' },
+  { path: '/account',                  title: 'My Account' },
+  { path: '/account/settings',         title: 'Account Settings' },
+  { path: '/terms-of-use',            title: 'Terms of Use' },
+  { path: '/privacy-policy',          title: 'Privacy Policy' },
+  { path: '/admin',                    title: 'Admin' },
+  { path: '/admin/new',               title: 'Admin – New Article' },
+  { path: '/admin/edit/:id',          title: 'Admin – Edit Article' },
+  { path: '/unsubscribe',             title: 'Unsubscribe' },
+];
+
+const SITE_NAME = 'Sandlot Picks';
+
+function formatParam(raw) {
+  return raw
+    .replace(/-/g, ' ')
+    .replace(/\b\w/g, (c) => c.toUpperCase());
+}
+
+function getPageTitle(pathname) {
+  for (const entry of PAGE_TITLES) {
+    const match = matchPath({ path: entry.path, end: true }, pathname);
+    if (match) {
+      if (entry.param) {
+        const paramVal = match.params[entry.param];
+        if (paramVal) {
+          return `${formatParam(decodeURIComponent(paramVal))} – ${entry.title} | ${SITE_NAME}`;
+        }
+      }
+      return `${entry.title} | ${SITE_NAME}`;
+    }
+  }
+  return SITE_NAME;
+}
+
 // Analytics tracker component
 function AnalyticsTracker() {
   const location = useLocation();
 
   useEffect(() => {
-    ReactGA.send({ 
-      hitType: "pageview", 
-      page: location.pathname + location.search 
+    const title = getPageTitle(location.pathname);
+    document.title = title;
+    ReactGA.send({
+      hitType: "pageview",
+      page: location.pathname + location.search,
+      title,
     });
   }, [location]);
 

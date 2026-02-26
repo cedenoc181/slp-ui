@@ -4,6 +4,7 @@ import scheduleService from '../../../../data/services/scheduleService';
 import gamesService from '../../../../data/services/gamesService';
 import playerStatsService from '../../../../data/services/playerStatsServices';
 import teamsService from '../../../../data/services/teamsService';
+import teamStatsService from '../../../../data/services/teamStatsService';
 import { getTeamById, DEFAULT_SEASON } from '../../../../data/constants/apiConstants';
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
@@ -258,6 +259,66 @@ function LineupCard({ abbr, batters, pitchers }) {
   );
 }
 
+// ─── Team Stats Card ──────────────────────────────────────────────────────────
+
+const BATTING_ROWS = [
+  { label: 'AVG',  key: 'avg',            decimals: 3 },
+  { label: 'OBP',  key: 'obp',            decimals: 3 },
+  { label: 'SLG',  key: 'slg',            decimals: 3 },
+  { label: 'OPS',  key: 'ops',            decimals: 3 },
+  { label: 'R',    key: 'runs' },
+  { label: 'H',    key: 'hits' },
+  { label: 'HR',   key: 'home_runs' },
+  { label: 'RBI',  key: 'rbis' },
+  { label: 'SB',   key: 'stolen_bases' },
+  { label: 'BB',   key: 'walks' },
+  { label: 'K',    key: 'strikeouts' },
+];
+
+const PITCHING_ROWS = [
+  { label: 'ERA',  key: 'era',              decimals: 2 },
+  { label: 'WHIP', key: 'whip',             decimals: 2 },
+  { label: 'W',    key: 'wins' },
+  { label: 'L',    key: 'losses' },
+  { label: 'SV',   key: 'saves' },
+  { label: 'IP',   key: 'innings_pitched',  decimals: 1 },
+  { label: 'K',    key: 'strikeouts' },
+  { label: 'BB',   key: 'walks' },
+  { label: 'HR',   key: 'home_runs_allowed' },
+];
+
+function TeamStatsCard({ abbr, batting, pitching }) {
+  const [tab, setTab] = useState('batting');
+  const stats = tab === 'batting' ? batting : pitching;
+  const rows  = tab === 'batting' ? BATTING_ROWS : PITCHING_ROWS;
+
+  return (
+    <div className="detail-card team-stats-card">
+      <div className="lineup-card-header">
+        <h3 className="card-title">{abbr} Stats</h3>
+        <div className="lineup-toggle">
+          <button className={`lineup-tab${tab === 'batting'  ? ' active' : ''}`} onClick={() => setTab('batting')}>Batting</button>
+          <button className={`lineup-tab${tab === 'pitching' ? ' active' : ''}`} onClick={() => setTab('pitching')}>Pitching</button>
+        </div>
+      </div>
+      <div className="team-stats-body">
+        {rows.map(({ label, key, decimals }) => {
+          const val = stats?.[key];
+          const display = val != null
+            ? (decimals != null ? fmt(val, decimals) : String(val))
+            : '—';
+          return (
+            <div key={label} className="team-stat-row">
+              <span className="team-stat-label">{label}</span>
+              <span className="team-stat-value">{display}</span>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
 // ─── Main Component ───────────────────────────────────────────────────────────
 
 function MatchupDetail() {
@@ -280,6 +341,10 @@ function MatchupDetail() {
   const [h2h, setH2h] = useState(null);
   const [h2hBatters, setH2hBatters] = useState(null);
   const [h2hPitchers, setH2hPitchers] = useState(null);
+  const [awayBatting, setAwayBatting] = useState(null);
+  const [homeBatting, setHomeBatting] = useState(null);
+  const [awayPitching, setAwayPitching] = useState(null);
+  const [homePitching, setHomePitching] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -309,6 +374,11 @@ function MatchupDetail() {
 
         const needsL10Fallback = seasonType === 'S';
 
+        const gameStatusLower = (gameData.status || '').toLowerCase();
+        const isFinalGame = gameStatusLower === 'final' || gameStatusLower === 'game over' || gameStatusLower === 'completed';
+        const isLiveGame = gameStatusLower.includes('progress') || gameStatusLower === 'live' || gameStatusLower.includes('inning');
+        const needsTeamStats = !isFinalGame && !isLiveGame;
+
         const [
           awayL10Res, homeL10Res,
           awaySPRes, homeSPRes,
@@ -318,6 +388,8 @@ function MatchupDetail() {
           standingsRes,
           h2hBattersRes, h2hPitchersRes,
           awayL10FallbackRes, homeL10FallbackRes,
+          awayBattingRes, homeBattingRes,
+          awayPitchingRes, homePitchingRes,
         ] = await Promise.allSettled([
           gamesService.getTeamLast10(awayId, season, seasonType),
           gamesService.getTeamLast10(homeId, season, seasonType),
@@ -350,6 +422,18 @@ function MatchupDetail() {
             : Promise.resolve(null),
           needsL10Fallback
             ? gamesService.getTeamLast10(homeId, FALLBACK_SEASON, 'R')
+            : Promise.resolve(null),
+          needsTeamStats
+            ? teamStatsService.getTeamBattingStats(awayId, season, seasonType)
+            : Promise.resolve(null),
+          needsTeamStats
+            ? teamStatsService.getTeamBattingStats(homeId, season, seasonType)
+            : Promise.resolve(null),
+          needsTeamStats
+            ? teamStatsService.getTeamPitchingStats(awayId, season, seasonType)
+            : Promise.resolve(null),
+          needsTeamStats
+            ? teamStatsService.getTeamPitchingStats(homeId, season, seasonType)
             : Promise.resolve(null),
         ]);
 
@@ -446,6 +530,11 @@ function MatchupDetail() {
 
         setH2hBatters(h2hBattersRes.status === 'fulfilled' ? h2hBattersRes.value : null);
         setH2hPitchers(h2hPitchersRes.status === 'fulfilled' ? h2hPitchersRes.value : null);
+
+        setAwayBatting(awayBattingRes.status === 'fulfilled' ? awayBattingRes.value : null);
+        setHomeBatting(homeBattingRes.status === 'fulfilled' ? homeBattingRes.value : null);
+        setAwayPitching(awayPitchingRes.status === 'fulfilled' ? awayPitchingRes.value : null);
+        setHomePitching(homePitchingRes.status === 'fulfilled' ? homePitchingRes.value : null);
       } catch (err) {
         setError(err?.message || 'Failed to load matchup details.');
       } finally {
@@ -518,6 +607,7 @@ function MatchupDetail() {
   const awayPitchers = aggregatePlayers(h2hPitchers?.games, 'team_a');
   const homePitchers = aggregatePlayers(h2hPitchers?.games, 'team_b');
   const hasLineup = awayBatters.length > 0 || homeBatters.length > 0 || awayPitchers.length > 0 || homePitchers.length > 0;
+  const hasTeamStats = !!(awayBatting || homeBatting || awayPitching || homePitching);
 
   // Map H2H summary sides to current away/home teams
   const h2hAwaySum = hasH2h
@@ -548,8 +638,9 @@ function MatchupDetail() {
           oppRuns,
           oppAbbr: getAbbr(oppTeamId) || '???',
           oppMlbId: getMlbId(oppTeamId),
-          oppUrlName: getUrlName(oppTeamId),
           isHome: !isAway,
+          gameId: g.id ?? g.game_pk,
+          rawGame: g,
         };
       });
   }
@@ -680,10 +771,11 @@ function MatchupDetail() {
             </div>
           )}
 
-          {/* Away Lineup */}
-          {hasLineup && (
-            <LineupCard abbr={awayAbbr} batters={awayBatters} pitchers={awayPitchers} />
-          )}
+          {/* Away: Team Stats (scheduled) or H2H Lineup (final / live) */}
+          {isScheduled
+            ? (hasTeamStats && <TeamStatsCard abbr={awayAbbr} batting={awayBatting} pitching={awayPitching} />)
+            : (hasLineup    && <LineupCard    abbr={awayAbbr} batters={awayBatters}  pitchers={awayPitchers} />)
+          }
 
           {/* Recent Form */}
           {hasLast10 && (
@@ -693,6 +785,7 @@ function MatchupDetail() {
                   <span className="card-title-sub"> · Streak: {awayAbbr} {awayLast10Summary.streak_code} / {homeAbbr} {homeLast10Summary.streak_code}</span>
                 )}
               </h3>
+              <div className="form-scroll-body">
               <div className="form-section">
                 <div className="form-col">
                   <p className="form-team-label">{awayAbbr}</p>
@@ -719,63 +812,49 @@ function MatchupDetail() {
                     const h = homeGames[i];
                     return (
                       <div key={i} className="form-log-row">
-                        <span className="form-log-left">
-                          {a ? (
-                            <>
-                              {a.oppUrlName
-                                ? (
-                                  <Link to={`/team-analytics/${a.oppUrlName}`} className="flog-opp flog-opp-link">
-                                    <span className="flog-at">{a.isHome ? 'vs' : '@'}</span>
-                                    {a.oppMlbId && <img src={logoUrl(a.oppMlbId)} alt={a.oppAbbr} className="flog-team-logo" />}
-                                    {a.oppAbbr}
-                                  </Link>
-                                ) : (
-                                  <span className="flog-opp">
-                                    <span className="flog-at">{a.isHome ? 'vs' : '@'}</span>
-                                    {a.oppMlbId && <img src={logoUrl(a.oppMlbId)} alt={a.oppAbbr} className="flog-team-logo" />}
-                                    {a.oppAbbr}
-                                  </span>
-                                )
-                              }
-                              <span className={`flog-${a.result.toLowerCase()}`}>{a.result} {a.myRuns ?? '?'}-{a.oppRuns ?? '?'}</span>
-                            </>
-                          ) : '—'}
-                        </span>
+                        {a ? (
+                          <Link
+                            to={`/mlb-schedule/${a.gameId}`}
+                            state={{ game: a.rawGame }}
+                            className="form-log-left flog-row-link"
+                          >
+                            <span className="flog-opp">
+                              <span className="flog-at">{a.isHome ? 'vs' : '@'}</span>
+                              {a.oppMlbId && <img src={logoUrl(a.oppMlbId)} alt={a.oppAbbr} className="flog-team-logo" />}
+                              {a.oppAbbr}
+                            </span>
+                            <span className={`flog-${a.result.toLowerCase()}`}>{a.result} {a.myRuns ?? '?'}-{a.oppRuns ?? '?'}</span>
+                          </Link>
+                        ) : <span className="form-log-left">—</span>}
                         <div className="form-log-vsep" />
-                        <span className="form-log-right">
-                          {h ? (
-                            <>
-                              {h.oppUrlName
-                                ? (
-                                  <Link to={`/team-analytics/${h.oppUrlName}`} className="flog-opp flog-opp-link">
-                                    <span className="flog-at">{h.isHome ? 'vs' : '@'}</span>
-                                    {h.oppMlbId && <img src={logoUrl(h.oppMlbId)} alt={h.oppAbbr} className="flog-team-logo" />}
-                                    {h.oppAbbr}
-                                  </Link>
-                                ) : (
-                                  <span className="flog-opp">
-                                    <span className="flog-at">{h.isHome ? 'vs' : '@'}</span>
-                                    {h.oppMlbId && <img src={logoUrl(h.oppMlbId)} alt={h.oppAbbr} className="flog-team-logo" />}
-                                    {h.oppAbbr}
-                                  </span>
-                                )
-                              }
-                              <span className={`flog-${h.result.toLowerCase()}`}>{h.myRuns ?? '?'}-{h.oppRuns ?? '?'} {h.result}</span>
-                            </>
-                          ) : '—'}
-                        </span>
+                        {h ? (
+                          <Link
+                            to={`/mlb-schedule/${h.gameId}`}
+                            state={{ game: h.rawGame }}
+                            className="form-log-right flog-row-link"
+                          >
+                            <span className="flog-opp">
+                              <span className="flog-at">{h.isHome ? 'vs' : '@'}</span>
+                              {h.oppMlbId && <img src={logoUrl(h.oppMlbId)} alt={h.oppAbbr} className="flog-team-logo" />}
+                              {h.oppAbbr}
+                            </span>
+                            <span className={`flog-${h.result.toLowerCase()}`}>{h.myRuns ?? '?'}-{h.oppRuns ?? '?'} {h.result}</span>
+                          </Link>
+                        ) : <span className="form-log-right">—</span>}
                       </div>
                     );
                   })}
                 </div>
               )}
+              </div>{/* end form-scroll-body */}
             </div>
           )}
 
-          {/* Home Lineup */}
-          {hasLineup && (
-            <LineupCard abbr={homeAbbr} batters={homeBatters} pitchers={homePitchers} />
-          )}
+          {/* Home: Team Stats (scheduled) or H2H Lineup (final / live) */}
+          {isScheduled
+            ? (hasTeamStats && <TeamStatsCard abbr={homeAbbr} batting={homeBatting} pitching={homePitching} />)
+            : (hasLineup    && <LineupCard    abbr={homeAbbr} batters={homeBatters}  pitchers={homePitchers} />)
+          }
 
           {/* ── Head to Head Summary ──────────────────────────────────────── */}
           {hasH2h && (
