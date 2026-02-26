@@ -272,7 +272,8 @@ function MLBSchedule() {
   }, [activeTab, fetchGames]);
 
   const handleMatchupClick = (gameId) => {
-    navigate(`/mlb-schedule/${gameId}`);
+    const selectedGame = games.find(g => (g.id ?? g.game_pk) === gameId);
+    navigate(`/mlb-schedule/${gameId}`, { state: { game: selectedGame ?? null } });
   };
 
   const handleTabChange = (tab) => {
