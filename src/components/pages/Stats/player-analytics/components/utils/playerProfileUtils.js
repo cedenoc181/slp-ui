@@ -174,11 +174,8 @@ export const getPlayerPosition = (playerInfo) => {
  * @returns {string} - Default season year as string
  */
 export const getDefaultSeason = () => {
-  const now = new Date();
-  const currentYear = now.getFullYear();
-  const aprilFirst = new Date(currentYear, 3, 1); // Month is 0-indexed, so 3 = April
-  const defaultSeason = now < aprilFirst ? String(currentYear - 1) : String(currentYear);
-  return SEASONS.includes(defaultSeason) ? defaultSeason : SEASONS[0];
+  const currentYear = String(new Date().getFullYear());
+  return SEASONS.includes(currentYear) ? currentYear : SEASONS[0];
 };
 
 /**
@@ -210,16 +207,23 @@ export const getInitialViewMode = (searchParams) => {
  * @returns {Array<string>} - Array of season years (descending)
  */
 export const getAvailableSeasons = (careerStats) => {
+  const currentYear = String(new Date().getFullYear());
+
   if (!careerStats || careerStats.length === 0) {
-    return [getDefaultSeason()];
+    return [currentYear];
   }
-  
+
   // Extract unique seasons from career stats, filter for regular season only
   const seasons = careerStats
     .filter(s => s.season_type === 2 || s.season_type === '2' || s.season_type === 'R')
     .map(s => String(s.season || s.year))
     .filter((v, i, a) => a.indexOf(v) === i) // unique
     .sort((a, b) => parseInt(b) - parseInt(a)); // descending (most recent first)
-  
-  return seasons.length > 0 ? seasons : [getDefaultSeason()];
+
+  // Always include the current year at the top so 2026 shows even before stats exist
+  if (!seasons.includes(currentYear)) {
+    seasons.unshift(currentYear);
+  }
+
+  return seasons;
 };

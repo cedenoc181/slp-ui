@@ -1,7 +1,18 @@
 import { useState } from 'react';
-import { fmtIP } from '../utils';
+import { Link } from 'react-router-dom';
+import { fmtIP, toNameSlug } from '../utils';
 
-export default function LineupCard({ abbr, batters, pitchers }) {
+function PlayerLink({ name, season }) {
+  const slug = toNameSlug(name);
+  if (!slug || !name) return <span>{name ?? '—'}</span>;
+  return (
+    <Link to={`/player/${slug}?season=${season}`} className="lineup-player-link">
+      {name}
+    </Link>
+  );
+}
+
+export default function LineupCard({ abbr, batters, pitchers, season }) {
   const [tab, setTab] = useState('batters');
 
   const sortedBatters = [...batters].sort((a, b) => (b.plate_appearances ?? 0) - (a.plate_appearances ?? 0));
@@ -35,7 +46,9 @@ export default function LineupCard({ abbr, batters, pitchers }) {
             <tbody>
               {rows.map((p, i) => (
                 <tr key={i}>
-                  <td className="lineup-name">{p.player_name ?? '—'}</td>
+                  <td className="lineup-name">
+                    <PlayerLink name={p.player_name} season={season} />
+                  </td>
                   <td>{p.plate_appearances ?? '—'}</td>
                   <td>{p.hits ?? '—'}</td>
                   <td>{p.home_runs ?? '—'}</td>
@@ -59,7 +72,9 @@ export default function LineupCard({ abbr, batters, pitchers }) {
             <tbody>
               {rows.map((p, i) => (
                 <tr key={i}>
-                  <td className={`lineup-name${p.is_starter ? ' lineup-starter' : ''}`}>{p.player_name ?? '—'}</td>
+                  <td className={`lineup-name${p.is_starter ? ' lineup-starter' : ''}`}>
+                    <PlayerLink name={p.player_name} season={season} />
+                  </td>
                   <td>{p._g ?? '—'}</td>
                   <td>{fmtIP(p.innings_pitched)}</td>
                   <td>{p.hits_allowed ?? '—'}</td>

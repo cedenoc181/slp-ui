@@ -135,6 +135,15 @@ export function findTeamRecord(standings, teamId, isSpring) {
   }
 }
 
+export function toNameSlug(name) {
+  if (!name) return null;
+  return name
+    .toLowerCase()
+    .replace(/['']/g, '')
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-|-$/g, '');
+}
+
 export function formGames(games, teamId) {
   return games
     .filter(g =>

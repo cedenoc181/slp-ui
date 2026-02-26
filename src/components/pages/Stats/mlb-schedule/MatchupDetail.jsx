@@ -150,7 +150,7 @@ export default function MatchupDetail() {
           {/* Away: Team Stats (scheduled) or H2H Lineup (final / live) */}
           {isScheduled
             ? (hasTeamStats && <TeamStatsCard abbr={awayAbbr} batting={awayBatting} pitching={awayPitching} />)
-            : (hasLineup    && <LineupCard    abbr={awayAbbr} batters={awayBatters}  pitchers={awayPitchers} />)
+            : (hasLineup    && <LineupCard    abbr={awayAbbr} batters={awayBatters}  pitchers={awayPitchers} season={season} />)
           }
 
           {hasLast10 && (
@@ -167,7 +167,7 @@ export default function MatchupDetail() {
           {/* Home: Team Stats (scheduled) or H2H Lineup (final / live) */}
           {isScheduled
             ? (hasTeamStats && <TeamStatsCard abbr={homeAbbr} batting={homeBatting} pitching={homePitching} />)
-            : (hasLineup    && <LineupCard    abbr={homeAbbr} batters={homeBatters}  pitchers={homePitchers} />)
+            : (hasLineup    && <LineupCard    abbr={homeAbbr} batters={homeBatters}  pitchers={homePitchers} season={season} />)
           }
 
           {hasH2h && (

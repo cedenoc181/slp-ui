@@ -338,16 +338,16 @@ export const calculateRecentFormStats = ({
     
     // Season baseline
     let season = null;
-    if (seasonType === 'R') {
+    if (seasonType === 'R' || seasonType === 'S') {
       season = calculatePitcherRollingStats(sortedGames);
     } else if (seasonStats) {
       season = buildPitcherSeasonBaseline(seasonStats);
     }
-    
+
     const qualityStartStreak = calculateQualityStartStreak(sortedGames);
     const qualityStartsL10 = countQualityStarts(sortedGames.slice(0, 10));
     const formStatus = calculatePitcherFormStatus(l5, season);
-    
+
     return {
       l5,
       l10,
@@ -358,7 +358,8 @@ export const calculateRecentFormStats = ({
       formStatus,
       gamesPlayed: sortedGames.length,
       lastGameDate: sortedGames[0]?.date,
-      isPostseasonView: seasonType !== 'R',
+      isPostseasonView: seasonType === 'P',
+      isSpringView: seasonType === 'S',
       isPitcher: true,
     };
   }
@@ -370,17 +371,17 @@ export const calculateRecentFormStats = ({
   
   // Season baseline
   let season = null;
-  if (seasonType === 'R') {
+  if (seasonType === 'R' || seasonType === 'S') {
     season = calculateBatterRollingStats(sortedGames);
   } else if (seasonStats) {
     season = buildBatterSeasonBaseline(seasonStats);
   }
-  
+
   const hittingStreak = calculateHittingStreak(sortedGames);
   const multiHitStreak = calculateMultiHitStreak(sortedGames);
   const multiHitGamesL15 = countMultiHitGames(sortedGames.slice(0, 15));
   const formStatus = calculateBatterFormStatus(l7, season);
-  
+
   return {
     l7,
     l15,
@@ -392,7 +393,8 @@ export const calculateRecentFormStats = ({
     formStatus,
     gamesPlayed: sortedGames.length,
     lastGameDate: sortedGames[0]?.date,
-    isPostseasonView: seasonType !== 'R',
+    isPostseasonView: seasonType === 'P',
+    isSpringView: seasonType === 'S',
     isPitcher: false,
   };
 };

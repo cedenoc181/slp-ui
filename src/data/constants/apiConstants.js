@@ -26,14 +26,14 @@ export const STAT_CATEGORIES = {
 };
 
 // ========== SEASONS ==========
-export const DEFAULT_SEASON = '2025';
+export const DEFAULT_SEASON = '2026';
 
 export const SEASON_RANGE = {
   START: 2010,
   END: 2026,
 };
 
-// Generate seasons array: ['2025', '2024', ... '2010']
+// Generate seasons array: ['2026', '2025', ... '2010']
 export const SEASONS = Array.from(
   { length: SEASON_RANGE.END - SEASON_RANGE.START + 1 },
   (_, i) => String(SEASON_RANGE.END - i)

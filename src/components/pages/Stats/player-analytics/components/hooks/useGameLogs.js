@@ -29,6 +29,28 @@ const isTwoWayPosition = (pos) => {
 };
 
 /**
+ * Determine the appropriate Recent Form season type based on the calendar.
+ * - Prior years (< current year): always Regular Season ('R')
+ * - Current year: Spring ('S') before April 1, Regular ('R') April–Sep, Postseason ('P') October+
+ * @param {string} season - Selected season year string
+ * @returns {'R'|'S'|'P'}
+ */
+function getDefaultRecentFormSeasonType(season) {
+  const currentYear = new Date().getFullYear();
+  const selectedYear = parseInt(season, 10);
+
+  if (selectedYear < currentYear) return 'R';
+
+  const now = new Date();
+  const regularSeasonStart = new Date(currentYear, 3, 1);  // April 1
+  const postseasonStart    = new Date(currentYear, 9, 1);  // October 1
+
+  if (now < regularSeasonStart) return 'S';
+  if (now >= postseasonStart)   return 'P';
+  return 'R';
+}
+
+/**
  * Custom hook for managing game log data
  * @param {object} params - Hook parameters
  * @param {object} params.playerInfo - Player info object
@@ -50,7 +72,9 @@ export const useGameLogs = ({ playerInfo, selectedSeason, twoWayViewMode }) => {
   // ============================================================================
   const [gameLog, setGameLog] = useState([]);
   const [gameLogLoading, setGameLogLoading] = useState(false);
-  const [gameLogSeasonType, setGameLogSeasonType] = useState('R'); // R, S, P
+  const [gameLogSeasonType, setGameLogSeasonType] = useState(
+    () => getDefaultRecentFormSeasonType(selectedSeason)
+  );
   const [gameLogPage, setGameLogPage] = useState(1);
 
   // ============================================================================
@@ -59,7 +83,9 @@ export const useGameLogs = ({ playerInfo, selectedSeason, twoWayViewMode }) => {
   const [recentFormGameLog, setRecentFormGameLog] = useState([]);
   const [pitchingRecentFormGameLog, setPitchingRecentFormGameLog] = useState([]);
   const [recentFormLoading, setRecentFormLoading] = useState(false);
-  const [recentFormSeasonType, setRecentFormSeasonType] = useState('R');
+  const [recentFormSeasonType, setRecentFormSeasonType] = useState(
+    () => getDefaultRecentFormSeasonType(selectedSeason)
+  );
   const [availableRecentFormSeasonTypes, setAvailableRecentFormSeasonTypes] = useState(['R']); // Track which season types have data
 
   // ============================================================================
@@ -94,6 +120,16 @@ export const useGameLogs = ({ playerInfo, selectedSeason, twoWayViewMode }) => {
       }
     }
   }, [playerInfo?.id]);
+
+  // ============================================================================
+  // RESET SEASON TYPES WHEN SELECTED SEASON CHANGES
+  // Runs synchronously so the UI reflects the right default before async check
+  // ============================================================================
+  useEffect(() => {
+    const defaultType = getDefaultRecentFormSeasonType(selectedSeason);
+    setGameLogSeasonType(defaultType);
+    setRecentFormSeasonType(defaultType);
+  }, [selectedSeason]);
 
   // ============================================================================
   // FETCH GAME LOGS (MAIN)
@@ -305,13 +341,29 @@ export const useGameLogs = ({ playerInfo, selectedSeason, twoWayViewMode }) => {
         const available = checks
           .filter(({ hasGames }) => hasGames)
           .map(({ type }) => type);
-        
+
         // Default to Regular if nothing available
         const result = available.length > 0 ? available : ['R'];
         setAvailableRecentFormSeasonTypes(result);
-        
-        // If current selection is not available, switch to first available
-        setRecentFormSeasonType(prev => result.includes(prev) ? prev : result[0]);
+
+        // Choose the best season type based on calendar + available data
+        const calendarType = getDefaultRecentFormSeasonType(selectedSeason);
+        const currentYear  = new Date().getFullYear();
+        const isCurrentYear = parseInt(selectedSeason, 10) === currentYear;
+
+        if (isCurrentYear) {
+          // Priority order based on where we are in the calendar
+          const priority =
+            calendarType === 'S' ? ['S', 'R', 'P'] :
+            calendarType === 'P' ? ['P', 'R', 'S'] :
+                                   ['R', 'S', 'P'];
+          const best = priority.find(t => result.includes(t)) || result[0];
+          setRecentFormSeasonType(best);
+        } else {
+          // Prior years: Regular Season is always the baseline; fall back if unavailable
+          const best = result.includes('R') ? 'R' : result[0];
+          setRecentFormSeasonType(best);
+        }
       } catch (err) {
         // Silently handle errors - just use default
         if (!isCancelled) {

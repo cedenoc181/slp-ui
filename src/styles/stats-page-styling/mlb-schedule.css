@@ -889,6 +889,15 @@ a.pitcher-name-lg:hover {
   color: #ffffff;
 }
 
+.lineup-player-link {
+  color: inherit;
+  text-decoration: none;
+}
+.lineup-player-link:hover {
+  color: #64b5f6;
+  text-decoration: underline;
+}
+
 .pitcher-card-logo-link {
   display: flex;
   opacity: 1;

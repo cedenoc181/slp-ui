@@ -27,4 +27,5 @@ export {
   parseLast10,
   findTeamRecord,
   formGames,
+  toNameSlug,
 } from './matchupUtils';

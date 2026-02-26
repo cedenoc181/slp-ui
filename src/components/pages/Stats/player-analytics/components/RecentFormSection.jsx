@@ -225,8 +225,7 @@ const RecentFormSection = React.memo(function RecentFormSection({
                   {recentFormStats.season && (
                     <tr className="pps-rolling-row season">
                       <td className="pps-split-label-cell">
-                        {/* When viewing Postseason, label shows "Reg Season" as baseline */}
-                        {recentFormStats.isPostseasonView ? 'Reg Season' : 'Season'}
+                        {recentFormStats.isSpringView ? 'Spring Season' : recentFormStats.isPostseasonView ? 'Reg Season' : 'Season'}
                       </td>
                       <td>{recentFormStats.season.games}</td>
                       <td>{recentFormStats.season.era.toFixed(2)}</td>
@@ -313,11 +312,11 @@ const RecentFormSection = React.memo(function RecentFormSection({
                       <td>{recentFormStats.l30.strikeouts}</td>
                     </tr>
                   )}
-                  {/* Season Totals - Baseline (Regular Season when viewing Postseason) */}
+                  {/* Season Totals - Baseline (Spring Season during spring, Reg Season during postseason) */}
                   {recentFormStats.season && (
                     <tr className="pps-rolling-row season">
                       <td className="pps-split-label-cell">
-                        {recentFormStats.isPostseasonView ? 'Reg Season' : 'Season'}
+                        {recentFormStats.isSpringView ? 'Spring Season' : recentFormStats.isPostseasonView ? 'Reg Season' : 'Season'}
                       </td>
                       <td>{recentFormStats.season.games}</td>
                       <td>{recentFormStats.season.avg.toFixed(3).replace(/^0/, '')}</td>
