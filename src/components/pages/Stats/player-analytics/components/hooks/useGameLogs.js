@@ -202,9 +202,7 @@ export const useGameLogs = ({ playerInfo, selectedSeason, twoWayViewMode }) => {
     
     fetchGameLogs();
     
-    return () => {
-      gameLogFetchIdRef.current++;
-    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [playerInfo?.id, selectedSeason, gameLogSeasonType, twoWayViewMode]);
 
   // ============================================================================
@@ -295,9 +293,7 @@ export const useGameLogs = ({ playerInfo, selectedSeason, twoWayViewMode }) => {
     
     fetchRecentFormGameLogs();
     
-    return () => {
-      recentFormFetchIdRef.current++;
-    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [playerInfo?.id, selectedSeason, recentFormSeasonType]);
 
   // ============================================================================
@@ -377,6 +373,7 @@ export const useGameLogs = ({ playerInfo, selectedSeason, twoWayViewMode }) => {
     return () => {
       isCancelled = true;
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [playerInfo?.id, selectedSeason]);
 
   // ============================================================================

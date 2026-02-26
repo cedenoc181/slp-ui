@@ -39,7 +39,7 @@ export default function PitcherCard({
         {!isRight && headshot}
         <div className="pitcher-details">
           {playerLink
-            ? <Link to={playerLink} className="pitcher-name-lg">{name}</Link>
+            ? <Link to={playerLink} className="pitcher-name-lg" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>{name}</Link>
             : <p className="pitcher-name-lg">{name || 'TBD'}</p>
           }
           {spStats && (spStats.w != null || spStats.wins != null) && (spStats.l != null || spStats.losses != null) && (

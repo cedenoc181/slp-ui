@@ -5,8 +5,17 @@ import { fmtIP, toNameSlug } from '../utils';
 function PlayerLink({ name, season }) {
   const slug = toNameSlug(name);
   if (!slug || !name) return <span>{name ?? '—'}</span>;
+  
+  const handleClick = () => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+  
   return (
-    <Link to={`/player/${slug}?season=${season}`} className="lineup-player-link">
+    <Link 
+      to={`/player/${slug}?season=${season}`} 
+      className="lineup-player-link"
+      onClick={handleClick}
+    >
       {name}
     </Link>
   );

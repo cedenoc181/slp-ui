@@ -158,7 +158,7 @@ function SkeletonRow() {
   );
 }
 
-// ─── Prior Results: Date grouping + pagination ────────────────────────────────
+// ─── Date-grouped list with pagination ───────────────────────────────────────
 const DATES_PER_PAGE = 3;
 
 function groupGamesByDate(games) {
@@ -175,7 +175,7 @@ function groupGamesByDate(games) {
   return groups;
 }
 
-function PriorResults({ games, onClick }) {
+function GroupedGamesList({ games, onClick, prevLabel = '← Prev', nextLabel = 'Next →' }) {
   const [page, setPage] = useState(0);
   const allGroups = groupGamesByDate(games);
   const totalPages = Math.ceil(allGroups.length / DATES_PER_PAGE);
@@ -211,7 +211,7 @@ function PriorResults({ games, onClick }) {
             onClick={() => goTo(page - 1)}
             disabled={page === 0}
           >
-            ← Newer
+            {prevLabel}
           </button>
           <span className="pagination-info">Page {page + 1} of {totalPages}</span>
           <button
@@ -219,7 +219,7 @@ function PriorResults({ games, onClick }) {
             onClick={() => goTo(page + 1)}
             disabled={page === totalPages - 1}
           >
-            Older →
+            {nextLabel}
           </button>
         </div>
       )}
@@ -227,11 +227,23 @@ function PriorResults({ games, onClick }) {
   );
 }
 
+// ─── Prior Results (grouped by date, newest first) ───────────────────────────
+function PriorResults({ games, onClick }) {
+  return (
+    <GroupedGamesList
+      games={games}
+      onClick={onClick}
+      prevLabel="← Newer"
+      nextLabel="Older →"
+    />
+  );
+}
+
 // ─── Tabs ─────────────────────────────────────────────────────────────────────
 const TABS = [
   { key: 'today',    label: 'Today' },
   { key: 'upcoming', label: 'Upcoming' },
-  { key: 'prior',    label: 'Recent Results' },
+  { key: 'prior',    label: 'Final' },
 ];
 
 // ─── Main Component ───────────────────────────────────────────────────────────
