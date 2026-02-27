@@ -70,6 +70,7 @@ export default function MatchupDetail() {
   const statusLower = (game.status || '').toLowerCase();
   const isFinal     = statusLower === 'final' || statusLower === 'game over' || statusLower === 'completed';
   const isLive      = statusLower.includes('progress') || statusLower === 'live' || statusLower.includes('inning');
+  const isPreGame   = statusLower === 'pre-game' || statusLower === 'pregame';
   const isScheduled = !isFinal && !isLive;
 
   const awayWon = game.winning_team_id === game.away_team_id;
@@ -164,10 +165,12 @@ export default function MatchupDetail() {
             />
           )}
 
-          {/* Away: Team Stats (scheduled) or H2H Lineup (final / live) */}
-          {isScheduled
-            ? (hasTeamStats && <TeamStatsCard abbr={awayAbbr} batting={awayBatting} pitching={awayPitching} />)
-            : (hasLineup    && <LineupCard    abbr={awayAbbr} batters={awayBatters}  pitchers={awayPitchers} season={season} />)
+          {/* Away: LineupCard w/ team stats (pre-game), H2H lineup (final/live), or TeamStatsCard (other scheduled) */}
+          {isPreGame
+            ? (hasTeamStats && <LineupCard abbr={awayAbbr} teamBatting={awayBatting} teamPitching={awayPitching} />)
+            : isScheduled
+              ? (hasTeamStats && <TeamStatsCard abbr={awayAbbr} batting={awayBatting} pitching={awayPitching} />)
+              : (hasLineup    && <LineupCard    abbr={awayAbbr} batters={awayBatters}  pitchers={awayPitchers} season={season} />)
           }
 
           {hasLast10 && (
@@ -182,10 +185,12 @@ export default function MatchupDetail() {
             />
           )}
 
-          {/* Home: Team Stats (scheduled) or H2H Lineup (final / live) */}
-          {isScheduled
-            ? (hasTeamStats && <TeamStatsCard abbr={homeAbbr} batting={homeBatting} pitching={homePitching} />)
-            : (hasLineup    && <LineupCard    abbr={homeAbbr} batters={homeBatters}  pitchers={homePitchers} season={season} />)
+          {/* Home: LineupCard w/ team stats (pre-game), H2H lineup (final/live), or TeamStatsCard (other scheduled) */}
+          {isPreGame
+            ? (hasTeamStats && <LineupCard abbr={homeAbbr} teamBatting={homeBatting} teamPitching={homePitching} />)
+            : isScheduled
+              ? (hasTeamStats && <TeamStatsCard abbr={homeAbbr} batting={homeBatting} pitching={homePitching} />)
+              : (hasLineup    && <LineupCard    abbr={homeAbbr} batters={homeBatters}  pitchers={homePitchers} season={season} />)
           }
 
           {hasH2h && (

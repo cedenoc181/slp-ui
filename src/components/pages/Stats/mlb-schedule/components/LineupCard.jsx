@@ -1,6 +1,33 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { fmtIP, toNameSlug } from '../utils';
+import { fmtIP, toNameSlug, fmt } from '../utils';
+
+// ── Team season stat definitions ─────────────────────────────────────────────
+const TEAM_BATTING_STATS = [
+  { label: 'AVG',  key: 'avg',          decimals: 3 },
+  { label: 'OBP',  key: 'obp',          decimals: 3 },
+  { label: 'SLG',  key: 'slg',          decimals: 3 },
+  { label: 'OPS',  key: 'ops',          decimals: 3 },
+  { label: 'R',    key: 'runs' },
+  { label: 'H',    key: 'hits' },
+  { label: 'HR',   key: 'homeruns' },
+  { label: 'RBI',  key: 'rbis' },
+  { label: 'SB',   key: 'stolen_bases' },
+  { label: 'BB',   key: 'walks' },
+  { label: 'K',    key: 'strikeouts' },
+];
+
+const TEAM_PITCHING_STATS = [
+  { label: 'ERA',  key: 'era',             decimals: 2 },
+  { label: 'WHIP', key: 'whip',            decimals: 2 },
+  { label: 'W',    key: 'wins' },
+  { label: 'L',    key: 'losses' },
+  { label: 'SV',   key: 'saves' },
+  { label: 'IP',   key: 'innings_pitched', decimals: 1 },
+  { label: 'K',    key: 'strikeouts' },
+  { label: 'BB',   key: 'walks' },
+  { label: 'HR',   key: 'home_runs' },
+];
 
 function PlayerLink({ name, season }) {
   const slug = toNameSlug(name);
@@ -51,8 +78,41 @@ function minIdxStarters(arr, key) {
   return idx;
 }
 
-export default function LineupCard({ abbr, batters, pitchers, season }) {
+export default function LineupCard({ abbr, batters = [], pitchers = [], season, teamBatting, teamPitching }) {
   const [tab, setTab] = useState('batters');
+  const isTeamMode = !!(teamBatting || teamPitching);
+
+  // ── Pre-Game team stats mode ─────────────────────────────────────────────
+  if (isTeamMode) {
+    const stats    = tab === 'batters' ? teamBatting   : teamPitching;
+    const statDefs = tab === 'batters' ? TEAM_BATTING_STATS : TEAM_PITCHING_STATS;
+    return (
+      <div className="detail-card lineup-card">
+        <div className="lineup-card-header">
+          <h3 className="card-title">{abbr} Season Stats</h3>
+          <div className="lineup-toggle">
+            <button className={`lineup-tab${tab === 'batters'  ? ' active' : ''}`} onClick={() => setTab('batters')}>Batting</button>
+            <button className={`lineup-tab${tab === 'pitchers' ? ' active' : ''}`} onClick={() => setTab('pitchers')}>Pitching</button>
+          </div>
+        </div>
+        <div className="team-stats-body">
+          {statDefs.map(({ label, key, decimals }) => {
+            const val = stats?.[key];
+            const display = val != null
+              ? (decimals != null ? fmt(val, decimals) : String(val))
+              : '—';
+            return (
+              <div key={label} className="team-stat-row">
+                <span className="team-stat-label">{label}</span>
+                <span className="team-stat-value">{display}</span>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    );
+  }
+
 
   const sortedBatters = [...batters]
     .filter(p => (p.plate_appearances ?? 0) > 0)
