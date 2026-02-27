@@ -263,6 +263,8 @@ function MLBSchedule() {
         data = await scheduleService.getTodayGames();
       } else if (tab === 'upcoming') {
         data = await scheduleService.getUpcomingGames({ limit: 50 });
+        const todayStr = new Date().toISOString().slice(0, 10);
+        data = Array.isArray(data) ? data.filter(g => (g.date ?? '').slice(0, 10) > todayStr) : [];
       } else {
         data = await scheduleService.getPriorGames({ limit: 50 });
       }
