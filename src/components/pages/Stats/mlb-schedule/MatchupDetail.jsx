@@ -81,11 +81,17 @@ export default function MatchupDetail() {
   const hasLast10 = awayLast10.length > 0 || homeLast10.length > 0 || awayLast10Summary != null || homeLast10Summary != null;
   const hasH2h    = h2h?.summary != null && Array.isArray(h2h?.games) && h2h.games.length > 0;
 
-  // H2H lineup data — aggregate per-player across all games
-  const awayBatters  = aggregatePlayers(h2hBatters?.games,  'team_a');
-  const homeBatters  = aggregatePlayers(h2hBatters?.games,  'team_b');
-  const awayPitchers = aggregatePlayers(h2hPitchers?.games, 'team_a');
-  const homePitchers = aggregatePlayers(h2hPitchers?.games, 'team_b');
+  // H2H lineup data — filter to this specific game only, fall back to all H2H games
+  const currentGamePk     = game.game_pk ?? game.id;
+  const matchedBatterGame  = h2hBatters?.games?.find(g => (g.game_pk ?? g.id) === currentGamePk);
+  const matchedPitcherGame = h2hPitchers?.games?.find(g => (g.game_pk ?? g.id) === currentGamePk);
+  const batterGames        = matchedBatterGame  ? [matchedBatterGame]  : (h2hBatters?.games  ?? []);
+  const pitcherGames       = matchedPitcherGame ? [matchedPitcherGame] : (h2hPitchers?.games ?? []);
+
+  const awayBatters  = aggregatePlayers(batterGames,  'team_a');
+  const homeBatters  = aggregatePlayers(batterGames,  'team_b');
+  const awayPitchers = aggregatePlayers(pitcherGames, 'team_a');
+  const homePitchers = aggregatePlayers(pitcherGames, 'team_b');
   const hasLineup    = awayBatters.length > 0 || homeBatters.length > 0 || awayPitchers.length > 0 || homePitchers.length > 0;
   const hasTeamStats = !!(awayBatting || homeBatting || awayPitching || homePitching);
 

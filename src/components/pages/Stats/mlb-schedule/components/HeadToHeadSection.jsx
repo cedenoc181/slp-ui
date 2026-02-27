@@ -68,19 +68,21 @@ export default function HeadToHeadSection({ game, awayAbbr, homeAbbr, h2h, h2hAw
 
         {/* Totals footer */}
         <div className="h2h-totals-row">
-          <span className="h2h-total-label">Runs</span>
-          <span className="h2h-total-val">{h2h.summary.total_runs}</span>
-          <span className="h2h-total-sub">({(h2h.summary.total_runs / h2h.summary.games_played).toFixed(1)}/gm)</span>
-          <span className="h2h-totals-sep">·</span>
-          <span className="h2h-total-label">Hits</span>
-          <span className="h2h-total-val">{h2h.summary.total_hits}</span>
-          <span className="h2h-total-sub">({(h2h.summary.total_hits / h2h.summary.games_played).toFixed(1)}/gm)</span>
+          <div className="h2h-totals-line">
+            <span className="h2h-total-label">Runs</span>
+            <span className="h2h-total-val">{h2h.summary.total_runs}</span>
+            <span className="h2h-total-sub">({(h2h.summary.total_runs / h2h.summary.games_played).toFixed(1)}/gm)</span>
+            <span className="h2h-totals-sep">·</span>
+            <span className="h2h-total-label">Hits</span>
+            <span className="h2h-total-val">{h2h.summary.total_hits}</span>
+            <span className="h2h-total-sub">({(h2h.summary.total_hits / h2h.summary.games_played).toFixed(1)}/gm)</span>
+          </div>
           {h2h.summary.avg_run_margin != null && (
-            <>
+            <div className="h2h-totals-line">
               <span className="h2h-totals-sep">·</span>
               <span className="h2h-total-label">Avg Margin</span>
               <span className="h2h-total-val">{h2h.summary.avg_run_margin.toFixed(1)}</span>
-            </>
+            </div>
           )}
         </div>
       </div>
@@ -121,12 +123,26 @@ export default function HeadToHeadSection({ game, awayAbbr, homeAbbr, h2h, h2hAw
                     <td className={`h2h-score${teamAWon  ? ' h2h-score-win' : ' h2h-score-loss'}`}>{tA.runs}</td>
                     <td className={`h2h-score${!teamAWon ? ' h2h-score-win' : ' h2h-score-loss'}`}>{tB.runs}</td>
                     <td className="h2h-1st">
-                      {tA['1st_inning_runs'] != null && tB['1st_inning_runs'] != null
-                        ? `${tA['1st_inning_runs']}–${tB['1st_inning_runs']}` : '—'}
+                      {tA['1st_inning_runs'] != null && tB['1st_inning_runs'] != null ? (
+                        <span className="h2h-score-wrap">
+                          <span>{tA['1st_inning_runs']}–{tB['1st_inning_runs']}</span>
+                          {tA['1st_inning_runs'] === tB['1st_inning_runs']
+                            ? <span className="h2h-winner-label h2h-winner-tie">(tie)</span>
+                            : <span className="h2h-winner-label">{tA['1st_inning_runs'] > tB['1st_inning_runs'] ? `(${awayAbbr})` : `(${homeAbbr})`}</span>
+                          }
+                        </span>
+                      ) : '—'}
                     </td>
                     <td className="h2h-f5">
-                      {tA['5_inning_runs'] != null && tB['5_inning_runs'] != null
-                        ? `${tA['5_inning_runs']}–${tB['5_inning_runs']}` : '—'}
+                      {tA['5_inning_runs'] != null && tB['5_inning_runs'] != null ? (
+                        <span className="h2h-score-wrap">
+                          <span>{tA['5_inning_runs']}–{tB['5_inning_runs']}</span>
+                          {tA['5_inning_runs'] === tB['5_inning_runs']
+                            ? <span className="h2h-winner-label h2h-winner-tie">(tie)</span>
+                            : <span className="h2h-winner-label">{tA['5_inning_runs'] > tB['5_inning_runs'] ? `(${awayAbbr})` : `(${homeAbbr})`}</span>
+                          }
+                        </span>
+                      ) : '—'}
                     </td>
                     <td className="h2h-sp">{tA.sp_name || '—'}</td>
                     <td className="h2h-sp">{tB.sp_name || '—'}</td>
