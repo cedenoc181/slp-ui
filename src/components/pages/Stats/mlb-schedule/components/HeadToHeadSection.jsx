@@ -20,7 +20,7 @@ export default function HeadToHeadSection({ game, awayAbbr, homeAbbr, h2h, h2hAw
   return (
     <>
       {/* ── H2H Summary ──────────────────────────────────────────────────── */}
-      <div className="detail-card h2h-card">
+      <div className="detail-card h2h-summary-card">
         <h3 className="card-title">
           Head to Head
           <span className="card-title-sub"> — Last {h2h.summary.games_played} Meetings</span>
@@ -86,7 +86,7 @@ export default function HeadToHeadSection({ game, awayAbbr, homeAbbr, h2h, h2hAw
       </div>
 
       {/* ── H2H Game Log ─────────────────────────────────────────────────── */}
-      <div className="detail-card h2h-card">
+      <div className="detail-card h2h-gamelog-card">
         <h3 className="card-title">H2H Game Log</h3>
         <div className="h2h-table-wrapper">
           <table className="h2h-log-table">

@@ -1005,7 +1005,7 @@ a.pitcher-name-lg:hover {
 
 .stat-label {
   text-align: center;
-  color: #ffffff;
+  color: #a0a0a0;
   font-size: 0.72rem;
   font-weight: 500;
 }
@@ -1180,8 +1180,12 @@ a.pitcher-name-lg:hover {
 }
 
 /* ── Head to Head ────────────────────────────────────────────────────────── */
-.h2h-card {
-  grid-column: 1 / -1;
+.h2h-summary-card {
+  grid-column: span 1;
+}
+
+.h2h-gamelog-card {
+  grid-column: span 2;
 }
 
 .card-title-sub {
@@ -1197,7 +1201,7 @@ a.pitcher-name-lg:hover {
   display: flex;
   align-items: center;
   gap: 1.25rem;
-  margin-bottom: 1.25rem;
+  margin-bottom: 0.75rem;
 }
 
 .h2h-team-win-block {
@@ -1217,15 +1221,15 @@ a.pitcher-name-lg:hover {
 }
 
 .h2h-win-count {
-  font-size: 2rem;
-  font-weight: 900;
+  font-size: 1.25rem;
+  font-weight: 700;
   color: #ffffff;
   line-height: 1;
 }
 
 .h2h-wins-label {
   font-size: 0.62rem;
-  color: #ffffff;
+  color: #a0a0a0;
   text-transform: uppercase;
   letter-spacing: 0.06em;
 }
@@ -1262,7 +1266,7 @@ a.pitcher-name-lg:hover {
 
 .h2h-games-label {
   font-size: 0.67rem;
-  color: #ffffff;
+  color: #a0a0a0;
   text-align: center;
 }
 
@@ -1280,27 +1284,27 @@ a.pitcher-name-lg:hover {
 
 .h2h-total-label {
   font-size: 0.72rem;
-  color: #ffffff;
+  color: #a0a0a0;
   text-transform: uppercase;
   letter-spacing: 0.05em;
 }
 
 .h2h-total-val {
-  font-size: 1.1rem;
-  font-weight: 800;
+  font-size: 0.82rem;
+  font-weight: 700;
   color: #ffffff;
 }
 
 .h2h-total-sub {
   font-size: 0.72rem;
-  color: #ffffff;
+  color: #a0a0a0;
 }
 
 /* H2H Game Log table */
 .h2h-table-wrapper {
   overflow-x: auto;
   overflow-y: auto;
-  max-height: 320px;
+  max-height: 220px;
   -webkit-overflow-scrolling: touch;
   margin: 0 -0.25rem;
 }
@@ -1334,8 +1338,8 @@ a.pitcher-name-lg:hover {
 
 .h2h-log-table td {
   text-align: center;
-  padding: 0.5rem 0.6rem;
-  color: #ffffff;
+  padding: 0.35rem 0.5rem;
+  color: #a0a0a0;
   border-bottom: 1px solid rgba(255, 255, 255, 0.03);
 }
 
@@ -1347,14 +1351,14 @@ a.pitcher-name-lg:hover {
 
 .h2h-date {
   text-align: left !important;
-  color: #ffffff !important;
+  color: #a0a0a0 !important;
   white-space: nowrap;
   font-size: 0.78rem;
 }
 
 .h2h-location {
   text-align: left !important;
-  color: #ffffff !important;
+  color: #a0a0a0 !important;
   font-size: 0.75rem;
   white-space: nowrap;
 }
@@ -1396,14 +1400,14 @@ a.pitcher-name-lg:hover {
 
 .h2h-sp {
   font-size: 0.74rem !important;
-  color: #ffffff !important;
+  color: #a0a0a0 !important;
   white-space: nowrap;
 }
 
 .h2h-f5,
 .h2h-1st {
   font-size: 0.8rem;
-  color: #ffffff;
+  color: #a0a0a0;
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
   letter-spacing: 0.02em;
@@ -1462,6 +1466,14 @@ a.pitcher-name-lg:hover {
 @media (max-width: 1000px) {
   .detail-grid {
     grid-template-columns: repeat(2, 1fr);
+  }
+
+  .h2h-summary-card {
+    grid-column: span 1;
+  }
+
+  .h2h-gamelog-card {
+    grid-column: span 2;
   }
 }
 
