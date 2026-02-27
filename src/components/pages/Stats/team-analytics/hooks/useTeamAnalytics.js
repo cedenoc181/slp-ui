@@ -22,7 +22,7 @@ import {
   SEASONS,
   SEASON_TYPES,
   PLAYER_ROLES,
-  DEFAULT_SEASON,
+  ACTIVE_SEASON,
   getTeamByAbbr,
   getTeamByUrlName,
   getTeamIdFromAbbr,
@@ -52,7 +52,7 @@ export function useTeamAnalytics() {
     if (seasonParam && SEASONS.includes(seasonParam)) {
       return seasonParam;
     }
-    return DEFAULT_SEASON;
+    return ACTIVE_SEASON;
   };
 
   // ========== UI State ==========

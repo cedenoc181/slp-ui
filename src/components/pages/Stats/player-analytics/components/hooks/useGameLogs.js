@@ -176,16 +176,16 @@ export const useGameLogs = ({ playerInfo, selectedSeason, twoWayViewMode }) => {
         
         if (!isStillValid()) return;
         
-        const games = response?.games || [];
-        
+        const games = response?.games || (Array.isArray(response) ? response : []);
+
         // Ensure minimum loading time
         const elapsed = Date.now() - startTime;
         if (elapsed < MIN_LOADING_DURATION) {
           await new Promise(resolve => setTimeout(resolve, MIN_LOADING_DURATION - elapsed));
         }
-        
+
         if (!isStillValid()) return;
-        
+
         setGameLog(Array.isArray(games) ? games : []);
         setGameLogPage(1);
       } catch (err) {
@@ -242,8 +242,8 @@ export const useGameLogs = ({ playerInfo, selectedSeason, twoWayViewMode }) => {
           
           if (!isStillValid()) return;
           
-          battingGames = battingResponse?.games || [];
-          pitchingGames = pitchingResponse?.games || [];
+          battingGames = battingResponse?.games || (Array.isArray(battingResponse) ? battingResponse : []);
+          pitchingGames = pitchingResponse?.games || (Array.isArray(pitchingResponse) ? pitchingResponse : []);
         } else if (isPitcherPos) {
           const response = await gamesService.getPitcherGameLogs(
             internalPlayerId,
@@ -264,7 +264,7 @@ export const useGameLogs = ({ playerInfo, selectedSeason, twoWayViewMode }) => {
           
           if (!isStillValid()) return;
           
-          const games = response?.games || [];
+          const games = response?.games || (Array.isArray(response) ? response : []);
           battingGames = Array.isArray(games) ? games : [];
         }
         
@@ -323,7 +323,7 @@ export const useGameLogs = ({ playerInfo, selectedSeason, twoWayViewMode }) => {
           seasonTypes.map(async (type) => {
             try {
               const response = await fetchService(internalPlayerId, selectedSeason, type);
-              const games = response?.games || [];
+              const games = response?.games || (Array.isArray(response) ? response : []);
               return { type, hasGames: Array.isArray(games) && games.length > 0 };
             } catch {
               return { type, hasGames: false };

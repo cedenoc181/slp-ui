@@ -5,7 +5,7 @@ import PitcherStats from './pitcherStats';
 import {
   TEAMS,
   SEASONS,
-  DEFAULT_SEASON,
+  ACTIVE_SEASON,
   getTeamByAbbr,
   getTeamIdFromAbbr,
 } from '../../../../data/constants/apiConstants';
@@ -45,7 +45,7 @@ function PlayerAnalytics() {
     if (seasonParam && SEASONS.includes(seasonParam)) {
       return seasonParam;
     }
-    return DEFAULT_SEASON;
+    return ACTIVE_SEASON;
   });
 
   // Add "All Teams" option to the teams list

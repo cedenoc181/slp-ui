@@ -103,10 +103,10 @@ export function useMatchupData() {
             : teamsService.getTeamRegularSeasonStandings(season),
           gamesService.getHeadToHeadBatters(awayId, homeId, { season: String(season), seasonType, limit: 10 }),
           gamesService.getHeadToHeadPitchers(awayId, homeId, { season: String(season), seasonType, limit: 10 }),
-          needsL10Fallback
+          needsL10Fallback || needsFallback
             ? gamesService.getTeamLast10(awayId, FALLBACK_SEASON, 'R')
             : Promise.resolve(null),
-          needsL10Fallback
+          needsL10Fallback || needsFallback
             ? gamesService.getTeamLast10(homeId, FALLBACK_SEASON, 'R')
             : Promise.resolve(null),
           needsTeamStats
@@ -132,8 +132,8 @@ export function useMatchupData() {
         const awayHasCompleted = awayPrimary.games.some(g => g.winning_team_id != null);
         const homeHasCompleted = homePrimary.games.some(g => g.winning_team_id != null);
 
-        setAwayLast10Summary(awayPrimary.summary);
-        setHomeLast10Summary(homePrimary.summary);
+        setAwayLast10Summary(awayPrimary.summary ?? awayFBParsed.summary);
+        setHomeLast10Summary(homePrimary.summary ?? homeFBParsed.summary);
         setAwayLast10(awayHasCompleted ? awayPrimary.games : awayFBParsed.games);
         setHomeLast10(homeHasCompleted ? homePrimary.games : homeFBParsed.games);
 

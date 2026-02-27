@@ -75,11 +75,18 @@ function MLBStandings() {
       setFallbackSeason(null);
 
       try {
-        let data = await teamsService.getTeamRegularSeasonStandings(selectedSeason);
+        let data = null;
         let seasonUsed = selectedSeason;
 
-        // If no data for selected season, fall back to the prior year
-        if (!hasStandingsData(data)) {
+        try {
+          data = await teamsService.getTeamRegularSeasonStandings(selectedSeason);
+        } catch (_) {
+          // Primary fetch failed; fallback will be attempted below
+        }
+
+        // If no data (or error) for selected season, fall back to the prior year.
+        // Skip the fallback for the current season — it simply hasn't started yet.
+        if (!hasStandingsData(data) && selectedSeason !== String(SEASON_RANGE.END)) {
           const prevYear = String(parseInt(selectedSeason) - 1);
           const fallbackData = await teamsService.getTeamRegularSeasonStandings(prevYear);
           if (hasStandingsData(fallbackData)) {
@@ -279,7 +286,7 @@ function MLBStandings() {
       setSelectedSeason(String(SEASON_RANGE.END)); // Spring training defaults to current year
     } else if (type === 'postseason') {
       setSelectedLeague('Playoff');
-      setSelectedSeason(DEFAULT_SEASON);
+      setSelectedSeason(String(SEASON_RANGE.END - 1)); // Default to last completed postseason
     } else {
       setSelectedLeague('AL');
       setSelectedSeason(DEFAULT_SEASON);
@@ -427,6 +434,13 @@ function MLBStandings() {
             {standingsError && !standingsLoading && (
               <div className="standings-error">
                 <span>{standingsError}</span>
+              </div>
+            )}
+
+            {/* No data for current season (season hasn't started yet) */}
+            {!standingsLoading && !standingsError && !currentLeagueData && (
+              <div className="standings-error">
+                <span>No standings data available for the {selectedSeason} season yet.</span>
               </div>
             )}
 
