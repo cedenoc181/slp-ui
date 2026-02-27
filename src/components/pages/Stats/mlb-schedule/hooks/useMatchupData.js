@@ -32,6 +32,7 @@ export function useMatchupData() {
   const [homeBatting, setHomeBatting] = useState(null);
   const [awayPitching, setAwayPitching] = useState(null);
   const [homePitching, setHomePitching] = useState(null);
+  const [boxscore, setBoxscore] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -76,6 +77,7 @@ export function useMatchupData() {
           awayL10FallbackRes, homeL10FallbackRes,
           awayBattingRes, homeBattingRes,
           awayPitchingRes, homePitchingRes,
+          boxscoreRes,
         ] = await Promise.allSettled([
           gamesService.getTeamLast10(awayId, season, seasonType),
           gamesService.getTeamLast10(homeId, season, seasonType),
@@ -120,6 +122,9 @@ export function useMatchupData() {
             : Promise.resolve(null),
           needsTeamStats
             ? teamStatsService.getTeamPitchingStats(homeId, season, seasonType)
+            : Promise.resolve(null),
+          (isFinalGame || isLiveGame) && (gameData.game_pk ?? gameData.id)
+            ? gamesService.getBoxscore(gameData.game_pk ?? gameData.id)
             : Promise.resolve(null),
         ]);
 
@@ -185,6 +190,10 @@ export function useMatchupData() {
         setHomeBatting(homeBattingRes.status   === 'fulfilled' ? homeBattingRes.value   : null);
         setAwayPitching(awayPitchingRes.status === 'fulfilled' ? awayPitchingRes.value  : null);
         setHomePitching(homePitchingRes.status === 'fulfilled' ? homePitchingRes.value  : null);
+
+        // Boxscore (inning-by-inning)
+        const bsVal = boxscoreRes.status === 'fulfilled' ? boxscoreRes.value : null;
+        setBoxscore(bsVal?.innings?.length ? bsVal : null);
       } catch (err) {
         setError(err?.message || 'Failed to load matchup details.');
       } finally {
@@ -206,5 +215,6 @@ export function useMatchupData() {
     h2h, h2hBatters, h2hPitchers,
     awayBatting, homeBatting,
     awayPitching, homePitching,
+    boxscore,
   };
 }

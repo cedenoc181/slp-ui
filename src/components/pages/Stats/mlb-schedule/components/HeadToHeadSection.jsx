@@ -1,3 +1,5 @@
+import { useNavigate } from 'react-router-dom';
+
 function StatRow({ label, away, home, lowerIsBetter }) {
   const awayNum = parseFloat(away);
   const homeNum = parseFloat(home);
@@ -17,6 +19,7 @@ function StatRow({ label, away, home, lowerIsBetter }) {
 }
 
 export default function HeadToHeadSection({ game, awayAbbr, homeAbbr, h2h, h2hAwaySum, h2hHomeSum }) {
+  const navigate = useNavigate();
   return (
     <>
       {/* ── H2H Summary ──────────────────────────────────────────────────── */}
@@ -60,8 +63,8 @@ export default function HeadToHeadSection({ game, awayAbbr, homeAbbr, h2h, h2hAw
           <span></span>
           <span>{homeAbbr}</span>
         </div>
-        <StatRow label="Avg R/Game"  away={h2hAwaySum?.avg_runs_per_game?.toFixed(1) ?? '—'} home={h2hHomeSum?.avg_runs_per_game?.toFixed(1) ?? '—'} />
-        <StatRow label="Avg H/Game"  away={h2hAwaySum?.avg_hits_per_game?.toFixed(1) ?? '—'} home={h2hHomeSum?.avg_hits_per_game?.toFixed(1) ?? '—'} />
+        <StatRow label="Avg Runs/Game"  away={h2hAwaySum?.avg_runs_per_game?.toFixed(1) ?? '—'} home={h2hHomeSum?.avg_runs_per_game?.toFixed(1) ?? '—'} />
+        <StatRow label="Avg Hits/Game"  away={h2hAwaySum?.avg_hits_per_game?.toFixed(1) ?? '—'} home={h2hHomeSum?.avg_hits_per_game?.toFixed(1) ?? '—'} />
         <StatRow label="Errors"      away={h2hAwaySum?.errors ?? '—'}                         home={h2hHomeSum?.errors ?? '—'}                         lowerIsBetter />
         <StatRow label="LOB"         away={h2hAwaySum?.lob ?? '—'}                            home={h2hHomeSum?.lob ?? '—'}                            lowerIsBetter />
         <StatRow label="Biggest Win" away={h2hAwaySum?.largest_win_margin != null ? `+${h2hAwaySum.largest_win_margin}` : '—'} home={h2hHomeSum?.largest_win_margin != null ? `+${h2hHomeSum.largest_win_margin}` : '—'} />
@@ -116,8 +119,13 @@ export default function HeadToHeadSection({ game, awayAbbr, homeAbbr, h2h, h2hAw
                 const dateShort = g.date
                   ? new Date(g.date + 'T12:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
                   : '—';
+                const gamePk = g.game_pk ?? null;
                 return (
-                  <tr key={g.game_pk ?? idx}>
+                  <tr
+                    key={gamePk ?? idx}
+                    className={gamePk ? 'h2h-log-row-link' : ''}
+                    onClick={gamePk ? () => { navigate(`/mlb-schedule/${gamePk}`); window.scrollTo(0, 0); } : undefined}
+                  >
                     <td className="h2h-date">{dateShort}</td>
                     <td className="h2h-location">{siteLabel}</td>
                     <td className={`h2h-score${teamAWon  ? ' h2h-score-win' : ' h2h-score-loss'}`}>{tA.runs}</td>

@@ -681,6 +681,54 @@
 .box-row-winner .box-runs { color: #4caf50; }
 .box-error { color: #f44336; }
 
+/* Inning grid */
+.box-inning-scroll {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.box-inning-table {
+  min-width: max-content;
+}
+
+.box-th-inning {
+  min-width: 28px;
+  padding: 0.6rem 0.4rem !important;
+  color: #a0a0a0 !important;
+}
+
+.box-inning-cell {
+  padding: 0.6rem 0.4rem !important;
+  min-width: 28px;
+}
+
+.box-inning-score {
+  color: #ffffff;
+  font-weight: 700;
+}
+
+.box-inning-zero {
+  color: #444;
+}
+
+.box-th-sep {
+  width: 12px;
+  border-left: 1px solid rgba(255, 255, 255, 0.08) !important;
+  padding: 0 !important;
+  background: transparent;
+}
+
+.box-th-total {
+  min-width: 36px;
+  padding: 0.6rem 0.6rem !important;
+  color: #ffffff !important;
+}
+
+.box-total-cell {
+  padding: 0.6rem 0.6rem !important;
+  font-weight: 600;
+}
+
 /* ── Detail Grid ─────────────────────────────────────────────────────────── */
 .detail-grid {
   display: grid;
@@ -1372,6 +1420,9 @@ a.pitcher-name-lg:hover {
 .h2h-log-table tbody tr:hover td {
   background: rgba(255, 255, 255, 0.02);
 }
+
+.h2h-log-row-link { cursor: pointer; }
+.h2h-log-row-link:hover td { background: rgba(255, 255, 255, 0.05) !important; }
 
 .h2h-date {
   text-align: left !important;

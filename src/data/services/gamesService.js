@@ -136,6 +136,15 @@ class GamesService {
     if (limit) params.append('limit', limit);
     return await api.get(`/games/head-to-head/pitchers?${params.toString()}`);
   }
+
+  /**
+   * Get inning-by-inning box score for a specific game
+   * @param {number} gamePk - MLB game_pk identifier
+   * @returns {Promise<Object>} Box score with game context and per-inning runs, hits, and errors
+   */
+  async getBoxscore(gamePk) {
+    return await api.get(`/games/boxscore?game_pk=${gamePk}`);
+  }
 }
 
 const gamesService = new GamesService();

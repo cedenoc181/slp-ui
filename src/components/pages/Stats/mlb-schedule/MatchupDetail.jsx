@@ -24,6 +24,7 @@ export default function MatchupDetail() {
     h2h, h2hBatters, h2hPitchers,
     awayBatting, homeBatting,
     awayPitching, homePitching,
+    boxscore,
   } = useMatchupData();
 
   if (loading) {
@@ -81,12 +82,21 @@ export default function MatchupDetail() {
   const hasLast10 = awayLast10.length > 0 || homeLast10.length > 0 || awayLast10Summary != null || homeLast10Summary != null;
   const hasH2h    = h2h?.summary != null && Array.isArray(h2h?.games) && h2h.games.length > 0;
 
-  // H2H lineup data — filter to this specific game only, fall back to all H2H games
-  const currentGamePk     = game.game_pk ?? game.id;
-  const matchedBatterGame  = h2hBatters?.games?.find(g => (g.game_pk ?? g.id) === currentGamePk);
-  const matchedPitcherGame = h2hPitchers?.games?.find(g => (g.game_pk ?? g.id) === currentGamePk);
-  const batterGames        = matchedBatterGame  ? [matchedBatterGame]  : (h2hBatters?.games  ?? []);
-  const pitcherGames       = matchedPitcherGame ? [matchedPitcherGame] : (h2hPitchers?.games ?? []);
+  // H2H lineup data
+  // Live games: match strictly by game_pk + today's date; no fallback (cron refreshes every 15 min)
+  // Final games: match by game_pk; fall back to full H2H history if not found
+  const currentGamePk = game.game_pk ?? game.id;
+  const todayStr      = new Date().toISOString().slice(0, 10);
+
+  const matchedBatterGame  = h2hBatters?.games?.find(g =>
+    (g.game_pk ?? g.id) === currentGamePk && (!isLive || g.date === todayStr)
+  );
+  const matchedPitcherGame = h2hPitchers?.games?.find(g =>
+    (g.game_pk ?? g.id) === currentGamePk && (!isLive || g.date === todayStr)
+  );
+
+  const batterGames  = matchedBatterGame  ? [matchedBatterGame]  : isLive ? [] : (h2hBatters?.games  ?? []);
+  const pitcherGames = matchedPitcherGame ? [matchedPitcherGame] : isLive ? [] : (h2hPitchers?.games ?? []);
 
   const awayBatters  = aggregatePlayers(batterGames,  'team_a');
   const homeBatters  = aggregatePlayers(batterGames,  'team_b');
@@ -131,6 +141,7 @@ export default function MatchupDetail() {
         {(isFinal || isLive) && game.home_runs_score != null && (
           <BoxScoreCard
             game={game}
+            boxscore={boxscore}
             awayAbbr={awayAbbr} homeAbbr={homeAbbr}
             awayWon={awayWon}   homeWon={homeWon}
           />

@@ -54,7 +54,9 @@ function minIdxStarters(arr, key) {
 export default function LineupCard({ abbr, batters, pitchers, season }) {
   const [tab, setTab] = useState('batters');
 
-  const sortedBatters = [...batters].sort((a, b) => (b.plate_appearances ?? 0) - (a.plate_appearances ?? 0));
+  const sortedBatters = [...batters]
+    .filter(p => (p.plate_appearances ?? 0) > 0)
+    .sort((a, b) => (b.plate_appearances ?? 0) - (a.plate_appearances ?? 0));
   const sortedPitchers = [...pitchers]
     .sort((a, b) => (b.innings_pitched ?? 0) - (a.innings_pitched ?? 0))
     .sort((a, b) => (b.is_starter ? 1 : 0) - (a.is_starter ? 1 : 0));
