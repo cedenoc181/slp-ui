@@ -1053,6 +1053,16 @@ a.pitcher-name-lg:hover {
   margin: 0;
 }
 
+.form-team-link {
+  color: inherit;
+  text-decoration: none;
+}
+
+.form-team-link:hover {
+  color: #64b5f6;
+  text-decoration: underline;
+}
+
 .form-record {
   font-size: 1.35rem;
   font-weight: 800;

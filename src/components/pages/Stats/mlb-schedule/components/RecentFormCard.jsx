@@ -9,6 +9,7 @@ function FormDot({ result }) {
 
 export default function RecentFormCard({
   awayAbbr, homeAbbr,
+  awayUrlName, homeUrlName,
   awayGames, homeGames,
   awayForm, homeForm,
   awayWins, awayLosses,
@@ -30,7 +31,11 @@ export default function RecentFormCard({
         {/* Win-loss dots */}
         <div className="form-section">
           <div className="form-col">
-            <p className="form-team-label">{awayAbbr}</p>
+            <p className="form-team-label">
+              {awayUrlName
+                ? <Link to={`/team-analytics/${awayUrlName}`} className="form-team-link" onClick={() => window.scrollTo(0,0)}>{awayAbbr}</Link>
+                : awayAbbr}
+            </p>
             <p className="form-record">{awayWins}-{awayLosses}</p>
             <div className="form-track">
               {awayForm.map((r, i) => <FormDot key={i} result={r} />)}
@@ -38,7 +43,11 @@ export default function RecentFormCard({
           </div>
           <div className="form-divider" />
           <div className="form-col form-col-right">
-            <p className="form-team-label">{homeAbbr}</p>
+            <p className="form-team-label">
+              {homeUrlName
+                ? <Link to={`/team-analytics/${homeUrlName}`} className="form-team-link" onClick={() => window.scrollTo(0,0)}>{homeAbbr}</Link>
+                : homeAbbr}
+            </p>
             <p className="form-record">{homeWins}-{homeLosses}</p>
             <div className="form-track">
               {homeForm.map((r, i) => <FormDot key={i} result={r} />)}

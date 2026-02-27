@@ -161,11 +161,12 @@ export default function MatchupDetail() {
 
           {hasLast10 && (
             <RecentFormCard
-              awayAbbr={awayAbbr}     homeAbbr={homeAbbr}
-              awayGames={awayGames}   homeGames={homeGames}
-              awayForm={awayForm}     homeForm={homeForm}
-              awayWins={awayWins}     awayLosses={awayLosses}
-              homeWins={homeWins}     homeLosses={homeLosses}
+              awayAbbr={awayAbbr}         homeAbbr={homeAbbr}
+              awayUrlName={awayUrlName}   homeUrlName={homeUrlName}
+              awayGames={awayGames}       homeGames={homeGames}
+              awayForm={awayForm}         homeForm={homeForm}
+              awayWins={awayWins}         awayLosses={awayLosses}
+              homeWins={homeWins}         homeLosses={homeLosses}
               awayLast10Summary={awayLast10Summary} homeLast10Summary={homeLast10Summary}
             />
           )}
