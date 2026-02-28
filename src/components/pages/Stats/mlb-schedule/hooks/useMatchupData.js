@@ -66,6 +66,7 @@ export function useMatchupData() {
         const isLiveGame  = gameStatusLower.includes('progress') || gameStatusLower === 'live' || gameStatusLower.includes('inning');
         const needsTeamStats = !isFinalGame && !isLiveGame;
 
+
         const [
           awayL10Res, homeL10Res,
           awaySPRes, homeSPRes,
@@ -185,11 +186,16 @@ export function useMatchupData() {
         setH2hBatters(h2hBattersRes.status   === 'fulfilled' ? h2hBattersRes.value   : null);
         setH2hPitchers(h2hPitchersRes.status === 'fulfilled' ? h2hPitchersRes.value  : null);
 
-        // Team season stats (batting / pitching)
-        setAwayBatting(awayBattingRes.status   === 'fulfilled' ? awayBattingRes.value   : null);
-        setHomeBatting(homeBattingRes.status   === 'fulfilled' ? homeBattingRes.value   : null);
-        setAwayPitching(awayPitchingRes.status === 'fulfilled' ? awayPitchingRes.value  : null);
-        setHomePitching(homePitchingRes.status === 'fulfilled' ? homePitchingRes.value  : null);
+        // Team season stats (batting / pitching) — API returns an array; extract first element
+        const unwrap = res => {
+          if (res.status !== 'fulfilled') return null;
+          const val = res.value;
+          return Array.isArray(val) ? (val[0] ?? null) : (val ?? null);
+        };
+        setAwayBatting(unwrap(awayBattingRes));
+        setHomeBatting(unwrap(homeBattingRes));
+        setAwayPitching(unwrap(awayPitchingRes));
+        setHomePitching(unwrap(homePitchingRes));
 
         // Boxscore (inning-by-inning)
         const bsVal = boxscoreRes.status === 'fulfilled' ? boxscoreRes.value : null;

@@ -754,6 +754,9 @@
 }
 
 .card-title {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
   font-size: 0.72rem;
   font-weight: 700;
   color: #ffffff;
@@ -762,6 +765,13 @@
   margin: 0 0 1rem;
   padding-bottom: 0.6rem;
   border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.card-title-logo {
+  width: 22px;
+  height: 22px;
+  object-fit: contain;
+  flex-shrink: 0;
 }
 
 /* ── Pitcher Matchup ─────────────────────────────────────────────────────── */

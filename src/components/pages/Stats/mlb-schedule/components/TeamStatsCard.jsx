@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { fmt } from '../utils';
+import { fmt, logoUrl } from '../utils';
 
 const BATTING_ROWS = [
   { label: 'AVG',  key: 'avg',              decimals: 3 },
@@ -8,7 +8,7 @@ const BATTING_ROWS = [
   { label: 'OPS',  key: 'ops',              decimals: 3 },
   { label: 'R',    key: 'runs' },
   { label: 'H',    key: 'hits' },
-  { label: 'HR',   key: 'home_runs' },
+  { label: 'HR',   key: 'homeruns' },
   { label: 'RBI',  key: 'rbis' },
   { label: 'SB',   key: 'stolen_bases' },
   { label: 'BB',   key: 'walks' },
@@ -24,10 +24,10 @@ const PITCHING_ROWS = [
   { label: 'IP',   key: 'innings_pitched',   decimals: 1 },
   { label: 'K',    key: 'strikeouts' },
   { label: 'BB',   key: 'walks' },
-  { label: 'HR',   key: 'home_runs_allowed' },
+  { label: 'HR Allowed',   key: 'home_runs' },
 ];
 
-export default function TeamStatsCard({ abbr, batting, pitching }) {
+export default function TeamStatsCard({ abbr, mlbId, batting, pitching }) {
   const [tab, setTab] = useState('batting');
   const stats = tab === 'batting' ? batting : pitching;
   const rows  = tab === 'batting' ? BATTING_ROWS : PITCHING_ROWS;
@@ -35,7 +35,10 @@ export default function TeamStatsCard({ abbr, batting, pitching }) {
   return (
     <div className="detail-card team-stats-card">
       <div className="lineup-card-header">
-        <h3 className="card-title">{abbr} Stats</h3>
+        <h3 className="card-title">
+          {mlbId && <img src={logoUrl(mlbId)} alt={abbr} className="card-title-logo" />}
+          {abbr} Stats
+        </h3>
         <div className="lineup-toggle">
           <button className={`lineup-tab${tab === 'batting'  ? ' active' : ''}`} onClick={() => setTab('batting')}>Batting</button>
           <button className={`lineup-tab${tab === 'pitching' ? ' active' : ''}`} onClick={() => setTab('pitching')}>Pitching</button>
