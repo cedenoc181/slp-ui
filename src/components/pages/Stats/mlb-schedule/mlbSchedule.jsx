@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import scheduleService from '../../../../data/services/scheduleService';
+import gamesService from '../../../../data/services/gamesService';
 import { getTeamById } from '../../../../data/constants/apiConstants';
 import '../../../../styles/stats-page-styling/mlb-schedule.css';
 
@@ -43,19 +44,32 @@ function formatPitcherName(fullName) {
   return `${firstInitial}. ${lastName}`;
 }
 
+// Derive current inning from boxscore innings array
+function getCurrentInning(boxscore) {
+  if (!boxscore?.innings?.length) return null;
+  const last = boxscore.innings[boxscore.innings.length - 1];
+  const num  = last.inning ?? boxscore.innings.length;
+  const half = (last.home_runs > 0) ? 'Bot' : 'Top';
+  return { num, half };
+}
+
 // ─── Matchup Row ─────────────────────────────────────────────────────────────
-function MatchupRow({ game, onClick, showDate }) {
+function MatchupRow({ game, onClick, showDate, boxscore }) {
   const awayMlbId = getTeamMlbId(game.away_team_id);
   const homeMlbId = getTeamMlbId(game.home_team_id);
 
   const statusLower = game.status?.toLowerCase() || '';
-  const isFinal = statusLower === 'final' || statusLower === 'game over' || statusLower === 'completed';
+  const isFinal = statusLower === 'final' || statusLower === 'game over' || statusLower === 'completed' || statusLower === 'completed early';
   const isLive = statusLower.includes('progress') || statusLower === 'live' || statusLower.includes('inning');
+  const isScheduled = !isFinal && !isLive;
 
+  const inning = isLive ? getCurrentInning(boxscore) : null;
   const statusLabel = isFinal
     ? `F: ${game.away_runs_score} - ${game.home_runs_score}`
     : isLive
-      ? `Live: ${game.away_runs_score ?? 0} - ${game.home_runs_score ?? 0}`
+      ? inning
+        ? `${inning.half} ${inning.num} · ${game.away_runs_score ?? 0}-${game.home_runs_score ?? 0}`
+        : `Live · ${game.away_runs_score ?? 0}-${game.home_runs_score ?? 0}`
       : game.game_time || 'TBD';
 
   const hasPitchers = game.away_sp_name || game.home_sp_name;
@@ -86,6 +100,9 @@ function MatchupRow({ game, onClick, showDate }) {
       {/* Center: Status / Time */}
       <div className="matchup-center">
         <div className={`matchup-status ${isLive ? 'status-live' : ''}`}>{statusLabel}</div>
+        {isFinal && statusLower === 'completed early' && (
+          <span className="hero-badge-sub">Completed Early</span>
+        )}
         <div className="matchup-vs">@</div>
         {showDate && <div className="matchup-venue">{formatGameDate(game.date)}</div>}
         {game.season_type === 'spring' && (
@@ -112,13 +129,13 @@ function MatchupRow({ game, onClick, showDate }) {
       </div>
 
       {/* Pitchers */}
-      {hasPitchers && (
+      {(hasPitchers || isScheduled) && (
         <div className="matchup-meta">
           <div className="matchup-pitchers">
             <span className="pitcher-label">SP:</span>
-            <span className="pitcher-name">{formatPitcherName(game.away_sp_name)}</span>
+            <span className="pitcher-name">{game.away_sp_name ? formatPitcherName(game.away_sp_name) : 'TBD'}</span>
             <span className="pitcher-sep">vs</span>
-            <span className="pitcher-name">{formatPitcherName(game.home_sp_name)}</span>
+            <span className="pitcher-name">{game.home_sp_name ? formatPitcherName(game.home_sp_name) : 'TBD'}</span>
           </div>
         </div>
       )}
@@ -253,6 +270,7 @@ function MLBSchedule() {
   const [games, setGames] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [liveBoxscores, setLiveBoxscores] = useState({});
 
   const fetchGames = useCallback(async (tab) => {
     setLoading(true);
@@ -284,6 +302,29 @@ function MLBSchedule() {
   useEffect(() => {
     fetchGames(activeTab);
   }, [activeTab, fetchGames]);
+
+  // Fetch boxscores for live games whenever today's game list updates
+  useEffect(() => {
+    if (activeTab !== 'today') return;
+    const liveGames = games.filter(g => {
+      const s = (g.status || '').toLowerCase();
+      return s.includes('progress') || s === 'live' || s.includes('inning');
+    });
+    if (liveGames.length === 0) { setLiveBoxscores({}); return; }
+
+    Promise.allSettled(
+      liveGames.map(g => gamesService.getBoxscore(g.game_pk ?? g.id))
+    ).then(results => {
+      const map = {};
+      liveGames.forEach((g, i) => {
+        const res = results[i];
+        if (res.status === 'fulfilled' && res.value?.innings?.length) {
+          map[g.game_pk ?? g.id] = res.value;
+        }
+      });
+      setLiveBoxscores(map);
+    });
+  }, [games, activeTab]);
 
   const handleMatchupClick = (gameId) => {
     const selectedGame = games.find(g => (g.id ?? g.game_pk) === gameId);
@@ -366,6 +407,7 @@ function MLBSchedule() {
                       game={game}
                       onClick={handleMatchupClick}
                       showDate={showDate}
+                      boxscore={liveBoxscores[game.game_pk ?? game.id] ?? null}
                     />
                   ))}
                 </div>

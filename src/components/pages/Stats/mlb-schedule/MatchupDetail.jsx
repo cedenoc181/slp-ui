@@ -68,7 +68,7 @@ export default function MatchupDetail() {
   const season      = game.season || DEFAULT_SEASON;
 
   const statusLower = (game.status || '').toLowerCase();
-  const isFinal     = statusLower === 'final' || statusLower === 'game over' || statusLower === 'completed';
+  const isFinal     = statusLower === 'final' || statusLower === 'game over' || statusLower === 'completed' || statusLower === 'completed early';
   const isLive      = statusLower.includes('progress') || statusLower === 'live' || statusLower.includes('inning');
   const isScheduled = !isFinal && !isLive;
 
@@ -164,10 +164,12 @@ export default function MatchupDetail() {
             />
           )}
 
-          {/* Away: TeamStatsCard (pre-game or other scheduled), LineupCard (final/live) */}
+          {/* Away: TeamStatsCard (scheduled/pre-game), LineupCard (live/final), TeamStatsCard fallback (no H2H) */}
           {isScheduled
             ? (hasTeamStats && <TeamStatsCard abbr={awayAbbr} mlbId={awayMlbId} batting={awayBatting} pitching={awayPitching} />)
-            : (hasLineup    && <LineupCard    abbr={awayAbbr} mlbId={awayMlbId} batters={awayBatters}  pitchers={awayPitchers} season={season} />)
+            : hasLineup
+              ? <LineupCard    abbr={awayAbbr} mlbId={awayMlbId} batters={awayBatters} pitchers={awayPitchers} season={season} />
+              : (hasTeamStats && <TeamStatsCard abbr={awayAbbr} mlbId={awayMlbId} batting={awayBatting} pitching={awayPitching} />)
           }
 
           {hasLast10 && (
@@ -182,10 +184,12 @@ export default function MatchupDetail() {
             />
           )}
 
-          {/* Home: TeamStatsCard (pre-game or other scheduled), LineupCard (final/live) */}
+          {/* Home: TeamStatsCard (scheduled/pre-game), LineupCard (live/final), TeamStatsCard fallback (no H2H) */}
           {isScheduled
             ? (hasTeamStats && <TeamStatsCard abbr={homeAbbr} mlbId={homeMlbId} batting={homeBatting} pitching={homePitching} />)
-            : (hasLineup    && <LineupCard    abbr={homeAbbr} mlbId={homeMlbId} batters={homeBatters}  pitchers={homePitchers} season={season} />)
+            : hasLineup
+              ? <LineupCard    abbr={homeAbbr} mlbId={homeMlbId} batters={homeBatters} pitchers={homePitchers} season={season} />
+              : (hasTeamStats && <TeamStatsCard abbr={homeAbbr} mlbId={homeMlbId} batting={homeBatting} pitching={homePitching} />)
           }
 
           {hasH2h && (

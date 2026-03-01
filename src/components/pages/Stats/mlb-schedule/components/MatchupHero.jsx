@@ -10,11 +10,14 @@ export default function MatchupHero({
   isFinal, isLive, isScheduled,
   awayWon, homeWon,
 }) {
+  const isCompletedEarly = (game.status || '').toLowerCase() === 'completed early';
+
   return (
     <div className={`detail-hero${isFinal ? ' hero-final' : isLive ? ' hero-live' : ''}`}>
       {/* Status strip */}
       <div className="hero-status-strip">
         {isFinal     && <span className="hero-badge badge-final">FINAL</span>}
+        {isFinal && isCompletedEarly && <span className="hero-badge-sub">Completed Early</span>}
         {isLive      && <span className="hero-badge badge-live">● LIVE</span>}
         {isScheduled && <span className="hero-badge badge-scheduled">{game.game_time || 'TBD'}</span>}
         {game.date   && <span className="hero-date">{fmtDate(game.date)}</span>}

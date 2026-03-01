@@ -62,9 +62,9 @@ export function useMatchupData() {
         const needsL10Fallback = seasonType === 'S';
 
         const gameStatusLower = (gameData.status || '').toLowerCase();
-        const isFinalGame = gameStatusLower === 'final' || gameStatusLower === 'game over' || gameStatusLower === 'completed';
+        const isFinalGame = gameStatusLower === 'final' || gameStatusLower === 'game over' || gameStatusLower === 'completed' || gameStatusLower === 'completed early';
         const isLiveGame  = gameStatusLower.includes('progress') || gameStatusLower === 'live' || gameStatusLower.includes('inning');
-        const needsTeamStats = !isFinalGame && !isLiveGame;
+        const needsTeamStats = true; // always fetch — fallback for live/final when no H2H lineup
 
 
         const [

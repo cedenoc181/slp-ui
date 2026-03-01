@@ -103,6 +103,19 @@
   padding: 1rem 1.25rem;
   cursor: pointer;
   transition: background 0.15s ease, border-color 0.15s ease, transform 0.1s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.matchup-row::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background:
+    linear-gradient(to right,  rgba(200, 200, 200, 0.06) 0%, transparent 22%),
+    linear-gradient(to left,   rgba(200, 200, 200, 0.06) 0%, transparent 22%);
+  pointer-events: none;
 }
 
 .matchup-row:hover {
@@ -506,6 +519,17 @@
   background: rgba(255, 255, 255, 0.06);
   color: #a0a0a0;
   border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.hero-badge-sub {
+  font-size: 0.62rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  color: #f5a623;
+  border: 1px solid rgba(245, 166, 35, 0.35);
+  background: rgba(245, 166, 35, 0.1);
+  border-radius: 20px;
+  padding: 0.18rem 0.6rem;
 }
 
 .badge-live {
