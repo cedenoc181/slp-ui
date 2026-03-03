@@ -6,10 +6,24 @@ import { TEAM_METADATA, SEASONS, DEFAULT_SEASON, SEASON_RANGE } from '../../../.
 import MLBStandingsPostseason from './mlbStandingsPostseason';
 import MLBStandingsSpringTraining from './mlbStandingsSpringTraning';
 
+// Derive the correct initial season type + league from the calendar date.
+// Spring Training runs Feb 15 – Mar 31; everything else defaults to regular season.
+function getInitialStandingsState() {
+  const now = new Date();
+  const month = now.getMonth() + 1; // 1-based
+  const day = now.getDate();
+  if ((month === 2 && day >= 15) || month === 3) {
+    return { seasonType: 'spring', league: 'Cactus' };
+  }
+  return { seasonType: 'regular', league: 'AL' };
+}
+
+const initialStandingsState = getInitialStandingsState();
+
 function MLBStandings() {
-  const [selectedLeague, setSelectedLeague] = useState('AL'); // 'AL' or 'NL' for regular, 'Cactus' or 'Grapefruit' for spring
+  const [selectedLeague, setSelectedLeague] = useState(initialStandingsState.league);
   const [selectedSeason, setSelectedSeason] = useState(DEFAULT_SEASON);
-  const [seasonType, setSeasonType] = useState('regular'); // 'regular', 'postseason', 'spring'
+  const [seasonType, setSeasonType] = useState(initialStandingsState.seasonType);
   const [standingsData, setStandingsData] = useState(null);
   const [standingsLoading, setStandingsLoading] = useState(false);
   const [standingsError, setStandingsError] = useState(null);

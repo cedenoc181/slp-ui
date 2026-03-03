@@ -47,6 +47,7 @@ import {
   checkIsTwoWay,
   getInitialSeason,
   getInitialViewMode,
+  getCurrentSeasonType,
   getAvailableSeasons,
   getChartMetricOptions,
   getDefaultChartMetric,
@@ -124,7 +125,8 @@ function PlayerProfileStats() {
   
   // ========== SEASON STATE ==========
   const [selectedSeason, setSelectedSeason] = useState(() => getInitialSeason(searchParams));
-  
+  const [selectedSeasonType, setSelectedSeasonType] = useState(() => getCurrentSeasonType());
+
   // ========== UI STATE ==========
   const [activeStatsTab, setActiveStatsTab] = useState('current');
   const [activeSplitsTab, setActiveSplitsTab] = useState('handedness');
@@ -172,7 +174,7 @@ function PlayerProfileStats() {
     teamHistory,
     injuryHistory,
     fetchCareerData,
-  } = usePlayerProfile(effectiveMlbId, selectedSeason, isPitcher, isTwoWay);
+  } = usePlayerProfile(effectiveMlbId, selectedSeason, isPitcher, isTwoWay, selectedSeasonType);
 
   // Sync playerInfo to local state for type checking
   useEffect(() => {
@@ -401,6 +403,20 @@ function PlayerProfileStats() {
     }, 300);
   }, [searchParams, setSearchParams]);
 
+  const handleSeasonAndTypeChange = useCallback((newSeason, newType) => {
+    if (newSeason === selectedSeason) {
+      // Same year — just swap the season type, no transition overlay needed
+      if (newType !== selectedSeasonType) {
+        setSelectedSeasonType(newType);
+        setActiveStatsTab('current');
+      }
+    } else {
+      // Different year — run the full transition and update both
+      setSelectedSeasonType(newType);
+      handleSeasonChange(newSeason);
+    }
+  }, [selectedSeason, selectedSeasonType, handleSeasonChange]);
+
   const handleCareerTabClick = useCallback(() => {
     // Debounce rapid clicks to prevent multiple fetches
     const now = Date.now();
@@ -545,13 +561,14 @@ function PlayerProfileStats() {
 
           <SeasonStatsSection
             selectedSeason={selectedSeason}
+            selectedSeasonType={selectedSeasonType}
+            handleSeasonAndTypeChange={handleSeasonAndTypeChange}
             activeStatsTab={activeStatsTab}
             setActiveStatsTab={setActiveStatsTab}
             seasonDropdownOpen={seasonDropdownOpen}
             setSeasonDropdownOpen={setSeasonDropdownOpen}
             seasonDropdownRef={seasonDropdownRef}
             availableSeasons={availableSeasons}
-            handleSeasonChange={handleSeasonChange}
             handleCareerTabClick={handleCareerTabClick}
             statsLoading={statsLoading}
             careerTotalsLoading={careerTotalsLoading}

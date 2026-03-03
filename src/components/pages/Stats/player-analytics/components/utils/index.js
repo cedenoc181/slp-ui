@@ -22,6 +22,7 @@ export {
   getInitialSeason,
   getInitialViewMode,
   getAvailableSeasons,
+  getCurrentSeasonType,
 } from './playerProfileUtils';
 
 // Chart data utilities

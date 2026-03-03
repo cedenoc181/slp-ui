@@ -169,6 +169,20 @@ export const getPlayerPosition = (playerInfo) => {
 // ============================================================================
 
 /**
+ * Determine the current MLB season type based on the calendar date.
+ * Spring Training: Feb 15 – Mar 31
+ * Regular Season: Apr 1 – Sep 30 (and any other date)
+ * @returns {'S'|'R'} - Season type code
+ */
+export const getCurrentSeasonType = () => {
+  const now = new Date();
+  const month = now.getMonth() + 1; // 1-based
+  const day = now.getDate();
+  if ((month === 2 && day >= 15) || month === 3) return 'S';
+  return 'R';
+};
+
+/**
  * Get the default season based on current date
  * MLB season starts April 1st - before that, default to previous year
  * @returns {string} - Default season year as string

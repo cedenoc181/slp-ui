@@ -71,8 +71,8 @@ function BatterStats({ teamId = 'ALL', teamDbId = null, season = DEFAULT_SEASON,
     <section className="batter-stats-section container">
       {/* Header */}
       <div className="batter-header">
-        <p className="eyebrow">{isTeamSelected ? 'Team Batting' : 'MLB Batting'}</p>
-        <h2>{teamName} {isTeamSelected ? 'Batters' : 'Batting Leaders'}</h2>
+        <p className="eyebrow">{isTeamSelected ? 'Team' : 'MLB'}</p>
+        <h2> {isTeamSelected ? `${teamName} Batting Leaders` : 'MLB Batting Leaders'}</h2>
       </div>
 
       {/* Leader Cards Grid */}

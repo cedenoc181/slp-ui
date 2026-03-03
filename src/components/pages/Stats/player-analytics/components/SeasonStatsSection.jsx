@@ -52,7 +52,7 @@ import React, { useState, useEffect, useRef } from 'react';
  * @param {Function} props.setSeasonDropdownOpen - Callback to toggle dropdown
  * @param {React.RefObject} props.seasonDropdownRef - Ref for click-outside handling
  * @param {string[]} props.availableSeasons - List of seasons with data
- * @param {Function} props.handleSeasonChange - Callback when season is selected
+ * @param {Function} props.handleSeasonAndTypeChange - Callback when season+type combo is selected
  * @param {Function} props.handleCareerTabClick - Callback when Career tab is clicked
  * @param {boolean} props.statsLoading - Loading state for stats
  * @param {boolean} props.careerTotalsLoading - Loading state for career totals
@@ -66,15 +66,21 @@ import React, { useState, useEffect, useRef } from 'react';
  * @param {Function} props.getMaxValue - Calculates max value for scaling
  * @param {Function} props.formatChartValue - Formats values for display
  */
+const DISPLAY_TYPES = [
+  { key: 'R', label: 'Regular' },
+  { key: 'S', label: 'Spring' },
+];
+
 const SeasonStatsSection = React.memo(function SeasonStatsSection({
   selectedSeason,
+  selectedSeasonType = 'R',
+  handleSeasonAndTypeChange,
   activeStatsTab,
   setActiveStatsTab,
   seasonDropdownOpen,
   setSeasonDropdownOpen,
   seasonDropdownRef,
   availableSeasons,
-  handleSeasonChange,
   handleCareerTabClick,
   statsLoading,
   careerTotalsLoading,
@@ -152,6 +158,15 @@ const SeasonStatsSection = React.memo(function SeasonStatsSection({
     return () => clearTimeout(barTimer);
   }, [renderStage, visibleBars, getChartData, activeStatsTab]);
 
+  const currentTypeLabel = selectedSeasonType === 'S' ? 'Spring' : 'Regular';
+  const currentLabel = `${selectedSeason} ${currentTypeLabel}`;
+
+  // Build all combined options (year × type), excluding the currently selected one
+  const allOptions = availableSeasons.flatMap(year =>
+    DISPLAY_TYPES.map(({ key, label }) => ({ year, key, label: `${year} ${label}` }))
+  );
+  const dropdownOptions = allOptions.filter(o => !(o.year === selectedSeason && o.key === selectedSeasonType));
+
   return (
     <section className="pps-section">
       {/* ========== SECTION HEADER ========== */}
@@ -159,10 +174,10 @@ const SeasonStatsSection = React.memo(function SeasonStatsSection({
         <div>
           <h2 className="pps-section-title">Season Statistics</h2>
           <p className="pps-section-subtitle">
-            {activeStatsTab === 'career' ? 'Career performance' : `${selectedSeason} season performance`}
+            {activeStatsTab === 'career' ? 'Career performance' : `${currentLabel} performance`}
           </p>
         </div>
-        
+
         {/* ========== SEASON/CAREER TOGGLE ========== */}
         <div className="pps-tab-toggle" ref={seasonDropdownRef}>
           {/* Season Dropdown Button */}
@@ -170,28 +185,28 @@ const SeasonStatsSection = React.memo(function SeasonStatsSection({
             className={`pps-tab-btn pps-dropdown-btn ${activeStatsTab === 'current' ? 'active' : ''}`}
             onClick={() => setSeasonDropdownOpen(!seasonDropdownOpen)}
           >
-            {selectedSeason}
+            {currentLabel}
             <span className={`pps-dropdown-arrow ${seasonDropdownOpen ? 'open' : ''}`}>▼</span>
           </button>
-          
-          {/* Season Dropdown Menu - Shows all available seasons except current */}
+
+          {/* Combined Season + Type Dropdown Menu */}
           {seasonDropdownOpen && (
             <div className="pps-dropdown-menu">
-              {availableSeasons.filter(season => season !== selectedSeason).map((season) => (
+              {dropdownOptions.map(({ year, key, label }) => (
                 <button
-                  key={season}
+                  key={`${year}-${key}`}
                   className="pps-dropdown-item"
                   onClick={() => {
                     setSeasonDropdownOpen(false);
-                    handleSeasonChange(season); // This handles transition loading and sets tab
+                    handleSeasonAndTypeChange(year, key);
                   }}
                 >
-                  {season}
+                  {label}
                 </button>
               ))}
             </div>
           )}
-          
+
           {/* Career Tab Button - disabled while loading */}
           <button
             className={`pps-tab-btn ${activeStatsTab === 'career' ? 'active' : ''} ${careerTotalsLoading ? 'loading' : ''}`}
@@ -357,25 +372,24 @@ const SeasonStatsSection = React.memo(function SeasonStatsSection({
               ) : displayStats ? (
                 <div className="pps-stats-table">
                   <div className="pps-stat-row header">
-                    <span>SB</span>
-                    <span>BB</span>
-                    <span>SO</span>
+                    <span>OBP</span>
+                    <span>SLG</span>
+                    <span>BABIP</span>
                     <span>2B</span>
                     <span>3B</span>
-                    <span>TB</span>
+                    <span>BB</span>
+                    <span>SO</span>
+                    <span>SB</span>
                   </div>
                   <div className="pps-stat-row values">
-                    {/* SB - Stolen bases for speed metric */}
-                    <span>{displayStats.sb || displayStats.stolen_bases || '-'}</span>
-                    {/* BB - Walks (plate discipline) */}
-                    <span>{displayStats.bb || displayStats.walks || displayStats.base_on_balls || '-'}</span>
-                    {/* SO - Strikeouts */}
-                    <span>{displayStats.so || displayStats.strikeouts || displayStats.strike_outs || '-'}</span>
-                    {/* Extra base hits */}
-                    <span>{displayStats.doubles || displayStats['2b'] || '-'}</span>
-                    <span>{displayStats.triples || displayStats['3b'] || '-'}</span>
-                    {/* TB - Total bases (power indicator) */}
-                    <span>{displayStats.tb || displayStats.total_bases || '-'}</span>
+                    <span className="pps-highlight">{displayStats.obp?.toFixed(3)?.replace(/^0/, '') || '-'}</span>
+                    <span className="pps-highlight">{displayStats.slg?.toFixed(3)?.replace(/^0/, '') || '-'}</span>
+                    <span>{displayStats.babip?.toFixed(3)?.replace(/^0/, '') || '-'}</span>
+                    <span>{displayStats.doubles ?? '-'}</span>
+                    <span>{displayStats.triples ?? '-'}</span>
+                    <span>{displayStats.walks ?? '-'}</span>
+                    <span>{displayStats.strikeouts ?? '-'}</span>
+                    <span>{displayStats.stolen_bases ?? '-'}</span>
                   </div>
                 </div>
               ) : (
