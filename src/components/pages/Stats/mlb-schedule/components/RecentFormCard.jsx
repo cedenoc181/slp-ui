@@ -7,6 +7,20 @@ function FormDot({ result }) {
   return                     <span className="form-dot unknown" aria-label="Unknown" />;
 }
 
+// Compute streak from the form array (most-recent-first).
+// Returns e.g. "W3", "L2", or null if no data.
+function calcStreak(form) {
+  if (!form || form.length === 0) return null;
+  const latest = form[0];
+  if (latest !== 'W' && latest !== 'L') return null;
+  let count = 1;
+  for (let i = 1; i < form.length; i++) {
+    if (form[i] === latest) count++;
+    else break;
+  }
+  return `${latest}${count}`;
+}
+
 export default function RecentFormCard({
   awayAbbr, homeAbbr,
   awayUrlName, homeUrlName,
@@ -14,15 +28,14 @@ export default function RecentFormCard({
   awayForm, homeForm,
   awayWins, awayLosses,
   homeWins, homeLosses,
-  awayLast10Summary, homeLast10Summary,
 }) {
   return (
     <div className="detail-card">
       <h3 className="card-title">
         Recent Form — Last 10
-        {awayLast10Summary?.streak_code && homeLast10Summary?.streak_code && (
+        {(calcStreak(awayForm) || calcStreak(homeForm)) && (
           <span className="card-title-sub">
-            {' '}· Streak: {awayAbbr} {awayLast10Summary.streak_code} / {homeAbbr} {homeLast10Summary.streak_code}
+            {' '}· Streak: {awayAbbr} {calcStreak(awayForm) ?? '—'} / {homeAbbr} {calcStreak(homeForm) ?? '—'}
           </span>
         )}
       </h3>

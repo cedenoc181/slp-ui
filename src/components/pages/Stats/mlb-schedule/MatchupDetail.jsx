@@ -180,7 +180,6 @@ export default function MatchupDetail() {
               awayForm={awayForm}         homeForm={homeForm}
               awayWins={awayWins}         awayLosses={awayLosses}
               homeWins={homeWins}         homeLosses={homeLosses}
-              awayLast10Summary={awayLast10Summary} homeLast10Summary={homeLast10Summary}
             />
           )}
 

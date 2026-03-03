@@ -71,6 +71,7 @@ import './styles/home-page-styling/footer.css';
 
 // Stats-page-styles//
 import './styles/stats-page-styling/mlb-schedule.css';
+import './styles/stats-page-styling/matchup-detail.css';
 import './styles/stats-page-styling/team-analytics.css';
 import './styles/stats-page-styling/mlb-standings.css';
 import './styles/stats-page-styling/player-analytics.css';
