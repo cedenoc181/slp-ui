@@ -279,6 +279,10 @@ function MLBSchedule() {
       let data;
       if (tab === 'today') {
         data = await scheduleService.getTodayGames();
+        // Always pin "Today" to the current calendar date — prevent the backend
+        // from rolling over to tomorrow's games after today's games finish.
+        const todayStr = new Date().toISOString().slice(0, 10);
+        data = Array.isArray(data) ? data.filter(g => (g.date ?? '').slice(0, 10) === todayStr) : [];
       } else if (tab === 'upcoming') {
         data = await scheduleService.getUpcomingGames({ limit: 50 });
         const todayStr = new Date().toISOString().slice(0, 10);
@@ -342,8 +346,6 @@ function MLBSchedule() {
     prior:    'No recent completed games found.',
   }[activeTab];
 
-  const showDate = activeTab !== 'today';
-
   return (
     <div className="mlb-schedule-page">
       {/* Header */}
@@ -399,17 +401,25 @@ function MLBSchedule() {
               <p className="game-count">{games.length} game{games.length !== 1 ? 's' : ''}</p>
               {activeTab === 'prior' ? (
                 <PriorResults games={games} onClick={handleMatchupClick} />
+              ) : activeTab === 'upcoming' ? (
+                <GroupedGamesList games={games} onClick={handleMatchupClick} />
               ) : (
+                // Today tab — single date group with header
                 <div className="schedule-list">
-                  {games.map((game) => (
-                    <MatchupRow
-                      key={game.id ?? game.game_pk}
-                      game={game}
-                      onClick={handleMatchupClick}
-                      showDate={showDate}
-                      boxscore={liveBoxscores[game.game_pk ?? game.id] ?? null}
-                    />
-                  ))}
+                  <div className="date-group">
+                    <div className="date-group-header">
+                      {formatGameDate(games[0]?.date)}
+                    </div>
+                    {games.map((game) => (
+                      <MatchupRow
+                        key={game.id ?? game.game_pk}
+                        game={game}
+                        onClick={handleMatchupClick}
+                        showDate={false}
+                        boxscore={liveBoxscores[game.game_pk ?? game.id] ?? null}
+                      />
+                    ))}
+                  </div>
                 </div>
               )}
             </>
