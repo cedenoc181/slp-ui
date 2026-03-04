@@ -143,13 +143,12 @@ const TeamGameLogSection = memo(function TeamGameLogSection({
     return team?.urlName || null;
   }, []);
 
-  // Handle team click - navigate to team analytics
-  const handleTeamClick = useCallback((teamName) => {
-    const teamUrl = getTeamUrlByNickname(teamName);
-    if (!teamUrl) return;
-    navigate(`/team-analytics/${teamUrl}?season=${selectedSeason}`);
+  // Handle game row click - navigate to matchup detail page
+  const handleGameRowClick = useCallback((game) => {
+    const gameId = game.id ?? game.game_pk;
+    navigate(`/mlb-schedule/${gameId}`, { state: { game } });
     window.scrollTo(0, 0);
-  }, [navigate, selectedSeason, getTeamUrlByNickname]);
+  }, [navigate]);
 
   // Get season type label
   const getSeasonTypeLabel = () => {
@@ -306,17 +305,16 @@ const TeamGameLogSection = memo(function TeamGameLogSection({
                       const homeAwayIndicator = gameData.isHome ? 'vs' : '@';
                       
                       return (
-                        <tr key={game.game_pk || game.id || idx}>
+                        <tr
+                          key={game.game_pk || game.id || idx}
+                          onClick={() => handleGameRowClick(game)}
+                          className="pps-game-log-row-link"
+                          style={{ cursor: 'pointer' }}
+                        >
                           <td className="pps-game-date">{formattedDate}</td>
                           <td className="pps-game-opponent">
                             <span className="pps-home-away-indicator">{homeAwayIndicator}</span>
-                            <span 
-                              className="clickable-team-name"
-                              onClick={() => handleTeamClick(gameData.opponent)}
-                              title={`View ${gameData.opponent} analytics`}
-                            >
-                              {gameData.opponent}
-                            </span>
+                            <span>{gameData.opponent}</span>
                           </td>
                           <td className={`pps-game-result ${resultClass}`}>{result}</td>
                           <td className="pps-game-score">
@@ -324,9 +322,9 @@ const TeamGameLogSection = memo(function TeamGameLogSection({
                           </td>
                           <td className="pps-game-starter">
                             {gameData.teamSP && gameData.teamSPSlug ? (
-                              <span 
+                              <span
                                 className="clickable-player-name"
-                                onClick={() => handlePlayerClick(gameData.teamSPSlug)}
+                                onClick={(e) => { e.stopPropagation(); handlePlayerClick(gameData.teamSPSlug); }}
                                 title={`View ${gameData.teamSP} profile`}
                               >
                                 {gameData.teamSP}
