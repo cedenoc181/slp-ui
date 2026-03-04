@@ -263,6 +263,17 @@ const TABS = [
   { key: 'prior',    label: 'Final' },
 ];
 
+// ─── Season type helper ───────────────────────────────────────────────────────
+// Feb–Mar  → Spring only            ['S']
+// Apr–Sep  → Spring + Regular       ['S', 'R']
+// Oct+     → Spring + Regular + PS  ['S', 'R', 'P']
+function getPriorSeasonTypes() {
+  const month = new Date().getMonth() + 1; // 1–12
+  if (month <= 3) return ['S'];
+  if (month <= 9) return ['S', 'R'];
+  return ['S', 'R', 'P'];
+}
+
 // ─── Main Component ───────────────────────────────────────────────────────────
 function MLBSchedule() {
   const navigate = useNavigate();
@@ -288,7 +299,11 @@ function MLBSchedule() {
         const todayStr = new Date().toISOString().slice(0, 10);
         data = Array.isArray(data) ? data.filter(g => (g.date ?? '').slice(0, 10) > todayStr) : [];
       } else {
-        data = await scheduleService.getPriorGames();
+        const seasonTypes = getPriorSeasonTypes();
+        const results = await Promise.all(
+          seasonTypes.map(st => scheduleService.getPriorGames({ season: 2026, seasonType: st, limit: null }))
+        );
+        data = results.flat().sort((a, b) => (b.date ?? '').localeCompare(a.date ?? ''));
       }
       setGames(Array.isArray(data) ? data : []);
     } catch (err) {

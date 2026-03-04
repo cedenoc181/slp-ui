@@ -57,8 +57,8 @@ export function useMatchupData() {
         const season     = gameData.season || DEFAULT_SEASON;
         const seasonType = mapSeasonType(gameData.season_type);
 
-        const FALLBACK_SEASON  = '2025';
-        const needsFallback    = String(season) !== FALLBACK_SEASON;
+        const FALLBACK_SEASON  = String(new Date().getFullYear() - 1);
+        const needsFallback    = seasonType === 'S'; // only fall back during Spring Training
         const needsL10Fallback = seasonType === 'S';
 
         const gameStatusLower = (gameData.status || '').toLowerCase();
