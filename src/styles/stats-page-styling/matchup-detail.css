@@ -1206,16 +1206,24 @@ a.pitcher-name-lg:hover {
     grid-template-columns: 1fr;
   }
 
+  /* Force all grid children to full single column */
+  .detail-grid > * {
+    grid-column: 1 / -1;
+  }
+
   .hero-logo { width: 56px; height: 56px; }
   .hero-score { font-size: 2.25rem; }
   .hero-team-name { font-size: 0.9rem; }
 
   .form-section {
-    flex-direction: column;
-    gap: 1rem;
+    flex-direction: row;
+    align-items: flex-start;
   }
 
-  .form-divider { display: none; }
+  .form-col {
+    flex: 1;
+  }
+
   .form-col-right { align-items: center; text-align: center; }
   .form-col-right .form-track { justify-content: center; }
 }
@@ -1226,5 +1234,72 @@ a.pitcher-name-lg:hover {
   .hero-matchup {
     grid-template-columns: 1fr auto 1fr;
     gap: 0.5rem;
+  }
+}
+
+@media (max-width: 535px) {
+  /* Reset iPad page zoom — phones use their own progressive scaling below */
+  .matchup-detail-page {
+    zoom: 1;
+    overflow-x: hidden;
+  }
+
+  /* Contain the grid within its parent */
+  .detail-grid {
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+    gap: 1.05rem;
+  }
+
+  /* Reduce container side padding on phones */
+  .matchup-detail-page .container {
+    padding: 0 0.75rem;
+  }
+
+  /* Hide pitcher stat pills in the pitcher matchup card */
+  .pitcher-stats {
+    display: none;
+  }
+
+  /* Scale the full-width pitcher section down 15% */
+  .detail-card.detail-card-full {
+    zoom: 0.85;
+  }
+
+  /* Fluid card padding scales with viewport */
+  .detail-card {
+    padding: clamp(0.35rem, 2vw, 0.625rem);
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+}
+
+/* ── Progressive phone scaling (zoom on page container avoids grid overflow) ── */
+@media (max-width: 430px) {
+  .matchup-detail-page {
+    zoom: 0.90;
+  }
+
+  .detail-grid { gap: 1.5rem; }
+  .detail-card { padding: clamp(0.3rem, 1.5vw, 0.5rem); }
+  .card-title-sub { display: none; }
+}
+
+@media (max-width: 390px) {
+  .matchup-detail-page {
+    zoom: 0.84;
+  }
+}
+
+@media (max-width: 375px) {
+  .matchup-detail-page {
+    zoom: 0.80;
+  }
+}
+
+@media (max-width: 320px) {
+  .matchup-detail-page {
+    zoom: 0.72;
   }
 }

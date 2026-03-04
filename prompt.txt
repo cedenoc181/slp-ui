@@ -1,0 +1,9 @@
+copy and paste commands for claude and other ai platforms for efficiency.
+
+Screen size optimization:
+
+-For screen sizes {1024px} max/min, in {file}.css make ...
+
+File optimization: 
+
+-In the {file}.jsx make 

@@ -444,3 +444,12 @@
   .matchup-venue { max-width: 80px; font-size: 0.65rem; }
   .schedule-tab { font-size: 0.8rem; padding: 0.4rem 0.9rem; }
 }
+
+@media (max-width: 330px) {
+  .matchup-team-logo { width: 24px; height: 24px; }
+  .matchup-team-name { font-size: 0.7rem; }
+  .matchup-center { min-width: 52px; }
+  .matchup-status { font-size: 0.68rem; }
+  .matchup-vs { font-size: 0.9rem; }
+  .matchup-row { padding: 0.6rem 0.6rem; gap: 0.3rem; }
+}
