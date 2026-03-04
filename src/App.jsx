@@ -25,9 +25,9 @@ import FeaturesPage from './components/pages/About-Us/FeaturesPage';
 import ContactPage from './components/pages/About-Us/ContactPage';
 import UnsubscribePage from './components/pages/About-Us/UnsubscribePage';
 
-// Account page imports//
-import AccountPage from './components/pages/Account/AccountPage';
-import SettingsPage from './components/pages/Account/SettingsPage';
+// Account page imports// (muted — not ready for deployment)
+// import AccountPage from './components/pages/Account/AccountPage';
+// import SettingsPage from './components/pages/Account/SettingsPage';
 
 // Admin page imports//
 import AdminPage from './components/pages/Admin/AdminPage';
@@ -95,9 +95,9 @@ import './styles/more-page-styling/about-page.css';
 import './styles/more-page-styling/features-page.css';
 import './styles/more-page-styling/contact-page.css';
 
-//Account-page-styles//
-import './styles/account-page-styling/account-page.css';
-import './styles/account-page-styling/settings-page.css';
+//Account-page-styles// (muted — not ready for deployment)
+// import './styles/account-page-styling/account-page.css';
+// import './styles/account-page-styling/settings-page.css';
 
 //Admin-page-styles//
 import './styles/admin-page-styling/admin.css';
@@ -140,8 +140,8 @@ const PAGE_TITLES = [
   { path: '/about',                    title: 'About Us' },
   { path: '/features',                 title: 'Features' },
   { path: '/contact',                  title: 'Contact' },
-  { path: '/account',                  title: 'My Account' },
-  { path: '/account/settings',         title: 'Account Settings' },
+  // { path: '/account',                  title: 'My Account' },
+  // { path: '/account/settings',         title: 'Account Settings' },
   { path: '/terms-of-use',            title: 'Terms of Use' },
   { path: '/privacy-policy',          title: 'Privacy Policy' },
   { path: '/admin',                    title: 'Admin' },
@@ -207,9 +207,9 @@ function App() {
           <Route path="/features" element={<FeaturesPage />} />
           <Route path="/contact" element={<ContactPage />} />
 
-          {/* Account route */}
-          <Route path="/account" element={<AccountPage />} />
-          <Route path="/account/settings" element={<SettingsPage />} />
+          {/* Account route — muted, not ready for deployment */}
+          {/* <Route path="/account" element={<AccountPage />} /> */}
+          {/* <Route path="/account/settings" element={<SettingsPage />} /> */}
 
           {/* Stats routes */}
           <Route path="/mlb-schedule" element={<MLBSchedule />} />
