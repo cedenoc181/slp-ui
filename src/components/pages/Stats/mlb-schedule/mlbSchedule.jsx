@@ -288,7 +288,7 @@ function MLBSchedule() {
         const todayStr = new Date().toISOString().slice(0, 10);
         data = Array.isArray(data) ? data.filter(g => (g.date ?? '').slice(0, 10) > todayStr) : [];
       } else {
-        data = await scheduleService.getPriorGames({ limit: 50 });
+        data = await scheduleService.getPriorGames();
       }
       setGames(Array.isArray(data) ? data : []);
     } catch (err) {
