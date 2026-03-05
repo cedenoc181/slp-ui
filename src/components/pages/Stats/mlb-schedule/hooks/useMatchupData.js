@@ -112,16 +112,16 @@ export function useMatchupData() {
           needsL10Fallback || needsFallback
             ? gamesService.getTeamLast10(homeId, FALLBACK_SEASON, 'R')
             : Promise.resolve(null),
-          needsTeamStats && seasonType !== 'S'
+          needsTeamStats
             ? teamStatsService.getTeamBattingStats(awayId, season, seasonType)
             : Promise.resolve(null),
-          needsTeamStats && seasonType !== 'S'
+          needsTeamStats
             ? teamStatsService.getTeamBattingStats(homeId, season, seasonType)
             : Promise.resolve(null),
-          needsTeamStats && seasonType !== 'S'
+          needsTeamStats
             ? teamStatsService.getTeamPitchingStats(awayId, season, seasonType)
             : Promise.resolve(null),
-          needsTeamStats && seasonType !== 'S'
+          needsTeamStats
             ? teamStatsService.getTeamPitchingStats(homeId, season, seasonType)
             : Promise.resolve(null),
           (isFinalGame || isLiveGame) && (gameData.game_pk ?? gameData.id)
