@@ -7,19 +7,12 @@ function FormDot({ result }) {
   return                     <span className="form-dot unknown" aria-label="Unknown" />;
 }
 
-// Compute streak from the form array (most-recent-first).
-// Returns e.g. "W3", "L2", or null if no data.
-function calcStreak(form) {
-  if (!form || form.length === 0) return null;
-  const latest = form[0];
-  if (latest !== 'W' && latest !== 'L') return null;
-  let count = 1;
-  for (let i = 1; i < form.length; i++) {
-    if (form[i] === latest) count++;
-    else break;
-  }
-  return `${latest}${count}`;
-}
+
+const SEASON_TYPE_LABELS = {
+  s: 'Spring Training', spring: 'Spring Training',
+  r: 'Regular Season',  regular: 'Regular Season',
+  p: 'Postseason',      post: 'Postseason', postseason: 'Postseason',
+};
 
 export default function RecentFormCard({
   awayAbbr, homeAbbr,
@@ -28,14 +21,18 @@ export default function RecentFormCard({
   awayForm, homeForm,
   awayWins, awayLosses,
   homeWins, homeLosses,
+  season,
+  seasonType,
 }) {
+  const seasonTypeLabel = SEASON_TYPE_LABELS[(seasonType || '').toLowerCase()] || null;
+
   return (
     <div className="detail-card">
       <h3 className="card-title">
         Recent Form — Last 10
-        {(calcStreak(awayForm) || calcStreak(homeForm)) && (
+        {(season || seasonTypeLabel) && (
           <span className="card-title-sub">
-            {' '}· Streak: {awayAbbr} {calcStreak(awayForm) ?? '—'} / {homeAbbr} {calcStreak(homeForm) ?? '—'}
+            {' '}· {[season, seasonTypeLabel].filter(Boolean).join(' ')}
           </span>
         )}
       </h3>

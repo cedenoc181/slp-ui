@@ -80,12 +80,8 @@ export function useMatchupData() {
           awayPitchingRes, homePitchingRes,
           boxscoreRes,
         ] = await Promise.allSettled([
-          seasonType !== 'S'
-            ? gamesService.getTeamLast10(awayId, season, seasonType)
-            : Promise.resolve(null),
-          seasonType !== 'S'
-            ? gamesService.getTeamLast10(homeId, season, seasonType)
-            : Promise.resolve(null),
+          gamesService.getTeamLast10(awayId, season, seasonType),
+          gamesService.getTeamLast10(homeId, season, seasonType),
           awaySPId
             ? playerStatsService.getPitcherCurrentStats(awaySPId, season, seasonType)
             : Promise.resolve(null),
