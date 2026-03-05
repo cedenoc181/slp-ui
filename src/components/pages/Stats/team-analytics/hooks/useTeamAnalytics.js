@@ -267,23 +267,30 @@ export function useTeamAnalytics() {
   useEffect(() => {
     const teamId = getTeamIdFromAbbr(selectedTeam);
     if (!teamId) return;
-    
+
     // Create a unique key for this fetch to prevent duplicates
     const fetchKey = `${teamId}-${selectedSeason}`;
-    
+
     // Skip if we're already fetching this exact combination
     if (currentFetchRef.current === fetchKey) return;
     currentFetchRef.current = fetchKey;
-    
+
     // After initial load, subsequent fetches are team switches
     const isTeamSwitch = !isInitialLoadRef.current;
     fetchTeamData(teamId, selectedSeason, isTeamSwitch);
     fetchTeamGames(teamId, selectedSeason, gameLogSeasonType);
     checkAvailableSeasonTypes(teamId, selectedSeason);
-    
+
     // Mark that initial load is done
     isInitialLoadRef.current = false;
-  }, [selectedTeam, selectedSeason, fetchTeamData, fetchTeamGames, checkAvailableSeasonTypes, gameLogSeasonType]);
+  }, [selectedTeam, selectedSeason, fetchTeamData, fetchTeamGames, checkAvailableSeasonTypes]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Re-fetch game log when season type selector changes
+  useEffect(() => {
+    const teamId = getTeamIdFromAbbr(selectedTeam);
+    if (!teamId) return;
+    fetchTeamGames(teamId, selectedSeason, gameLogSeasonType);
+  }, [gameLogSeasonType]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Footer intersection observer
   useEffect(() => {

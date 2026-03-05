@@ -246,10 +246,11 @@ const TeamGameLogSection = memo(function TeamGameLogSection({
           </p>
         </div>
         <div className="pps-game-log-filters">
-          <select 
+          <select
             className="pps-season-type-filter"
             value={seasonType}
             onChange={handleSeasonTypeChange}
+            disabled={loading}
           >
             {availableSeasonTypes.includes('R') && (
               <option value="R">Regular Season</option>
@@ -264,10 +265,14 @@ const TeamGameLogSection = memo(function TeamGameLogSection({
         </div>
       </div>
 
-      <div className="pps-game-log-container">
-        {loading ? (
-          <div className="pps-stats-loading">Loading game logs...</div>
-        ) : games.length > 0 ? (
+      <div className="pps-game-log-container" style={{ position: 'relative' }}>
+        {loading && (
+          <div className="tgl-loading-overlay">
+            <div className="tgl-spinner" />
+            <span>Loading {getSeasonTypeLabel()} games…</span>
+          </div>
+        )}
+        {!loading && games.length > 0 ? (
           <>
             <div className="pps-game-log-table-wrapper">
               <table className="pps-game-log-table team-game-log-table">
