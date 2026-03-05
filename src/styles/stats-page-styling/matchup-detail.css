@@ -100,9 +100,9 @@
 }
 
 .badge-final {
-  background: rgba(255, 255, 255, 0.06);
-  color: #a0a0a0;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(76, 175, 80, 0.15);
+  color: #66bb6a;
+  border: 1px solid rgba(76, 175, 80, 0.35);
 }
 
 .hero-badge-sub {
@@ -139,6 +139,18 @@
 .hero-date {
   font-size: 0.78rem;
   color: #ffffff;
+}
+
+.hero-season-type {
+  font-size: 0.62rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.55);
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 20px;
+  padding: 0.18rem 0.65rem;
 }
 
 /* Matchup row */

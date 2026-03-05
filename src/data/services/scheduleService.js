@@ -17,18 +17,26 @@ class ScheduleService {
    * @param {string|number} gameId - game.id or game.game_pk from the URL
    * @returns {Promise<Object|null>} Matching game or null if not found
    */
-  async getGameById(gameId) {
+  async getGameById(gameId, seasonType = null, season = null) {
     const idNum = Number(gameId);
+    const yr = season ? Number(season) : new Date().getFullYear();
+
+    // Fall back to calendar-based season type when none is provided (e.g. direct URL access)
+    const month = new Date().getMonth() + 1;
+    const st = seasonType || (month <= 3 ? 'S' : month <= 9 ? 'R' : 'P');
+
     const [todayRes, priorRes, upcomingRes] = await Promise.allSettled([
       this.getTodayGames(),
-      this.getPriorGames({ limit: 100 }),
-      this.getUpcomingGames({ limit: 100 }),
+      this.getPriorGames({ season: yr, seasonType: st, limit: null }),
+      this.getUpcomingGames({ season: yr, seasonType: st, limit: null }),
     ]);
+
     const all = [
       ...(todayRes.status === 'fulfilled' && Array.isArray(todayRes.value) ? todayRes.value : []),
       ...(priorRes.status === 'fulfilled' && Array.isArray(priorRes.value) ? priorRes.value : []),
       ...(upcomingRes.status === 'fulfilled' && Array.isArray(upcomingRes.value) ? upcomingRes.value : []),
     ];
+
     return all.find(g =>
       g.id === idNum || g.game_pk === idNum ||
       String(g.id) === String(gameId) || String(g.game_pk) === String(gameId)

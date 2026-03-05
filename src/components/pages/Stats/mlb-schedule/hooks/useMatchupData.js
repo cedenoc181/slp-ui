@@ -45,7 +45,7 @@ export function useMatchupData() {
       try {
         let gameData = state?.game || null;
         if (!gameData) {
-          gameData = await scheduleService.getGameById(gameId);
+          gameData = await scheduleService.getGameById(gameId, state?.seasonType || null, state?.season || null);
         }
         if (!gameData) throw new Error('Game not found');
         setGame(gameData);
@@ -80,8 +80,12 @@ export function useMatchupData() {
           awayPitchingRes, homePitchingRes,
           boxscoreRes,
         ] = await Promise.allSettled([
-          gamesService.getTeamLast10(awayId, season, seasonType),
-          gamesService.getTeamLast10(homeId, season, seasonType),
+          seasonType !== 'S'
+            ? gamesService.getTeamLast10(awayId, season, seasonType)
+            : Promise.resolve(null),
+          seasonType !== 'S'
+            ? gamesService.getTeamLast10(homeId, season, seasonType)
+            : Promise.resolve(null),
           awaySPId
             ? playerStatsService.getPitcherCurrentStats(awaySPId, season, seasonType)
             : Promise.resolve(null),
@@ -112,16 +116,16 @@ export function useMatchupData() {
           needsL10Fallback || needsFallback
             ? gamesService.getTeamLast10(homeId, FALLBACK_SEASON, 'R')
             : Promise.resolve(null),
-          needsTeamStats
+          needsTeamStats && seasonType !== 'S'
             ? teamStatsService.getTeamBattingStats(awayId, season, seasonType)
             : Promise.resolve(null),
-          needsTeamStats
+          needsTeamStats && seasonType !== 'S'
             ? teamStatsService.getTeamBattingStats(homeId, season, seasonType)
             : Promise.resolve(null),
-          needsTeamStats
+          needsTeamStats && seasonType !== 'S'
             ? teamStatsService.getTeamPitchingStats(awayId, season, seasonType)
             : Promise.resolve(null),
-          needsTeamStats
+          needsTeamStats && seasonType !== 'S'
             ? teamStatsService.getTeamPitchingStats(homeId, season, seasonType)
             : Promise.resolve(null),
           (isFinalGame || isLiveGame) && (gameData.game_pk ?? gameData.id)

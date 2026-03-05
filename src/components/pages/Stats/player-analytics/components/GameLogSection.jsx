@@ -155,14 +155,13 @@ const GameLogSection = memo(function GameLogSection({
     setGameLogPage(1);
   }, [setGameLogSeasonType]);
 
-  // Navigate to team analytics page
-  const handleTeamClick = useCallback((opponentName, season) => {
-    const teamUrl = getTeamUrl(opponentName);
-    if (teamUrl) {
-      navigate(`/team-analytics/${teamUrl}?season=${season}`);
-      window.scrollTo(0, 0);
-    }
-  }, [navigate]);
+  // Navigate to matchup detail page — pass season type so getGameById can do
+  // a single targeted request instead of searching all season types.
+  const handleGameRowClick = useCallback((game) => {
+    const gameId = game.game_pk ?? game.id;
+    navigate(`/mlb-schedule/${gameId}`, { state: { season: selectedSeason, seasonType: gameLogSeasonType } });
+    window.scrollTo(0, 0);
+  }, [navigate, selectedSeason, gameLogSeasonType]);
 
   return (
     <section className="pps-section">
@@ -250,19 +249,16 @@ const GameLogSection = memo(function GameLogSection({
                       const decisionClass = pitcherDecision === 'W' ? 'win' : pitcherDecision === 'L' ? 'loss' : '';
                       
                       return (
-                        <tr key={game.game_pk}>
+                        <tr
+                          key={game.game_pk}
+                          onClick={() => handleGameRowClick(game)}
+                          className="pps-game-log-row-link"
+                          style={{ cursor: 'pointer' }}
+                        >
                           <td className="pps-game-date">{formattedDate}</td>
                           <td className="pps-game-opponent">
                             <span className="pps-home-away-indicator">{game.is_home ? 'vs' : '@'}</span>
-                            <span 
-                              className="pps-clickable-team-name"
-                              onClick={() => handleTeamClick(game.opponent, selectedSeason)}
-                              role="button"
-                              tabIndex={0}
-                              onKeyDown={(e) => e.key === 'Enter' && handleTeamClick(game.opponent, selectedSeason)}
-                            >
-                              {game.opponent}
-                            </span>
+                            <span>{game.opponent}</span>
                           </td>
                           <td className={`pps-game-result ${resultClass}`}>
                             {result} {playerScore}-{oppScore}
