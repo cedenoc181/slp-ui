@@ -115,14 +115,15 @@ export const getMaxChartValue = (data) => {
 
 // Month mapping for chart display
 const MONTH_MAPPING = [
-  { display: 'Mar', apiKey: 'March' },
-  { display: 'Apr', apiKey: 'April' },
-  { display: 'May', apiKey: 'May' },
-  { display: 'Jun', apiKey: 'June' },
-  { display: 'Jul', apiKey: 'July' },
-  { display: 'Aug', apiKey: 'August' },
-  { display: 'Sep', apiKey: 'September' },
-  { display: 'Oct', apiKey: 'October' }
+  { display: 'Feb', apiKey: 'February',  monthNum: 2  },
+  { display: 'Mar', apiKey: 'March',     monthNum: 3  },
+  { display: 'Apr', apiKey: 'April',     monthNum: 4  },
+  { display: 'May', apiKey: 'May',       monthNum: 5  },
+  { display: 'Jun', apiKey: 'June',      monthNum: 6  },
+  { display: 'Jul', apiKey: 'July',      monthNum: 7  },
+  { display: 'Aug', apiKey: 'August',    monthNum: 8  },
+  { display: 'Sep', apiKey: 'September', monthNum: 9  },
+  { display: 'Oct', apiKey: 'October',   monthNum: 10 },
 ];
 
 // Field mappings from chart metrics to API response fields
@@ -164,19 +165,18 @@ export const transformMonthlyChartData = (monthlyPerformance) => {
   
   const result = {};
   
+  // Resolve month data from either named key ("March") or numeric key ("Month_3")
+  const resolveMonth = ({ apiKey, monthNum }) =>
+    statsData[apiKey] || statsData[`Month_${monthNum}`] || {};
+
   Object.entries(MONTHLY_FIELD_MAPPINGS).forEach(([metric, apiField]) => {
     result[metric] = MONTH_MAPPING
-      .map(({ display, apiKey }) => {
-        const monthData = statsData[apiKey] || {};
-        return {
-          period: display,
-          value: monthData[apiField] || 0
-        };
+      .map((entry) => {
+        const monthData = resolveMonth(entry);
+        return { period: entry.display, value: monthData[apiField] || 0 };
       })
-      .filter(item => {
-        // Include months that have data (any games played)
-        const monthKey = MONTH_MAPPING.find(m => m.display === item.period)?.apiKey;
-        const monthData = statsData[monthKey] || {};
+      .filter((item, i) => {
+        const monthData = resolveMonth(MONTH_MAPPING[i]);
         return monthData.games > 0;
       });
   });

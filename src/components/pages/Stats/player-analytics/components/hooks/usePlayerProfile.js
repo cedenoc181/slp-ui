@@ -268,9 +268,9 @@ export const usePlayerProfile = (mlbIdFromSlug, selectedSeason, isPitcher, isTwo
             playerStatsService.getPitcherHomeRoadSplits(internalPlayerId, selectedSeason, selectedSeasonType).catch(() => []),
             playerStatsService.getPitcherMonthlyPerformance(internalPlayerId, selectedSeason).catch(() => null),
           ]);
-          
+
           if (!isStillValid()) return;
-          
+
           setSeasonStats(current);
           setCareerStats(limitCareerStats(career));
           setVsHandSplits(vsHand);
@@ -290,9 +290,9 @@ export const usePlayerProfile = (mlbIdFromSlug, selectedSeason, isPitcher, isTwo
             playerStatsService.getPitcherHomeRoadSplits(internalPlayerId, selectedSeason, selectedSeasonType).catch(() => []),
             playerStatsService.getPitcherMonthlyPerformance(internalPlayerId, selectedSeason).catch(() => null),
           ]);
-          
+
           if (!isStillValid()) return;
-          
+
           setSeasonStats(results[0]);
           setCareerStats(limitCareerStats(results[1]));
           setVsHandSplits(results[2]);
