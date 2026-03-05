@@ -18,8 +18,16 @@ function StatRow({ label, away, home, lowerIsBetter }) {
   );
 }
 
+const SEASON_TYPE_LABELS = {
+  s: 'Spring Training', spring: 'Spring Training',
+  r: 'Regular Season',  regular: 'Regular Season',
+  p: 'Postseason',      post: 'Postseason', postseason: 'Postseason',
+};
+
 export default function HeadToHeadSection({ game, awayAbbr, homeAbbr, h2h, h2hAwaySum, h2hHomeSum }) {
   const navigate = useNavigate();
+  const season          = game?.season || null;
+  const seasonTypeLabel = SEASON_TYPE_LABELS[(game?.season_type || '').toLowerCase()] || null;
   return (
     <>
       {/* ── H2H Summary ──────────────────────────────────────────────────── */}
@@ -92,7 +100,14 @@ export default function HeadToHeadSection({ game, awayAbbr, homeAbbr, h2h, h2hAw
 
       {/* ── H2H Game Log ─────────────────────────────────────────────────── */}
       <div className="detail-card h2h-gamelog-card">
-        <h3 className="card-title">H2H Game Log</h3>
+        <h3 className="card-title">
+          H2H Game Log
+          {(season || seasonTypeLabel) && (
+            <span className="card-title-sub">
+              {' '}· {[season, seasonTypeLabel].filter(Boolean).join(' ')}
+            </span>
+          )}
+        </h3>
         <div className="h2h-table-wrapper">
           <table className="h2h-log-table">
             <thead>

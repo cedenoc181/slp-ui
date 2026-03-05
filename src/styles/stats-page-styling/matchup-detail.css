@@ -1010,7 +1010,7 @@ a.pitcher-name-lg:hover {
 .h2h-table-wrapper {
   overflow-x: auto;
   overflow-y: auto;
-  max-height: 220px;
+  /* max-height: 420px; */
   -webkit-overflow-scrolling: touch;
   margin: 0 -0.25rem;
 }
