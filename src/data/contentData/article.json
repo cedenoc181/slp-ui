@@ -191,7 +191,7 @@
       "read_time_minutes": 4,
       "estimated_word_count": 820,
       "hero_image": {
-        "url": "/article-heros/top3sleepers.png",
+        "url": "/article-heros/top3Sleepers.png",
         "alt": "Top 3 Sleepers That Can Wreck Brackets at the 2026 WBC"
       },
       "content": [
@@ -277,7 +277,7 @@
           "tournament bracket busters"
         ],
         "canonical_url": "https://sandlotpicks.com/articles/wbc-2026-three-sleeper-teams-to-watch",
-        "og_image": "https://sandlotpicks.com/article-heros/top3sleepers.png"
+        "og_image": "https://sandlotpicks.com/article-heros/top3Sleepers.png"
       },
       "related_posts": [
         "wbc-2026-pool-favorites-a-b-c-d-top-two-teams-and-stars",
