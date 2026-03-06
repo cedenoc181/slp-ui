@@ -185,6 +185,15 @@
   gap: 1px;
 }
 
+.matchup-suggestion {
+  border-left: 2px solid rgba(200, 16, 46, 0.5);
+}
+
+.matchup-suggestion:hover {
+  background: rgba(200, 16, 46, 0.12);
+  border-left-color: var(--cta-color);
+}
+
 .search-loading {
   display: flex;
   align-items: center;

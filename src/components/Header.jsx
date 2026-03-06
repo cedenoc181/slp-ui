@@ -2,9 +2,23 @@ import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom';
 import articlesData from '../data/contentData/article.json';
 import moreArticlesData from '../data/contentData/moreArticles.json';
-import { TEAMS } from '../data/constants/apiConstants';
+import { TEAMS, getTeamById } from '../data/constants/apiConstants';
 import { useAuth } from '../context/AuthContext';
 import playerStatsService from '../data/services/playerStatsServices';
+import scheduleService from '../data/services/scheduleService';
+
+// Format a matchup time/date label for search suggestions
+function formatMatchupTime(game) {
+  const todayStr = new Date().toISOString().slice(0, 10);
+  const isToday = (game.date ?? '').slice(0, 10) === todayStr;
+  const dateLabel = isToday
+    ? 'Today'
+    : game.date ? new Date(game.date + 'T12:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : '';
+  const statusLower = (game.status || '').toLowerCase();
+  if (statusLower === 'final' || statusLower === 'game over' || statusLower === 'completed') return `${dateLabel} · Final`;
+  if (statusLower.includes('progress') || statusLower === 'live') return `${dateLabel} · Live`;
+  return dateLabel + (game.game_time ? ` · ${game.game_time}` : '');
+}
 
 // Helper to get player headshot URL from MLB ID
 const getPlayerHeadshotUrl = (mlbId) => {
@@ -23,6 +37,8 @@ function Header() {
   const [isSearchingPlayers, setIsSearchingPlayers] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   const searchDebounceRef = useRef(null);
+  const matchupDebounceRef = useRef(null);
+  const scheduleGamesRef = useRef(null); // cache today/upcoming games for matchup search
   const navigate = useNavigate();
   const location = useLocation();
   const { isAuthenticated } = useAuth();
@@ -90,12 +106,11 @@ function Header() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  // Cleanup debounce timer on unmount
+  // Cleanup debounce timers on unmount
   useEffect(() => {
     return () => {
-      if (searchDebounceRef.current) {
-        clearTimeout(searchDebounceRef.current);
-      }
+      if (searchDebounceRef.current) clearTimeout(searchDebounceRef.current);
+      if (matchupDebounceRef.current) clearTimeout(matchupDebounceRef.current);
     };
   }, []);
 
@@ -194,6 +209,97 @@ function Header() {
     }
   }, [navigate, closeMenu]);
 
+  // Search today's (or upcoming) games and inject matchup suggestions for matched teams
+  const searchMatchupsAsync = useCallback(async (matchedTeams) => {
+    // Fetch & cache schedule games (today first, fall back to upcoming)
+    if (scheduleGamesRef.current === null) {
+      try {
+        const data = await scheduleService.getTodayGames();
+        const todayStr = new Date().toISOString().slice(0, 10);
+        const todayGames = Array.isArray(data)
+          ? data.filter(g => (g.date ?? '').slice(0, 10) === todayStr)
+          : [];
+        if (todayGames.length > 0) {
+          scheduleGamesRef.current = todayGames;
+        } else {
+          // No games today — try upcoming (include all games, not just strict future)
+          const allGames = Array.isArray(data) ? data : [];
+          if (allGames.length > 0) {
+            scheduleGamesRef.current = allGames.slice(0, 30);
+          } else {
+            const upcoming = await scheduleService.getUpcomingGames({ limit: 30 });
+            scheduleGamesRef.current = Array.isArray(upcoming) ? upcoming.slice(0, 30) : [];
+          }
+        }
+      } catch {
+        // Don't cache on error — allow retry on next search keystroke
+        scheduleGamesRef.current = null;
+        return;
+      }
+    }
+
+    const games = scheduleGamesRef.current;
+    if (!games || !games.length) return;
+
+    // Build a Set of internal team IDs for each matched team (fast O(1) lookup)
+    const matchedTeamIds = new Set(matchedTeams.map(t => t.id.toLowerCase()));
+
+    const matchupResults = [];
+    for (const game of games) {
+      // Primary: match by internal team_id via TEAMS constant lookup (most reliable)
+      const awayTeam = getTeamById(game.away_team_id);
+      const homeTeam = getTeamById(game.home_team_id);
+      const awayIdKey = awayTeam?.id?.toLowerCase();
+      const homeIdKey = homeTeam?.id?.toLowerCase();
+
+      let isMatch = (awayIdKey && matchedTeamIds.has(awayIdKey)) ||
+                    (homeIdKey && matchedTeamIds.has(homeIdKey));
+
+      // Fallback: string-based name matching (handles cases where team_id lookup fails)
+      if (!isMatch) {
+        const awayLower = (game.away_team_name || '').toLowerCase();
+        const homeLower = (game.home_team_name || '').toLowerCase();
+        isMatch = matchedTeams.some(team => {
+          const nameLower = team.name.toLowerCase();
+          const urlLower  = team.urlName.replace(/-/g, ' ').toLowerCase();
+          return (
+            awayLower.includes(nameLower) || homeLower.includes(nameLower) ||
+            nameLower.includes(awayLower) || nameLower.includes(homeLower) ||
+            awayLower.includes(urlLower)  || homeLower.includes(urlLower)
+          );
+        });
+      }
+
+      if (isMatch) {
+        const gameId = game.id ?? game.game_pk;
+        // Use looked-up abbreviations for the label, fall back to API names
+        const awayLabel = awayTeam?.id || game.away_team_name || 'Away';
+        const homeLabel = homeTeam?.id || game.home_team_name || 'Home';
+        matchupResults.push({
+          type: 'matchup',
+          icon: '⚔️',
+          label: `${awayLabel} vs ${homeLabel}`,
+          sublabel: formatMatchupTime(game),
+          onSelect: () => {
+            closeMenu();
+            navigate(`/mlb-schedule/${gameId}`, { state: { game } });
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+            setSearchQuery('');
+            setSearchSuggestions([]);
+          },
+        });
+      }
+      if (matchupResults.length >= 2) break;
+    }
+
+    if (matchupResults.length > 0) {
+      setSearchSuggestions(prev => {
+        const nonMatchup = prev.filter(r => r.type !== 'matchup');
+        return [...matchupResults, ...nonMatchup].slice(0, 8);
+      });
+    }
+  }, [navigate, closeMenu]);
+
   const buildSuggestions = useCallback((value) => {
     const trimmed = value.trim();
     if (!trimmed) {
@@ -234,10 +340,18 @@ function Header() {
           team.urlName.replace(/-/g, ' ')
         ];
         return searchTerms.some(term => term.includes(normalized)) ||
-               normalized.split(/\s+/).every(word => 
+               normalized.split(/\s+/).every(word =>
                  searchTerms.some(term => term.includes(word))
                );
       });
+
+      // Trigger matchup search for matched teams (debounced)
+      if (teamMatches.length > 0) {
+        if (matchupDebounceRef.current) clearTimeout(matchupDebounceRef.current);
+        matchupDebounceRef.current = setTimeout(() => {
+          searchMatchupsAsync(teamMatches);
+        }, 350);
+      }
 
       // Limit to top 2 team matches (reduced to make room for players)
       teamMatches.slice(0, 2).forEach((team) => {
@@ -319,9 +433,9 @@ function Header() {
       });
     });
 
-    // Set local results immediately (player results will be added async)
+    // Set local results immediately (player + matchup results will be added async)
     setSearchSuggestions(results.slice(0, 6));
-  }, [teamOptions, pageOptions, articleTags, navigate, closeMenu, searchPlayersAsync]);
+  }, [teamOptions, pageOptions, articleTags, navigate, closeMenu, searchPlayersAsync, searchMatchupsAsync]);
 
   // Helper function to get icon for page type
   const getPageIcon = (path) => {
@@ -382,7 +496,7 @@ function Header() {
             onChange={handleSearchChange}
             onFocus={() => setIsSearchFocused(true)}
             onBlur={() => setTimeout(() => setIsSearchFocused(false), 150)}
-            placeholder="Search teams, players, articles..."
+            placeholder="Search teams, players, matchups..."
             aria-label="Search"
           />
           {isSearchFocused && (searchSuggestions.length > 0 || isSearchingPlayers) && (
@@ -397,7 +511,7 @@ function Header() {
                 <button
                   key={`${item.type}-${item.playerId || idx}`}
                   type="button"
-                  className={`search-suggestion ${item.type === 'player' ? 'player-suggestion' : ''}`}
+                  className={`search-suggestion ${item.type === 'player' ? 'player-suggestion' : ''} ${item.type === 'matchup' ? 'matchup-suggestion' : ''}`}
                   onClick={item.onSelect}
                 >
                   {item.headshotUrl ? (
