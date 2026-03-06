@@ -1,6 +1,7 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { fmtIP, toNameSlug, logoUrl } from '../utils';
+import { fmtIP, toNameSlug, logoUrl, aggregatePlayers, mapSeasonType } from '../utils';
+import gamesService from '../../../../../data/services/gamesService';
 
 function shortName(name) {
   if (!name) return '—';
@@ -58,8 +59,90 @@ function minIdxStarters(arr, key) {
   return idx;
 }
 
-export default function LineupCard({ abbr, mlbId, batters = [], pitchers = [], season }) {
+// Props:
+//   abbr, mlbId, season   — display / link helpers
+//   seasonType            — raw game.season_type ('spring' | 'regular' | 'postseason')
+//   gamePk                — MLB game_pk; passed to API so backend filters to this game only
+//   teamAId, teamBId      — internal team IDs (away = team_a, home = team_b)
+//   side                  — 'team_a' (away) or 'team_b' (home)
+//   isLive                — when true, polls every 60 s to pick up lineup as it populates
+//   fallback              — node rendered when no lineup data is available (e.g. <TeamStatsCard>)
+export default function LineupCard({ abbr, mlbId, season, seasonType, gamePk, teamAId, teamBId, side, isLive, fallback }) {
   const [tab, setTab] = useState('batters');
+  const [batters, setBatters] = useState([]);
+  const [pitchers, setPitchers] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  // Initial fetch — scoped to this game via game_pk
+  useEffect(() => {
+    if (!gamePk || !teamAId || !teamBId) {
+      setLoading(false);
+      return;
+    }
+    let cancelled = false;
+    const mappedType = mapSeasonType(seasonType);
+
+    async function fetchLineup() {
+      setLoading(true);
+      const [battersRes, pitchersRes] = await Promise.allSettled([
+        gamesService.getHeadToHeadBatters(teamAId, teamBId, { season: String(season), seasonType: mappedType, limit: 10, gamePk }),
+        gamesService.getHeadToHeadPitchers(teamAId, teamBId, { season: String(season), seasonType: mappedType, limit: 10, gamePk }),
+      ]);
+      if (cancelled) return;
+      const bGames = battersRes.status === 'fulfilled' ? (battersRes.value?.games ?? []) : [];
+      const pGames = pitchersRes.status === 'fulfilled' ? (pitchersRes.value?.games ?? []) : [];
+      setBatters(aggregatePlayers(bGames, side));
+      setPitchers(aggregatePlayers(pGames, side));
+      setLoading(false);
+    }
+
+    fetchLineup();
+    return () => { cancelled = true; };
+  }, [gamePk, teamAId, teamBId, season, seasonType, side]); // eslint-disable-line
+
+  // Poll every 60 s for live games — lineup populates inning by inning
+  useEffect(() => {
+    if (!isLive || !gamePk || !teamAId || !teamBId) return;
+    const mappedType = mapSeasonType(seasonType);
+
+    const poll = async () => {
+      const [battersRes, pitchersRes] = await Promise.allSettled([
+        gamesService.getHeadToHeadBatters(teamAId, teamBId, { season: String(season), seasonType: mappedType, limit: 10, gamePk }),
+        gamesService.getHeadToHeadPitchers(teamAId, teamBId, { season: String(season), seasonType: mappedType, limit: 10, gamePk }),
+      ]);
+      const bGames = battersRes.status === 'fulfilled' ? (battersRes.value?.games ?? []) : [];
+      const pGames = pitchersRes.status === 'fulfilled' ? (pitchersRes.value?.games ?? []) : [];
+      setBatters(aggregatePlayers(bGames, side));
+      setPitchers(aggregatePlayers(pGames, side));
+    };
+
+    const intervalId = setInterval(poll, 60_000);
+    return () => clearInterval(intervalId);
+  }, [isLive, gamePk, teamAId, teamBId, season, seasonType, side]); // eslint-disable-line
+
+  // Loading skeleton
+  if (loading) {
+    return (
+      <div className="detail-card lineup-card">
+        <div className="lineup-card-header">
+          <h3 className="card-title">
+            {mlbId && <img src={logoUrl(mlbId)} alt={abbr} className="card-title-logo" />}
+            {abbr} Players
+          </h3>
+        </div>
+        <div className="lineup-table-wrap">
+          {[...Array(6)].map((_, i) => (
+            <div key={i} className="skeleton skeleton-text wide" style={{ margin: '0.4rem 0' }} />
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  // No lineup data — render TeamStatsCard fallback or nothing
+  if (batters.length === 0 && pitchers.length === 0) {
+    return fallback ?? null;
+  }
 
   const sortedBatters = [...batters]
     .filter(p => (p.plate_appearances ?? 0) > 0)

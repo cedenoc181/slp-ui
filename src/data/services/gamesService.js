@@ -108,13 +108,14 @@ class GamesService {
    * @param {number} limit - Number of most recent matchups to pull logs from (default 10)
    * @returns {Promise<Array>} Head-to-head batter logs
    */
-  async getHeadToHeadBatters(teamAId, teamBId, { season = null, seasonType = null, limit = 10 } = {}) {
+  async getHeadToHeadBatters(teamAId, teamBId, { season = null, seasonType = null, limit = 10, gamePk = null } = {}) {
     const params = new URLSearchParams();
     params.append('team_a_id', teamAId);
     params.append('team_b_id', teamBId);
     if (season) params.append('season', season);
     if (seasonType) params.append('season_type', seasonType);
     if (limit) params.append('limit', limit);
+    if (gamePk != null) params.append('game_pk', gamePk);
     return await api.get(`/games/head-to-head/batters?${params.toString()}`);
   }
 
@@ -127,13 +128,14 @@ class GamesService {
    * @param {number} limit - Number of most recent matchups to pull logs from (default 10)
    * @returns {Promise<Array>} Head-to-head pitcher logs
    */
-  async getHeadToHeadPitchers(teamAId, teamBId, { season = null, seasonType = null, limit = 10 } = {}) {
+  async getHeadToHeadPitchers(teamAId, teamBId, { season = null, seasonType = null, limit = 10, gamePk = null } = {}) {
     const params = new URLSearchParams();
     params.append('team_a_id', teamAId);
     params.append('team_b_id', teamBId);
     if (season) params.append('season', season);
     if (seasonType) params.append('season_type', seasonType);
     if (limit) params.append('limit', limit);
+    if (gamePk != null) params.append('game_pk', gamePk);
     return await api.get(`/games/head-to-head/pitchers?${params.toString()}`);
   }
 

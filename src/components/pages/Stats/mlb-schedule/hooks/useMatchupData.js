@@ -26,8 +26,6 @@ export function useMatchupData() {
   const [awaySeasonRecord, setAwaySeasonRecord] = useState(null);
   const [homeSeasonRecord, setHomeSeasonRecord] = useState(null);
   const [h2h, setH2h] = useState(null);
-  const [h2hBatters, setH2hBatters] = useState(null);
-  const [h2hPitchers, setH2hPitchers] = useState(null);
   const [awayBatting, setAwayBatting] = useState(null);
   const [homeBatting, setHomeBatting] = useState(null);
   const [awayPitching, setAwayPitching] = useState(null);
@@ -74,7 +72,6 @@ export function useMatchupData() {
           awaySPInfoRes, homeSPInfoRes,
           awaySPFallbackRes, homeSPFallbackRes,
           standingsRes,
-          h2hBattersRes, h2hPitchersRes,
           awayL10FallbackRes, homeL10FallbackRes,
           awayBattingRes, homeBattingRes,
           awayPitchingRes, homePitchingRes,
@@ -104,8 +101,6 @@ export function useMatchupData() {
           seasonType === 'S'
             ? teamsService.getTeamSpringTrainingStandings(season)
             : teamsService.getTeamRegularSeasonStandings(season),
-          gamesService.getHeadToHeadBatters(awayId, homeId, { season: String(season), seasonType, limit: 10 }),
-          gamesService.getHeadToHeadPitchers(awayId, homeId, { season: String(season), seasonType, limit: 10 }),
           needsL10Fallback || needsFallback
             ? gamesService.getTeamLast10(awayId, FALLBACK_SEASON, 'R')
             : Promise.resolve(null),
@@ -180,11 +175,9 @@ export function useMatchupData() {
         setAwaySeasonRecord(findTeamRecord(standings, awayId, isSpring));
         setHomeSeasonRecord(findTeamRecord(standings, homeId, isSpring));
 
-        // Head-to-head
+        // Head-to-head summary (used by HeadToHeadSection; lineup is fetched directly by LineupCard)
         const h2hVal = h2hRes.status === 'fulfilled' ? h2hRes.value : null;
         setH2h(h2hVal?.summary ? h2hVal : null);
-        setH2hBatters(h2hBattersRes.status   === 'fulfilled' ? h2hBattersRes.value   : null);
-        setH2hPitchers(h2hPitchersRes.status === 'fulfilled' ? h2hPitchersRes.value  : null);
 
         // Team season stats (batting / pitching) — API returns an array; extract first element
         const unwrap = res => {
@@ -210,6 +203,24 @@ export function useMatchupData() {
     loadAll();
   }, [gameId]); // eslint-disable-line react-hooks/exhaustive-deps
 
+  // ── Live-game polling: keep boxscore current for BoxScoreCard ────────────────
+  // LineupCard handles its own polling for H2H lineup data.
+  useEffect(() => {
+    if (!game) return;
+    const statusLower = (game.status || '').toLowerCase();
+    const isLive = statusLower.includes('progress') || statusLower === 'live' || statusLower.includes('inning');
+    if (!isLive) return;
+
+    const gamePk = game.game_pk ?? game.id;
+    const poll = async () => {
+      const bsRes = await gamesService.getBoxscore(gamePk).catch(() => null);
+      if (bsRes?.innings?.length) setBoxscore(bsRes);
+    };
+
+    const intervalId = setInterval(poll, 60_000);
+    return () => clearInterval(intervalId);
+  }, [game]); // eslint-disable-line react-hooks/exhaustive-deps
+
   return {
     game, loading, error,
     awayLast10, homeLast10,
@@ -218,7 +229,7 @@ export function useMatchupData() {
     awaySPStatSeason, homeSPStatSeason,
     awaySPInfo, homeSPInfo,
     awaySeasonRecord, homeSeasonRecord,
-    h2h, h2hBatters, h2hPitchers,
+    h2h,
     awayBatting, homeBatting,
     awayPitching, homePitching,
     boxscore,

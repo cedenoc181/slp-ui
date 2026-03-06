@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom';
 import { DEFAULT_SEASON } from '../../../../data/constants/apiConstants';
 import { useMatchupData } from './hooks';
-import { getMlbId, getAbbr, getUrlName, aggregatePlayers, formGames } from './utils';
+import { getMlbId, getAbbr, getUrlName, formGames } from './utils';
 import {
   MatchupHero,
   BoxScoreCard,
@@ -21,7 +21,7 @@ export default function MatchupDetail() {
     awaySPStatSeason, homeSPStatSeason,
     awaySPInfo, homeSPInfo,
     awaySeasonRecord, homeSeasonRecord,
-    h2h, h2hBatters, h2hPitchers,
+    h2h,
     awayBatting, homeBatting,
     awayPitching, homePitching,
     boxscore,
@@ -78,32 +78,11 @@ export default function MatchupDetail() {
   const awaySPMlbId = awaySPInfo?.player_mlb_id ?? game.away_sp_mlb_id ?? null;
   const homeSPMlbId = homeSPInfo?.player_mlb_id ?? game.home_sp_mlb_id ?? null;
 
-  const hasSP     = game.away_sp_name || game.home_sp_name;
-  const hasLast10 = awayLast10.length > 0 || homeLast10.length > 0 || awayLast10Summary != null || homeLast10Summary != null;
-  const hasH2h    = h2h?.summary != null && Array.isArray(h2h?.games) && h2h.games.length > 0;
-
-  // H2H lineup data
-  // Live games: match strictly by game_pk + today's date; no fallback (cron refreshes every 15 min)
-  // Final games: match by game_pk; fall back to full H2H history if not found
-  const currentGamePk = game.game_pk ?? game.id;
-  const todayStr      = new Date().toISOString().slice(0, 10);
-
-  const matchedBatterGame  = h2hBatters?.games?.find(g =>
-    (g.game_pk ?? g.id) === currentGamePk && (!isLive || g.date === todayStr)
-  );
-  const matchedPitcherGame = h2hPitchers?.games?.find(g =>
-    (g.game_pk ?? g.id) === currentGamePk && (!isLive || g.date === todayStr)
-  );
-
-  const batterGames  = matchedBatterGame  ? [matchedBatterGame]  : isLive ? [] : (h2hBatters?.games  ?? []);
-  const pitcherGames = matchedPitcherGame ? [matchedPitcherGame] : isLive ? [] : (h2hPitchers?.games ?? []);
-
-  const awayBatters  = aggregatePlayers(batterGames,  'team_a');
-  const homeBatters  = aggregatePlayers(batterGames,  'team_b');
-  const awayPitchers = aggregatePlayers(pitcherGames, 'team_a');
-  const homePitchers = aggregatePlayers(pitcherGames, 'team_b');
-  const hasLineup    = awayBatters.length > 0 || homeBatters.length > 0 || awayPitchers.length > 0 || homePitchers.length > 0;
+  const hasSP        = game.away_sp_name || game.home_sp_name;
+  const hasLast10    = awayLast10.length > 0 || homeLast10.length > 0 || awayLast10Summary != null || homeLast10Summary != null;
+  const hasH2h       = h2h?.summary != null && Array.isArray(h2h?.games) && h2h.games.length > 0;
   const hasTeamStats = !!(awayBatting || homeBatting || awayPitching || homePitching);
+  const currentGamePk = game.game_pk ?? game.id;
 
   // Map H2H summary sides to current away / home teams
   const h2hAwaySum = hasH2h
@@ -164,12 +143,15 @@ export default function MatchupDetail() {
             />
           )}
 
-          {/* Away: TeamStatsCard (scheduled/pre-game), LineupCard (live/final), TeamStatsCard fallback (no H2H) */}
+          {/* Away: TeamStatsCard (scheduled), LineupCard (live/final) with TeamStatsCard as fallback */}
           {isScheduled
             ? (hasTeamStats && <TeamStatsCard abbr={awayAbbr} mlbId={awayMlbId} batting={awayBatting} pitching={awayPitching} />)
-            : hasLineup
-              ? <LineupCard    abbr={awayAbbr} mlbId={awayMlbId} batters={awayBatters} pitchers={awayPitchers} season={season} />
-              : (hasTeamStats && <TeamStatsCard abbr={awayAbbr} mlbId={awayMlbId} batting={awayBatting} pitching={awayPitching} />)
+            : <LineupCard
+                abbr={awayAbbr} mlbId={awayMlbId} season={season} seasonType={game.season_type}
+                gamePk={currentGamePk} teamAId={game.away_team_id} teamBId={game.home_team_id}
+                side="team_a" isLive={isLive}
+                fallback={hasTeamStats ? <TeamStatsCard abbr={awayAbbr} mlbId={awayMlbId} batting={awayBatting} pitching={awayPitching} /> : null}
+              />
           }
 
           {hasLast10 && (
@@ -185,12 +167,15 @@ export default function MatchupDetail() {
             />
           )}
 
-          {/* Home: TeamStatsCard (scheduled/pre-game), LineupCard (live/final), TeamStatsCard fallback (no H2H) */}
+          {/* Home: TeamStatsCard (scheduled), LineupCard (live/final) with TeamStatsCard as fallback */}
           {isScheduled
             ? (hasTeamStats && <TeamStatsCard abbr={homeAbbr} mlbId={homeMlbId} batting={homeBatting} pitching={homePitching} />)
-            : hasLineup
-              ? <LineupCard    abbr={homeAbbr} mlbId={homeMlbId} batters={homeBatters} pitchers={homePitchers} season={season} />
-              : (hasTeamStats && <TeamStatsCard abbr={homeAbbr} mlbId={homeMlbId} batting={homeBatting} pitching={homePitching} />)
+            : <LineupCard
+                abbr={homeAbbr} mlbId={homeMlbId} season={season} seasonType={game.season_type}
+                gamePk={currentGamePk} teamAId={game.away_team_id} teamBId={game.home_team_id}
+                side="team_b" isLive={isLive}
+                fallback={hasTeamStats ? <TeamStatsCard abbr={homeAbbr} mlbId={homeMlbId} batting={homeBatting} pitching={homePitching} /> : null}
+              />
           }
 
           {hasH2h && (

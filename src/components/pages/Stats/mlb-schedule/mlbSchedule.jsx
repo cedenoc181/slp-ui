@@ -263,6 +263,22 @@ const TABS = [
   { key: 'prior',    label: 'Final' },
 ];
 
+// Sort today's games: live first, then scheduled (by game time), then final
+function sortTodayGames(games) {
+  const priority = (g) => {
+    const s = (g.status || '').toLowerCase();
+    if (s.includes('progress') || s === 'live' || s.includes('inning')) return 0;
+    if (s === 'final' || s === 'game over' || s === 'completed' || s === 'completed early') return 2;
+    return 1; // scheduled
+  };
+  return [...games].sort((a, b) => {
+    const pd = priority(a) - priority(b);
+    if (pd !== 0) return pd;
+    // Within same priority, sort scheduled games by game_time ascending
+    return (a.game_time || '').localeCompare(b.game_time || '');
+  });
+}
+
 // ─── Season type helper ───────────────────────────────────────────────────────
 // Feb–Mar  → Spring only            ['S']
 // Apr–Sep  → Spring + Regular       ['S', 'R']
@@ -294,6 +310,7 @@ function MLBSchedule() {
         // from rolling over to tomorrow's games after today's games finish.
         const todayStr = new Date().toISOString().slice(0, 10);
         data = Array.isArray(data) ? data.filter(g => (g.date ?? '').slice(0, 10) === todayStr) : [];
+        data = sortTodayGames(data);
       } else if (tab === 'upcoming') {
         data = await scheduleService.getUpcomingGames({ limit: 50 });
         const todayStr = new Date().toISOString().slice(0, 10);
