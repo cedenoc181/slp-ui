@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
 import { DEFAULT_SEASON } from '../../../../data/constants/apiConstants';
 import { useMatchupData } from './hooks';
+import '../../../../styles/stats-page-styling/matchup-analysis.css';
 import { getMlbId, getAbbr, getUrlName, formGames } from './utils';
 import {
   MatchupHero,
@@ -31,7 +32,9 @@ export default function MatchupDetail() {
     return (
       <div className="matchup-detail-page">
         <div className="container">
-          <Link to="/mlb-schedule" className="back-link">‹ Back to Schedule</Link>
+          <div className="matchup-detail-top-nav">
+            <Link to="/mlb-schedule" className="back-link">‹ Back to Schedule</Link>
+          </div>
           <div className="detail-loading">
             <div className="detail-loading-spinner" />
             <p>Loading matchup…</p>
@@ -45,7 +48,9 @@ export default function MatchupDetail() {
     return (
       <div className="matchup-detail-page">
         <div className="container">
-          <Link to="/mlb-schedule" className="back-link">‹ Back to Schedule</Link>
+          <div className="matchup-detail-top-nav">
+            <Link to="/mlb-schedule" className="back-link">‹ Back to Schedule</Link>
+          </div>
           <div className="schedule-empty">
             <div className="empty-icon">⚾</div>
             <p className="empty-title">Matchup unavailable</p>
@@ -105,7 +110,20 @@ export default function MatchupDetail() {
   return (
     <div className="matchup-detail-page">
       <div className="container">
-        <Link to="/mlb-schedule" className="back-link">‹ Back to Schedule</Link>
+        <div className="matchup-detail-top-nav">
+          <Link to="/mlb-schedule" className="back-link">‹ Back to Schedule</Link>
+          <Link
+            to={`/mlb-schedule/${currentGamePk}/analysis`}
+            state={{ game }}
+            className="deep-dive-btn"
+          >
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+              <line x1="11" y1="8" x2="11" y2="14"/><line x1="8" y1="11" x2="14" y2="11"/>
+            </svg>
+            Advanced Analysis
+          </Link>
+        </div>
 
         <MatchupHero
           game={game}
@@ -187,6 +205,8 @@ export default function MatchupDetail() {
           )}
 
         </div>
+
+
       </div>
     </div>
   );

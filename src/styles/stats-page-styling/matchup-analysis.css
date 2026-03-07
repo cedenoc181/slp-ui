@@ -1,0 +1,590 @@
+/* ============================================================
+   Matchup Analysis Page — Advanced Comparisons
+   Dark theme following matchup-detail.css conventions
+   ============================================================ */
+
+/* ── Page Layout ──────────────────────────────────────────── */
+.matchup-analysis-page {
+  min-height: 100vh;
+  background-color: #121212;
+  color: #ffffff;
+  padding: 1.5rem 0 5rem;
+}
+
+.analysis-container {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 2rem;
+}
+
+/* ── Skeleton shimmer ─────────────────────────────────────── */
+@keyframes analysis-shimmer {
+  0%   { background-position: -600px 0; }
+  100% { background-position: 600px 0; }
+}
+
+.analysis-skeleton {
+  background: linear-gradient(90deg,
+    rgba(255,255,255,0.05) 25%,
+    rgba(255,255,255,0.10) 37%,
+    rgba(255,255,255,0.05) 63%
+  );
+  background-size: 600px 100%;
+  animation: analysis-shimmer 1.4s infinite linear;
+  border-radius: 6px;
+}
+
+/* ── Back link ────────────────────────────────────────────── */
+.analysis-back-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  color: #1976D2;
+  text-decoration: none;
+  font-size: 0.875rem;
+  font-weight: 600;
+  margin-bottom: 1.25rem;
+  opacity: 0.85;
+  transition: opacity 0.15s;
+}
+.analysis-back-link:hover { opacity: 1; }
+
+/* ── Loading / Error states ───────────────────────────────── */
+.analysis-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  padding: 6rem 0;
+  color: #aaa;
+  font-size: 0.9rem;
+}
+.analysis-loading-spinner {
+  width: 32px;
+  height: 32px;
+  border: 3px solid rgba(25,118,210,0.2);
+  border-top-color: #1976D2;
+  border-radius: 50%;
+  animation: spin-a 0.8s linear infinite;
+}
+@keyframes spin-a { to { transform: rotate(360deg); } }
+
+/* ── Mini Hero ────────────────────────────────────────────── */
+.analysis-mini-hero {
+  background: #1e1e1e;
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 16px;
+  padding: 1.5rem 2rem;
+  margin-bottom: 1.5rem;
+  position: relative;
+  overflow: hidden;
+}
+.analysis-mini-hero::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(25,118,210,0.06) 0%, transparent 60%);
+  pointer-events: none;
+}
+
+.hero-teams-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1.25rem;
+}
+
+.hero-team-block {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  min-width: 100px;
+}
+.hero-team-block.home-block { align-items: center; }
+
+.hero-team-logo {
+  width: 56px;
+  height: 56px;
+  object-fit: contain;
+}
+
+.hero-team-abbr {
+  font-size: 1.2rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+}
+
+.hero-team-record {
+  font-size: 0.75rem;
+  color: rgba(255,255,255,0.5);
+  font-weight: 500;
+}
+
+.hero-separator {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.hero-at-sign {
+  font-size: 1.5rem;
+  font-weight: 300;
+  color: rgba(255,255,255,0.35);
+}
+
+.hero-game-meta {
+  text-align: center;
+  margin-top: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.hero-date-label {
+  font-size: 0.8rem;
+  color: rgba(255,255,255,0.5);
+}
+
+.hero-status-badge {
+  font-size: 0.65rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  border-radius: 20px;
+  padding: 0.2rem 0.65rem;
+  text-transform: uppercase;
+}
+.hero-status-badge.scheduled { background: rgba(25,118,210,0.2); color: #64b5f6; }
+.hero-status-badge.live      { background: rgba(244,67,54,0.2);  color: #ef5350; }
+.hero-status-badge.final     { background: rgba(255,255,255,0.08); color: rgba(255,255,255,0.45); }
+
+/* ── Section headers ──────────────────────────────────────── */
+.analysis-section {
+  margin-bottom: 2rem;
+}
+
+.analysis-section-title {
+  font-size: 0.7rem;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.4);
+  margin-bottom: 0.85rem;
+}
+
+/* ── Key Insights Panel ───────────────────────────────────── */
+.insights-panel {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 0.85rem;
+}
+
+.insight-card {
+  background: #1e1e1e;
+  border-radius: 12px;
+  border: 1px solid rgba(255,255,255,0.08);
+  border-left-width: 3px;
+  padding: 1rem 1.1rem;
+  display: flex;
+  gap: 0.75rem;
+  align-items: flex-start;
+}
+.insight-card--weakness {
+  border-left-color: #f44336;
+  background: rgba(244,67,54,0.05);
+}
+.insight-card--strength {
+  border-left-color: #4caf50;
+  background: rgba(76,175,80,0.05);
+}
+.insight-card--neutral {
+  border-left-color: #ffc107;
+  background: rgba(255,193,7,0.05);
+}
+.insight-card--skeleton {
+  border-left-color: rgba(255,255,255,0.1);
+}
+
+.insight-icon {
+  font-size: 1.2rem;
+  line-height: 1;
+  margin-top: 0.1rem;
+  flex-shrink: 0;
+}
+
+.insight-body { flex: 1; min-width: 0; }
+
+.insight-headline {
+  font-size: 0.8rem;
+  font-weight: 700;
+  line-height: 1.35;
+  margin-bottom: 0.3rem;
+  color: #fff;
+}
+.insight-card--weakness .insight-headline { color: #ef9a9a; }
+.insight-card--strength .insight-headline { color: #a5d6a7; }
+.insight-card--neutral  .insight-headline { color: #ffe082; }
+
+.insight-detail {
+  font-size: 0.72rem;
+  color: rgba(255,255,255,0.45);
+  line-height: 1.4;
+}
+
+.insight-skeleton-line {
+  height: 10px;
+  margin-bottom: 0.4rem;
+  border-radius: 4px;
+}
+.insight-skeleton-line.wide  { width: 80%; }
+.insight-skeleton-line.mid   { width: 55%; }
+.insight-skeleton-line.short { width: 40%; }
+
+/* ── Two-column analysis grid ─────────────────────────────── */
+.analysis-two-col {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+/* ── Split Compare Card (team batting splits) ─────────────── */
+.split-compare-card {
+  background: #1e1e1e;
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 16px;
+  overflow: hidden;
+}
+
+.split-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 1.25rem 0.75rem;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+}
+
+.split-card-title {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.split-card-logo {
+  width: 28px;
+  height: 28px;
+  object-fit: contain;
+}
+
+.split-card-team-name {
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+
+.split-card-subtitle {
+  font-size: 0.65rem;
+  color: rgba(255,255,255,0.4);
+  font-weight: 500;
+  margin-top: 0.1rem;
+}
+
+/* Toggle */
+.split-toggle {
+  display: flex;
+  background: rgba(255,255,255,0.06);
+  border-radius: 8px;
+  padding: 2px;
+  gap: 2px;
+}
+
+.split-toggle-btn {
+  background: transparent;
+  border: none;
+  color: rgba(255,255,255,0.45);
+  font-size: 0.68rem;
+  font-weight: 600;
+  padding: 0.3rem 0.65rem;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+  white-space: nowrap;
+}
+.split-toggle-btn.active {
+  background: #1976D2;
+  color: #fff;
+}
+
+/* Split columns body */
+.split-cols {
+  display: grid;
+  grid-template-columns: 1fr 1px 1fr;
+  min-height: 200px;
+}
+
+.split-divider {
+  background: rgba(255,255,255,0.06);
+  width: 1px;
+}
+
+.split-col {
+  padding: 0.75rem 1.25rem 1rem;
+}
+
+.split-col-header {
+  font-size: 0.7rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.5);
+  margin-bottom: 0.65rem;
+  text-align: center;
+}
+
+.split-stat-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.28rem 0;
+  border-bottom: 1px solid rgba(255,255,255,0.04);
+}
+.split-stat-row:last-child { border-bottom: none; }
+
+.split-stat-label {
+  font-size: 0.72rem;
+  color: rgba(255,255,255,0.4);
+  font-weight: 500;
+}
+
+.split-stat-value {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #fff;
+}
+.split-stat-value.advantage  { color: #4caf50; }
+.split-stat-value.disadvantage { color: #f44336; }
+
+.split-skeleton-row {
+  height: 14px;
+  margin: 0.4rem 0;
+  border-radius: 4px;
+}
+
+/* ── Pitcher Split Card ────────────────────────────────────── */
+.pitcher-split-card {
+  background: #1e1e1e;
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 16px;
+  overflow: hidden;
+}
+
+.pitcher-split-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 1.25rem 0.75rem;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+}
+
+.pitcher-split-identity {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.pitcher-split-logo {
+  width: 28px;
+  height: 28px;
+  object-fit: contain;
+}
+
+.pitcher-split-name {
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+
+.sp-handedness-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  font-size: 0.65rem;
+  font-weight: 800;
+  flex-shrink: 0;
+}
+.sp-handedness-badge.lhp { background: rgba(156,39,176,0.25); color: #ce93d8; }
+.sp-handedness-badge.rhp { background: rgba(25,118,210,0.25); color: #90caf9; }
+.sp-handedness-badge.tbd { background: rgba(255,255,255,0.08); color: rgba(255,255,255,0.35); }
+
+.pitcher-split-tbd {
+  padding: 2rem;
+  text-align: center;
+  color: rgba(255,255,255,0.35);
+  font-size: 0.8rem;
+}
+
+/* Exploitable tag */
+.exploitable-tag {
+  font-size: 0.6rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  background: rgba(244,67,54,0.18);
+  color: #ef9a9a;
+  border-radius: 4px;
+  padding: 0.15rem 0.4rem;
+  margin-left: 0.4rem;
+}
+
+/* ── Edge Indicators ──────────────────────────────────────── */
+.edge-indicators-card {
+  background: #1e1e1e;
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 16px;
+  padding: 1.25rem 1.5rem;
+}
+
+.edge-bar-row {
+  margin-bottom: 1.1rem;
+}
+.edge-bar-row:last-child { margin-bottom: 0; }
+
+.edge-bar-labels {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 0.4rem;
+}
+
+.edge-label-team {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: rgba(255,255,255,0.7);
+}
+
+.edge-label-category {
+  font-size: 0.68rem;
+  font-weight: 600;
+  color: rgba(255,255,255,0.35);
+  text-align: center;
+}
+
+.edge-bar {
+  height: 10px;
+  background: rgba(255,255,255,0.06);
+  border-radius: 10px;
+  display: flex;
+  overflow: hidden;
+  gap: 2px;
+}
+
+.edge-fill {
+  border-radius: 10px;
+  transition: width 0.6s ease;
+}
+.edge-fill.away-fill { background: #1976D2; border-radius: 10px 0 0 10px; }
+.edge-fill.home-fill { background: #e53935; border-radius: 0 10px 10px 0; }
+.edge-fill.skeleton-fill { background: rgba(255,255,255,0.08); }
+
+.edge-bar-values {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 0.3rem;
+}
+.edge-value {
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: rgba(255,255,255,0.5);
+}
+.edge-value.winner { color: #fff; font-weight: 800; }
+
+.edge-bar-skeleton {
+  height: 10px;
+  border-radius: 10px;
+  width: 100%;
+}
+
+/* ── Top nav row (back link + Deep Dive button) ───────────── */
+.matchup-detail-top-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1.25rem;
+}
+
+/* Override the plain text back-link to match the button style */
+.matchup-detail-top-nav .back-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: transparent;
+  color: #fff;
+  text-decoration: none;
+  font-size: 0.875rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  padding: 0.75rem 1.75rem;
+  border-radius: 50px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  transition: background 0.15s, border-color 0.15s;
+  opacity: 1;
+  margin-bottom: 0;
+}
+.matchup-detail-top-nav .back-link:hover {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(255, 255, 255, 0.35);
+  opacity: 1;
+}
+
+/* ── Deep Dive CTA button ─────────────────────────────────── */
+.deep-dive-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: linear-gradient(135deg, #1565C0 0%, #1976D2 100%);
+  color: #fff;
+  text-decoration: none;
+  font-size: 0.875rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  padding: 0.75rem 1.75rem;
+  border-radius: 50px;
+  border: 1px solid rgba(255,255,255,0.15);
+  transition: opacity 0.15s, transform 0.15s;
+  box-shadow: 0 4px 16px rgba(25,118,210,0.3);
+}
+.deep-dive-btn:hover {
+  opacity: 0.9;
+  transform: translateY(-1px);
+}
+.deep-dive-btn svg {
+  width: 16px;
+  height: 16px;
+}
+
+/* ── Responsive ───────────────────────────────────────────── */
+@media (max-width: 768px) {
+  .analysis-container { padding: 0 1rem; }
+
+  .analysis-two-col {
+    grid-template-columns: 1fr;
+  }
+
+  .insights-panel {
+    grid-template-columns: 1fr;
+  }
+
+  .hero-team-logo { width: 40px; height: 40px; }
+  .hero-team-abbr { font-size: 1rem; }
+
+  .split-cols {
+    grid-template-columns: 1fr;
+  }
+  .split-divider { display: none; }
+  .split-col:first-child {
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+  }
+}

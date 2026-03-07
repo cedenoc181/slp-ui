@@ -54,6 +54,7 @@ import PrivacyPolicy from './components/legal/PrivacyPolicy';
 import MLBStandings from './components/pages/Stats/mlb-standings/mlbStandings';
 import MLBSchedule from './components/pages/Stats/mlb-schedule/mlbSchedule';
 import MatchupDetail from './components/pages/Stats/mlb-schedule/MatchupDetail';
+import MatchupDetailComp from './components/pages/Stats/mlb-schedule/MatchupDetailComp';
 import TeamAnalytics from './components/pages/Stats/team-analytics/teamAnalytics';
 import PlayerAnalytics from './components/pages/Stats/player-analytics/playerAnalytics';
 import PlayerProfileStats from './components/pages/Stats/player-analytics/playerProfileStats';
@@ -122,7 +123,8 @@ function HomePage() {
 const PAGE_TITLES = [
   { path: '/',                          title: 'Home' },
   { path: '/mlb-schedule',             title: 'MLB Schedule' },
-  { path: '/mlb-schedule/:gameId',     title: 'Matchup Detail' },
+  { path: '/mlb-schedule/:gameId',          title: 'Matchup Detail' },
+  { path: '/mlb-schedule/:gameId/analysis', title: 'Advanced Analysis' },
   { path: '/mlb-standings',            title: 'MLB Standings' },
   { path: '/team-analytics',           title: 'Team Analytics' },
   { path: '/team-analytics/:teamName', title: 'Team Analytics', param: 'teamName' },
@@ -214,6 +216,7 @@ function App() {
           {/* Stats routes */}
           <Route path="/mlb-schedule" element={<MLBSchedule />} />
           <Route path="/mlb-schedule/:gameId" element={<MatchupDetail />} />
+          <Route path="/mlb-schedule/:gameId/analysis" element={<MatchupDetailComp />} />
           <Route path="/mlb-standings" element={<MLBStandings />} />
           <Route path="/team-analytics" element={<TeamAnalytics />} />
           <Route path="/team-analytics/:teamName" element={<TeamAnalytics />} />
