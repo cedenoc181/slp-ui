@@ -8,7 +8,10 @@ export default function PitcherCard({
   const isRight    = align === 'right';
   const hsUrl      = headshotUrl(headshotId);
   const teamLink   = teamUrlName ? `/team-analytics/${teamUrlName}` : null;
-  const playerLink = nameSlug && name ? `/player/${nameSlug}?season=${season}` : null;
+  // Prefer name_slug (SEO-friendly, e.g. "ryan-ohearn-656811") but fall back to
+  // raw MLB ID so players with apostrophes/special chars still resolve correctly.
+  const playerSlug = nameSlug || headshotId;
+  const playerLink = playerSlug && name ? `/player/${playerSlug}?season=${season}` : null;
 
   const logoEl = mlbId && (
     teamLink

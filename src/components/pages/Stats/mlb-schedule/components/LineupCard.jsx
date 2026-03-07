@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { fmtIP, toNameSlug, logoUrl, aggregatePlayers, mapSeasonType } from '../utils';
+import { fmtIP, logoUrl, aggregatePlayers, mapSeasonType } from '../utils';
 import gamesService from '../../../../../data/services/gamesService';
 
 function shortName(name) {
@@ -10,19 +10,15 @@ function shortName(name) {
   return `${parts[0][0]}. ${parts.slice(1).join(' ')}`;
 }
 
-function PlayerLink({ name, season }) {
-  const slug = toNameSlug(name);
-  if (!slug || !name) return <span>{name ?? '—'}</span>;
-
-  const handleClick = () => {
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  };
+function PlayerLink({ name, mlbId, season }) {
+  if (!name) return <span>—</span>;
+  if (!mlbId) return <span>{shortName(name)}</span>;
 
   return (
     <Link
-      to={`/player/${slug}?season=${season}`}
+      to={`/player/${mlbId}?season=${season}`}
       className="lineup-player-link"
-      onClick={handleClick}
+      onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
     >
       {shortName(name)}
     </Link>
@@ -194,7 +190,7 @@ export default function LineupCard({ abbr, mlbId, season, seasonType, gamePk, te
               {rows.map((p, i) => (
                 <tr key={i}>
                   <td className="lineup-name">
-                    <PlayerLink name={p.player_name} season={season} />
+                    <PlayerLink name={p.player_name} mlbId={p.player_mlb_id} season={season} />
                   </td>
                   <td>{p.plate_appearances ?? '—'}</td>
                   <td className={i === hitLeader ? 'lineup-stat-leader' : ''}>{p.hits ?? '—'}</td>
@@ -220,7 +216,7 @@ export default function LineupCard({ abbr, mlbId, season, seasonType, gamePk, te
               {rows.map((p, i) => (
                 <tr key={i}>
                   <td className={`lineup-name${p.is_starter ? ' lineup-starter' : ''}`}>
-                    <PlayerLink name={p.player_name} season={season} />
+                    <PlayerLink name={p.player_name} mlbId={p.player_mlb_id} season={season} />
                   </td>
                   <td>{p._g ?? '—'}</td>
                   <td className={spQSSet.has(i) ? 'lineup-stat-leader' : ''}>{fmtIP(p.innings_pitched)}</td>
