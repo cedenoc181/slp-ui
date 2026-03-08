@@ -1,3 +1,6 @@
+Odds public and AI on the matchup details.
+
+
 -make privacy and terms of use data into a Json file then loop through that 
 to make updates easier.
 

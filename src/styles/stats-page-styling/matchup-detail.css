@@ -79,6 +79,51 @@
   background: linear-gradient(135deg, rgba(244, 67, 54, 0.08) 0%, transparent 60%);
 }
 
+/* Prediction strip */
+.prediction-strip {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+  padding: 0.5rem 1rem;
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+  margin-bottom: 0;
+}
+
+.prediction-item {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.prediction-label {
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  color: rgba(255,255,255,0.35);
+  text-transform: uppercase;
+}
+
+.prediction-label.scout {
+  color: rgba(100,181,246,0.7);
+}
+
+.prediction-pick {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: rgba(255,255,255,0.65);
+}
+
+.prediction-pick.scout {
+  color: #64b5f6;
+}
+
+.prediction-divider {
+  color: rgba(255,255,255,0.2);
+  font-size: 0.85rem;
+  line-height: 1;
+}
+
 /* Status strip */
 .hero-status-strip {
   display: flex;

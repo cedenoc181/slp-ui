@@ -133,6 +133,8 @@ export default function MatchupDetail() {
           awaySeasonRecord={awaySeasonRecord} homeSeasonRecord={homeSeasonRecord}
           isFinal={isFinal} isLive={isLive} isScheduled={isScheduled}
           awayWon={awayWon} homeWon={homeWon}
+          publicFav={{ abbr: awayAbbr, pct: 65 }}
+          scoutFav={{ abbr: homeAbbr, pct: 62 }}
         />
 
         {(isFinal || isLive) && game.home_runs_score != null && (

@@ -1,6 +1,30 @@
 import { Link } from 'react-router-dom';
 import { logoUrl, fmtDate } from '../utils';
 
+function PredictionStrip({ publicFav, scoutFav }) {
+  const hasPublic = publicFav?.abbr && publicFav?.pct != null;
+  const hasScout  = scoutFav?.abbr  && scoutFav?.pct  != null;
+  if (!hasPublic && !hasScout) return null;
+
+  return (
+    <div className="prediction-strip">
+      {hasPublic && (
+        <span className="prediction-item">
+          <span className="prediction-label">Public</span>
+          <span className="prediction-pick">{publicFav.abbr} {publicFav.pct}%</span>
+        </span>
+      )}
+      {hasPublic && hasScout && <span className="prediction-divider">·</span>}
+      {hasScout && (
+        <span className="prediction-item">
+          <span className="prediction-label scout">⚡ Scout AI</span>
+          <span className="prediction-pick scout">{scoutFav.abbr} {scoutFav.pct}%</span>
+        </span>
+      )}
+    </div>
+  );
+}
+
 export default function MatchupHero({
   game,
   awayMlbId, homeMlbId,
@@ -9,6 +33,7 @@ export default function MatchupHero({
   awaySeasonRecord, homeSeasonRecord,
   isFinal, isLive, isScheduled,
   awayWon, homeWon,
+  publicFav, scoutFav,
 }) {
   const isCompletedEarly = (game.status || '').toLowerCase() === 'completed early';
 
@@ -22,6 +47,7 @@ export default function MatchupHero({
 
   return (
     <div className={`detail-hero${isFinal ? ' hero-final' : isLive ? ' hero-live' : ''}`}>
+      <PredictionStrip publicFav={publicFav} scoutFav={scoutFav} />
       {/* Status strip */}
       <div className="hero-status-strip">
         {isFinal     && <span className="hero-badge badge-final">FINAL</span>}

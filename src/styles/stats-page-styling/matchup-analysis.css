@@ -74,8 +74,8 @@
 .analysis-mini-hero {
   background: #1e1e1e;
   border: 1px solid rgba(255,255,255,0.08);
-  border-radius: 16px;
-  padding: 1.5rem 2rem;
+  border-radius: 12px;
+  padding: 0.6rem 1.25rem;
   margin-bottom: 1.5rem;
   position: relative;
   overflow: hidden;
@@ -92,32 +92,32 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 1.25rem;
+  gap: 0.75rem;
 }
 
 .hero-team-block {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 0.5rem;
-  min-width: 100px;
+  gap: 0.2rem;
+  min-width: 70px;
 }
 .hero-team-block.home-block { align-items: center; }
 
 .hero-team-logo {
-  width: 56px;
-  height: 56px;
+  width: 28px;
+  height: 28px;
   object-fit: contain;
 }
 
 .hero-team-abbr {
-  font-size: 1.2rem;
+  font-size: 0.85rem;
   font-weight: 800;
   letter-spacing: 0.04em;
 }
 
 .hero-team-record {
-  font-size: 0.75rem;
+  font-size: 0.65rem;
   color: rgba(255,255,255,0.5);
   font-weight: 500;
 }
@@ -126,27 +126,27 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 0.5rem;
+  gap: 0.25rem;
 }
 
 .hero-at-sign {
-  font-size: 1.5rem;
+  font-size: 1rem;
   font-weight: 300;
   color: rgba(255,255,255,0.35);
 }
 
 .hero-game-meta {
   text-align: center;
-  margin-top: 1rem;
+  margin-top: 0.4rem;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 0.75rem;
+  gap: 0.5rem;
   flex-wrap: wrap;
 }
 
 .hero-date-label {
-  font-size: 0.8rem;
+  font-size: 0.7rem;
   color: rgba(255,255,255,0.5);
 }
 
@@ -577,8 +577,8 @@
     grid-template-columns: 1fr;
   }
 
-  .hero-team-logo { width: 40px; height: 40px; }
-  .hero-team-abbr { font-size: 1rem; }
+  .hero-team-logo { width: 22px; height: 22px; }
+  .hero-team-abbr { font-size: 0.8rem; }
 
   .split-cols {
     grid-template-columns: 1fr;
