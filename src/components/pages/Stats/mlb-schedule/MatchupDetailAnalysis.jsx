@@ -2,6 +2,10 @@ import { useState, useEffect } from 'react';
 import { Link, useParams, useLocation } from 'react-router-dom';
 import { getMlbId, getAbbr, logoUrl, fmtDate, mapSeasonType } from './utils';
 import scheduleService from '../../../../data/services/scheduleService';
+import teamStatsService from '../../../../data/services/teamStatsService';
+import teamLeadersService from '../../../../data/services/teamLeadersService';
+import playerStatsService from '../../../../data/services/playerStatsServices';
+import { DEFAULT_SEASON, SEASON_TYPE_CODES, PLAYER_ROLES } from '../../../../data/constants/apiConstants';
 import '../../../../styles/stats-page-styling/matchup-analysis.css';
 
 // ─── Skeleton helpers ─────────────────────────────────────────────────────────
@@ -101,11 +105,22 @@ function InsightsPanel({ insights }) {
   return (
     <div className="insights-panel">
       {insights.map((ins, i) => (
-        <div key={i} className={`insight-card insight-card--${ins.type}`}>
-          <span className="insight-icon">{ins.icon}</span>
+        <div key={i} className={`insight-card insight-card--${ins.type}${ins.metrics.length >= 2 ? ' insight-card--multi' : ''}`}>
+          <span className="insight-icon">
+            {ins.logoSrc && <img src={ins.logoSrc} alt="" className="insight-team-logo" />}
+          </span>
           <div className="insight-body">
-            <div className="insight-headline">{ins.headline}</div>
-            <div className="insight-detail">{ins.detail}</div>
+            <Link to={`/player/${ins.playerSlug}`} className="insight-player-link">
+              {ins.headline}
+            </Link>
+            <div className="insight-metrics">
+              {ins.metrics.map((m, j) => (
+                <div key={j} className="insight-metric-row">
+                  <span className="insight-metric-label">{m.label}</span>
+                  <span className="insight-metric-value">{m.value}</span>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       ))}
@@ -115,13 +130,104 @@ function InsightsPanel({ insights }) {
 
 // ─── Split Compare Card (team batting) ────────────────────────────────────────
 const BATTING_SPLIT_STATS = [
-  { label: 'AVG',  keyHand: ['avg',       'avg'],       keyLoc: ['avg',       'avg'],       dec: 3 },
-  { label: 'OPS',  keyHand: ['ops',       'ops'],       keyLoc: ['ops',       'ops'],       dec: 3 },
-  { label: 'OBP',  keyHand: ['obp',       'obp'],       keyLoc: ['obp',       'obp'],       dec: 3 },
-  { label: 'SLG',  keyHand: ['slg',       'slg'],       keyLoc: ['slg',       'slg'],       dec: 3 },
-  { label: 'HR',   keyHand: ['home_runs', 'home_runs'], keyLoc: ['home_runs', 'home_runs'], dec: 0 },
-  { label: 'RBI',  keyHand: ['rbis',      'rbis'],      keyLoc: ['rbis',      'rbis'],      dec: 0 },
+  { label: 'AVG',  keyHand: ['avg',        'avg'],        keyLoc: ['avg',        'avg'],        dec: 3 },
+  { label: 'OPS',  keyHand: ['ops',        'ops'],        keyLoc: ['ops',        'ops'],        dec: 3 },
+  { label: 'OBP',  keyHand: ['obp',        'obp'],        keyLoc: ['obp',        'obp'],        dec: 3 },
+  { label: 'SLG',  keyHand: ['slg',        'slg'],        keyLoc: ['slg',        'slg'],        dec: 3 },
+  { label: 'HR',   keyHand: ['homeruns',   'homeruns'],   keyLoc: ['homeruns',   'homeruns'],   dec: 0 },
+  { label: 'RBI',  keyHand: ['rbis',       'rbis'],       keyLoc: ['rbis',       'rbis'],       dec: 0 },
+  { label: 'K',    keyHand: ['strikeouts', 'strikeouts'], keyLoc: ['strikeouts', 'strikeouts'], dec: 0, lowerBetter: true },
 ];
+
+// Maps getTeamBattingStats response → { vs_lhp, vs_rhp } shape SplitCompareCard expects
+function normalizeBattingStats(apiResponse) {
+  const data = Array.isArray(apiResponse) ? apiResponse[0] : apiResponse;
+  if (!data) return null;
+  return {
+    vs_lhp: data.vs_left_handed_pitching  ?? null,
+    vs_rhp: data.vs_right_handed_pitching ?? null,
+  };
+}
+
+// Filters the multi-season array from getPitcherHomeRoadSplits to the matching season + type
+// season_type in response is a numeric string ("1" = spring, "2" = regular)
+function normalizePitcherHomeRoadSplits(apiResponse, season, seasonTypeCode) {
+  const arr = Array.isArray(apiResponse) ? apiResponse : (apiResponse ? [apiResponse] : []);
+  if (!arr.length) return null;
+  const match = arr.find(
+    e => String(e.season) === String(season) && String(e.season_type) === String(seasonTypeCode)
+  );
+  const data = match || arr[0]; // fallback to most recent entry
+  if (!data) return null;
+  return { at_home: data.at_home ?? null, on_road: data.on_road ?? null };
+}
+
+// Normalizes getPitcherVsHandSplits response (array or object) to { vs_lhb, vs_rhb }
+function normalizePitcherVsHandSplits(apiResponse) {
+  const data = Array.isArray(apiResponse) ? apiResponse[0] : apiResponse;
+  if (!data) return null;
+  return { vs_lhb: data.vs_lhb ?? null, vs_rhb: data.vs_rhb ?? null };
+}
+
+// ─── Matchup Insights (Key Insights panel) ────────────────────────────────────
+const INSIGHT_STATS = ['avg', 'ops', 'hr'];
+const INSIGHT_STAT_LABEL = { avg: 'AVG', ops: 'OPS', hr: 'HR' };
+
+function fmtInsightVal(stat, val) {
+  if (val == null || isNaN(parseFloat(val))) return '—';
+  const n = parseFloat(val);
+  if (stat === 'avg' || stat === 'ops') return n >= 1 ? n.toFixed(3) : n.toFixed(3).replace(/^0/, '');
+  return Math.round(n).toString();
+}
+
+// Builds insight cards grouped by player + split context (max 2 metrics per card)
+function buildInsights(awayLeaders, homeLeaders, awayAbbr, homeAbbr, awayMlbId, homeMlbId, awaySPThrows, homeSPThrows) {
+  const groups = new Map(); // key: `player__contextKey__team` → card
+
+  function addToGroup(leaders, teamAbbr, teamMlbId, contextKey, contextLabel) {
+    for (const stat of INSIGHT_STATS) {
+      const leader = leaders?.find(l => l.category === `${stat}_${contextKey}`);
+      if (!leader) continue;
+      if (parseFloat(leader.value) === 0) continue;
+      const groupKey = `${leader.player_name}__${contextKey}__${teamAbbr}`;
+      const aboveAvg = parseFloat(leader.value) > parseFloat(leader.league_avg);
+      if (!groups.has(groupKey)) {
+        const playerSlug = leader.player_name
+          .toLowerCase()
+          .replace(/[^a-z0-9]+/g, '-')
+          .replace(/^-|-$/g, '');
+        groups.set(groupKey, {
+          type: aboveAvg ? 'strength' : 'neutral',
+          logoSrc: teamMlbId ? logoUrl(teamMlbId) : null,
+          headline: leader.player_name,
+          playerSlug,
+          metrics: [],
+        });
+      }
+      const card = groups.get(groupKey);
+      if (card.metrics.length < 2) {
+        card.metrics.push({
+          label: `${INSIGHT_STAT_LABEL[stat]} ${contextLabel}`,
+          value: fmtInsightVal(stat, leader.value),
+        });
+      }
+    }
+  }
+
+  const homeSPHand = homeSPThrows ? (homeSPThrows.toUpperCase() === 'L' ? 'lhp' : 'rhp') : null;
+  const awaySPHand = awaySPThrows ? (awaySPThrows.toUpperCase() === 'L' ? 'lhp' : 'rhp') : null;
+
+  if (awayLeaders?.length && homeSPHand)
+    addToGroup(awayLeaders, awayAbbr, awayMlbId, `vs_${homeSPHand}`, `vs ${homeSPHand.toUpperCase()}`);
+  if (awayLeaders?.length)
+    addToGroup(awayLeaders, awayAbbr, awayMlbId, 'on_road', 'on Road');
+  if (homeLeaders?.length && awaySPHand)
+    addToGroup(homeLeaders, homeAbbr, homeMlbId, `vs_${awaySPHand}`, `vs ${awaySPHand.toUpperCase()}`);
+  if (homeLeaders?.length)
+    addToGroup(homeLeaders, homeAbbr, homeMlbId, 'at_home', 'at Home');
+
+  return Array.from(groups.values());
+}
 
 function fmtSplit(val, dec) {
   if (val == null) return '—';
@@ -131,12 +237,13 @@ function fmtSplit(val, dec) {
   return dec === 0 ? Math.round(n).toString() : n.toFixed(dec);
 }
 
-// Compare two numeric values; higher = better for batting
-function advantage(a, b) {
+// Compare two numeric values; pass lowerBetter=true to flip advantage direction
+function advantage(a, b, lowerBetter = false) {
   if (a == null || b == null) return { aClass: '', bClass: '' };
   const na = parseFloat(a), nb = parseFloat(b);
   if (isNaN(na) || isNaN(nb) || na === nb) return { aClass: '', bClass: '' };
-  return na > nb
+  const aWins = lowerBetter ? na < nb : na > nb;
+  return aWins
     ? { aClass: 'advantage', bClass: 'disadvantage' }
     : { aClass: 'disadvantage', bClass: 'advantage' };
 }
@@ -144,7 +251,9 @@ function advantage(a, b) {
 function SplitCompareCard({ abbr, mlbId, side, vsHandSplits, homeRoadSplits }) {
   const [tab, setTab] = useState('hand'); // 'hand' | 'location'
 
-  const isLoading = !vsHandSplits && !homeRoadSplits;
+  // null = still fetching (skeleton), false = fetched but unavailable, object = data
+  const isLoading     = tab === 'hand' ? vsHandSplits   === null : homeRoadSplits === null;
+  const isUnavailable = tab === 'hand' ? vsHandSplits   === false : homeRoadSplits === false;
   const vsLeft  = vsHandSplits?.vs_lhp  ?? vsHandSplits?.[0]?.vs_lhp  ?? null;
   const vsRight = vsHandSplits?.vs_rhp  ?? vsHandSplits?.[0]?.vs_rhp  ?? null;
   const atHome  = homeRoadSplits?.at_home ?? homeRoadSplits?.[0]?.at_home ?? null;
@@ -181,43 +290,47 @@ function SplitCompareCard({ abbr, mlbId, side, vsHandSplits, homeRoadSplits }) {
         </div>
       </div>
 
-      <div className="split-cols">
-        {/* Column A */}
-        <div className="split-col">
-          <div className="split-col-header">{labelA}</div>
-          {isLoading ? <SkeletonSplitRows /> : BATTING_SPLIT_STATS.map(({ label, keyHand, keyLoc, dec }) => {
-            const key = tab === 'hand' ? keyHand[0] : keyLoc[0];
-            const valA = colA?.[key];
-            const valB = colB?.[key];
-            const { aClass } = advantage(valA, valB);
-            return (
-              <div key={label} className="split-stat-row">
-                <span className="split-stat-label">{label}</span>
-                <span className={`split-stat-value ${aClass}`}>{fmtSplit(valA, dec)}</span>
-              </div>
-            );
-          })}
-        </div>
+      {isUnavailable ? (
+        <div className="split-unavailable">Data currently unavailable</div>
+      ) : (
+        <div className="split-cols">
+          {/* Column A */}
+          <div className="split-col">
+            <div className="split-col-header">{labelA}</div>
+            {isLoading ? <SkeletonSplitRows /> : BATTING_SPLIT_STATS.map(({ label, keyHand, keyLoc, dec, lowerBetter }) => {
+              const key = tab === 'hand' ? keyHand[0] : keyLoc[0];
+              const valA = colA?.[key];
+              const valB = colB?.[key];
+              const { aClass } = advantage(valA, valB, lowerBetter);
+              return (
+                <div key={label} className="split-stat-row">
+                  <span className="split-stat-label">{label}</span>
+                  <span className={`split-stat-value ${aClass}`}>{fmtSplit(valA, dec)}</span>
+                </div>
+              );
+            })}
+          </div>
 
-        <div className="split-divider" />
+          <div className="split-divider" />
 
-        {/* Column B */}
-        <div className="split-col">
-          <div className="split-col-header">{labelB}</div>
-          {isLoading ? <SkeletonSplitRows /> : BATTING_SPLIT_STATS.map(({ label, keyHand, keyLoc, dec }) => {
-            const key = tab === 'hand' ? keyHand[1] : keyLoc[1];
-            const valA = colA?.[tab === 'hand' ? keyHand[0] : keyLoc[0]];
-            const valB = colB?.[key];
-            const { bClass } = advantage(valA, valB);
-            return (
-              <div key={label} className="split-stat-row">
-                <span className="split-stat-label">{label}</span>
-                <span className={`split-stat-value ${bClass}`}>{fmtSplit(valB, dec)}</span>
-              </div>
-            );
-          })}
+          {/* Column B */}
+          <div className="split-col">
+            <div className="split-col-header">{labelB}</div>
+            {isLoading ? <SkeletonSplitRows /> : BATTING_SPLIT_STATS.map(({ label, keyHand, keyLoc, dec, lowerBetter }) => {
+              const key = tab === 'hand' ? keyHand[1] : keyLoc[1];
+              const valA = colA?.[tab === 'hand' ? keyHand[0] : keyLoc[0]];
+              const valB = colB?.[key];
+              const { bClass } = advantage(valA, valB, lowerBetter);
+              return (
+                <div key={label} className="split-stat-row">
+                  <span className="split-stat-label">{label}</span>
+                  <span className={`split-stat-value ${bClass}`}>{fmtSplit(valB, dec)}</span>
+                </div>
+              );
+            })}
+          </div>
         </div>
-      </div>
+      )}
     </div>
   );
 }
@@ -257,8 +370,10 @@ function handednessLabel(throws) {
 function PitcherSplitCard({ abbr, mlbId, spName, spThrows, vsHandSplits, homeRoadSplits }) {
   const [tab, setTab] = useState('location'); // 'location' | 'hand'
 
-  const hasSP   = !!spName;
-  const isLoading = hasSP && !vsHandSplits && !homeRoadSplits;
+  const hasSP = !!spName;
+  // null = still fetching (skeleton), false = fetched but unavailable, object = data
+  const isLoading     = hasSP && (tab === 'location' ? homeRoadSplits === null : vsHandSplits === null);
+  const isUnavailable = hasSP && (tab === 'location' ? homeRoadSplits === false : vsHandSplits === false);
   const throwsLabel = handednessLabel(spThrows);
   const badgeClass  = !throwsLabel ? 'tbd' : spThrows.toUpperCase() === 'L' ? 'lhp' : 'rhp';
 
@@ -317,6 +432,8 @@ function PitcherSplitCard({ abbr, mlbId, spName, spThrows, vsHandSplits, homeRoa
 
       {!hasSP ? (
         <div className="pitcher-split-tbd">Starting pitcher not yet announced</div>
+      ) : isUnavailable ? (
+        <div className="split-unavailable">Data currently unavailable</div>
       ) : (
         <div className="split-cols">
           <div className="split-col">
@@ -457,6 +574,19 @@ export default function MatchupDetailComp() {
   const [loading, setLoading] = useState(!state?.game);
   const [error, setError]     = useState(null);
 
+  const [awaySplits, setAwaySplits] = useState(null);
+  const [homeSplits, setHomeSplits] = useState(null);
+
+  const [awaySPVsHandSplits,   setAwaySPVsHandSplits]   = useState(null);
+  const [awaySPHomeRoadSplits, setAwaySPHomeRoadSplits] = useState(null);
+  const [awaySPThrows,         setAwaySPThrows]         = useState(state?.awaySPThrows ?? null);
+  const [homeSPVsHandSplits,   setHomeSPVsHandSplits]   = useState(null);
+  const [homeSPHomeRoadSplits, setHomeSPHomeRoadSplits] = useState(null);
+  const [homeSPThrows,         setHomeSPThrows]         = useState(state?.homeSPThrows ?? null);
+
+  const [awaySplitLeaders, setAwaySplitLeaders] = useState(null);
+  const [homeSplitLeaders, setHomeSplitLeaders] = useState(null);
+
   // Fallback: fetch game if navigated directly without router state
   useEffect(() => {
     if (game) { window.scrollTo(0, 0); return; }
@@ -471,6 +601,86 @@ export default function MatchupDetailComp() {
   }, [gameId]); // eslint-disable-line
 
   useEffect(() => { window.scrollTo(0, 0); }, []);
+
+  // ── Fetch offensive splits once game is available ──
+  useEffect(() => {
+    if (!game) return;
+    const season     = game.season || DEFAULT_SEASON;
+    const seasonType = mapSeasonType(game.season_type);
+    Promise.all([
+      teamStatsService.getTeamBattingStats(game.away_team_id, season, seasonType),
+      teamStatsService.getTeamBattingStats(game.home_team_id, season, seasonType),
+    ]).then(([away, home]) => {
+      setAwaySplits(normalizeBattingStats(away) ?? false);
+      setHomeSplits(normalizeBattingStats(home) ?? false);
+    }).catch(() => {
+      setAwaySplits(false);
+      setHomeSplits(false);
+    });
+  }, [game?.away_team_id, game?.home_team_id]); // eslint-disable-line
+
+  // ── Fetch SP splits once game is available ──
+  useEffect(() => {
+    if (!game) return;
+    const season = game.season || DEFAULT_SEASON;
+    // Pitcher split endpoints use numeric season_type: 1 = spring, 2 = regular, 3 = postseason
+    // game.season_type from schedule API is the full string ('spring', 'postseason') or short ('s','p','r')
+    const stLower = (game.season_type || '').toLowerCase();
+    const spSeasonTypeCode =
+      (stLower === 'spring'     || stLower === 's')                           ? SEASON_TYPE_CODES.SPRING_TRAINING :
+      (stLower === 'postseason' || stLower === 'post' || stLower === 'p')     ? SEASON_TYPE_CODES.POSTSEASON      :
+      SEASON_TYPE_CODES.REGULAR; // 2 — default for 'regular' / 'r' / anything else
+
+    const awaySPId = game.away_sp_id;
+    const homeSPId = game.home_sp_id;
+
+    if (awaySPId) {
+      Promise.all([
+        playerStatsService.getPitcherVsHandSplits(awaySPId, season, spSeasonTypeCode),
+        playerStatsService.getPitcherHomeRoadSplits(awaySPId, season, spSeasonTypeCode),
+        playerStatsService.getPlayerInfo(awaySPId),
+      ]).then(([vsHand, homeRoad, info]) => {
+        setAwaySPVsHandSplits(normalizePitcherVsHandSplits(vsHand) ?? false);
+        setAwaySPHomeRoadSplits(normalizePitcherHomeRoadSplits(homeRoad, season, spSeasonTypeCode) ?? false);
+        setAwaySPThrows(info?.throws ?? null);
+      }).catch(() => {
+        setAwaySPVsHandSplits(false);
+        setAwaySPHomeRoadSplits(false);
+      });
+    }
+
+    if (homeSPId) {
+      Promise.all([
+        playerStatsService.getPitcherVsHandSplits(homeSPId, season, spSeasonTypeCode),
+        playerStatsService.getPitcherHomeRoadSplits(homeSPId, season, spSeasonTypeCode),
+        playerStatsService.getPlayerInfo(homeSPId),
+      ]).then(([vsHand, homeRoad, info]) => {
+        setHomeSPVsHandSplits(normalizePitcherVsHandSplits(vsHand) ?? false);
+        setHomeSPHomeRoadSplits(normalizePitcherHomeRoadSplits(homeRoad, season, spSeasonTypeCode) ?? false);
+        setHomeSPThrows(info?.throws ?? null);
+      }).catch(() => {
+        setHomeSPVsHandSplits(false);
+        setHomeSPHomeRoadSplits(false);
+      });
+    }
+  }, [game?.away_sp_id, game?.home_sp_id]); // eslint-disable-line
+
+  // ── Fetch team split leaders for Key Insights panel ──
+  useEffect(() => {
+    if (!game) return;
+    const season     = game.season || DEFAULT_SEASON;
+    const seasonType = mapSeasonType(game.season_type); // returns 'R', 'S', or 'P'
+    Promise.all([
+      teamLeadersService.getTeamSplits(game.away_team_id, season, seasonType, PLAYER_ROLES.BATTER),
+      teamLeadersService.getTeamSplits(game.home_team_id, season, seasonType, PLAYER_ROLES.BATTER),
+    ]).then(([away, home]) => {
+      setAwaySplitLeaders(Array.isArray(away) && away.length ? away : false);
+      setHomeSplitLeaders(Array.isArray(home) && home.length ? home : false);
+    }).catch(() => {
+      setAwaySplitLeaders(false);
+      setHomeSplitLeaders(false);
+    });
+  }, [game?.away_team_id, game?.home_team_id]); // eslint-disable-line
 
   // ── Loading ──
   if (loading) {
@@ -511,17 +721,24 @@ export default function MatchupDetailComp() {
   const awayMlbId = getMlbId(game.away_team_id);
   const homeMlbId = getMlbId(game.home_team_id);
 
-  // Pass null for all splits — API wiring is the follow-up task.
-  // Sections render skeleton states automatically when data is null.
-  const awayVsHand     = null;
-  const awayHomeRoad   = null;
-  const homeVsHand     = null;
-  const homeHomeRoad   = null;
-  const awaySPVsHand   = null;
-  const awaySPHomeRoad = null;
-  const homeSPVsHand   = null;
-  const homeSPHomeRoad = null;
-  const insights       = null; // null = skeleton; [] = empty; array = real
+  // Offensive splits — vs L/R from getTeamBattingStats; home/road not in this endpoint (skeleton).
+  // SP splits still pending API wiring.
+  const awayVsHand     = awaySplits;
+  const awayHomeRoad   = false; // not available from getTeamBattingStats
+  const homeVsHand     = homeSplits;
+  const homeHomeRoad   = false; // not available from getTeamBattingStats
+  const awaySPVsHand   = awaySPVsHandSplits;
+  const awaySPHomeRoad = awaySPHomeRoadSplits;
+  const homeSPVsHand   = homeSPVsHandSplits;
+  const homeSPHomeRoad = homeSPHomeRoadSplits;
+  // null = still fetching (skeleton); false = unavailable; array = real insights
+  const insights = (awaySplitLeaders === null || homeSplitLeaders === null)
+    ? null
+    : buildInsights(
+        awaySplitLeaders === false ? [] : awaySplitLeaders,
+        homeSplitLeaders === false ? [] : homeSplitLeaders,
+        awayAbbr, homeAbbr, awayMlbId, homeMlbId, awaySPThrows, homeSPThrows
+      );
 
   return (
     <div className="matchup-analysis-page">
@@ -572,7 +789,7 @@ export default function MatchupDetailComp() {
               abbr={awayAbbr}
               mlbId={awayMlbId}
               spName={game.away_sp_name || null}
-              spThrows={state?.awaySPThrows ?? null}
+              spThrows={awaySPThrows}
               vsHandSplits={awaySPVsHand}
               homeRoadSplits={awaySPHomeRoad}
             />
@@ -580,7 +797,7 @@ export default function MatchupDetailComp() {
               abbr={homeAbbr}
               mlbId={homeMlbId}
               spName={game.home_sp_name || null}
-              spThrows={state?.homeSPThrows ?? null}
+              spThrows={homeSPThrows}
               vsHandSplits={homeSPVsHand}
               homeRoadSplits={homeSPHomeRoad}
             />

@@ -176,14 +176,23 @@
   margin-bottom: 0.85rem;
 }
 
-/* ── Key Insights Panel ───────────────────────────────────── */
+/* ── Key Insights Panel (carousel) ───────────────────────── */
 .insights-panel {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-  gap: 0.85rem;
+  display: flex;
+  flex-direction: row;
+  gap: 1rem;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+  padding-bottom: 0.5rem; /* room for scrollbar on desktop */
+  /* hide scrollbar visually but keep it functional */
+  scrollbar-width: none;
 }
+.insights-panel::-webkit-scrollbar { display: none; }
 
 .insight-card {
+  flex: 0 0 230px;          /* fixed card width, won't shrink */
+  scroll-snap-align: start;
   background: #1e1e1e;
   border-radius: 12px;
   border: 1px solid rgba(255,255,255,0.08);
@@ -208,31 +217,61 @@
 .insight-card--skeleton {
   border-left-color: rgba(255,255,255,0.1);
 }
+.insight-card--multi {
+  box-shadow: 0 0 14px rgba(212,160,23,0.4), 0 2px 8px rgba(0,0,0,0.45);
+}
 
 .insight-icon {
-  font-size: 1.2rem;
-  line-height: 1;
-  margin-top: 0.1rem;
+  width: 28px;
+  height: 28px;
   flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.insight-team-logo {
+  width: 28px;
+  height: 28px;
+  object-fit: contain;
 }
 
 .insight-body { flex: 1; min-width: 0; }
 
-.insight-headline {
+.insight-player-link {
+  display: block;
   font-size: 0.8rem;
   font-weight: 700;
   line-height: 1.35;
   margin-bottom: 0.3rem;
   color: #fff;
+  text-decoration: none;
 }
-.insight-card--weakness .insight-headline { color: #ef9a9a; }
-.insight-card--strength .insight-headline { color: #a5d6a7; }
-.insight-card--neutral  .insight-headline { color: #ffe082; }
+.insight-player-link:hover { text-decoration: underline; opacity: 0.85; }
+.insight-card--weakness .insight-player-link { color: #ef9a9a; }
+.insight-card--strength .insight-player-link { color: #a5d6a7; }
+.insight-card--neutral  .insight-player-link { color: #ffe082; }
 
-.insight-detail {
-  font-size: 0.72rem;
+.insight-metrics {
+  display: flex;
+  flex-direction: column;
+  gap: 0.22rem;
+  margin-top: 0.25rem;
+}
+.insight-metric-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 0.5rem;
+}
+.insight-metric-label {
+  font-size: 0.7rem;
   color: rgba(255,255,255,0.45);
-  line-height: 1.4;
+}
+.insight-metric-value {
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: rgba(255,255,255,0.85);
+  font-variant-numeric: tabular-nums;
 }
 
 .insight-skeleton-line {
@@ -420,7 +459,8 @@
 .sp-handedness-badge.rhp { background: rgba(25,118,210,0.25); color: #90caf9; }
 .sp-handedness-badge.tbd { background: rgba(255,255,255,0.08); color: rgba(255,255,255,0.35); }
 
-.pitcher-split-tbd {
+.pitcher-split-tbd,
+.split-unavailable {
   padding: 2rem;
   text-align: center;
   color: rgba(255,255,255,0.35);
@@ -573,9 +613,7 @@
     grid-template-columns: 1fr;
   }
 
-  .insights-panel {
-    grid-template-columns: 1fr;
-  }
+  .insight-card { flex: 0 0 200px; }
 
   .hero-team-logo { width: 22px; height: 22px; }
   .hero-team-abbr { font-size: 0.8rem; }

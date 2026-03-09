@@ -3,7 +3,7 @@ import { SEASON_TYPES, STAT_CATEGORIES, DEFAULT_SEASON } from '../constants/apiC
 
 class TeamStatsService {
   /**
-   * Get team batting stats
+   * Get team batting stats, with vs left and vs right splits
    * @param {number} teamId - Team ID (1-30)
    * @param {string} season - Season year (e.g., '2025')
    * @param {string} seasonType - 'R', 'P', or 'S'
@@ -14,7 +14,7 @@ class TeamStatsService {
   }
 
   /**
-   * Get team pitching stats
+   * Get team pitching stats, with vs left and vs right splits
    * @param {number} teamId - Team ID (1-30)
    * @param {string} season - Season year (e.g., '2025')
    * @param {string} seasonType - 'R', 'P', or 'S'
