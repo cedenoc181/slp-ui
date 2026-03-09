@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link, useParams, useLocation } from 'react-router-dom';
-import { getMlbId, getAbbr, logoUrl, fmtDate, mapSeasonType } from './utils';
+import { getMlbId, getAbbr, getUrlName, logoUrl, fmtDate, mapSeasonType } from './utils';
 import scheduleService from '../../../../data/services/scheduleService';
 import teamStatsService from '../../../../data/services/teamStatsService';
 import teamLeadersService from '../../../../data/services/teamLeadersService';
@@ -35,10 +35,12 @@ function SkeletonSplitRows() {
 
 // ─── Mini Hero ────────────────────────────────────────────────────────────────
 function MiniHero({ game }) {
-  const awayMlbId = getMlbId(game.away_team_id);
-  const homeMlbId = getMlbId(game.home_team_id);
-  const awayAbbr  = getAbbr(game.away_team_id) || game.away_team_name;
-  const homeAbbr  = getAbbr(game.home_team_id) || game.home_team_name;
+  const awayMlbId  = getMlbId(game.away_team_id);
+  const homeMlbId  = getMlbId(game.home_team_id);
+  const awayAbbr   = getAbbr(game.away_team_id) || game.away_team_name;
+  const homeAbbr   = getAbbr(game.home_team_id) || game.home_team_name;
+  const awayUrlName = getUrlName(game.away_team_id);
+  const homeUrlName = getUrlName(game.home_team_id);
 
   const statusLower = (game.status || '').toLowerCase();
   const isFinal  = statusLower === 'final' || statusLower === 'game over' || statusLower === 'completed' || statusLower === 'completed early';
@@ -53,7 +55,11 @@ function MiniHero({ game }) {
     <div className="analysis-mini-hero">
       <div className="hero-teams-row">
         <div className="hero-team-block">
-          {awayMlbId && <img src={logoUrl(awayMlbId)} alt={awayAbbr} className="hero-team-logo" />}
+          {awayMlbId && (
+            awayUrlName
+              ? <Link to={`/team-analytics/${awayUrlName}`}><img src={logoUrl(awayMlbId)} alt={awayAbbr} className="hero-team-logo" /></Link>
+              : <img src={logoUrl(awayMlbId)} alt={awayAbbr} className="hero-team-logo" />
+          )}
           <span className="hero-team-abbr">{awayAbbr}</span>
           <span className="hero-team-record">Away</span>
         </div>
@@ -63,7 +69,11 @@ function MiniHero({ game }) {
         </div>
 
         <div className="hero-team-block home-block">
-          {homeMlbId && <img src={logoUrl(homeMlbId)} alt={homeAbbr} className="hero-team-logo" />}
+          {homeMlbId && (
+            homeUrlName
+              ? <Link to={`/team-analytics/${homeUrlName}`}><img src={logoUrl(homeMlbId)} alt={homeAbbr} className="hero-team-logo" /></Link>
+              : <img src={logoUrl(homeMlbId)} alt={homeAbbr} className="hero-team-logo" />
+          )}
           <span className="hero-team-abbr">{homeAbbr}</span>
           <span className="hero-team-record">Home</span>
         </div>
@@ -146,6 +156,16 @@ function normalizeBattingStats(apiResponse) {
   return {
     vs_lhp: data.vs_left_handed_pitching  ?? null,
     vs_rhp: data.vs_right_handed_pitching ?? null,
+  };
+}
+
+// Maps getTeamBattingHomeVsRoad response → { at_home, on_road } shape SplitCompareCard expects
+function normalizeBattingHomeRoad(apiResponse) {
+  const data = Array.isArray(apiResponse) ? apiResponse[0] : apiResponse;
+  if (!data) return null;
+  return {
+    at_home: data.home  ?? null,
+    on_road: data.away  ?? null,
   };
 }
 
@@ -254,7 +274,7 @@ function advantage(a, b, lowerBetter = false) {
     : { aClass: 'disadvantage', bClass: 'advantage' };
 }
 
-function SplitCompareCard({ abbr, mlbId, side, vsHandSplits, homeRoadSplits }) {
+function SplitCompareCard({ abbr, mlbId, side, opposingThrows, vsHandSplits, homeRoadSplits }) {
   const [tab, setTab] = useState('hand'); // 'hand' | 'location'
 
   // null = still fetching (skeleton), false = fetched but unavailable, object = data
@@ -302,7 +322,11 @@ function SplitCompareCard({ abbr, mlbId, side, vsHandSplits, homeRoadSplits }) {
         <div className="split-cols">
           {/* Column A */}
           <div className="split-col">
-            <div className="split-col-header">{labelA}</div>
+            <div className={`split-col-header${
+              (tab === 'location' && side === 'Home') ||
+              (tab === 'hand' && opposingThrows?.toUpperCase() === 'L')
+                ? ' split-col-header--context' : ''
+            }`}>{labelA}</div>
             {isLoading ? <SkeletonSplitRows /> : BATTING_SPLIT_STATS.map(({ label, keyHand, keyLoc, dec, lowerBetter }) => {
               const key = tab === 'hand' ? keyHand[0] : keyLoc[0];
               const valA = colA?.[key];
@@ -321,7 +345,11 @@ function SplitCompareCard({ abbr, mlbId, side, vsHandSplits, homeRoadSplits }) {
 
           {/* Column B */}
           <div className="split-col">
-            <div className="split-col-header">{labelB}</div>
+            <div className={`split-col-header${
+              (tab === 'location' && side === 'Away') ||
+              (tab === 'hand' && opposingThrows?.toUpperCase() === 'R')
+                ? ' split-col-header--context' : ''
+            }`}>{labelB}</div>
             {isLoading ? <SkeletonSplitRows /> : BATTING_SPLIT_STATS.map(({ label, keyHand, keyLoc, dec, lowerBetter }) => {
               const key = tab === 'hand' ? keyHand[1] : keyLoc[1];
               const valA = colA?.[tab === 'hand' ? keyHand[0] : keyLoc[0]];
@@ -373,7 +401,7 @@ function handednessLabel(throws) {
   return throws.toUpperCase() === 'L' ? 'LHP' : 'RHP';
 }
 
-function PitcherSplitCard({ abbr, mlbId, spName, spThrows, vsHandSplits, homeRoadSplits }) {
+function PitcherSplitCard({ abbr, mlbId, side, spName, spThrows, vsHandSplits, homeRoadSplits }) {
   const [tab, setTab] = useState('location'); // 'location' | 'hand'
 
   const hasSP = !!spName;
@@ -443,7 +471,11 @@ function PitcherSplitCard({ abbr, mlbId, spName, spThrows, vsHandSplits, homeRoa
       ) : (
         <div className="split-cols">
           <div className="split-col">
-            <div className="split-col-header">{labelA}</div>
+            <div className={`split-col-header${
+              (tab === 'location' && side === 'Home') ||
+              (tab === 'hand' && spThrows?.toUpperCase() === 'R')
+                ? ' split-col-header--context' : ''
+            }`}>{labelA}</div>
             {isLoading ? <SkeletonSplitRows /> : statDefs.map(({ label, keyA, lowerBetter, dec }) => {
               const valA = colAData?.[keyA];
               const valB = colBData?.[keyA];
@@ -460,7 +492,11 @@ function PitcherSplitCard({ abbr, mlbId, spName, spThrows, vsHandSplits, homeRoa
           <div className="split-divider" />
 
           <div className="split-col">
-            <div className="split-col-header">{labelB}</div>
+            <div className={`split-col-header${
+              (tab === 'location' && side === 'Away') ||
+              (tab === 'hand' && spThrows?.toUpperCase() === 'L')
+                ? ' split-col-header--context' : ''
+            }`}>{labelB}</div>
             {isLoading ? <SkeletonSplitRows /> : statDefs.map(({ label, keyA, lowerBetter, dec }) => {
               const valA = colAData?.[keyA];
               const valB = colBData?.[keyA];
@@ -590,6 +626,9 @@ export default function MatchupDetailComp() {
   const [homeSPHomeRoadSplits, setHomeSPHomeRoadSplits] = useState(null);
   const [homeSPThrows,         setHomeSPThrows]         = useState(state?.homeSPThrows ?? null);
 
+  const [awayHomeRoadSplits, setAwayHomeRoadSplits] = useState(null);
+  const [homeHomeRoadSplits, setHomeHomeRoadSplits] = useState(null);
+
   const [awaySplitLeaders, setAwaySplitLeaders] = useState(null);
   const [homeSplitLeaders, setHomeSplitLeaders] = useState(null);
 
@@ -622,6 +661,23 @@ export default function MatchupDetailComp() {
     }).catch(() => {
       setAwaySplits(false);
       setHomeSplits(false);
+    });
+  }, [game?.away_team_id, game?.home_team_id]); // eslint-disable-line
+
+  // ── Fetch team batting home/road splits ──
+  useEffect(() => {
+    if (!game) return;
+    const season     = game.season || DEFAULT_SEASON;
+    const seasonType = mapSeasonType(game.season_type);
+    Promise.all([
+      teamStatsService.getTeamBattingHomeVsRoad(game.away_team_id, season, seasonType),
+      teamStatsService.getTeamBattingHomeVsRoad(game.home_team_id, season, seasonType),
+    ]).then(([away, home]) => {
+      setAwayHomeRoadSplits(normalizeBattingHomeRoad(away) ?? false);
+      setHomeHomeRoadSplits(normalizeBattingHomeRoad(home) ?? false);
+    }).catch(() => {
+      setAwayHomeRoadSplits(false);
+      setHomeHomeRoadSplits(false);
     });
   }, [game?.away_team_id, game?.home_team_id]); // eslint-disable-line
 
@@ -727,12 +783,10 @@ export default function MatchupDetailComp() {
   const awayMlbId = getMlbId(game.away_team_id);
   const homeMlbId = getMlbId(game.home_team_id);
 
-  // Offensive splits — vs L/R from getTeamBattingStats; home/road not in this endpoint (skeleton).
-  // SP splits still pending API wiring.
-  const awayVsHand     = awaySplits;
-  const awayHomeRoad   = false; // not available from getTeamBattingStats
-  const homeVsHand     = homeSplits;
-  const homeHomeRoad   = false; // not available from getTeamBattingStats
+  const awayVsHand   = awaySplits;
+  const awayHomeRoad = awayHomeRoadSplits;
+  const homeVsHand   = homeSplits;
+  const homeHomeRoad = homeHomeRoadSplits;
   const awaySPVsHand   = awaySPVsHandSplits;
   const awaySPHomeRoad = awaySPHomeRoadSplits;
   const homeSPVsHand   = homeSPVsHandSplits;
@@ -774,6 +828,7 @@ export default function MatchupDetailComp() {
               abbr={awayAbbr}
               mlbId={awayMlbId}
               side="Away"
+              opposingThrows={homeSPThrows}
               vsHandSplits={awayVsHand}
               homeRoadSplits={awayHomeRoad}
             />
@@ -781,6 +836,7 @@ export default function MatchupDetailComp() {
               abbr={homeAbbr}
               mlbId={homeMlbId}
               side="Home"
+              opposingThrows={awaySPThrows}
               vsHandSplits={homeVsHand}
               homeRoadSplits={homeHomeRoad}
             />
@@ -794,6 +850,7 @@ export default function MatchupDetailComp() {
             <PitcherSplitCard
               abbr={awayAbbr}
               mlbId={awayMlbId}
+              side="Away"
               spName={game.away_sp_name || null}
               spThrows={awaySPThrows}
               vsHandSplits={awaySPVsHand}
@@ -802,6 +859,7 @@ export default function MatchupDetailComp() {
             <PitcherSplitCard
               abbr={homeAbbr}
               mlbId={homeMlbId}
+              side="Home"
               spName={game.home_sp_name || null}
               spThrows={homeSPThrows}
               vsHandSplits={homeSPVsHand}

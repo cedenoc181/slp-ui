@@ -109,6 +109,13 @@
   height: 28px;
   object-fit: contain;
 }
+a > .hero-team-logo {
+  cursor: pointer;
+  transition: opacity 0.15s ease;
+}
+a > .hero-team-logo:hover {
+  opacity: 0.75;
+}
 
 .hero-team-abbr {
   font-size: 0.85rem;
@@ -382,6 +389,10 @@
   color: rgba(255,255,255,0.5);
   margin-bottom: 0.65rem;
   text-align: center;
+}
+
+.split-col-header--context {
+  color: #4caf50;
 }
 
 .split-stat-row {

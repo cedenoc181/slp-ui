@@ -35,6 +35,28 @@ class TeamStatsService {
   async getTeamStats(teamId, category = STAT_CATEGORIES.BATTING, season = DEFAULT_SEASON, seasonType = SEASON_TYPES.REGULAR) {
     return await api.get(`/teams/stats/${category}?team_id=${teamId}&season=${season}&season_type=${seasonType}`);
   }
+
+  /**
+   * Get team batting home vs road splits
+   * @param {number} teamId - Team ID
+   * @param {string} season - Season year (e.g., '2026')
+   * @param {string} seasonType - 'R', 'P', or 'S'
+   * @returns {Promise<Object>} Home and road batting splits
+   */
+  async getTeamBattingHomeVsRoad(teamId, season = DEFAULT_SEASON, seasonType = SEASON_TYPES.REGULAR) {
+    return await api.get(`/teams/stats/batting/home-vs-road?team_id=${teamId}&season=${season}&season_type=${seasonType}`);
+  }
+
+  /**
+   * Get team pitching home vs road splits
+   * @param {number} teamId - Team ID
+   * @param {string} season - Season year (e.g., '2026')
+   * @param {string} seasonType - 'R', 'P', or 'S'
+   * @returns {Promise<Object>} Home and road pitching splits
+   */
+  async getTeamPitchingHomeVsRoad(teamId, season = DEFAULT_SEASON, seasonType = SEASON_TYPES.REGULAR) {
+    return await api.get(`/teams/stats/pitching/home-vs-road?team_id=${teamId}&season=${season}&season_type=${seasonType}`);
+  }
 }
 
 export default new TeamStatsService();

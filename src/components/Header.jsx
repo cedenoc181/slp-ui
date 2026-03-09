@@ -54,7 +54,7 @@ function Header() {
 
   // Quick access pages for search
   const pageOptions = useMemo(() => [
-    { type: 'page', label: 'MLB Schedule', path: '/mlb-schedule', keywords: ['schedule', 'games', 'today', 'matchup', 'daily', 'odds', 'pitchers'] },
+    { type: 'page', label: 'MLB Schedule', path: '/mlb-schedule', keywords: ['schedule', 'games', 'today', 'matchup', 'daily', 'analysis', 'overviews'] },
     { type: 'page', label: 'MLB Standings', path: '/mlb-standings', keywords: ['standings', 'rankings', 'division', 'wild card', 'leaderboard'] },
     { type: 'page', label: 'Team Analytics', path: '/team-analytics', keywords: ['team', 'analytics', 'stats', 'statistics'] },
     { type: 'page', label: 'Player Analytics', path: '/player-analytics', keywords: ['player', 'batter', 'pitcher', 'stats', 'analytics'] },
@@ -584,7 +584,7 @@ function Header() {
                 <span className="dropdown-icon">📅</span>
                 <div>
                   <div className="dropdown-title">MLB Schedule</div>
-                  <div className="dropdown-desc">Daily matchups, pitchers & odds</div>
+                  <div className="dropdown-desc">Daily matchups & Analysis</div>
                 </div>
               </button>
               <button onClick={() => handleNavClick('/mlb-standings')} className="dropdown-item">
