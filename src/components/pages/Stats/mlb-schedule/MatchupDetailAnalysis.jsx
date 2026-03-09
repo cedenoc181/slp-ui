@@ -192,10 +192,16 @@ function buildInsights(awayLeaders, homeLeaders, awayAbbr, homeAbbr, awayMlbId, 
       const groupKey = `${leader.player_name}__${contextKey}__${teamAbbr}`;
       const aboveAvg = parseFloat(leader.value) > parseFloat(leader.league_avg);
       if (!groups.has(groupKey)) {
-        const playerSlug = leader.player_name
-          .toLowerCase()
-          .replace(/[^a-z0-9]+/g, '-')
-          .replace(/^-|-$/g, '');
+        // Prefer backend name_slug (has ID embedded, e.g. "luisangel-acuna-682668").
+        // If unavailable, build slug from the name preserving accented chars so
+        // the profile page's slugToPlayerName → lookup gets the correct spelling.
+        const idFromNameSlug = leader.name_slug
+          ? parseInt(leader.name_slug.match(/-(\d+)$/)?.[1], 10) || null
+          : null;
+        const playerMlbId = idFromNameSlug ?? leader.player_mlb_id ?? leader.mlb_id ?? null;
+        const playerSlug = playerMlbId
+          ? String(playerMlbId)
+          : leader.name_slug || leader.player_name.toLowerCase().replace(/\s+/g, '-');
         groups.set(groupKey, {
           type: aboveAvg ? 'strength' : 'neutral',
           logoSrc: teamMlbId ? logoUrl(teamMlbId) : null,

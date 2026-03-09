@@ -218,7 +218,9 @@
   border-left-color: rgba(255,255,255,0.1);
 }
 .insight-card--multi {
-  box-shadow: 0 0 14px rgba(212,160,23,0.4), 0 2px 8px rgba(0,0,0,0.45);
+  border-left-color: #d4a017;
+  background: rgba(212,160,23,0.07);
+  box-shadow: 0 0 0 1px rgba(212,160,23,0.18), 0 0 14px rgba(212,160,23,0.35), 0 2px 8px rgba(0,0,0,0.4);
 }
 
 .insight-icon {
