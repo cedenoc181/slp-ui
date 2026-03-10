@@ -1,10 +1,11 @@
 import { useState, useEffect } from 'react';
 import { Link, useParams, useLocation } from 'react-router-dom';
-import { getMlbId, getAbbr, getUrlName, logoUrl, fmtDate, mapSeasonType } from './utils';
+import { getMlbId, getAbbr, getUrlName, logoUrl, headshotUrl, fmtDate, mapSeasonType } from './utils';
 import scheduleService from '../../../../data/services/scheduleService';
 import teamStatsService from '../../../../data/services/teamStatsService';
 import teamLeadersService from '../../../../data/services/teamLeadersService';
 import playerStatsService from '../../../../data/services/playerStatsServices';
+import gamesService from '../../../../data/services/gamesService';
 import { DEFAULT_SEASON, SEASON_TYPE_CODES, PLAYER_ROLES } from '../../../../data/constants/apiConstants';
 import '../../../../styles/stats-page-styling/matchup-analysis.css';
 
@@ -51,6 +52,10 @@ function MiniHero({ game }) {
   const dateLabel = fmtDate(game.date);
   const timeLabel = game.game_time ? ` · ${game.game_time}` : '';
 
+  const awayScore = game.away_runs_score ?? null;
+  const homeScore = game.home_runs_score ?? null;
+  const hasScore  = awayScore != null && homeScore != null && (isFinal || isLive);
+
   return (
     <div className="analysis-mini-hero">
       <div className="hero-teams-row">
@@ -65,7 +70,15 @@ function MiniHero({ game }) {
         </div>
 
         <div className="hero-separator">
-          <span className="hero-at-sign">@</span>
+          {hasScore ? (
+            <span className="hero-score">
+              <span className={awayScore > homeScore ? 'hero-score-winner' : ''}>{awayScore}</span>
+              <span className="hero-score-dash">–</span>
+              <span className={homeScore > awayScore ? 'hero-score-winner' : ''}>{homeScore}</span>
+            </span>
+          ) : (
+            <span className="hero-at-sign">@</span>
+          )}
         </div>
 
         <div className="hero-team-block home-block">
@@ -422,9 +435,36 @@ function PitcherSplitCard({ abbr, mlbId, side, spName, spThrows, vsHandSplits, h
   const labelA    = tab === 'location' ? 'At Home'  : 'vs LHB';
   const labelB    = tab === 'location' ? 'On Road'  : 'vs RHB';
 
-  // Detect exploitable split: road ERA > home ERA by threshold
-  const eraHome = atHome?.era, eraRoad = onRoad?.era;
-  const isExploitable = eraHome != null && eraRoad != null && (parseFloat(eraRoad) - parseFloat(eraHome)) > 0.75;
+  // Home/Road badges — each threshold fires independently
+  const contextSplit = side === 'Away' ? onRoad : atHome;
+  const contextERA   = contextSplit?.era  != null ? parseFloat(contextSplit.era)  : null;
+  const contextWHIP  = contextSplit?.whip != null ? parseFloat(contextSplit.whip) : null;
+  const isRunRisk    = contextERA  != null && contextERA  > 4.00;
+  const isHeavyTraffic = contextWHIP != null && contextWHIP > 1.50;
+
+  // vs Batters badges — each threshold fires independently
+  // SP throws R → opposing lineup stacks LHBs → check vs LHB; SP throws L → check vs RHB
+  const handContextSplit   = spThrows?.toUpperCase() === 'R' ? vsLeft
+    : spThrows?.toUpperCase() === 'L' ? vsRight : null;
+  const handOppAVG         = handContextSplit?.avg != null ? parseFloat(handContextSplit.avg) : null;
+  const handOppOPS         = handContextSplit?.ops != null ? parseFloat(handContextSplit.ops) : null;
+  const isContactRisk      = handOppAVG != null && handOppAVG > 0.300;
+  const isPowerThreat      = handOppOPS != null && handOppOPS > 0.900;
+
+  const locBadges  = (isRunRisk && isHeavyTraffic)
+    ? ['Exploitable']
+    : [isRunRisk && 'Run Risk', isHeavyTraffic && 'Heavy Traffic'].filter(Boolean);
+  const handBadges = (isContactRisk && isPowerThreat)
+    ? ['Exploitable']
+    : [isContactRisk && 'Contact Risk', isPowerThreat && 'Power Threat'].filter(Boolean);
+  const activeBadges = tab === 'location' ? locBadges : handBadges;
+
+  // Which column is the matchup-relevant one, and which stat keys are flagged
+  const isContextColA = (tab === 'location' && side === 'Home') || (tab === 'hand' && spThrows?.toUpperCase() === 'R');
+  const isContextColB = (tab === 'location' && side === 'Away') || (tab === 'hand' && spThrows?.toUpperCase() === 'L');
+  const flaggedKeys   = tab === 'location'
+    ? { ...(isRunRisk      && { era:  true }), ...(isHeavyTraffic  && { whip: true }) }
+    : { ...(isContactRisk  && { avg:  true }), ...(isPowerThreat   && { ops:  true }) };
 
   return (
     <div className="pitcher-split-card">
@@ -432,12 +472,7 @@ function PitcherSplitCard({ abbr, mlbId, side, spName, spThrows, vsHandSplits, h
         <div className="pitcher-split-identity">
           {mlbId && <img src={logoUrl(mlbId)} alt={abbr} className="pitcher-split-logo" />}
           <div>
-            <div className="pitcher-split-name">
-              {hasSP ? spName : 'TBD'}
-              {isExploitable && tab === 'location' && (
-                <span className="exploitable-tag">Exploitable</span>
-              )}
-            </div>
+            <div className="pitcher-split-name">{hasSP ? spName : 'TBD'}</div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', marginTop: '0.2rem' }}>
               <span style={{ fontSize: '0.65rem', color: 'rgba(255,255,255,0.4)' }}>{abbr} SP</span>
               {throwsLabel && (
@@ -446,6 +481,13 @@ function PitcherSplitCard({ abbr, mlbId, side, spName, spThrows, vsHandSplits, h
             </div>
           </div>
         </div>
+        {hasSP && activeBadges.length > 0 && (
+          <div className="sp-warning-badges">
+            {activeBadges.map(label => (
+              <span key={label} className="exploitable-tag">{label}</span>
+            ))}
+          </div>
+        )}
         {hasSP && (
           <div className="split-toggle">
             <button
@@ -480,8 +522,9 @@ function PitcherSplitCard({ abbr, mlbId, side, spName, spThrows, vsHandSplits, h
               const valA = colAData?.[keyA];
               const valB = colBData?.[keyA];
               const { aClass } = pitcherAdvantage(valA, valB, lowerBetter);
+              const flagged = isContextColA && !!flaggedKeys[keyA];
               return (
-                <div key={label} className="split-stat-row">
+                <div key={label} className={`split-stat-row${flagged ? ' split-stat-row--flagged' : ''}`}>
                   <span className="split-stat-label">{label}</span>
                   <span className={`split-stat-value ${aClass}`}>{fmtSplit(valA, dec)}</span>
                 </div>
@@ -501,8 +544,9 @@ function PitcherSplitCard({ abbr, mlbId, side, spName, spThrows, vsHandSplits, h
               const valA = colAData?.[keyA];
               const valB = colBData?.[keyA];
               const { bClass } = pitcherAdvantage(valA, valB, lowerBetter);
+              const flagged = isContextColB && !!flaggedKeys[keyA];
               return (
-                <div key={label} className="split-stat-row">
+                <div key={label} className={`split-stat-row${flagged ? ' split-stat-row--flagged' : ''}`}>
                   <span className="split-stat-label">{label}</span>
                   <span className={`split-stat-value ${bClass}`}>{fmtSplit(valB, dec)}</span>
                 </div>
@@ -510,6 +554,262 @@ function PitcherSplitCard({ abbr, mlbId, side, spName, spThrows, vsHandSplits, h
             })}
           </div>
         </div>
+      )}
+    </div>
+  );
+}
+
+// ─── Top Batters This Week ────────────────────────────────────────────────────
+const HOT_METRICS = [
+  { key: 'home_runs',    label: 'HR'    },
+  { key: 'hits',         label: 'Hits'  },
+  { key: 'rbis',         label: 'RBI'   },
+  { key: 'runs',         label: 'Runs'  },
+  { key: 'walks',        label: 'BB'    },
+];
+
+function GameSparkbar({ games }) {
+  if (!games?.length) return null;
+  const sorted = [...games].reverse(); // oldest → newest left to right
+  const maxVal = Math.max(...sorted.map(g => g.value), 1);
+  return (
+    <div className="game-sparkbar">
+      {sorted.map((g, i) => {
+        const heightPct = g.value > 0 ? Math.max(18, Math.round((g.value / maxVal) * 100)) : 0;
+        const d         = new Date(g.date + 'T12:00:00');
+        const dateShort = `${d.getMonth() + 1}/${d.getDate()}`;
+        const dateTitle = `${dateShort}: ${g.value}`;
+        return (
+          <div key={i} className="game-sparkbar-col" title={dateTitle}>
+            <span className={`game-sparkbar-val${g.value === 0 ? ' is-zero' : ''}`}>
+              {g.value > 0 ? g.value : ''}
+            </span>
+            <div className="game-sparkbar-track">
+              <div
+                className={`game-sparkbar-fill${g.value >= 2 ? ' is-hot' : g.value === 0 ? ' is-empty' : ''}`}
+                style={{ height: `${heightPct}%` }}
+              />
+            </div>
+            <span className="game-sparkbar-date">{dateShort}</span>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+function TopBattersCard({ awayAbbr, homeAbbr, awayMlbId, homeMlbId, awayData, homeData }) {
+  const [activeTeam,   setActiveTeam]   = useState('away');
+  const [activeMetric, setActiveMetric] = useState('home_runs');
+
+  const data       = activeTeam === 'away' ? awayData : homeData;
+  const isLoading  = data === null;
+  const isUnavail  = data === false;
+  const players    = (!isLoading && !isUnavail && data?.[activeMetric]) ? data[activeMetric] : [];
+  const teamMlbId  = activeTeam === 'away' ? awayMlbId : homeMlbId;
+
+  return (
+    <div className="top-batters-card">
+      {/* Header row: title + team toggle */}
+      <div className="top-batters-header">
+        <div className="top-batters-title">
+          {teamMlbId && <img src={logoUrl(teamMlbId)} alt="" className="top-batters-logo" />}
+          Top Batters This Week
+        </div>
+        <div className="split-toggle">
+          <button
+            className={`split-toggle-btn${activeTeam === 'away' ? ' active' : ''}`}
+            onClick={() => setActiveTeam('away')}
+          >
+            {awayAbbr}
+          </button>
+          <button
+            className={`split-toggle-btn${activeTeam === 'home' ? ' active' : ''}`}
+            onClick={() => setActiveTeam('home')}
+          >
+            {homeAbbr}
+          </button>
+        </div>
+      </div>
+
+      {/* Metric toggle */}
+      <div className="top-batters-metric-toggle">
+        {HOT_METRICS.map(({ key, label }) => (
+          <button
+            key={key}
+            className={`top-batters-metric-btn${activeMetric === key ? ' active' : ''}`}
+            onClick={() => setActiveMetric(key)}
+          >
+            {label}
+          </button>
+        ))}
+      </div>
+
+      {/* Player rows */}
+      {isLoading ? (
+        <div className="top-batters-rows">
+          {[1,2,3].map(i => (
+            <div key={i} className="top-batter-row">
+              <div className="analysis-skeleton top-batter-skeleton-avatar" />
+              <div className="top-batter-info">
+                <div className="analysis-skeleton top-batter-skeleton-name" />
+                <div className="analysis-skeleton top-batter-skeleton-dots" />
+              </div>
+              <div className="analysis-skeleton top-batter-skeleton-total" />
+            </div>
+          ))}
+        </div>
+      ) : isUnavail || !players.length ? (
+        <div className="split-unavailable">No data available</div>
+      ) : (
+        <div className="top-batters-rows">
+          {players.map((p, idx) => (
+            <div key={p.player_id ?? idx} className="top-batter-row">
+              <span className="top-batter-rank">#{idx + 1}</span>
+              <img
+                src={headshotUrl(p.player_mlb_id)}
+                alt={p.player_name}
+                className="top-batter-headshot"
+                onError={e => { e.target.style.display = 'none'; }}
+              />
+              <div className="top-batter-info">
+                <Link to={`/player/${p.player_mlb_id}`} className="top-batter-name">
+                  {p.player_name}
+                </Link>
+                <GameSparkbar games={p.games} />
+              </div>
+              <span className="top-batter-total">{p.total}</span>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ─── H2H Pitcher History ──────────────────────────────────────────────────────
+function normName(str) {
+  return (str || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+}
+
+function classifyPitchers(players) {
+  const starters = [];
+  const bullpen  = [];
+  for (const p of (players || [])) {
+    const ip  = parseFloat(p.innings_pitched) || 0;
+    const app = parseInt(p.appearances, 10)   || 1;
+    if (ip / app >= 3) {
+      starters.push(p);
+    } else {
+      bullpen.push(p);
+    }
+  }
+  const topBullpen = bullpen
+    .sort((a, b) => {
+      const appDiff = (parseInt(b.appearances, 10) || 0) - (parseInt(a.appearances, 10) || 0);
+      if (appDiff !== 0) return appDiff;
+      return (parseFloat(b.innings_pitched) || 0) - (parseFloat(a.innings_pitched) || 0);
+    })
+    .slice(0, 8);
+  return { starters, bullpen: topBullpen };
+}
+
+function H2HPitcherRow({ player, isTonight }) {
+  const era  = player.era  != null ? parseFloat(player.era).toFixed(2)  : '—';
+  const whip = player.whip != null ? parseFloat(player.whip).toFixed(2) : '—';
+  const ip   = player.innings_pitched != null ? parseFloat(player.innings_pitched).toFixed(1) : '—';
+  const ks   = player.strikeouts != null ? player.strikeouts : '—';
+  return (
+    <div className={`h2h-pitcher-row${isTonight ? ' h2h-pitcher-row--sp' : ''}`}>
+      <div className="h2h-pitcher-main">
+        <img
+          src={headshotUrl(player.player_mlb_id)}
+          alt={player.player_name}
+          className="h2h-pitcher-headshot"
+          onError={e => { e.target.style.display = 'none'; }}
+        />
+        <div className="h2h-pitcher-identity">
+          <Link to={`/player/${player.player_mlb_id}`} className="h2h-pitcher-name">
+            {player.player_name}
+          </Link>
+          <div className="h2h-pitcher-meta">
+            {isTonight && <span className="h2h-sp-badge">Tonight's SP</span>}
+            <span className="h2h-app-label">{player.appearances} app · {player.wins ?? 0}W-{player.losses ?? 0}L</span>
+          </div>
+        </div>
+      </div>
+      <div className="h2h-pitcher-stats">
+        <div className="h2h-pstat"><span className="h2h-pstat-val">{era}</span><span className="h2h-pstat-lbl">ERA</span></div>
+        <div className="h2h-pstat"><span className="h2h-pstat-val">{whip}</span><span className="h2h-pstat-lbl">WHIP</span></div>
+        <div className="h2h-pstat"><span className="h2h-pstat-val">{ip}</span><span className="h2h-pstat-lbl">IP</span></div>
+        <div className="h2h-pstat"><span className="h2h-pstat-val">{ks}</span><span className="h2h-pstat-lbl">K</span></div>
+      </div>
+    </div>
+  );
+}
+
+const BULLPEN_INITIAL = 2;
+
+function H2HPitchersCard({ abbr, mlbId, oppAbbr, players, spName, gameCount }) {
+  const [bullpenExpanded, setBullpenExpanded] = useState(false);
+  const { starters, bullpen } = classifyPitchers(players);
+  const normSP = normName(spName);
+  const isTonightSP = (p) => {
+    if (!normSP) return false;
+    const pNorm = normName(p.player_name);
+    return pNorm === normSP || pNorm.includes(normSP) || normSP.includes(pNorm);
+  };
+
+  if (!players?.length) {
+    return (
+      <div className="h2h-card">
+        <div className="h2h-card-header">
+          {mlbId && <img src={logoUrl(mlbId)} alt={abbr} className="h2h-card-logo" />}
+          <span className="h2h-card-title">{abbr} Pitchers</span>
+        </div>
+        <div className="split-unavailable">No H2H pitching data available</div>
+      </div>
+    );
+  }
+
+  const visibleBullpen = bullpenExpanded ? bullpen : bullpen.slice(0, BULLPEN_INITIAL);
+  const hiddenCount = bullpen.length - BULLPEN_INITIAL;
+
+  return (
+    <div className="h2h-card">
+      <div className="h2h-card-header">
+        {mlbId && <img src={logoUrl(mlbId)} alt={abbr} className="h2h-card-logo" />}
+        <span className="h2h-card-title">{abbr} Pitchers</span>
+        {gameCount != null && <span className="h2h-game-count">Last {gameCount} matchups</span>}
+      </div>
+
+      {starters.length > 0 && (
+        <>
+          <div className="h2h-group-label">Starters vs {oppAbbr}</div>
+          {[...starters]
+            .sort((a, b) => (isTonightSP(b) ? 1 : 0) - (isTonightSP(a) ? 1 : 0))
+            .slice(0, 5)
+            .map(p => (
+              <H2HPitcherRow key={p.player_mlb_id ?? p.player_name} player={p} isTonight={isTonightSP(p)} />
+            ))}
+        </>
+      )}
+
+      {bullpen.length > 0 && (
+        <>
+          <div className="h2h-group-label">Bullpen vs {oppAbbr}</div>
+          {visibleBullpen.map(p => (
+            <H2HPitcherRow key={p.player_mlb_id ?? p.player_name} player={p} isTonight={false} />
+          ))}
+          {hiddenCount > 0 && (
+            <button
+              className="h2h-bullpen-toggle"
+              onClick={() => setBullpenExpanded(prev => !prev)}
+            >
+              {bullpenExpanded ? 'Show Less ▲' : `Show ${hiddenCount} More ▼`}
+            </button>
+          )}
+        </>
       )}
     </div>
   );
@@ -632,6 +932,11 @@ export default function MatchupDetailComp() {
   const [awaySplitLeaders, setAwaySplitLeaders] = useState(null);
   const [homeSplitLeaders, setHomeSplitLeaders] = useState(null);
 
+  const [awayHotLeaders, setAwayHotLeaders] = useState(null);
+  const [homeHotLeaders, setHomeHotLeaders] = useState(null);
+
+  const [h2hPitchers, setH2hPitchers] = useState(null);
+
   // Fallback: fetch game if navigated directly without router state
   useEffect(() => {
     if (game) { window.scrollTo(0, 0); return; }
@@ -744,6 +1049,34 @@ export default function MatchupDetailComp() {
     });
   }, [game?.away_team_id, game?.home_team_id]); // eslint-disable-line
 
+  // ── Fetch hot batting leaders for Top Batters card ──
+  useEffect(() => {
+    if (!game) return;
+    const season     = game.season || DEFAULT_SEASON;
+    const seasonType = mapSeasonType(game.season_type);
+    const asOfDate   = game.date || null;
+    Promise.all([
+      teamLeadersService.getHotTeamBattingLeaders(game.away_team_id, season, seasonType, 10, asOfDate),
+      teamLeadersService.getHotTeamBattingLeaders(game.home_team_id, season, seasonType, 10, asOfDate),
+    ]).then(([away, home]) => {
+      setAwayHotLeaders(away && typeof away === 'object' ? away : false);
+      setHomeHotLeaders(home && typeof home === 'object' ? home : false);
+    }).catch(() => {
+      setAwayHotLeaders(false);
+      setHomeHotLeaders(false);
+    });
+  }, [game?.away_team_id, game?.home_team_id]); // eslint-disable-line
+
+  // ── Fetch H2H pitcher totals — last 10 matchups across all season types ──
+  useEffect(() => {
+    if (!game) return;
+    gamesService.getHeadToHeadPitchers(game.away_team_id, game.home_team_id, { limit: 10, totals: true })
+      .then(data => {
+        setH2hPitchers(data && (data.team_a?.length || data.team_b?.length) ? data : false);
+      })
+      .catch(() => setH2hPitchers(false));
+  }, [game?.away_team_id, game?.home_team_id]); // eslint-disable-line
+
   // ── Loading ──
   if (loading) {
     return (
@@ -814,36 +1147,7 @@ export default function MatchupDetailComp() {
         {/* A. Mini Hero */}
         <MiniHero game={game} />
 
-        {/* B. Key Insights */}
-        <div className="analysis-section">
-          <div className="analysis-section-title">Key Matchup Insights</div>
-          <InsightsPanel insights={insights} />
-        </div>
-
-        {/* C. Team Batting Splits */}
-        <div className="analysis-section">
-          <div className="analysis-section-title">Offensive Splits</div>
-          <div className="analysis-two-col">
-            <SplitCompareCard
-              abbr={awayAbbr}
-              mlbId={awayMlbId}
-              side="Away"
-              opposingThrows={homeSPThrows}
-              vsHandSplits={awayVsHand}
-              homeRoadSplits={awayHomeRoad}
-            />
-            <SplitCompareCard
-              abbr={homeAbbr}
-              mlbId={homeMlbId}
-              side="Home"
-              opposingThrows={awaySPThrows}
-              vsHandSplits={homeVsHand}
-              homeRoadSplits={homeHomeRoad}
-            />
-          </div>
-        </div>
-
-        {/* D. Starting Pitcher Deep Dive */}
+        {/* B. Starting Pitcher Splits */}
         <div className="analysis-section">
           <div className="analysis-section-title">Starting Pitcher Splits</div>
           <div className="analysis-two-col">
@@ -868,17 +1172,82 @@ export default function MatchupDetailComp() {
           </div>
         </div>
 
-        {/* E. Edge Indicators */}
+        {/* C. Key Insights */}
         <div className="analysis-section">
-          <div className="analysis-section-title">Matchup Edge</div>
-          <EdgeIndicators
+          <div className="analysis-section-title">Key Matchup Insights</div>
+          <InsightsPanel insights={insights} />
+        </div>
+
+        {/* D. Offensive Splits */}
+        <div className="analysis-section">
+          <div className="analysis-section-title">Offensive Splits</div>
+          <div className="analysis-two-col">
+            <SplitCompareCard
+              abbr={awayAbbr}
+              mlbId={awayMlbId}
+              side="Away"
+              opposingThrows={homeSPThrows}
+              vsHandSplits={awayVsHand}
+              homeRoadSplits={awayHomeRoad}
+            />
+            <SplitCompareCard
+              abbr={homeAbbr}
+              mlbId={homeMlbId}
+              side="Home"
+              opposingThrows={awaySPThrows}
+              vsHandSplits={homeVsHand}
+              homeRoadSplits={homeHomeRoad}
+            />
+          </div>
+        </div>
+
+        {/* E. Top Batters This Week */}
+        <div className="analysis-section">
+          <TopBattersCard
             awayAbbr={awayAbbr}
             homeAbbr={homeAbbr}
-            awayBatting={null}
-            homeBatting={null}
-            awayPitching={null}
-            homePitching={null}
+            awayMlbId={awayMlbId}
+            homeMlbId={homeMlbId}
+            awayData={awayHotLeaders}
+            homeData={homeHotLeaders}
           />
+        </div>
+
+        {/* F. H2H Pitcher History */}
+        <div className="analysis-section">
+          <div className="analysis-section-title">Head-to-Head Pitcher History</div>
+          {h2hPitchers === null ? (
+            <div className="analysis-two-col">
+              {[0, 1].map(i => (
+                <div key={i} className="h2h-card">
+                  {[80, 65, 70, 55, 60].map((w, j) => (
+                    <div key={j} className="split-skeleton-row analysis-skeleton" style={{ width: `${w}%`, marginBottom: '0.5rem' }} />
+                  ))}
+                </div>
+              ))}
+            </div>
+          ) : h2hPitchers === false ? (
+            <div className="split-unavailable">No head-to-head pitcher data available</div>
+          ) : (
+            <div className="analysis-two-col">
+              <H2HPitchersCard
+                abbr={awayAbbr}
+                mlbId={awayMlbId}
+                oppAbbr={homeAbbr}
+                players={h2hPitchers.team_a}
+                spName={game.away_sp_name || null}
+                gameCount={h2hPitchers.game_count}
+              />
+              <H2HPitchersCard
+                abbr={homeAbbr}
+                mlbId={homeMlbId}
+                oppAbbr={awayAbbr}
+                players={h2hPitchers.team_b}
+                spName={game.home_sp_name || null}
+                gameCount={h2hPitchers.game_count}
+              />
+            </div>
+          )}
         </div>
 
       </div>

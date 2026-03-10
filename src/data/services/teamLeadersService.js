@@ -57,10 +57,14 @@ class TeamLeadersService {
    * @param {number} teamId - Team ID (1-30)
    * @param {string} season - Season year (e.g., '2025')
    * @param {string} seasonType - 'R', 'P', or 'S'
+   * @param {number} limit - Number of players to return per category (default 10)
+   * @param {string|null} asOfDate - Historical anchor date 'YYYY-MM-DD'; returns last 7 games on or before this date
    * @returns {Promise<Array>} Hot team batting leaders
    */
-  async getHotTeamBattingLeaders(teamId, season = DEFAULT_SEASON, seasonType = SEASON_TYPES.REGULAR) {
-    return await api.get(`/teams/leaders/batting/hot/team?team_id=${teamId}&season=${season}&season_type=${seasonType}`);
+  async getHotTeamBattingLeaders(teamId, season = DEFAULT_SEASON, seasonType = SEASON_TYPES.REGULAR, limit = 10, asOfDate = null) {
+    const params = new URLSearchParams({ team_id: teamId, season, season_type: seasonType, limit });
+    if (asOfDate) params.set('as_of_date', asOfDate);
+    return await api.get(`/teams/leaders/batting/hot/team?${params}`);
   }
 
   /**
