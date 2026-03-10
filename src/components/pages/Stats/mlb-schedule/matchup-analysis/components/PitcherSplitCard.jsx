@@ -1,0 +1,178 @@
+import { useState } from 'react';
+import { logoUrl, headshotUrl } from '../../utils';
+import { SkeletonSplitRows } from './Skeletons';
+import { fmtSplit } from '../utils/analysisUtils';
+
+const PITCHER_HAND_STATS = [
+  { label: 'Opp AVG', keyA: 'avg',      dec: 3, lowerBetter: true },
+  { label: 'Opp OPS', keyA: 'ops',      dec: 3, lowerBetter: true },
+  { label: 'K/9',     keyA: 'k_per_9',  dec: 1, lowerBetter: false },
+  { label: 'HR/9',    keyA: 'hr_per_9', dec: 2, lowerBetter: true },
+  { label: 'WHIP',    keyA: 'whip',     dec: 2, lowerBetter: true },
+];
+
+const PITCHER_LOC_STATS = [
+  { label: 'ERA',  keyA: 'era',             dec: 2, lowerBetter: true },
+  { label: 'WHIP', keyA: 'whip',            dec: 2, lowerBetter: true },
+  { label: 'K/9',  keyA: 'k_per_9',         dec: 1, lowerBetter: false },
+  { label: 'IP',   keyA: 'innings_pitched', dec: 1, lowerBetter: false },
+  { label: 'BB',   keyA: 'walks_allowed',   dec: 0, lowerBetter: true },
+];
+
+function pitcherAdvantage(a, b, lowerBetter) {
+  if (a == null || b == null) return { aClass: '', bClass: '' };
+  const na = parseFloat(a), nb = parseFloat(b);
+  if (isNaN(na) || isNaN(nb) || na === nb) return { aClass: '', bClass: '' };
+  const aBetter = lowerBetter ? na < nb : na > nb;
+  return aBetter
+    ? { aClass: 'advantage', bClass: 'disadvantage' }
+    : { aClass: 'disadvantage', bClass: 'advantage' };
+}
+
+function handednessLabel(throws) {
+  if (!throws) return null;
+  return throws.toUpperCase() === 'L' ? 'LHP' : 'RHP';
+}
+
+export default function PitcherSplitCard({ abbr, mlbId, spPlayerId, side, spName, spThrows, vsHandSplits, homeRoadSplits }) {
+  const [tab, setTab] = useState('location'); // 'location' | 'hand'
+
+  const hasSP = !!spName;
+  const isLoading     = hasSP && (tab === 'location' ? homeRoadSplits === null : vsHandSplits === null);
+  const isUnavailable = hasSP && (tab === 'location' ? homeRoadSplits === false : vsHandSplits === false);
+  const throwsLabel = handednessLabel(spThrows);
+  const badgeClass  = !throwsLabel ? 'tbd' : spThrows.toUpperCase() === 'L' ? 'lhp' : 'rhp';
+
+  const vsLeft  = vsHandSplits?.vs_lhb  ?? vsHandSplits?.[0]?.vs_lhb  ?? null;
+  const vsRight = vsHandSplits?.vs_rhb  ?? vsHandSplits?.[0]?.vs_rhb  ?? null;
+  const atHome  = homeRoadSplits?.at_home ?? homeRoadSplits?.[0]?.at_home ?? null;
+  const onRoad  = homeRoadSplits?.on_road ?? homeRoadSplits?.[0]?.on_road ?? null;
+
+  const statDefs = tab === 'location' ? PITCHER_LOC_STATS : PITCHER_HAND_STATS;
+  const colAData = tab === 'location' ? atHome  : vsLeft;
+  const colBData = tab === 'location' ? onRoad  : vsRight;
+  const labelA   = tab === 'location' ? 'At Home' : 'vs LHB';
+  const labelB   = tab === 'location' ? 'On Road' : 'vs RHB';
+
+  const contextSplit   = side === 'Away' ? onRoad : atHome;
+  const contextERA     = contextSplit?.era  != null ? parseFloat(contextSplit.era)  : null;
+  const contextWHIP    = contextSplit?.whip != null ? parseFloat(contextSplit.whip) : null;
+  const isRunRisk      = contextERA  != null && contextERA  > 4.00;
+  const isHeavyTraffic = contextWHIP != null && contextWHIP > 1.50;
+
+  const handContextSplit = spThrows?.toUpperCase() === 'R' ? vsLeft
+    : spThrows?.toUpperCase() === 'L' ? vsRight : null;
+  const handOppAVG    = handContextSplit?.avg != null ? parseFloat(handContextSplit.avg) : null;
+  const handOppOPS    = handContextSplit?.ops != null ? parseFloat(handContextSplit.ops) : null;
+  const isContactRisk = handOppAVG != null && handOppAVG > 0.300;
+  const isPowerThreat = handOppOPS != null && handOppOPS > 0.900;
+
+  const locBadges  = (isRunRisk && isHeavyTraffic)
+    ? ['Exploitable']
+    : [isRunRisk && 'Run Risk', isHeavyTraffic && 'Heavy Traffic'].filter(Boolean);
+  const handBadges = (isContactRisk && isPowerThreat)
+    ? ['Exploitable']
+    : [isContactRisk && 'Contact Risk', isPowerThreat && 'Power Threat'].filter(Boolean);
+  const activeBadges = tab === 'location' ? locBadges : handBadges;
+
+  const isContextColA = (tab === 'location' && side === 'Home') || (tab === 'hand' && spThrows?.toUpperCase() === 'R');
+  const isContextColB = (tab === 'location' && side === 'Away') || (tab === 'hand' && spThrows?.toUpperCase() === 'L');
+  const flaggedKeys   = tab === 'location'
+    ? { ...(isRunRisk      && { era:  true }), ...(isHeavyTraffic  && { whip: true }) }
+    : { ...(isContactRisk  && { avg:  true }), ...(isPowerThreat   && { ops:  true }) };
+
+  return (
+    <div className="pitcher-split-card">
+      <div className="pitcher-split-header">
+        <div className="pitcher-split-identity">
+          {mlbId && <img src={logoUrl(mlbId)} alt={abbr} className="pitcher-split-logo" />}
+          {spPlayerId && (
+            <img src={headshotUrl(spPlayerId)} alt={spName || 'SP'} className="pitcher-split-headshot" onError={e => { e.target.style.display = 'none'; }} />
+          )}
+          <div>
+            <div className="pitcher-split-name">{hasSP ? spName : 'TBD'}</div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', marginTop: '0.2rem' }}>
+              <span style={{ fontSize: '0.65rem', color: 'rgba(255,255,255,0.4)' }}>{abbr} SP</span>
+              {throwsLabel && (
+                <span className={`sp-handedness-badge ${badgeClass}`}>{throwsLabel[0]}</span>
+              )}
+            </div>
+          </div>
+        </div>
+        {hasSP && activeBadges.length > 0 && (
+          <div className="sp-warning-badges">
+            {activeBadges.map(label => (
+              <span key={label} className="exploitable-tag">{label}</span>
+            ))}
+          </div>
+        )}
+        {hasSP && (
+          <div className="split-toggle">
+            <button
+              className={`split-toggle-btn${tab === 'location' ? ' active' : ''}`}
+              onClick={() => setTab('location')}
+            >
+              Home/Road
+            </button>
+            <button
+              className={`split-toggle-btn${tab === 'hand' ? ' active' : ''}`}
+              onClick={() => setTab('hand')}
+            >
+              vs Batters
+            </button>
+          </div>
+        )}
+      </div>
+
+      {!hasSP ? (
+        <div className="pitcher-split-tbd">Starting pitcher not yet announced</div>
+      ) : isUnavailable ? (
+        <div className="split-unavailable">Data currently unavailable</div>
+      ) : (
+        <div className="split-cols">
+          <div className="split-col">
+            <div className={`split-col-header${
+              (tab === 'location' && side === 'Home') ||
+              (tab === 'hand' && spThrows?.toUpperCase() === 'R')
+                ? ' split-col-header--context' : ''
+            }`}>{labelA}</div>
+            {isLoading ? <SkeletonSplitRows /> : statDefs.map(({ label, keyA, lowerBetter, dec }) => {
+              const valA = colAData?.[keyA];
+              const valB = colBData?.[keyA];
+              const { aClass } = pitcherAdvantage(valA, valB, lowerBetter);
+              const flagged = isContextColA && !!flaggedKeys[keyA];
+              return (
+                <div key={label} className={`split-stat-row${flagged ? ' split-stat-row--flagged' : ''}`}>
+                  <span className="split-stat-label">{label}</span>
+                  <span className={`split-stat-value ${aClass}`}>{fmtSplit(valA, dec)}</span>
+                </div>
+              );
+            })}
+          </div>
+
+          <div className="split-divider" />
+
+          <div className="split-col">
+            <div className={`split-col-header${
+              (tab === 'location' && side === 'Away') ||
+              (tab === 'hand' && spThrows?.toUpperCase() === 'L')
+                ? ' split-col-header--context' : ''
+            }`}>{labelB}</div>
+            {isLoading ? <SkeletonSplitRows /> : statDefs.map(({ label, keyA, lowerBetter, dec }) => {
+              const valA = colAData?.[keyA];
+              const valB = colBData?.[keyA];
+              const { bClass } = pitcherAdvantage(valA, valB, lowerBetter);
+              const flagged = isContextColB && !!flaggedKeys[keyA];
+              return (
+                <div key={label} className={`split-stat-row${flagged ? ' split-stat-row--flagged' : ''}`}>
+                  <span className="split-stat-label">{label}</span>
+                  <span className={`split-stat-value ${bClass}`}>{fmtSplit(valB, dec)}</span>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
