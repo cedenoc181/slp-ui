@@ -483,6 +483,14 @@ a > .hero-team-logo:hover {
   object-fit: contain;
 }
 
+.pitcher-split-headshot {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  object-fit: cover;
+  background: rgba(255, 255, 255, 0.05);
+}
+
 .pitcher-split-name {
   font-size: 0.85rem;
   font-weight: 700;
@@ -901,8 +909,14 @@ a > .hero-team-logo:hover {
   display: flex;
   flex-direction: column;
   gap: 0.35rem;
-  padding: 0.5rem 0;
+  padding: 0.5rem 0.4rem;
   border-bottom: 1px solid rgba(255,255,255,0.04);
+  border-radius: 6px;
+  transition: background 0.15s;
+}
+
+.h2h-pitcher-row:hover {
+  background: rgba(255,255,255,0.05);
 }
 
 .h2h-pitcher-row:last-child {
@@ -996,6 +1010,132 @@ a > .hero-team-logo:hover {
   background: rgba(255,255,255,0.08);
   color: #ffffff;
 }
+
+/* ── Pitcher Log Modal ────────────────────────────────────────────────────── */
+.pitcher-log-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.72);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 1rem;
+}
+
+.pitcher-log-modal {
+  background: #1e1e1e;
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 16px;
+  width: 100%;
+  max-width: 620px;
+  max-height: 80vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.pitcher-log-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 1.25rem;
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+  flex-shrink: 0;
+}
+
+.pitcher-log-modal-title {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #ffffff;
+}
+
+.pitcher-log-headshot {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  object-fit: cover;
+  background: rgba(255,255,255,0.06);
+}
+
+.pitcher-log-close {
+  background: transparent;
+  border: none;
+  color: rgba(255,255,255,0.5);
+  font-size: 1rem;
+  cursor: pointer;
+  padding: 0.25rem 0.5rem;
+  border-radius: 6px;
+  transition: background 0.15s, color 0.15s;
+}
+.pitcher-log-close:hover {
+  background: rgba(255,255,255,0.08);
+  color: #ffffff;
+}
+
+.pitcher-log-loading,
+.pitcher-log-empty {
+  padding: 2rem;
+  text-align: center;
+  color: rgba(255,255,255,0.4);
+  font-size: 0.8rem;
+}
+
+.pitcher-log-table-wrap {
+  overflow-y: auto;
+  flex: 1;
+}
+
+.pitcher-log-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.78rem;
+}
+
+.pitcher-log-table th {
+  position: sticky;
+  top: 0;
+  background: #1e1e1e;
+  color: rgba(255,255,255,0.45);
+  font-weight: 600;
+  text-transform: uppercase;
+  font-size: 0.62rem;
+  letter-spacing: 0.06em;
+  padding: 0.55rem 0.75rem;
+  text-align: center;
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+}
+.pitcher-log-table th:first-child { text-align: left; }
+
+.pitcher-log-table td {
+  padding: 0.5rem 0.75rem;
+  text-align: center;
+  color: rgba(255,255,255,0.8);
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+}
+.pitcher-log-table td:first-child { text-align: left; color: rgba(255,255,255,0.5); font-size: 0.72rem; }
+
+.pitcher-log-table tbody tr:hover {
+  background: rgba(255,255,255,0.03);
+}
+
+.pitcher-log-totals td {
+  background: rgba(255,255,255,0.04);
+  color: #ffffff;
+  font-weight: 600;
+  border-top: 1px solid rgba(255,255,255,0.12);
+}
+.pitcher-log-totals td:first-child {
+  color: rgba(255,255,255,0.7);
+  font-size: 0.7rem;
+}
+
+.pl-win  { color: #4caf50; font-weight: 700; }
+.pl-loss { color: #f44336; font-weight: 700; }
+.pl-nd   { color: rgba(255,255,255,0.3); }
 
 .h2h-pitcher-stats {
   display: flex;

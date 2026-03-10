@@ -414,7 +414,7 @@ function handednessLabel(throws) {
   return throws.toUpperCase() === 'L' ? 'LHP' : 'RHP';
 }
 
-function PitcherSplitCard({ abbr, mlbId, side, spName, spThrows, vsHandSplits, homeRoadSplits }) {
+function PitcherSplitCard({ abbr, mlbId, spPlayerId, side, spName, spThrows, vsHandSplits, homeRoadSplits }) {
   const [tab, setTab] = useState('location'); // 'location' | 'hand'
 
   const hasSP = !!spName;
@@ -471,6 +471,9 @@ function PitcherSplitCard({ abbr, mlbId, side, spName, spThrows, vsHandSplits, h
       <div className="pitcher-split-header">
         <div className="pitcher-split-identity">
           {mlbId && <img src={logoUrl(mlbId)} alt={abbr} className="pitcher-split-logo" />}
+          {spPlayerId && (
+            <img src={headshotUrl(spPlayerId)} alt={spName || 'SP'} className="pitcher-split-headshot" onError={e => { e.target.style.display = 'none'; }} />
+          )}
           <div>
             <div className="pitcher-split-name">{hasSP ? spName : 'TBD'}</div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', marginTop: '0.2rem' }}>
@@ -692,6 +695,14 @@ function normName(str) {
   return (str || '').toLowerCase().replace(/[^a-z0-9]/g, '');
 }
 
+function fmtIPRaw(rawIp) {
+  if (rawIp == null) return '—';
+  const full = Math.floor(rawIp);
+  const outs = Math.round((rawIp - full) * 3);
+  if (outs >= 3) return `${full + 1}.0`;
+  return `${full}.${outs}`;
+}
+
 function classifyPitchers(players) {
   const starters = [];
   const bullpen  = [];
@@ -714,13 +725,17 @@ function classifyPitchers(players) {
   return { starters, bullpen: topBullpen };
 }
 
-function H2HPitcherRow({ player, isTonight }) {
+function H2HPitcherRow({ player, isTonight, onClick }) {
   const era  = player.era  != null ? parseFloat(player.era).toFixed(2)  : '—';
   const whip = player.whip != null ? parseFloat(player.whip).toFixed(2) : '—';
   const ip   = player.innings_pitched != null ? parseFloat(player.innings_pitched).toFixed(1) : '—';
   const ks   = player.strikeouts != null ? player.strikeouts : '—';
   return (
-    <div className={`h2h-pitcher-row${isTonight ? ' h2h-pitcher-row--sp' : ''}`}>
+    <div
+      className={`h2h-pitcher-row${isTonight ? ' h2h-pitcher-row--sp' : ''}`}
+      onClick={onClick}
+      style={{ cursor: 'pointer' }}
+    >
       <div className="h2h-pitcher-main">
         <img
           src={headshotUrl(player.player_mlb_id)}
@@ -729,7 +744,11 @@ function H2HPitcherRow({ player, isTonight }) {
           onError={e => { e.target.style.display = 'none'; }}
         />
         <div className="h2h-pitcher-identity">
-          <Link to={`/player/${player.player_mlb_id}`} className="h2h-pitcher-name">
+          <Link
+            to={`/player/${player.player_mlb_id}`}
+            className="h2h-pitcher-name"
+            onClick={e => e.stopPropagation()}
+          >
             {player.player_name}
           </Link>
           <div className="h2h-pitcher-meta">
@@ -748,10 +767,126 @@ function H2HPitcherRow({ player, isTonight }) {
   );
 }
 
+function PitcherLogModal({ player, teamAId, teamBId, onClose }) {
+  const [logs, setLogs] = useState(null);
+
+  useEffect(() => {
+    gamesService.getHeadToHeadPitchers(teamAId, teamBId, { limit: 10, totals: false })
+      .then(data => {
+        const appearances = [];
+        for (const g of (data?.games || [])) {
+          const allPlayers = [...(g.team_a || []), ...(g.team_b || [])];
+          const found = allPlayers.find(p => p.player_mlb_id === player.player_mlb_id);
+          if (found) appearances.push({ date: g.date, game_pk: g.game_pk, ...found });
+        }
+        setLogs(appearances);
+      })
+      .catch(() => setLogs([]));
+  }, []); // eslint-disable-line
+
+  const totals = logs?.length > 0 ? (() => {
+    const t = { ip: 0, h: 0, er: 0, k: 0, bb: 0, hr: 0, pc: 0, w: 0, l: 0 };
+    for (const g of logs) {
+      t.ip += parseFloat(g.innings_pitched) || 0;
+      t.h  += g.hits_allowed        || 0;
+      t.er += g.earned_runs         || 0;
+      t.k  += g.strikeouts          || 0;
+      t.bb += g.walks               || 0;
+      t.hr += g.home_runs_allowed   || 0;
+      t.pc += g.pitches_thrown      || 0;
+      if (g.win)  t.w++;
+      if (g.loss) t.l++;
+    }
+    t.era   = t.ip > 0 ? ((t.er / t.ip) * 9).toFixed(2) : '—';
+    t.ipFmt = fmtIPRaw(t.ip);
+    return t;
+  })() : null;
+
+  return (
+    <div className="pitcher-log-backdrop" onClick={onClose}>
+      <div className="pitcher-log-modal" onClick={e => e.stopPropagation()}>
+        <div className="pitcher-log-modal-header">
+          <div className="pitcher-log-modal-title">
+            <img
+              src={headshotUrl(player.player_mlb_id)}
+              alt={player.player_name}
+              className="pitcher-log-headshot"
+              onError={e => { e.target.style.display = 'none'; }}
+            />
+            <span>{player.player_name} — H2H Log</span>
+          </div>
+          <button className="pitcher-log-close" onClick={onClose}>✕</button>
+        </div>
+
+        {logs === null ? (
+          <div className="pitcher-log-loading">Loading…</div>
+        ) : logs.length === 0 ? (
+          <div className="pitcher-log-empty">No game logs found</div>
+        ) : (
+          <div className="pitcher-log-table-wrap">
+            <table className="pitcher-log-table">
+              <thead>
+                <tr>
+                  <th>Date</th>
+                  <th>IP</th>
+                  <th>H</th>
+                  <th>ER</th>
+                  <th>K</th>
+                  <th>BB</th>
+                  <th>HR</th>
+                  <th>PC</th>
+                  <th>W/L</th>
+                </tr>
+              </thead>
+              <tbody>
+                {logs.map((g, i) => (
+                  <tr key={g.game_pk ?? i}>
+                    <td>{g.date}</td>
+                    <td>{fmtIPRaw(g.innings_pitched)}</td>
+                    <td>{g.hits_allowed ?? '—'}</td>
+                    <td>{g.earned_runs ?? '—'}</td>
+                    <td>{g.strikeouts ?? '—'}</td>
+                    <td>{g.walks ?? '—'}</td>
+                    <td>{g.home_runs_allowed ?? '—'}</td>
+                    <td>{g.pitches_thrown ?? '—'}</td>
+                    <td>
+                      {g.win
+                        ? <span className="pl-win">W</span>
+                        : g.loss
+                          ? <span className="pl-loss">L</span>
+                          : <span className="pl-nd">—</span>}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+              {totals && (
+                <tfoot>
+                  <tr className="pitcher-log-totals">
+                    <td>Totals ({logs.length}G) · ERA {totals.era}</td>
+                    <td>{totals.ipFmt}</td>
+                    <td>{totals.h}</td>
+                    <td>{totals.er}</td>
+                    <td>{totals.k}</td>
+                    <td>{totals.bb}</td>
+                    <td>{totals.hr}</td>
+                    <td>{totals.pc}</td>
+                    <td>{totals.w}W-{totals.l}L</td>
+                  </tr>
+                </tfoot>
+              )}
+            </table>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
 const BULLPEN_INITIAL = 2;
 
-function H2HPitchersCard({ abbr, mlbId, oppAbbr, players, spName, gameCount }) {
+function H2HPitchersCard({ abbr, mlbId, oppAbbr, teamAId, teamBId, players, spName, gameCount }) {
   const [bullpenExpanded, setBullpenExpanded] = useState(false);
+  const [selectedPitcher, setSelectedPitcher] = useState(null);
   const { starters, bullpen } = classifyPitchers(players);
   const normSP = normName(spName);
   const isTonightSP = (p) => {
@@ -777,6 +912,15 @@ function H2HPitchersCard({ abbr, mlbId, oppAbbr, players, spName, gameCount }) {
 
   return (
     <div className="h2h-card">
+      {selectedPitcher && (
+        <PitcherLogModal
+          player={selectedPitcher}
+          teamAId={teamAId}
+          teamBId={teamBId}
+          onClose={() => setSelectedPitcher(null)}
+        />
+      )}
+
       <div className="h2h-card-header">
         {mlbId && <img src={logoUrl(mlbId)} alt={abbr} className="h2h-card-logo" />}
         <span className="h2h-card-title">{abbr} Pitchers</span>
@@ -790,7 +934,12 @@ function H2HPitchersCard({ abbr, mlbId, oppAbbr, players, spName, gameCount }) {
             .sort((a, b) => (isTonightSP(b) ? 1 : 0) - (isTonightSP(a) ? 1 : 0))
             .slice(0, 5)
             .map(p => (
-              <H2HPitcherRow key={p.player_mlb_id ?? p.player_name} player={p} isTonight={isTonightSP(p)} />
+              <H2HPitcherRow
+                key={p.player_mlb_id ?? p.player_name}
+                player={p}
+                isTonight={isTonightSP(p)}
+                onClick={() => setSelectedPitcher(p)}
+              />
             ))}
         </>
       )}
@@ -799,7 +948,12 @@ function H2HPitchersCard({ abbr, mlbId, oppAbbr, players, spName, gameCount }) {
         <>
           <div className="h2h-group-label">Bullpen vs {oppAbbr}</div>
           {visibleBullpen.map(p => (
-            <H2HPitcherRow key={p.player_mlb_id ?? p.player_name} player={p} isTonight={false} />
+            <H2HPitcherRow
+              key={p.player_mlb_id ?? p.player_name}
+              player={p}
+              isTonight={false}
+              onClick={() => setSelectedPitcher(p)}
+            />
           ))}
           {hiddenCount > 0 && (
             <button
@@ -925,6 +1079,8 @@ export default function MatchupDetailComp() {
   const [homeSPVsHandSplits,   setHomeSPVsHandSplits]   = useState(null);
   const [homeSPHomeRoadSplits, setHomeSPHomeRoadSplits] = useState(null);
   const [homeSPThrows,         setHomeSPThrows]         = useState(state?.homeSPThrows ?? null);
+  const [awaySPPlayerMlbId,    setAwaySPPlayerMlbId]    = useState(null);
+  const [homeSPPlayerMlbId,    setHomeSPPlayerMlbId]    = useState(null);
 
   const [awayHomeRoadSplits, setAwayHomeRoadSplits] = useState(null);
   const [homeHomeRoadSplits, setHomeHomeRoadSplits] = useState(null);
@@ -1010,6 +1166,7 @@ export default function MatchupDetailComp() {
         setAwaySPVsHandSplits(normalizePitcherVsHandSplits(vsHand) ?? false);
         setAwaySPHomeRoadSplits(normalizePitcherHomeRoadSplits(homeRoad, season, spSeasonTypeCode) ?? false);
         setAwaySPThrows(info?.throws ?? null);
+        setAwaySPPlayerMlbId(info?.player_mlb_id ?? null);
       }).catch(() => {
         setAwaySPVsHandSplits(false);
         setAwaySPHomeRoadSplits(false);
@@ -1025,6 +1182,7 @@ export default function MatchupDetailComp() {
         setHomeSPVsHandSplits(normalizePitcherVsHandSplits(vsHand) ?? false);
         setHomeSPHomeRoadSplits(normalizePitcherHomeRoadSplits(homeRoad, season, spSeasonTypeCode) ?? false);
         setHomeSPThrows(info?.throws ?? null);
+        setHomeSPPlayerMlbId(info?.player_mlb_id ?? null);
       }).catch(() => {
         setHomeSPVsHandSplits(false);
         setHomeSPHomeRoadSplits(false);
@@ -1154,6 +1312,7 @@ export default function MatchupDetailComp() {
             <PitcherSplitCard
               abbr={awayAbbr}
               mlbId={awayMlbId}
+              spPlayerId={awaySPPlayerMlbId}
               side="Away"
               spName={game.away_sp_name || null}
               spThrows={awaySPThrows}
@@ -1163,6 +1322,7 @@ export default function MatchupDetailComp() {
             <PitcherSplitCard
               abbr={homeAbbr}
               mlbId={homeMlbId}
+              spPlayerId={homeSPPlayerMlbId}
               side="Home"
               spName={game.home_sp_name || null}
               spThrows={homeSPThrows}
@@ -1234,6 +1394,8 @@ export default function MatchupDetailComp() {
                 abbr={awayAbbr}
                 mlbId={awayMlbId}
                 oppAbbr={homeAbbr}
+                teamAId={game.away_team_id}
+                teamBId={game.home_team_id}
                 players={h2hPitchers.team_a}
                 spName={game.away_sp_name || null}
                 gameCount={h2hPitchers.game_count}
@@ -1242,6 +1404,8 @@ export default function MatchupDetailComp() {
                 abbr={homeAbbr}
                 mlbId={homeMlbId}
                 oppAbbr={awayAbbr}
+                teamAId={game.away_team_id}
+                teamBId={game.home_team_id}
                 players={h2hPitchers.team_b}
                 spName={game.home_sp_name || null}
                 gameCount={h2hPitchers.game_count}
