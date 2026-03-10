@@ -47,7 +47,7 @@ export default function MatchupHero({
 
   return (
     <div className={`detail-hero${isFinal ? ' hero-final' : isLive ? ' hero-live' : ''}`}>
-      <PredictionStrip publicFav={publicFav} scoutFav={scoutFav} />
+      {/* <PredictionStrip publicFav={publicFav} scoutFav={scoutFav} /> */}
       {/* Status strip */}
       <div className="hero-status-strip">
         {isFinal     && <span className="hero-badge badge-final">FINAL</span>}

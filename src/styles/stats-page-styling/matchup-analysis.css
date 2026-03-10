@@ -1219,8 +1219,8 @@ a > .hero-team-logo:hover {
 .h2h-pitcher-stats {
   display: flex;
   gap: 0;
-  margin-left: 38px;
   width: 100%;
+  margin-top: 0.15rem;
 }
 
 .h2h-pitcher-stats .h2h-pstat {
