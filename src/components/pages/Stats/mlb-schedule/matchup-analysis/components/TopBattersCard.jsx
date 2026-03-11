@@ -112,7 +112,7 @@ export default function TopBattersCard({ awayAbbr, homeAbbr, awayMlbId, homeMlbI
                 onError={e => { e.target.style.display = 'none'; }}
               />
               <div className="top-batter-info">
-                <Link to={`/player/${p.player_mlb_id}`} className="top-batter-name">
+                <Link to={`/player/${p.player_mlb_id}`} className="top-batter-name" onClick={() => window.scrollTo(0, 0)}>
                   {p.player_name}
                 </Link>
                 <GameSparkbar games={p.games} />

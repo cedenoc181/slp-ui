@@ -32,7 +32,7 @@ export default function InsightsPanel({ insights }) {
             {ins.logoSrc && <img src={ins.logoSrc} alt="" className="insight-team-logo" />}
           </span>
           <div className="insight-body">
-            <Link to={`/player/${ins.playerSlug}`} className="insight-player-link">
+            <Link to={`/player/${ins.playerSlug}`} className="insight-player-link" onClick={() => window.scrollTo(0, 0)}>
               {ins.headline}
             </Link>
             <div className="insight-metrics">

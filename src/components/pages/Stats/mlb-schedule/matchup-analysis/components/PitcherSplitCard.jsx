@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { logoUrl, headshotUrl } from '../../utils';
 import { SkeletonSplitRows } from './Skeletons';
 import { fmtSplit } from '../utils/analysisUtils';
@@ -107,7 +108,10 @@ export default function PitcherSplitCard({ abbr, mlbId, spPlayerId, side, spName
             <img src={headshotUrl(spPlayerId)} alt={spName || 'SP'} className="pitcher-split-headshot" onError={e => { e.target.style.display = 'none'; }} />
           )}
           <div>
-            <div className="pitcher-split-name">{hasSP ? spName : 'TBD'}</div>
+            {hasSP && spPlayerId
+              ? <Link to={`/player/${spPlayerId}`} className="pitcher-split-name" onClick={() => window.scrollTo(0, 0)}>{spName}</Link>
+              : <div className="pitcher-split-name">{hasSP ? spName : 'TBD'}</div>
+            }
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', marginTop: '0.2rem' }}>
               <span style={{ fontSize: '0.65rem', color: 'rgba(255,255,255,0.4)' }}>{abbr} SP</span>
               {throwsLabel && (

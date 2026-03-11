@@ -552,6 +552,8 @@ a > .hero-team-logo:hover {
 .pitcher-split-name {
   font-size: 0.85rem;
   font-weight: 700;
+  color: #fff;
+  text-decoration: none;
 }
 
 .sp-handedness-badge {
