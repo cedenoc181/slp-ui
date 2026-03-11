@@ -704,6 +704,7 @@ a > .hero-team-logo:hover {
 }
 
 .top-batter-name {
+  display: inline;
   font-size: 0.78rem;
   font-weight: 600;
   color: #fff;
@@ -711,6 +712,7 @@ a > .hero-team-logo:hover {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  width: fit-content;
 }
 
 .top-batter-name:hover {
@@ -1262,6 +1264,17 @@ a > .hero-team-logo:hover {
 .pl-nd   { color: rgba(255,255,255,0.3); }
 
 @media (max-width: 430px) {
+  .deep-dive-btn {
+    font-size: 0.72rem;
+    padding: 0.5rem 1rem;
+    gap: 0.35rem;
+    letter-spacing: 0.02em;
+  }
+  .deep-dive-btn svg {
+    width: 13px;
+    height: 13px;
+  }
+
   .pitcher-log-modal {
     border-radius: 12px;
     max-height: 88vh;
