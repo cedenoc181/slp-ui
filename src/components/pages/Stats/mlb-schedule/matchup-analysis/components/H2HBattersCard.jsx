@@ -3,6 +3,12 @@ import { Link } from 'react-router-dom';
 import { headshotUrl, logoUrl } from '../../utils';
 import gamesService from '../../../../../../data/services/gamesService';
 
+function fmtLogDate(dateStr) {
+  if (!dateStr) return '—';
+  const [y, m, d] = dateStr.split('-');
+  return `${m}-${d}-${y?.slice(2)}`;
+}
+
 function fmtAvg(val) {
   if (val == null) return '—';
   const n = parseFloat(val);
@@ -150,7 +156,7 @@ function BatterLogModal({ player, teamAId, teamBId, onClose }) {
               <tbody>
                 {logs.map((g, i) => (
                   <tr key={g.game_pk ?? i}>
-                    <td>{g.date}</td>
+                    <td>{fmtLogDate(g.date)}</td>
                     <td>{g.at_bats    ?? '—'}</td>
                     <td>{g.hits       ?? '—'}</td>
                     <td>{g.home_runs  ?? '—'}</td>

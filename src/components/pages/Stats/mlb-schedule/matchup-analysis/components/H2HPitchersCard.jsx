@@ -9,6 +9,12 @@ function normName(str) {
   return (str || '').toLowerCase().replace(/[^a-z0-9]/g, '');
 }
 
+function fmtLogDate(dateStr) {
+  if (!dateStr) return '—';
+  const [y, m, d] = dateStr.split('-');
+  return `${m}-${d}-${y?.slice(2)}`;
+}
+
 function fmtIPRaw(rawIp) {
   if (rawIp == null) return '—';
   const full = Math.floor(rawIp);
@@ -152,7 +158,7 @@ function PitcherLogModal({ player, teamAId, teamBId, onClose }) {
               <tbody>
                 {logs.map((g, i) => (
                   <tr key={g.game_pk ?? i}>
-                    <td>{g.date}</td>
+                    <td>{fmtLogDate(g.date)}</td>
                     <td>{fmtIPRaw(g.innings_pitched)}</td>
                     <td>{g.hits_allowed ?? '—'}</td>
                     <td>{g.earned_runs ?? '—'}</td>

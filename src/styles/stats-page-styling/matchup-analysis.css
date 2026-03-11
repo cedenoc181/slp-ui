@@ -1022,6 +1022,7 @@ a > .hero-team-logo:hover {
 }
 
 .h2h-pitcher-name {
+  display: inline;
   font-size: 0.8rem;
   font-weight: 600;
   color: #fff;
@@ -1029,9 +1030,10 @@ a > .hero-team-logo:hover {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  width: fit-content;
 }
 
-.h2h-pitcher-name:hover { color: #1976D2; }
+.h2h-pitcher-name:hover { color: #90caf9; text-decoration: underline; }
 
 .h2h-sp-badge {
   display: inline-block;
@@ -1258,6 +1260,29 @@ a > .hero-team-logo:hover {
 .pl-win  { color: #4caf50; font-weight: 700; }
 .pl-loss { color: #f44336; font-weight: 700; }
 .pl-nd   { color: rgba(255,255,255,0.3); }
+
+@media (max-width: 430px) {
+  .pitcher-log-modal {
+    border-radius: 12px;
+    max-height: 88vh;
+  }
+  .pitcher-log-modal-header {
+    padding: 0.75rem 1rem;
+  }
+  .pitcher-log-modal-title {
+    font-size: 0.8rem;
+  }
+  .pitcher-log-table {
+    font-size: 0.7rem;
+  }
+  .pitcher-log-table th {
+    padding: 0.4rem 0.4rem;
+    font-size: 0.58rem;
+  }
+  .pitcher-log-table td {
+    padding: 0.4rem 0.4rem;
+  }
+}
 
 .h2h-pitcher-stats {
   display: flex;
