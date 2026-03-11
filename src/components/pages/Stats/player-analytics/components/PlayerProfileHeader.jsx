@@ -43,6 +43,7 @@
  */
 
 import React, { memo } from 'react';
+import { Link } from 'react-router-dom';
 
 /**
  * PlayerProfileHeader - Displays player identity and bio information
@@ -55,6 +56,26 @@ import React, { memo } from 'react';
  * @param {Function} props.setTwoWayViewMode - Callback to switch TWP view
  * @param {Function} props.formatDate - Function to format date strings
  */
+function formatStartLabel(game, internalId, playerName) {
+  if (!game) return null;
+  const isAway = internalId
+    ? String(game.away_sp_id) === String(internalId)
+    : game.away_sp_name?.toLowerCase().trim() === (playerName || '').toLowerCase().trim();
+  const opp = isAway ? (game.home_team_name || 'OPP') : (game.away_team_name || 'OPP');
+
+  const today = new Date();
+  const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+  const isToday = game.date === todayStr;
+
+  const atLabel = isAway ? 'at' : 'vs';
+
+  if (isToday) return { label: `Starts Today ${atLabel} ${opp}`, isToday: true };
+
+  const d = new Date(game.date + 'T12:00:00');
+  const dateStr = d.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+  return { label: `Starting ${dateStr} ${atLabel} ${opp}`, isToday: false };
+}
+
 const PlayerProfileHeader = memo(function PlayerProfileHeader({
   playerInfo,
   playerAge,
@@ -62,6 +83,7 @@ const PlayerProfileHeader = memo(function PlayerProfileHeader({
   twoWayViewMode,
   setTwoWayViewMode,
   formatDate,
+  upcomingStart,
 }) {
   // Get team logo URL
   const getTeamLogoUrl = (teamId) => {
@@ -113,7 +135,27 @@ const PlayerProfileHeader = memo(function PlayerProfileHeader({
                 <span className={`pps-status-dot ${playerInfo.injury_status?.toLowerCase() || (playerInfo.active ? 'active' : 'inactive')}`}></span>
                 {playerInfo.injury_status || playerInfo.roster_status || (playerInfo.active ? 'Active' : 'Inactive')}
               </div>
-              
+
+              {/* Upcoming Start Badge */}
+              {(() => {
+                if (!upcomingStart) return null;
+                const { game: startGame, internalId, playerName } = upcomingStart;
+                const start = formatStartLabel(startGame, internalId, playerName);
+                if (!start) return null;
+                const gameId = startGame.id ?? startGame.game_pk;
+                return (
+                  <Link
+                    to={`/mlb-schedule/${gameId}/analysis`}
+                    className={`pps-start-badge${start.isToday ? ' pps-start-badge--today' : ''}`}
+                    onClick={() => window.scrollTo(0, 0)}
+                  >
+                    <span className="pps-start-badge-dot" />
+                    {start.label}
+                    <span className="pps-start-badge-arrow">→</span>
+                  </Link>
+                );
+              })()}
+
               {/* Two-Way Player Toggle */}
               {isTwoWay && (
                 <div className="pps-twoway-toggle">

@@ -63,6 +63,7 @@ import {
 // SERVICES
 // ============================================================================
 import playerStatsService from '../../../../data/services/playerStatsServices';
+import scheduleService from '../../../../data/services/scheduleService';
 
 // ============================================================================
 // CONSTANTS
@@ -239,6 +240,41 @@ function PlayerProfileStats() {
 
   // ========== PLAYER AGE ==========
   const playerAge = useMemo(() => calculatePlayerAge(playerInfo?.birth_date), [playerInfo]);
+
+  // ========== UPCOMING START (PITCHER ONLY) ==========
+  const [upcomingStart, setUpcomingStart] = useState(null);
+
+  useEffect(() => {
+    const internalId = playerInfo?.id;
+    if (!internalId || !checkIsPitcher(playerInfo)) { setUpcomingStart(null); return; }
+    let cancelled = false;
+    const year = new Date().getFullYear();
+    const playerName = (playerInfo.full_name || playerInfo.player_name || '').toLowerCase().trim();
+    // Fetch today + all upcoming game types (spring, regular, postseason) so no start is missed.
+    Promise.allSettled([
+      scheduleService.getTodayGames(),
+      scheduleService.getUpcomingGames({ season: year, limit: 30 }),
+    ]).then(([todayRes, upcomingRes]) => {
+      if (cancelled) return;
+      const all = [
+        ...(todayRes.status   === 'fulfilled' && Array.isArray(todayRes.value)   ? todayRes.value   : []),
+        ...(upcomingRes.status === 'fulfilled' && Array.isArray(upcomingRes.value) ? upcomingRes.value : []),
+      ];
+      const match = all.find(g => {
+        // Primary: internal ID match
+        if (String(g.away_sp_id) === String(internalId)) return true;
+        if (String(g.home_sp_id) === String(internalId)) return true;
+        // Fallback: name match for games where sp_id is not yet set
+        if (playerName) {
+          if (g.away_sp_name?.toLowerCase().trim() === playerName) return true;
+          if (g.home_sp_name?.toLowerCase().trim() === playerName) return true;
+        }
+        return false;
+      });
+      setUpcomingStart(match ? { game: match, internalId, playerName } : null);
+    }).catch(() => {});
+    return () => { cancelled = true; };
+  }, [playerInfo]);
 
   // ========== AVAILABLE SEASONS ==========
   const availableSeasons = useMemo(() => getAvailableSeasons(careerStats), [careerStats]);
@@ -545,6 +581,7 @@ function PlayerProfileStats() {
         twoWayViewMode={twoWayViewMode}
         setTwoWayViewMode={handleTwoWayViewModeChange}
         formatDate={formatDate}
+        upcomingStart={upcomingStart}
       />
 
       <main className="pps-content">

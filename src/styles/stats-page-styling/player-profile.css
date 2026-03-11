@@ -173,6 +173,47 @@
 
 .pps-status-dot.injured, .pps-status-dot.il { background: var(--pps-danger); }
 
+/* Upcoming Start Badge */
+.pps-start-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  align-self: flex-start;
+  padding: 0.3rem 0.7rem;
+  border-radius: 20px;
+  border: 1px solid rgba(144, 202, 249, 0.35);
+  background: rgba(144, 202, 249, 0.08);
+  color: var(--pps-accent-blue);
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-decoration: none;
+  transition: background 0.15s, border-color 0.15s;
+}
+.pps-start-badge:hover {
+  background: rgba(144, 202, 249, 0.18);
+  border-color: rgba(144, 202, 249, 0.6);
+}
+.pps-start-badge--today {
+  border-color: rgba(102, 187, 106, 0.45);
+  background: rgba(102, 187, 106, 0.1);
+  color: var(--pps-success);
+}
+.pps-start-badge--today:hover {
+  background: rgba(102, 187, 106, 0.2);
+  border-color: rgba(102, 187, 106, 0.7);
+}
+.pps-start-badge-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: currentColor;
+  flex-shrink: 0;
+}
+.pps-start-badge-arrow {
+  font-size: 0.7rem;
+  opacity: 0.7;
+}
+
 /* Quick Stats */
 .pps-quick-stats {
   display: flex;
