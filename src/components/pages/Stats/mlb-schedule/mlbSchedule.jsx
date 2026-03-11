@@ -57,6 +57,8 @@ function getCurrentInning(boxscore) {
 function MatchupRow({ game, onClick, showDate, boxscore }) {
   const awayMlbId = getTeamMlbId(game.away_team_id);
   const homeMlbId = getTeamMlbId(game.home_team_id);
+  const awayAbbr = getTeamById(game.away_team_id)?.id || game.away_team_name;
+  const homeAbbr = getTeamById(game.home_team_id)?.id || game.home_team_name;
 
   const statusLower = game.status?.toLowerCase() || '';
   const isFinal = statusLower === 'final' || statusLower === 'game over' || statusLower === 'completed' || statusLower === 'completed early';
@@ -88,7 +90,10 @@ function MatchupRow({ game, onClick, showDate, boxscore }) {
           <img src={logoUrl(awayMlbId)} alt={game.away_team_name} className="matchup-team-logo" />
         )}
         <div className="matchup-team-info">
-          <span className="matchup-team-name">{game.away_team_name || 'Away'}</span>
+          <span className="matchup-team-name">
+            <span className="team-name-full">{game.away_team_name || 'Away'}</span>
+            <span className="team-name-abbr">{awayAbbr}</span>
+          </span>
           {isFinal && (
             <span className={`matchup-team-score ${game.winning_team_id === game.away_team_id ? 'score-win' : 'score-loss'}`}>
               {game.away_runs_score}
@@ -116,7 +121,10 @@ function MatchupRow({ game, onClick, showDate, boxscore }) {
       {/* Home Team */}
       <div className="matchup-team home-team">
         <div className="matchup-team-info home-info">
-          <span className="matchup-team-name">{game.home_team_name || 'Home'}</span>
+          <span className="matchup-team-name">
+            <span className="team-name-full">{game.home_team_name || 'Home'}</span>
+            <span className="team-name-abbr">{homeAbbr}</span>
+          </span>
           {isFinal && (
             <span className={`matchup-team-score ${game.winning_team_id === game.home_team_id ? 'score-win' : 'score-loss'}`}>
               {game.home_runs_score}

@@ -1343,6 +1343,36 @@ a.pitcher-name-lg:hover {
   .card-title-sub { display: none; }
 }
 
+@media (max-width: 400px) {
+  .pitcher-matchup {
+    gap: 0.5rem;
+  }
+  .pitcher-card {
+    padding: 0.75rem 0.75rem;
+    gap: 0.2rem;
+  }
+  .pitcher-card-logo {
+    width: 26px;
+    height: 26px;
+  }
+  .pitcher-name-lg {
+    font-size: 0.85rem;
+  }
+  .pitcher-wl-record {
+    font-size: 0.7rem;
+  }
+  .pitcher-team {
+    font-size: 0.6rem;
+  }
+  .pitcher-headshot {
+    width: 54px;
+    height: 62px;
+  }
+  .pitcher-info-row {
+    gap: 0.5rem;
+  }
+}
+
 @media (max-width: 390px) {
   .matchup-detail-page {
     zoom: 0.84;

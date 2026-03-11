@@ -894,6 +894,27 @@ a > .hero-team-logo:hover {
   opacity: 1;
 }
 
+/* ── Analysis page back button (smaller ghost pill) ──────── */
+.analysis-back-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  background: transparent;
+  color: #fff;
+  text-decoration: none;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  padding: 0.45rem 1.1rem;
+  border-radius: 50px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  transition: background 0.15s, border-color 0.15s;
+}
+.analysis-back-btn:hover {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(255, 255, 255, 0.35);
+}
+
 /* ── Deep Dive CTA button ─────────────────────────────────── */
 .deep-dive-btn {
   display: inline-flex;
@@ -1273,6 +1294,12 @@ a > .hero-team-logo:hover {
   .deep-dive-btn svg {
     width: 13px;
     height: 13px;
+  }
+  .matchup-detail-top-nav .back-link {
+    font-size: 0.72rem;
+    padding: 0.5rem 1rem;
+    gap: 0.35rem;
+    letter-spacing: 0.02em;
   }
 
   .pitcher-log-modal {
