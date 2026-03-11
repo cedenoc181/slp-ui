@@ -329,6 +329,19 @@ a > .hero-team-logo:hover {
   gap: 1rem;
 }
 
+/* ── Offensive Splits + Top Batters combined grid ─────────── */
+.analysis-splits-batters-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-template-areas:
+    "away home"
+    "batters batters";
+  gap: 1rem;
+}
+.asb-away        { grid-area: away; }
+.asb-home        { grid-area: home; }
+.asb-top-batters { grid-area: batters; }
+
 /* ── Split Compare Card (team batting splits) ─────────────── */
 .split-compare-card {
   background: #1e1e1e;
@@ -486,6 +499,34 @@ a > .hero-team-logo:hover {
   justify-content: space-between;
   padding: 1rem 1.25rem 0.75rem;
   border-bottom: 1px solid rgba(255,255,255,0.06);
+}
+
+@media (max-width: 600px) {
+  .pitcher-split-header {
+    flex-wrap: wrap;
+    row-gap: 0.5rem;
+  }
+  .pitcher-split-identity {
+    order: 1;
+    flex: 1 1 auto;
+  }
+  .pitcher-split-header .split-toggle {
+    order: 2;
+    flex: 0 0 auto;
+  }
+  .pitcher-split-header .sp-warning-badges {
+    order: 3;
+    flex: 0 0 100%;
+    margin-top: 0;
+  }
+
+  .analysis-splits-batters-grid {
+    grid-template-columns: 1fr;
+    grid-template-areas:
+      "away"
+      "home"
+      "batters";
+  }
 }
 
 .pitcher-split-identity {

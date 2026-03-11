@@ -282,39 +282,41 @@ export default function MatchupDetailComp() {
           <InsightsPanel insights={insights} />
         </div>
 
-        {/* D. Offensive Splits */}
+        {/* D. Offensive Splits + E. Top Batters This Week */}
         <div className="analysis-section">
           <div className="analysis-section-title">Offensive Splits</div>
-          <div className="analysis-two-col">
-            <SplitCompareCard
-              abbr={awayAbbr}
-              mlbId={awayMlbId}
-              side="Away"
-              opposingThrows={homeSPThrows}
-              vsHandSplits={awaySplits}
-              homeRoadSplits={awayHomeRoadSplits}
-            />
-            <SplitCompareCard
-              abbr={homeAbbr}
-              mlbId={homeMlbId}
-              side="Home"
-              opposingThrows={awaySPThrows}
-              vsHandSplits={homeSplits}
-              homeRoadSplits={homeHomeRoadSplits}
-            />
+          <div className="analysis-splits-batters-grid">
+            <div className="asb-away">
+              <SplitCompareCard
+                abbr={awayAbbr}
+                mlbId={awayMlbId}
+                side="Away"
+                opposingThrows={homeSPThrows}
+                vsHandSplits={awaySplits}
+                homeRoadSplits={awayHomeRoadSplits}
+              />
+            </div>
+            <div className="asb-home">
+              <SplitCompareCard
+                abbr={homeAbbr}
+                mlbId={homeMlbId}
+                side="Home"
+                opposingThrows={awaySPThrows}
+                vsHandSplits={homeSplits}
+                homeRoadSplits={homeHomeRoadSplits}
+              />
+            </div>
+            <div className="asb-top-batters">
+              <TopBattersCard
+                awayAbbr={awayAbbr}
+                homeAbbr={homeAbbr}
+                awayMlbId={awayMlbId}
+                homeMlbId={homeMlbId}
+                awayData={awayHotLeaders}
+                homeData={homeHotLeaders}
+              />
+            </div>
           </div>
-        </div>
-
-        {/* E. Top Batters This Week */}
-        <div className="analysis-section">
-          <TopBattersCard
-            awayAbbr={awayAbbr}
-            homeAbbr={homeAbbr}
-            awayMlbId={awayMlbId}
-            homeMlbId={homeMlbId}
-            awayData={awayHotLeaders}
-            homeData={homeHotLeaders}
-          />
         </div>
 
         {/* F. H2H History — Pitchers / Batters toggle */}

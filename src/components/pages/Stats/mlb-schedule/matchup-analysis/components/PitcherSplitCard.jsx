@@ -19,14 +19,31 @@ const PITCHER_LOC_STATS = [
   { label: 'BB',   keyA: 'walks_allowed',   dec: 0, lowerBetter: true },
 ];
 
-function pitcherAdvantage(a, b, lowerBetter) {
-  if (a == null || b == null) return { aClass: '', bClass: '' };
-  const na = parseFloat(a), nb = parseFloat(b);
-  if (isNaN(na) || isNaN(nb) || na === nb) return { aClass: '', bClass: '' };
-  const aBetter = lowerBetter ? na < nb : na > nb;
-  return aBetter
-    ? { aClass: 'advantage', bClass: 'disadvantage' }
-    : { aClass: 'disadvantage', bClass: 'advantage' };
+// Absolute thresholds — each value is evaluated independently, not relative to the other column
+const STAT_THRESHOLDS = {
+  avg:             { good: 0.230, bad: 0.280, lowerBetter: true  },
+  ops:             { good: 0.680, bad: 0.780, lowerBetter: true  },
+  k_per_9:         { good: 8.5,  bad: 6.0,   lowerBetter: false },
+  hr_per_9:        { good: 0.9,  bad: 1.3,   lowerBetter: true  },
+  whip:            { good: 1.20, bad: 1.45,  lowerBetter: true  },
+  era:             { good: 3.50, bad: 4.50,  lowerBetter: true  },
+  walks_allowed:   { good: 2.0,  bad: 4.0,   lowerBetter: true  },
+  innings_pitched: null, // informational only
+};
+
+function statClass(value, keyA) {
+  const t = STAT_THRESHOLDS[keyA];
+  if (!t || value == null) return '';
+  const n = parseFloat(value);
+  if (isNaN(n)) return '';
+  if (t.lowerBetter) {
+    if (n <= t.good) return 'advantage';
+    if (n >= t.bad)  return 'disadvantage';
+  } else {
+    if (n >= t.good) return 'advantage';
+    if (n <= t.bad)  return 'disadvantage';
+  }
+  return '';
 }
 
 function handednessLabel(throws) {
@@ -136,15 +153,13 @@ export default function PitcherSplitCard({ abbr, mlbId, spPlayerId, side, spName
               (tab === 'hand' && spThrows?.toUpperCase() === 'R')
                 ? ' split-col-header--context' : ''
             }`}>{labelA}</div>
-            {isLoading ? <SkeletonSplitRows /> : statDefs.map(({ label, keyA, lowerBetter, dec }) => {
+            {isLoading ? <SkeletonSplitRows /> : statDefs.map(({ label, keyA, dec }) => {
               const valA = colAData?.[keyA];
-              const valB = colBData?.[keyA];
-              const { aClass } = pitcherAdvantage(valA, valB, lowerBetter);
               const flagged = isContextColA && !!flaggedKeys[keyA];
               return (
                 <div key={label} className={`split-stat-row${flagged ? ' split-stat-row--flagged' : ''}`}>
                   <span className="split-stat-label">{label}</span>
-                  <span className={`split-stat-value ${aClass}`}>{fmtSplit(valA, dec)}</span>
+                  <span className={`split-stat-value ${statClass(valA, keyA)}`}>{fmtSplit(valA, dec)}</span>
                 </div>
               );
             })}
@@ -158,15 +173,13 @@ export default function PitcherSplitCard({ abbr, mlbId, spPlayerId, side, spName
               (tab === 'hand' && spThrows?.toUpperCase() === 'L')
                 ? ' split-col-header--context' : ''
             }`}>{labelB}</div>
-            {isLoading ? <SkeletonSplitRows /> : statDefs.map(({ label, keyA, lowerBetter, dec }) => {
-              const valA = colAData?.[keyA];
+            {isLoading ? <SkeletonSplitRows /> : statDefs.map(({ label, keyA, dec }) => {
               const valB = colBData?.[keyA];
-              const { bClass } = pitcherAdvantage(valA, valB, lowerBetter);
               const flagged = isContextColB && !!flaggedKeys[keyA];
               return (
                 <div key={label} className={`split-stat-row${flagged ? ' split-stat-row--flagged' : ''}`}>
                   <span className="split-stat-label">{label}</span>
-                  <span className={`split-stat-value ${bClass}`}>{fmtSplit(valB, dec)}</span>
+                  <span className={`split-stat-value ${statClass(valB, keyA)}`}>{fmtSplit(valB, dec)}</span>
                 </div>
               );
             })}

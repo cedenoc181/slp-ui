@@ -196,13 +196,21 @@ function PitcherLogModal({ player, teamAId, teamBId, onClose }) {
 export default function H2HPitchersCard({ abbr, mlbId, oppAbbr, teamAId, teamBId, players, spName, gameCount }) {
   const [bullpenExpanded, setBullpenExpanded] = useState(false);
   const [selectedPitcher, setSelectedPitcher] = useState(null);
-  const { starters, bullpen } = classifyPitchers(players);
   const normSP = normName(spName);
   const isTonightSP = (p) => {
     if (!normSP) return false;
     const pNorm = normName(p.player_name);
     return pNorm === normSP || pNorm.includes(normSP) || normSP.includes(pNorm);
   };
+
+  let { starters, bullpen } = classifyPitchers(players);
+
+  // If tonight's SP was classified as bullpen, promote them to the starters section
+  const spFromBullpen = bullpen.find(isTonightSP);
+  if (spFromBullpen) {
+    starters = [spFromBullpen, ...starters];
+    bullpen  = bullpen.filter(p => p !== spFromBullpen);
+  }
 
   if (!players?.length) {
     return (
