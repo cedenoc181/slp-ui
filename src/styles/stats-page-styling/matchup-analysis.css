@@ -476,8 +476,11 @@ a > .hero-team-logo:hover {
   font-weight: 700;
   color: #fff;
 }
-.split-stat-value.advantage  { color: #4caf50; }
+.split-stat-value.advantage    { color: #4caf50; }
 .split-stat-value.disadvantage { color: #f44336; }
+.split-stat-value.lg-above     { color: #4caf50; }
+.split-stat-value.lg-avg       { color: #fbbf24; }
+.split-stat-value.lg-below     { color: #f44336; }
 
 .split-skeleton-row {
   height: 14px;

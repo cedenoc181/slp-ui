@@ -832,7 +832,12 @@ a.pitcher-name-lg:hover {
 /* ── Form Scroll Body ────────────────────────────────────────────────────── */
 .form-scroll-body {
   overflow-y: auto;
+  overflow-x: hidden;
   max-height: 320px;
+}
+
+.detail-card--form {
+  overflow-x: hidden;
 }
 
 /* ── Form Game Log ───────────────────────────────────────────────────────── */

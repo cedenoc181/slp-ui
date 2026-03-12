@@ -27,7 +27,7 @@ export default function RecentFormCard({
   const seasonTypeLabel = SEASON_TYPE_LABELS[(seasonType || '').toLowerCase()] || null;
 
   return (
-    <div className="detail-card">
+    <div className="detail-card detail-card--form">
       <h3 className="card-title">
         Recent Form — Last 10
         {(season || seasonTypeLabel) && (
