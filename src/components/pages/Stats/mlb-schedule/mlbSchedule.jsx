@@ -314,11 +314,9 @@ function MLBSchedule() {
       let data;
       if (tab === 'today') {
         data = await scheduleService.getTodayGames();
-        // Always pin "Today" to the current calendar date — prevent the backend
-        // from rolling over to tomorrow's games after today's games finish.
-        const todayStr = new Date().toISOString().slice(0, 10);
-        data = Array.isArray(data) ? data.filter(g => (g.date ?? '').slice(0, 10) === todayStr) : [];
-        data = sortTodayGames(data);
+        // Allow the backend to roll over to tomorrow's slate (happens ~8–9 pm).
+        // The tab label switches to "Tomorrow" automatically when that occurs.
+        data = sortTodayGames(Array.isArray(data) ? data : []);
       } else if (tab === 'upcoming') {
         data = await scheduleService.getUpcomingGames({ limit: 50 });
         const todayStr = new Date().toISOString().slice(0, 10);
@@ -380,6 +378,9 @@ function MLBSchedule() {
     setActiveTab(tab);
   };
 
+  const todayStr = new Date().toISOString().slice(0, 10);
+  const isTomorrow = activeTab === 'today' && games.length > 0 && (games[0]?.date ?? '').slice(0, 10) > todayStr;
+
   const emptyMessage = {
     today:    'No games scheduled for today.',
     upcoming: 'No upcoming games found.',
@@ -402,7 +403,7 @@ function MLBSchedule() {
                 className={`schedule-tab ${activeTab === tab.key ? 'active' : ''}`}
                 onClick={() => handleTabChange(tab.key)}
               >
-                {tab.label}
+                {tab.key === 'today' ? (isTomorrow ? 'Tomorrow' : 'Today') : tab.label}
               </button>
             ))}
           </div>
