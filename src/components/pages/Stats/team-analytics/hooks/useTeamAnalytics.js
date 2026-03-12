@@ -28,6 +28,20 @@ import {
   getTeamIdFromAbbr,
 } from '../../../../../data/constants/apiConstants';
 
+// Returns 'S' (spring, Jan–Mar), 'R' (regular, Apr–Sep), or 'P' (postseason, Oct+)
+function getCurrentSeasonType() {
+  const month = new Date().getMonth() + 1;
+  if (month <= 3) return SEASON_TYPES.SPRING_TRAINING;
+  if (month <= 9) return SEASON_TYPES.REGULAR;
+  return SEASON_TYPES.POSTSEASON;
+}
+
+// Returns calendar-based season type for current year, Regular Season for prior years
+function getStatsSeasonType(season) {
+  const currentYear = new Date().getFullYear().toString();
+  return season === currentYear ? getCurrentSeasonType() : SEASON_TYPES.REGULAR;
+}
+
 // ============================================================================
 // Hook Implementation
 // ============================================================================
@@ -65,7 +79,10 @@ export function useTeamAnalytics() {
   const [teamStatsToggle, setTeamStatsToggle] = useState('batting');
   const [rosterFilter, setRosterFilter] = useState('all');
   const [injuryFilter, setInjuryFilter] = useState('all');
-  const [gameLogSeasonType, setGameLogSeasonType] = useState('R'); // R, S, P
+  const [gameLogSeasonType, setGameLogSeasonType] = useState(() => {
+    const currentYear = new Date().getFullYear().toString();
+    return getInitialSeason() === currentYear ? getCurrentSeasonType() : 'R';
+  }); // R, S, P
   const [hideFloatingFilters, setHideFloatingFilters] = useState(false);
   const [isChartSectionVisible, setIsChartSectionVisible] = useState(false);
   const [isStandingsSectionVisible, setIsStandingsSectionVisible] = useState(false);
@@ -141,15 +158,15 @@ export function useTeamAnalytics() {
       ] = await Promise.all([
         teamsService.getTeamSeason(teamId, season).catch(err => { console.warn('Team season failed:', err); return null; }),
         teamsService.getTeamMonthly(teamId, season).catch(err => { console.warn('Team monthly failed:', err); return null; }),
-        teamStatsService.getTeamBattingStats(teamId, season, SEASON_TYPES.REGULAR).catch(err => { console.warn('Batting stats failed:', err); return null; }),
-        teamStatsService.getTeamPitchingStats(teamId, season, SEASON_TYPES.REGULAR).catch(err => { console.warn('Pitching stats failed:', err); return null; }),
-        teamLeadersService.getTeamBattingLeaders(teamId, season, SEASON_TYPES.REGULAR).catch(err => { console.warn('Batting leaders failed:', err); return null; }),
-        teamLeadersService.getTeamPitchingLeaders(teamId, season, SEASON_TYPES.REGULAR).catch(err => { console.warn('Pitching leaders failed:', err); return null; }),
-        gamesService.getTeamLast10(teamId, season).catch(err => { console.warn('Last 10 failed:', err); return null; }),
+        teamStatsService.getTeamBattingStats(teamId, season, getStatsSeasonType(season)).catch(err => { console.warn('Batting stats failed:', err); return null; }),
+        teamStatsService.getTeamPitchingStats(teamId, season, getStatsSeasonType(season)).catch(err => { console.warn('Pitching stats failed:', err); return null; }),
+        teamLeadersService.getTeamBattingLeaders(teamId, season, getStatsSeasonType(season)).catch(err => { console.warn('Batting leaders failed:', err); return null; }),
+        teamLeadersService.getTeamPitchingLeaders(teamId, season, getStatsSeasonType(season)).catch(err => { console.warn('Pitching leaders failed:', err); return null; }),
+        gamesService.getTeamLast10(teamId, season, getStatsSeasonType(season)).catch(err => { console.warn('Last 10 failed:', err); return null; }),
         gamesService.getTeamHomeGames(teamId, season).catch(err => { console.warn('Home games failed:', err); return null; }),
         gamesService.getTeamAwayGames(teamId, season).catch(err => { console.warn('Away games failed:', err); return null; }),
         rosterService.getTeamRoster(teamId, season).catch(err => { console.warn('Roster failed:', err); return null; }),
-        teamLeadersService.getTeamSplits(teamId, season, SEASON_TYPES.REGULAR, PLAYER_ROLES.BATTER).catch(err => { console.warn('Splits failed:', err); return null; }),
+        teamLeadersService.getTeamSplits(teamId, season, getStatsSeasonType(season), PLAYER_ROLES.BATTER).catch(err => { console.warn('Splits failed:', err); return null; }),
         injuryService.getTeamInjuriesFullSeason(teamId, season).catch(err => { console.warn('Injuries full season failed:', err); return null; }),
         injuryService.getTeamInjuriesFirstHalf(teamId, season).catch(err => { console.warn('Injuries first half failed:', err); return null; }),
         injuryService.getTeamInjuriesSecondHalf(teamId, season).catch(err => { console.warn('Injuries second half failed:', err); return null; }),
@@ -227,6 +244,13 @@ export function useTeamAnalytics() {
       setAvailableSeasonTypes(['R', 'S']); // Default to just regular and spring
     }
   }, [gameLogSeasonType]);
+
+  // Reset game log season type when selected season changes:
+  // current year → calendar-based type, prior years → Regular Season
+  useEffect(() => {
+    const currentYear = new Date().getFullYear().toString();
+    setGameLogSeasonType(selectedSeason === currentYear ? getCurrentSeasonType() : 'R');
+  }, [selectedSeason]);
 
   // ========== Effects ==========
 

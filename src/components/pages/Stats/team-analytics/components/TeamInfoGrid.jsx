@@ -2,6 +2,15 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getStreakString, isWinningStreak } from '../utils';
 
+const SEASON_TYPE_LABELS = { S: 'Spring Training', R: 'Regular Season', P: 'Postseason' };
+function getSeasonTypeLabel(selectedSeason) {
+  const currentYear = new Date().getFullYear().toString();
+  if (selectedSeason !== currentYear) return 'Regular Season';
+  const month = new Date().getMonth() + 1;
+  const key = month <= 3 ? 'S' : month <= 9 ? 'R' : 'P';
+  return SEASON_TYPE_LABELS[key];
+}
+
 /**
  * Team info grid: Standings, Leaders, and Stats cards
  */
@@ -24,6 +33,7 @@ function TeamInfoGrid({
   handleLeaderClick,
 }) {
   const navigate = useNavigate();
+  const seasonLabel = getSeasonTypeLabel(selectedSeason);
 
   return (
     <div className="team-info-grid" ref={standingsSectionRef}>
@@ -31,9 +41,7 @@ function TeamInfoGrid({
       <div className="section-card">
         <div className="card-header">
           <h3>Team Standings</h3>
-          <p className="card-subtitle">
-            {ranks?.division_rank ? `#${ranks.division_rank} in Division` : teamSeasonData?.team?.division || 'N/A'}
-          </p>
+          <p className="card-subtitle">{seasonLabel} Standings</p>
         </div>
         <div className="standings-content">
           <div className="standings-row">
@@ -75,7 +83,7 @@ function TeamInfoGrid({
         <div className="card-header">
           <div>
             <h3>Team Leaders</h3>
-            <p className="card-subtitle">Top performers</p>
+            <p className="card-subtitle">{seasonLabel} Top Performers</p>
           </div>
           <div className="toggle-buttons" onClick={(e) => e.stopPropagation()}>
             <button 
@@ -185,7 +193,7 @@ function TeamInfoGrid({
         <div className="card-header">
           <div>
             <h3>Team Stats</h3>
-            <p className="card-subtitle">Overall performance</p>
+            <p className="card-subtitle">{seasonLabel} Overall Performance</p>
           </div>
           <div className="toggle-buttons">
             <button 

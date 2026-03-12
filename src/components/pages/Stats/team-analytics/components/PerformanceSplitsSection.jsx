@@ -75,6 +75,8 @@ function PerformanceSplitsSection({
   teamSeasonData,
   last10Games,
   last10Record,
+  homeGames,
+  awayGames,
 }) {
   // Determine which data to show based on chartFilter
   const getVsData = () => {
@@ -107,33 +109,35 @@ function PerformanceSplitsSection({
   const { vsLeft, vsRight } = getVsData();
 
   // Get last 10 data based on filter
+  // Home/Away use the home/away games API (regular season data)
+  // Combined uses last10Games which respects the current season type (e.g. spring training)
   const getLast10Data = () => {
     let wins, losses, runsScored, runsAllowed, runDiff;
 
     if (chartFilter === 'home') {
-      const homeData = recordSplits?.last_10_home_w_postseason;
-      wins = homeData?.wins ?? 0;
-      losses = homeData?.losses ?? 0;
-      runsScored = homeData?.runs_scored ?? homeData?.runsScored ?? '-';
-      runsAllowed = homeData?.runs_allowed ?? homeData?.runsAllowed ?? '-';
-      runDiff = homeData?.run_diff ?? homeData?.runDiff ?? (runsScored !== '-' && runsAllowed !== '-' ? runsScored - runsAllowed : '-');
+      const homeData = Array.isArray(homeGames) && homeGames.length > 0 ? homeGames[0] : null;
+      wins = homeData?.last_10_home_wins ?? 0;
+      losses = homeData?.last_10_home_losses ?? 0;
+      runsScored = homeData?.last_10_rs_home ?? '-';
+      runsAllowed = homeData?.last_10_ra_home ?? '-';
+      runDiff = homeData?.last_10_rd_home ?? (runsScored !== '-' && runsAllowed !== '-' ? runsScored - runsAllowed : '-');
     } else if (chartFilter === 'away') {
-      const awayData = recordSplits?.last_10_away_w_postseason;
-      wins = awayData?.wins ?? 0;
-      losses = awayData?.losses ?? 0;
-      runsScored = awayData?.runs_scored ?? awayData?.runsScored ?? '-';
-      runsAllowed = awayData?.runs_allowed ?? awayData?.runsAllowed ?? '-';
-      runDiff = awayData?.run_diff ?? awayData?.runDiff ?? (runsScored !== '-' && runsAllowed !== '-' ? runsScored - runsAllowed : '-');
+      const awayData = Array.isArray(awayGames) && awayGames.length > 0 ? awayGames[0] : null;
+      wins = awayData?.last_10_away_wins ?? 0;
+      losses = awayData?.last_10_away_losses ?? 0;
+      runsScored = awayData?.last_10_rs_away ?? '-';
+      runsAllowed = awayData?.last_10_ra_away ?? '-';
+      runDiff = awayData?.last_10_rd_away ?? (runsScored !== '-' && runsAllowed !== '-' ? runsScored - runsAllowed : '-');
     } else {
-      // Combined - use last10Games data
+      // Combined - use last10Games (respects current season type for current year)
       const combinedData = Array.isArray(last10Games) && last10Games.length > 0 ? last10Games[0] : null;
-      
+
       if (combinedData) {
         wins = combinedData.last_ten_wins ?? combinedData.wins ?? 0;
         losses = combinedData.last_ten_losses ?? combinedData.losses ?? 0;
         runsScored = combinedData.runs_scored ?? '-';
         runsAllowed = combinedData.runs_allowed ?? '-';
-        runDiff = combinedData.run_differential ?? combinedData.run_diff ?? 
+        runDiff = combinedData.run_differential ?? combinedData.run_diff ??
           (runsScored !== '-' && runsAllowed !== '-' ? runsScored - runsAllowed : '-');
       } else {
         // Fallback to last10Record

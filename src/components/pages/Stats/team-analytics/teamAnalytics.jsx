@@ -73,6 +73,8 @@ function TeamAnalytics() {
     battingLeaders,
     pitchingLeaders,
     last10Games,
+    homeGames,
+    awayGames,
     roster,
     injuriesFullSeason,
 
@@ -198,6 +200,8 @@ function TeamAnalytics() {
           teamSeasonData={teamSeasonData}
           last10Games={last10Games}
           last10Record={last10Record}
+          homeGames={homeGames}
+          awayGames={awayGames}
         />
 
         {/* Team Info Grid: Standings, Leaders, Stats */}
