@@ -1141,9 +1141,51 @@
   .pps-comparison-bars{overflow-x: scroll; gap: 0.5rem;}
 }
 
+@media (max-width: 425px) {
+  .pps-split-card {
+    padding: 0.9rem;
+  }
+  .pps-split-label {
+    font-size: 0.82rem;
+  }
+  .pps-split-sample {
+    font-size: 0.65rem;
+  }
+  .pps-split-stat-value {
+    font-size: 1rem;
+  }
+  .pps-split-stat-label {
+    font-size: 0.6rem;
+  }
+  .pps-split-stats {
+    gap: 1rem;
+  }
+}
+
+@media (max-width: 375px) {
+  .pps-split-card {
+    padding: 0.7rem;
+  }
+  .pps-split-label {
+    font-size: 0.75rem;
+  }
+  .pps-split-sample {
+    font-size: 0.6rem;
+  }
+  .pps-split-stat-value {
+    font-size: 0.88rem;
+  }
+  .pps-split-stat-label {
+    font-size: 0.55rem;
+  }
+  .pps-split-stats {
+    gap: 0.75rem;
+  }
+}
+
 @media (max-width: 390px) {
-.pps-comparison-chart h4 { 
-  font-size: 0.8rem; 
+.pps-comparison-chart h4 {
+  font-size: 0.8rem;
 }
 
 .pps-comparison-bar {

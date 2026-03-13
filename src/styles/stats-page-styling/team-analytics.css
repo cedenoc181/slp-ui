@@ -1916,6 +1916,43 @@
   }
 }
 
+@media (max-width: 424px) {
+  .team-game-log-section .pps-pagination {
+    gap: 0.35rem;
+    padding: 0.65rem 0;
+  }
+
+  .team-game-log-section .pps-pagination-btn {
+    padding: 0.35rem 0.6rem;
+    font-size: 0.72rem;
+    border-radius: 5px;
+  }
+
+  .team-game-log-section .pps-pagination-info {
+    font-size: 0.7rem;
+    text-align: center;
+  }
+}
+
+@media (max-width: 325px) {
+  .team-game-log-section .pps-pagination {
+    gap: 0.25rem;
+    padding: 0.5rem 0;
+  }
+
+  .team-game-log-section .pps-pagination-btn {
+    padding: 0.28rem 0.45rem;
+    font-size: 0.65rem;
+    border-radius: 4px;
+  }
+
+  .team-game-log-section .pps-pagination-info {
+    font-size: 0.62rem;
+    text-align: center;
+    flex: 0 0 100%;
+  }
+}
+
 
 /* ============================================
    SMALL MOBILE STYLES (480px and below)
