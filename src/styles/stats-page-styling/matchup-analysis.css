@@ -504,6 +504,31 @@ a > .hero-team-logo:hover {
   border-bottom: 1px solid rgba(255,255,255,0.06);
 }
 
+@media (max-width: 1024px) and (min-width: 601px) {
+  .pitcher-split-header {
+    flex-wrap: wrap;
+    row-gap: 0.4rem;
+  }
+  .pitcher-split-identity {
+    order: 1;
+    flex: 1 1 auto;
+  }
+  .pitcher-split-header .split-toggle {
+    order: 2;
+    flex: 0 0 auto;
+  }
+  .pitcher-split-header .sp-warning-badges {
+    order: 3;
+    flex: 0 0 100%;
+    margin-top: 0;
+    gap: 0.25rem;
+  }
+  .pitcher-split-header .sp-warning-badges .exploitable-tag {
+    font-size: 0.55rem;
+    padding: 0.12rem 0.35rem;
+  }
+}
+
 @media (max-width: 600px) {
   .pitcher-split-header {
     flex-wrap: wrap;
