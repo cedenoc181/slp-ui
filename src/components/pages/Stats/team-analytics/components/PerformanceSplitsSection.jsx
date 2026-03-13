@@ -77,6 +77,12 @@ function getLast10SeasonLabel(selectedSeason) {
   return SEASON_TYPE_LABELS[key];
 }
 
+function isSpringTrainingView(selectedSeason) {
+  const currentYear = new Date().getFullYear().toString();
+  if (selectedSeason !== currentYear) return false;
+  return new Date().getMonth() + 1 <= 3;
+}
+
 function PerformanceSplitsSection({
   recordSplits,
   chartFilter,
@@ -163,6 +169,7 @@ function PerformanceSplitsSection({
   };
 
   const last10Data = getLast10Data();
+  const isSpring = isSpringTrainingView(selectedSeason);
 
   const getSubtitle = () => {
     if (chartFilter === 'home') return <><span className="subtitle-bold">🏠 Home</span> game performance breakdown</>;
@@ -186,7 +193,9 @@ function PerformanceSplitsSection({
           <p className="card-subtitle">{getSubtitle()}</p>
         </div>
         <div className="splits-grid">
-          {recordSplits ? (
+          {isSpring ? (
+            <div className="no-data-message">Performance splits will be available when the regular season begins.</div>
+          ) : recordSplits ? (
             <>
               <SplitRow
                 label={<><span className="split-label-full">vs Left-Handed Pitching</span><span className="split-label-short">vs LHP</span></>}
