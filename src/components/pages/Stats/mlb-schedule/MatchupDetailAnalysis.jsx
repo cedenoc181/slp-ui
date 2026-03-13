@@ -172,7 +172,10 @@ export default function MatchupDetailComp() {
   // ── H2H pitcher totals ──
   useEffect(() => {
     if (!game) return;
-    gamesService.getHeadToHeadPitchers(game.away_team_id, game.home_team_id, { limit: 10, totals: true })
+    const currentYear = new Date().getFullYear();
+    const isPriorSeason = game.season && Number(game.season) !== currentYear;
+    const seasonParam = isPriorSeason ? { season: game.season } : {};
+    gamesService.getHeadToHeadPitchers(game.away_team_id, game.home_team_id, { limit: 10, totals: true, ...seasonParam })
       .then(data => {
         setH2hPitchers(data && (data.team_a?.length || data.team_b?.length) ? data : false);
       })
@@ -182,7 +185,10 @@ export default function MatchupDetailComp() {
   // ── H2H batter totals ──
   useEffect(() => {
     if (!game) return;
-    gamesService.getHeadToHeadBatters(game.away_team_id, game.home_team_id, { limit: 10, totals: true })
+    const currentYear = new Date().getFullYear();
+    const isPriorSeason = game.season && Number(game.season) !== currentYear;
+    const seasonParam = isPriorSeason ? { season: game.season } : {};
+    gamesService.getHeadToHeadBatters(game.away_team_id, game.home_team_id, { limit: 10, totals: true, ...seasonParam })
       .then(data => {
         setH2hBatters(data && (data.team_a?.length || data.team_b?.length) ? data : false);
       })
@@ -363,6 +369,7 @@ export default function MatchupDetailComp() {
                   players={h2hPitchers.team_a}
                   spName={game.away_sp_name || null}
                   gameCount={h2hPitchers.game_count}
+                  gameSeason={game.season}
                 />
                 <H2HPitchersCard
                   abbr={homeAbbr}
@@ -373,6 +380,7 @@ export default function MatchupDetailComp() {
                   players={h2hPitchers.team_b}
                   spName={game.home_sp_name || null}
                   gameCount={h2hPitchers.game_count}
+                  gameSeason={game.season}
                 />
               </div>
             )
@@ -401,6 +409,7 @@ export default function MatchupDetailComp() {
                   teamBId={game.home_team_id}
                   players={h2hBatters.team_a}
                   gameCount={h2hBatters.game_count}
+                  gameSeason={game.season}
                 />
                 <H2HBattersCard
                   abbr={homeAbbr}
@@ -410,6 +419,7 @@ export default function MatchupDetailComp() {
                   teamBId={game.home_team_id}
                   players={h2hBatters.team_b}
                   gameCount={h2hBatters.game_count}
+                  gameSeason={game.season}
                 />
               </div>
             )

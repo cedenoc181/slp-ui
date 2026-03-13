@@ -91,11 +91,14 @@ function H2HPitcherRow({ player, isTonight, onClick }) {
   );
 }
 
-function PitcherLogModal({ player, teamAId, teamBId, onClose }) {
+function PitcherLogModal({ player, teamAId, teamBId, gameSeason, onClose }) {
   const [logs, setLogs] = useState(null);
 
   useEffect(() => {
-    gamesService.getHeadToHeadPitchers(teamAId, teamBId, { limit: 10, totals: false })
+    const currentYear = new Date().getFullYear();
+    const isPriorSeason = gameSeason && Number(gameSeason) !== currentYear;
+    const seasonParam = isPriorSeason ? { season: gameSeason } : {};
+    gamesService.getHeadToHeadPitchers(teamAId, teamBId, { limit: 10, totals: false, ...seasonParam })
       .then(data => {
         const appearances = [];
         for (const g of (data?.games || [])) {
@@ -199,7 +202,7 @@ function PitcherLogModal({ player, teamAId, teamBId, onClose }) {
   );
 }
 
-export default function H2HPitchersCard({ abbr, mlbId, oppAbbr, teamAId, teamBId, players, spName, gameCount }) {
+export default function H2HPitchersCard({ abbr, mlbId, oppAbbr, teamAId, teamBId, players, spName, gameCount, gameSeason }) {
   const [bullpenExpanded, setBullpenExpanded] = useState(false);
   const [selectedPitcher, setSelectedPitcher] = useState(null);
   const normSP = normName(spName);
@@ -240,6 +243,7 @@ export default function H2HPitchersCard({ abbr, mlbId, oppAbbr, teamAId, teamBId
           player={selectedPitcher}
           teamAId={teamAId}
           teamBId={teamBId}
+          gameSeason={gameSeason}
           onClose={() => setSelectedPitcher(null)}
         />
       )}

@@ -92,11 +92,14 @@ function H2HBatterRow({ player, onClick, leadsAvg, leadsOPS, leadsHits, leadsHR 
   );
 }
 
-function BatterLogModal({ player, teamAId, teamBId, onClose }) {
+function BatterLogModal({ player, teamAId, teamBId, gameSeason, onClose }) {
   const [logs, setLogs] = useState(null);
 
   useEffect(() => {
-    gamesService.getHeadToHeadBatters(teamAId, teamBId, { limit: 10, totals: false })
+    const currentYear = new Date().getFullYear();
+    const isPriorSeason = gameSeason && Number(gameSeason) !== currentYear;
+    const seasonParam = isPriorSeason ? { season: gameSeason } : {};
+    gamesService.getHeadToHeadBatters(teamAId, teamBId, { limit: 10, totals: false, ...seasonParam })
       .then(data => {
         const appearances = [];
         for (const g of (data?.games || [])) {
@@ -189,7 +192,7 @@ function BatterLogModal({ player, teamAId, teamBId, onClose }) {
   );
 }
 
-export default function H2HBattersCard({ abbr, mlbId, oppAbbr, teamAId, teamBId, players, gameCount }) {
+export default function H2HBattersCard({ abbr, mlbId, oppAbbr, teamAId, teamBId, players, gameCount, gameSeason }) {
   const [selectedBatter, setSelectedBatter] = useState(null);
 
   const sorted = [...(players || [])]
@@ -241,6 +244,7 @@ export default function H2HBattersCard({ abbr, mlbId, oppAbbr, teamAId, teamBId,
           player={selectedBatter}
           teamAId={teamAId}
           teamBId={teamBId}
+          gameSeason={gameSeason}
           onClose={() => setSelectedBatter(null)}
         />
       )}
