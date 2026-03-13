@@ -237,11 +237,12 @@ const GameLogSection = memo(function GameLogSection({
                       const result = playerScore > oppScore ? 'W' : playerScore < oppScore ? 'L' : 'T';
                       const resultClass = result === 'W' ? 'win' : result === 'L' ? 'loss' : 'tie';
                       
-                      // Format date
-                      const gameDate = new Date(game.date);
-                      const formattedDate = gameDate.toLocaleDateString('en-US', { 
-                        month: 'short', 
-                        day: 'numeric' 
+                      // Format date — parse as local to avoid UTC off-by-one
+                      const [_y, _m, _d] = (game.date || '').split('-').map(Number);
+                      const gameDate = new Date(_y, _m - 1, _d);
+                      const formattedDate = gameDate.toLocaleDateString('en-US', {
+                        month: 'short',
+                        day: 'numeric'
                       });
                       
                       // Pitcher decision
