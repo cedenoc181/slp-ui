@@ -30,8 +30,9 @@ class GamesService {
    * @param {string} season - Season year (e.g., '2025')
    * @returns {Promise<Array>} Home games
    */
-  async getTeamHomeGames(teamId, season = DEFAULT_SEASON) {
-    return await api.get(`/games/team/home?team_id=${teamId}&season=${season}`);
+  async getTeamHomeGames(teamId, season = DEFAULT_SEASON, seasonType = null) {
+    const stParam = seasonType ? `&season_type=${seasonType}` : '';
+    return await api.get(`/games/team/home?team_id=${teamId}&season=${season}${stParam}`);
   }
 
   /**
@@ -40,8 +41,9 @@ class GamesService {
    * @param {string} season - Season year (e.g., '2025')
    * @returns {Promise<Array>} Away games
    */
-  async getTeamAwayGames(teamId, season = DEFAULT_SEASON) {
-    return await api.get(`/games/team/away?team_id=${teamId}&season=${season}`);
+  async getTeamAwayGames(teamId, season = DEFAULT_SEASON, seasonType = null) {
+    const stParam = seasonType ? `&season_type=${seasonType}` : '';
+    return await api.get(`/games/team/away?team_id=${teamId}&season=${season}${stParam}`);
   }
 
   /**

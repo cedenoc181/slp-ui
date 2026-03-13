@@ -11,6 +11,12 @@ function getSeasonTypeLabel(selectedSeason) {
   return SEASON_TYPE_LABELS[key];
 }
 
+function isSpringTrainingView(selectedSeason) {
+  const currentYear = new Date().getFullYear().toString();
+  if (selectedSeason !== currentYear) return false;
+  return new Date().getMonth() + 1 <= 3;
+}
+
 /**
  * Team info grid: Standings, Leaders, and Stats cards
  */
@@ -34,6 +40,14 @@ function TeamInfoGrid({
 }) {
   const navigate = useNavigate();
   const seasonLabel = getSeasonTypeLabel(selectedSeason);
+  const isSpring = isSpringTrainingView(selectedSeason);
+  const st = isSpring ? teamSeasonData?.spring_training : null;
+
+  // Standings data — spring training or regular season
+  const standingsRecord = isSpring
+    ? { wins: st?.wins ?? 0, losses: st?.losses ?? 0, pct: st?.pct ?? 0, games_back: st?.games_back ?? null }
+    : record;
+  const standingsStreak = isSpring ? st?.streak_code : streak;
 
   return (
     <div className="team-info-grid" ref={standingsSectionRef}>
@@ -46,26 +60,26 @@ function TeamInfoGrid({
         <div className="standings-content">
           <div className="standings-row">
             <span className="standings-label">Wins</span>
-            <span className="standings-value">{record?.wins || 0}</span>
+            <span className="standings-value">{standingsRecord?.wins || 0}</span>
           </div>
           <div className="standings-row">
             <span className="standings-label">Losses</span>
-            <span className="standings-value">{record?.losses || 0}</span>
+            <span className="standings-value">{standingsRecord?.losses || 0}</span>
           </div>
           <div className="standings-row">
             <span className="standings-label">Win %</span>
-            <span className="standings-value">{record?.pct?.toFixed(3) || '.000'}</span>
+            <span className="standings-value">{standingsRecord?.pct?.toFixed(3) || '.000'}</span>
           </div>
           <div className="standings-row">
             <span className="standings-label">Games Back</span>
             <span className="standings-value">
-              {record?.games_back === null || record?.games_back === 0 ? '-' : record?.games_back}
+              {standingsRecord?.games_back === null || standingsRecord?.games_back === 0 ? '-' : standingsRecord?.games_back}
             </span>
           </div>
           <div className="standings-row highlight">
             <span className="standings-label">Streak</span>
-            <span className={`standings-value streak-badge ${isWinningStreak(streak) ? 'positive' : 'negative'}`}>
-              {getStreakString(streak) || 'N/A'}
+            <span className={`standings-value streak-badge ${isWinningStreak(standingsStreak) ? 'positive' : 'negative'}`}>
+              {getStreakString(standingsStreak) || 'N/A'}
             </span>
           </div>
         </div>

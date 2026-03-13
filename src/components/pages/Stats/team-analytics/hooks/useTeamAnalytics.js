@@ -163,8 +163,8 @@ export function useTeamAnalytics() {
         teamLeadersService.getTeamBattingLeaders(teamId, season, getStatsSeasonType(season)).catch(err => { console.warn('Batting leaders failed:', err); return null; }),
         teamLeadersService.getTeamPitchingLeaders(teamId, season, getStatsSeasonType(season)).catch(err => { console.warn('Pitching leaders failed:', err); return null; }),
         gamesService.getTeamLast10(teamId, season, getStatsSeasonType(season)).catch(err => { console.warn('Last 10 failed:', err); return null; }),
-        gamesService.getTeamHomeGames(teamId, season).catch(err => { console.warn('Home games failed:', err); return null; }),
-        gamesService.getTeamAwayGames(teamId, season).catch(err => { console.warn('Away games failed:', err); return null; }),
+        gamesService.getTeamHomeGames(teamId, season, getStatsSeasonType(season)).catch(err => { console.warn('Home games failed:', err); return null; }),
+        gamesService.getTeamAwayGames(teamId, season, getStatsSeasonType(season)).catch(err => { console.warn('Away games failed:', err); return null; }),
         rosterService.getTeamRoster(teamId, season).catch(err => { console.warn('Roster failed:', err); return null; }),
         teamLeadersService.getTeamSplits(teamId, season, getStatsSeasonType(season), PLAYER_ROLES.BATTER).catch(err => { console.warn('Splits failed:', err); return null; }),
         injuryService.getTeamInjuriesFullSeason(teamId, season).catch(err => { console.warn('Injuries full season failed:', err); return null; }),
@@ -514,6 +514,8 @@ export function useTeamAnalytics() {
     roster,
     teamSplits,
     injuriesFullSeason,
+    injuriesFirstHalf,
+    injuriesSecondHalf,
 
     // Team Games (Game Log)
     teamGames,

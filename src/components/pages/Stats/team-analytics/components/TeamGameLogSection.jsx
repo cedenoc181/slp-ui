@@ -95,6 +95,7 @@ const TeamGameLogSection = memo(function TeamGameLogSection({
   /**
    * Normalize team name and resolve nicknames to standard names
    */
+  // eslint-disable-next-line no-unused-vars
   const normalizeTeamName = (name) => {
     if (!name) return '';
     let normalized = name.toLowerCase().trim();
@@ -128,20 +129,22 @@ const TeamGameLogSection = memo(function TeamGameLogSection({
   /**
    * Find team URL name by team nickname (e.g., "Red Sox" -> "boston-red-sox")
    */
+  // eslint-disable-next-line no-unused-vars
   const getTeamUrlByNickname = useCallback((nickname) => {
     if (!nickname) return null;
     const coreTeamName = getCoreTeamName(nickname);
-    
+
     // Find team where core name matches
     const team = TEAMS.find(t => {
       const teamCoreName = getCoreTeamName(t.name);
-      return teamCoreName === coreTeamName || 
+      return teamCoreName === coreTeamName ||
              t.name.toLowerCase().includes(coreTeamName) ||
              coreTeamName.includes(teamCoreName);
     });
-    
+
     return team?.urlName || null;
-  }, []);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [getCoreTeamName]);
 
   // Handle game row click - navigate to matchup detail page
   const handleGameRowClick = useCallback((game) => {
@@ -299,11 +302,12 @@ const TeamGameLogSection = memo(function TeamGameLogSection({
                       const result = gameData.isWin ? 'W' : 'L';
                       const resultClass = gameData.isWin ? 'win' : 'loss';
                       
-                      // Format date
-                      const gameDate = new Date(game.date);
-                      const formattedDate = gameDate.toLocaleDateString('en-US', { 
-                        month: 'short', 
-                        day: 'numeric' 
+                      // Format date — parse as local (not UTC) to avoid off-by-one day
+                      const [_y, _m, _d] = (game.date || '').split('-').map(Number);
+                      const gameDate = new Date(_y, _m - 1, _d);
+                      const formattedDate = gameDate.toLocaleDateString('en-US', {
+                        month: 'short',
+                        day: 'numeric'
                       });
                       
                       // Home/Away indicator

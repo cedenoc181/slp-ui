@@ -174,6 +174,8 @@ function TeamAnalytics() {
           runs={runs}
           streak={streak}
           recordSplits={recordSplits}
+          selectedSeason={selectedSeason}
+          teamSeasonData={teamSeasonData}
         />
 
         {/* Monthly Performance Trends Chart */}
@@ -182,6 +184,7 @@ function TeamAnalytics() {
           timeframe={timeframe}
           chartFilter={chartFilter}
           chartSectionRef={chartSectionRef}
+          selectedSeason={selectedSeason}
         />
 
         {/* Floating Chart Filter Remote */}
@@ -202,6 +205,7 @@ function TeamAnalytics() {
           last10Record={last10Record}
           homeGames={homeGames}
           awayGames={awayGames}
+          selectedSeason={selectedSeason}
         />
 
         {/* Team Info Grid: Standings, Leaders, Stats */}

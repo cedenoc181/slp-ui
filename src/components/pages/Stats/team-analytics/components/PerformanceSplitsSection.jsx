@@ -68,6 +68,15 @@ function DivisionSplitRow({ label, wins, losses, pct }) {
 /**
  * Performance splits section showing vs LHP/RHP and division splits
  */
+const SEASON_TYPE_LABELS = { S: 'Spring Training', R: 'Regular Season', P: 'Postseason' };
+function getLast10SeasonLabel(selectedSeason) {
+  const currentYear = new Date().getFullYear().toString();
+  if (selectedSeason !== currentYear) return 'Regular Season';
+  const month = new Date().getMonth() + 1;
+  const key = month <= 3 ? 'S' : month <= 9 ? 'R' : 'P';
+  return SEASON_TYPE_LABELS[key];
+}
+
 function PerformanceSplitsSection({
   recordSplits,
   chartFilter,
@@ -77,6 +86,7 @@ function PerformanceSplitsSection({
   last10Record,
   homeGames,
   awayGames,
+  selectedSeason,
 }) {
   // Determine which data to show based on chartFilter
   const getVsData = () => {
@@ -160,10 +170,11 @@ function PerformanceSplitsSection({
     return <><span className="subtitle-bold">📊 Combined</span> performance breakdown</>;
   };
 
+  const seasonLabel = getLast10SeasonLabel(selectedSeason);
   const getLast10Subtitle = () => {
-    if (chartFilter === 'home') return <><strong>🏠 Home: </strong> last 10 home games performance</>;
-    if (chartFilter === 'away') return <><strong>✈️ Away: </strong> last 10 away games performance</>;
-    return <><strong>📊 Combined: </strong> last 10 games performance</>;
+    if (chartFilter === 'home') return <><strong>🏠 Home: </strong> last 10 · {seasonLabel}</>;
+    if (chartFilter === 'away') return <><strong>✈️ Away: </strong> last 10 · {seasonLabel}</>;
+    return <><strong>📊 Combined: </strong> last 10 · {seasonLabel}</>;
   };
 
   return (

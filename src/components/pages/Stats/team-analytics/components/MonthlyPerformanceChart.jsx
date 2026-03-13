@@ -1,6 +1,5 @@
 import React from 'react';
 import {
-  getSeasonPhase,
   shouldShowDivider,
   getDividerLabel,
   getFirstPhaseLabel,
@@ -8,6 +7,15 @@ import {
   getMonthData,
   getWinPctColor,
 } from '../utils';
+
+const SEASON_TYPE_LABELS = { S: 'Spring Training', R: 'Regular Season', P: 'Postseason' };
+function getSeasonTypeLabel(selectedSeason) {
+  const currentYear = new Date().getFullYear().toString();
+  if (selectedSeason !== currentYear) return 'Regular Season';
+  const month = new Date().getMonth() + 1;
+  const key = month <= 3 ? 'S' : month <= 9 ? 'R' : 'P';
+  return SEASON_TYPE_LABELS[key];
+}
 
 /**
  * Monthly performance bar chart with season phase dividers
@@ -17,11 +25,12 @@ function MonthlyPerformanceChart({
   timeframe,
   chartFilter,
   chartSectionRef,
+  selectedSeason,
 }) {
   const getSubtitle = () => {
     if (timeframe === 'first-half') return 'First half performance (Feb - Jun)';
     if (timeframe === 'second-half') return 'Second half performance (Jul - Nov)';
-    return 'Full season performance';
+    return `${getSeasonTypeLabel(selectedSeason)} Performance`;
   };
 
   const filteredMonths = filterMonthlyData(teamMonthlyData, timeframe, chartFilter);
