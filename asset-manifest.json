@@ -1,17 +1,17 @@
 {
   "files": {
-    "main.css": "/static/css/main.e760f43c.css",
-    "main.js": "/static/js/main.8d1d3fd4.js",
+    "main.css": "/static/css/main.b36d1bfa.css",
+    "main.js": "/static/js/main.589d331e.js",
     "static/media/world-series-logo.png": "/static/media/world-series-logo.27072f25221f4fb42833.png",
     "static/media/spa-retro-logo-removebg.png": "/static/media/spa-retro-logo-removebg.328337a4fd7c56aeefbe.png",
     "static/media/AL-icon.png": "/static/media/AL-icon.270591029347666b7a8f.png",
     "static/media/NL-icon.png": "/static/media/NL-icon.7162048d37e45f32558f.png",
     "index.html": "/index.html",
-    "main.e760f43c.css.map": "/static/css/main.e760f43c.css.map",
-    "main.8d1d3fd4.js.map": "/static/js/main.8d1d3fd4.js.map"
+    "main.b36d1bfa.css.map": "/static/css/main.b36d1bfa.css.map",
+    "main.589d331e.js.map": "/static/js/main.589d331e.js.map"
   },
   "entrypoints": [
-    "static/css/main.e760f43c.css",
-    "static/js/main.8d1d3fd4.js"
+    "static/css/main.b36d1bfa.css",
+    "static/js/main.589d331e.js"
   ]
 }
