@@ -1,17 +1,17 @@
 {
   "files": {
-    "main.css": "/static/css/main.b36d1bfa.css",
-    "main.js": "/static/js/main.589d331e.js",
+    "main.css": "/static/css/main.da880ae3.css",
+    "main.js": "/static/js/main.f56241ed.js",
     "static/media/world-series-logo.png": "/static/media/world-series-logo.27072f25221f4fb42833.png",
     "static/media/spa-retro-logo-removebg.png": "/static/media/spa-retro-logo-removebg.328337a4fd7c56aeefbe.png",
     "static/media/AL-icon.png": "/static/media/AL-icon.270591029347666b7a8f.png",
     "static/media/NL-icon.png": "/static/media/NL-icon.7162048d37e45f32558f.png",
     "index.html": "/index.html",
-    "main.b36d1bfa.css.map": "/static/css/main.b36d1bfa.css.map",
-    "main.589d331e.js.map": "/static/js/main.589d331e.js.map"
+    "main.da880ae3.css.map": "/static/css/main.da880ae3.css.map",
+    "main.f56241ed.js.map": "/static/js/main.f56241ed.js.map"
   },
   "entrypoints": [
-    "static/css/main.b36d1bfa.css",
-    "static/js/main.589d331e.js"
+    "static/css/main.da880ae3.css",
+    "static/js/main.f56241ed.js"
   ]
 }
