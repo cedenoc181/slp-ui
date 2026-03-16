@@ -59,6 +59,12 @@ import TeamAnalytics from './components/pages/Stats/team-analytics/teamAnalytics
 import PlayerAnalytics from './components/pages/Stats/player-analytics/playerAnalytics';
 import PlayerProfileStats from './components/pages/Stats/player-analytics/playerProfileStats';
 
+// Predictions
+import PredictionsOverview from './components/pages/predictions/PredictionsOverview';
+import GameProps from './components/pages/predictions/GameProps';
+import PitcherProps from './components/pages/predictions/PitcherProps';
+import BatterProps from './components/pages/predictions/BatterProps';
+
 // styling imports
 import './styles/chalkboard.css';
 
@@ -149,6 +155,10 @@ const PAGE_TITLES = [
   { path: '/admin',                    title: 'Admin' },
   { path: '/admin/new',               title: 'Admin – New Article' },
   { path: '/admin/edit/:id',          title: 'Admin – Edit Article' },
+  { path: '/predictions',             title: 'Predictions' },
+  { path: '/predictions/games',       title: 'Game Props' },
+  { path: '/predictions/pitchers',    title: 'Pitcher Props' },
+  { path: '/predictions/batters',     title: 'Batter Props' },
   { path: '/unsubscribe',             title: 'Unsubscribe' },
 ];
 
@@ -222,6 +232,12 @@ function App() {
           <Route path="/team-analytics/:teamName" element={<TeamAnalytics />} />
           <Route path="/player-analytics" element={<PlayerAnalytics />} />
           <Route path="/player/:nameSlug" element={<PlayerProfileStats />} />
+
+          {/* Predictions routes */}
+          <Route path="/predictions" element={<PredictionsOverview />} />
+          <Route path="/predictions/games" element={<GameProps />} />
+          <Route path="/predictions/pitchers" element={<PitcherProps />} />
+          <Route path="/predictions/batters" element={<BatterProps />} />
 
           {/* Education routes */}
           <Route path="/glossary" element={<Glossary />} />

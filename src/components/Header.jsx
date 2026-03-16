@@ -611,6 +611,47 @@ function Header() {
             </div>
           </div>
 
+          {/* Predictions Dropdown */}
+          <div
+            className="nav-dropdown"
+            onMouseEnter={() => !isMobile && setActiveDropdown('predictions')}
+            onMouseLeave={() => !isMobile && setActiveDropdown(null)}
+          >
+            <button
+              type="button"
+              className={`nav-button ${location.pathname.startsWith('/predictions') ? 'active' : ''}`}
+              onClick={() => toggleDropdown('predictions')}
+            >
+              Predictions
+              <svg className="dropdown-arrow" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                <polyline points="6 9 12 15 18 9"/>
+              </svg>
+            </button>
+            <div className={`dropdown-menu ${activeDropdown === 'predictions' ? 'show' : ''}`}>
+              <button onClick={() => handleNavClick('/predictions/games')} className="dropdown-item">
+                <span className="dropdown-icon">🎯</span>
+                <div>
+                  <div className="dropdown-title">Game Props</div>
+                  <div className="dropdown-desc">Win/loss, totals & spread projections</div>
+                </div>
+              </button>
+              <button onClick={() => handleNavClick('/predictions/pitchers')} className="dropdown-item">
+                <span className="dropdown-icon">⚾</span>
+                <div>
+                  <div className="dropdown-title">Pitcher Props</div>
+                  <div className="dropdown-desc">Strikeouts, innings & ERA forecasts</div>
+                </div>
+              </button>
+              <button onClick={() => handleNavClick('/predictions/batters')} className="dropdown-item">
+                <span className="dropdown-icon">🏏</span>
+                <div>
+                  <div className="dropdown-title">Batter Props</div>
+                  <div className="dropdown-desc">Hits, HRs, RBIs & stolen base props</div>
+                </div>
+              </button>
+            </div>
+          </div>
+
           {/* Insights Dropdown - UPDATED (removed Team Analytics) */}
           <div 
             className="nav-dropdown"
