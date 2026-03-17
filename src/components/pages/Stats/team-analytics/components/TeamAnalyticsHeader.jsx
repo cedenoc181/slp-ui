@@ -20,8 +20,8 @@ function TeamAnalyticsHeader({
         <div className="header-content">
           <div className="team-selector-wrapper">
             <div className="team-header-inline">
-              <img 
-                src={`https://www.mlbstatic.com/team-logos/${currentTeam?.mlbId}.svg`} 
+              <img
+                src={`https://www.mlbstatic.com/team-logos/${currentTeam?.mlbId}.svg`}
                 alt={`${currentTeamName} logo`}
                 className="team-logo-image"
               />
@@ -29,8 +29,8 @@ function TeamAnalyticsHeader({
             </div>
             <div className="selectors-row">
               <div className="team-selector">
-                <select 
-                  value={selectedTeam} 
+                <select
+                  value={selectedTeam}
                   onChange={(e) => handleTeamChange(e.target.value)}
                   className="team-dropdown"
                 >
@@ -41,8 +41,8 @@ function TeamAnalyticsHeader({
               </div>
 
               <div className="season-selector">
-                <select 
-                  value={selectedSeason} 
+                <select
+                  value={selectedSeason}
                   onChange={(e) => setSelectedSeason(e.target.value)}
                   className="season-dropdown"
                 >

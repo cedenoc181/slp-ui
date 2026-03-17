@@ -83,6 +83,7 @@ export function useTeamAnalytics() {
     const currentYear = new Date().getFullYear().toString();
     return getInitialSeason() === currentYear ? getCurrentSeasonType() : 'R';
   }); // R, S, P
+
   const [hideFloatingFilters, setHideFloatingFilters] = useState(false);
   const [isChartSectionVisible, setIsChartSectionVisible] = useState(false);
   const [isStandingsSectionVisible, setIsStandingsSectionVisible] = useState(false);
