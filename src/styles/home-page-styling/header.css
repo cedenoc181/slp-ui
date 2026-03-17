@@ -357,8 +357,10 @@
 }
 
 .dropdown-icon {
-  font-size: 1.5rem;
+  width: 24px;
+  height: 24px;
   flex-shrink: 0;
+  object-fit: contain;
 }
 
 .dropdown-title {
@@ -615,7 +617,8 @@
 
   .dropdown-icon {
     margin: 0;
-    font-size: 1.5rem;
+    width: 24px;
+    height: 24px;
   }
 
   .dropdown-item > div {

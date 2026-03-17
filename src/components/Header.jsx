@@ -7,6 +7,22 @@ import { useAuth } from '../context/AuthContext';
 import playerStatsService from '../data/services/playerStatsServices';
 import scheduleService from '../data/services/scheduleService';
 
+// Nav dropdown icons
+import iconMlbSchedule from '../assets/icons/mlb-schedule.png';
+import iconMlbStandings from '../assets/icons/mlb-standings.png';
+import iconTeamAnalytics from '../assets/icons/team-analytics.png';
+import iconPlayerAnalytics from '../assets/icons/player-analytics.png';
+import iconGameProp from '../assets/icons/game-prop.png';
+import iconPitcherProp from '../assets/icons/pitcher-prop.png';
+import iconBatterProp from '../assets/icons/batter-prop.png';
+import iconSandlotInsider from '../assets/icons/sandlot-insider.png';
+import iconStrategyBlog from '../assets/icons/strategy-blog.png';
+import iconDataScience from '../assets/icons/data-science-and-baseball.png';
+import iconHowToUse from '../assets/icons/how-to-use.png';
+import iconGlossary from '../assets/icons/glossary.png';
+import iconFaq from '../assets/icons/faq.png';
+import iconResponsibleGaming from '../assets/icons/responsible-gaming.png';
+
 // Format a matchup time/date label for search suggestions
 function formatMatchupTime(game) {
   const todayStr = new Date().toISOString().slice(0, 10);
@@ -581,28 +597,28 @@ function Header() {
             </button>
             <div className={`dropdown-menu ${activeDropdown === 'stats' ? 'show' : ''}`}>
               <button onClick={() => handleNavClick('/mlb-schedule')} className="dropdown-item">
-                <span className="dropdown-icon">📅</span>
+                <img src={iconMlbSchedule} alt="" className="dropdown-icon" />
                 <div>
                   <div className="dropdown-title">MLB Schedule</div>
                   <div className="dropdown-desc">Daily matchups & Analysis</div>
                 </div>
               </button>
               <button onClick={() => handleNavClick('/mlb-standings')} className="dropdown-item">
-                <span className="dropdown-icon">🏅</span>
+                <img src={iconMlbStandings} alt="" className="dropdown-icon" />
                 <div>
                   <div className="dropdown-title">MLB Standings</div>
                   <div className="dropdown-desc">Division & wild card rankings</div>
                 </div>
               </button>
               <button onClick={() => handleNavClick('/team-analytics')} className="dropdown-item">
-                <span className="dropdown-icon">📊</span>
+                <img src={iconTeamAnalytics} alt="" className="dropdown-icon" />
                 <div>
                   <div className="dropdown-title">Team Analytics</div>
                   <div className="dropdown-desc">Advanced team statistics</div>
                 </div>
               </button>
               <button onClick={() => handleNavClick('/player-analytics')} className="dropdown-item">
-                <span className="dropdown-icon">⚾</span>
+                <img src={iconPlayerAnalytics} alt="" className="dropdown-icon" />
                 <div>
                   <div className="dropdown-title">Player Analytics</div>
                   <div className="dropdown-desc">Player performance metrics</div>
@@ -629,21 +645,21 @@ function Header() {
             </button>
             <div className={`dropdown-menu ${activeDropdown === 'predictions' ? 'show' : ''}`}>
               <button onClick={() => handleNavClick('/predictions/games')} className="dropdown-item">
-                <span className="dropdown-icon">🎯</span>
+                <img src={iconGameProp} alt="" className="dropdown-icon" />
                 <div>
                   <div className="dropdown-title">Game Props</div>
                   <div className="dropdown-desc">Win/loss, totals & spread projections</div>
                 </div>
               </button>
               <button onClick={() => handleNavClick('/predictions/pitchers')} className="dropdown-item">
-                <span className="dropdown-icon">⚾</span>
+                <img src={iconPitcherProp} alt="" className="dropdown-icon" />
                 <div>
                   <div className="dropdown-title">Pitcher Props</div>
                   <div className="dropdown-desc">Strikeouts, innings & ERA forecasts</div>
                 </div>
               </button>
               <button onClick={() => handleNavClick('/predictions/batters')} className="dropdown-item">
-                <span className="dropdown-icon">🏏</span>
+                <img src={iconBatterProp} alt="" className="dropdown-icon" />
                 <div>
                   <div className="dropdown-title">Batter Props</div>
                   <div className="dropdown-desc">Hits, HRs, RBIs & stolen base props</div>
@@ -670,21 +686,21 @@ function Header() {
             </button>
             <div className={`dropdown-menu ${activeDropdown === 'insights' ? 'show' : ''}`}>
               <button onClick={() => handleNavClick('/sandlot-insider')} className="dropdown-item">
-                <span className="dropdown-icon">📰</span>
+                <img src={iconSandlotInsider} alt="" className="dropdown-icon" />
                 <div>
                   <div className="dropdown-title">Sandlot Insider</div>
                   <div className="dropdown-desc">Expert MLB analysis & commentary</div>
                 </div>
               </button>
               <button onClick={() => handleNavClick('/blogs')} className="dropdown-item">
-                <span className="dropdown-icon">✍️</span>
+                <img src={iconStrategyBlog} alt="" className="dropdown-icon" />
                 <div>
                   <div className="dropdown-title">Strategy Blog</div>
                   <div className="dropdown-desc">Betting tips & insights</div>
                 </div>
               </button>
               <button onClick={() => handleNavClick('/data-science')} className="dropdown-item">
-                <span className="dropdown-icon">👨‍🔬</span>
+                <img src={iconDataScience} alt="" className="dropdown-icon" />
                 <div>
                   <div className="dropdown-title">Data Science & Baseball</div>
                   <div className="dropdown-desc">ML models & analytics</div>
@@ -711,28 +727,28 @@ function Header() {
             </button>
             <div className={`dropdown-menu ${activeDropdown === 'education' ? 'show' : ''}`}>
               <button onClick={() => handleNavClick('/how-to-use')} className="dropdown-item">
-                <span className="dropdown-icon">🎯</span>
+                <img src={iconHowToUse} alt="" className="dropdown-icon" />
                 <div>
                   <div className="dropdown-title">How to Use</div>
                   <div className="dropdown-desc">Platform guide</div>
                 </div>
               </button>
               <button onClick={() => handleNavClick('/glossary')} className="dropdown-item">
-                <span className="dropdown-icon">📖</span>
+                <img src={iconGlossary} alt="" className="dropdown-icon" />
                 <div>
                   <div className="dropdown-title">Glossary</div>
                   <div className="dropdown-desc">Baseball & betting terms</div>
                 </div>
               </button>
               <button onClick={() => handleNavClick('/faqs')} className="dropdown-item">
-                <span className="dropdown-icon">❓</span>
+                <img src={iconFaq} alt="" className="dropdown-icon" />
                 <div>
                   <div className="dropdown-title">FAQs</div>
                   <div className="dropdown-desc">Common questions</div>
                 </div>
               </button>
               <button onClick={() => handleNavClick('/responsible-gaming')} className="dropdown-item">
-                <span className="dropdown-icon">🛡️</span>
+                <img src={iconResponsibleGaming} alt="" className="dropdown-icon" />
                 <div>
                   <div className="dropdown-title">Responsible Gaming</div>
                   <div className="dropdown-desc">Safe betting practices</div>

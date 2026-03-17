@@ -140,23 +140,41 @@ function MLBStandingsPostseason({ selectedSeason }) {
     return seeds;
   }, [bracketData, teamSeasonData]);
 
-  // Pair teams in a round by matching complementary win/loss records
-  // (winner's losses in the series = loser's wins, and vice versa)
-  const pairRoundTeams = useCallback((participants, winsKey, lossesKey, winnerKey) => {
-    const winners = participants.filter(t => t[winnerKey] === true);
-    const losers = participants.filter(t => t[winnerKey] === false);
+  // Pair teams in a round using opponent IDs (primary) or complementary win/loss records (fallback).
+  // Also handles null series-winner fields by computing the winner from wins vs losses —
+  // this covers the case where the backend's game_type classification is broken.
+  const pairRoundTeams = useCallback((leagueTeams, winsKey, lossesKey, winnerKey, opponentKey) => {
+    // Include teams that played this round: series-winner field set OR recorded wins/losses
+    const participants = leagueTeams.filter(t =>
+      t[winnerKey] !== null || t[winsKey] > 0 || t[lossesKey] > 0
+    );
+
+    // Determine winner: use the field if available, otherwise compute from wins vs losses
+    const isWinner = (t) => {
+      if (t[winnerKey] !== null) return t[winnerKey] === true;
+      return t[winsKey] > t[lossesKey];
+    };
+
+    const winners = participants.filter(t => isWinner(t));
+    const losers = participants.filter(t => !isWinner(t));
 
     const matchups = [];
     const usedLosers = new Set();
 
     winners.forEach(winner => {
-      // Complementary match: winner's losses = loser's wins
-      let loser = losers.find(l =>
-        !usedLosers.has(l.team_id) &&
-        l[winsKey] === winner[lossesKey] &&
-        l[lossesKey] === winner[winsKey]
-      );
-      // Fallback: any unused loser
+      // 1. Primary: match by opponent ID (most reliable)
+      let loser = opponentKey
+        ? losers.find(l => !usedLosers.has(l.team_id) && l.team_id === winner[opponentKey])
+        : null;
+      // 2. Secondary: complementary series record
+      if (!loser) {
+        loser = losers.find(l =>
+          !usedLosers.has(l.team_id) &&
+          l[winsKey] === winner[lossesKey] &&
+          l[lossesKey] === winner[winsKey]
+        );
+      }
+      // 3. Fallback: any unused loser
       if (!loser) {
         loser = losers.find(l => !usedLosers.has(l.team_id));
       }
@@ -177,36 +195,33 @@ function MLBStandingsPostseason({ selectedSeason }) {
     const nlTeams = bracketData['National League'] || [];
     const allTeams = [...alTeams, ...nlTeams];
 
-    const wsWinner = allTeams.find(t => t.ws_champion === true);
-    const wsLoser = allTeams.find(t => t.ws_champion === false);
+    const wsParticipants = allTeams.filter(t => t.ws_wins > 0 || t.ws_losses > 0);
+    const wsWinner = allTeams.find(t => t.ws_champion === true) ||
+      wsParticipants.sort((a, b) => b.ws_wins - a.ws_wins)[0] || null;
+    const wsLoser = allTeams.find(t => t.ws_champion === false) ||
+      wsParticipants.sort((a, b) => a.ws_wins - b.ws_wins)[0] || null;
 
     return {
       AL: {
         wildCard: pairRoundTeams(
-          alTeams.filter(t => t.wc_series_winner !== null),
-          'wildcard_wins', 'wildcard_losses', 'wc_series_winner'
+          alTeams, 'wildcard_wins', 'wildcard_losses', 'wc_series_winner', 'wildcard_opponent_id'
         ),
         divisionSeries: pairRoundTeams(
-          alTeams.filter(t => t.lds_series_winner !== null),
-          'lds_wins', 'lds_losses', 'lds_series_winner'
+          alTeams, 'lds_wins', 'lds_losses', 'lds_series_winner', 'lds_opponent_id'
         ),
         championshipSeries: pairRoundTeams(
-          alTeams.filter(t => t.lcs_series_winner !== null),
-          'lcs_wins', 'lcs_losses', 'lcs_series_winner'
+          alTeams, 'lcs_wins', 'lcs_losses', 'lcs_series_winner', 'lcs_opponent_id'
         ),
       },
       NL: {
         wildCard: pairRoundTeams(
-          nlTeams.filter(t => t.wc_series_winner !== null),
-          'wildcard_wins', 'wildcard_losses', 'wc_series_winner'
+          nlTeams, 'wildcard_wins', 'wildcard_losses', 'wc_series_winner', 'wildcard_opponent_id'
         ),
         divisionSeries: pairRoundTeams(
-          nlTeams.filter(t => t.lds_series_winner !== null),
-          'lds_wins', 'lds_losses', 'lds_series_winner'
+          nlTeams, 'lds_wins', 'lds_losses', 'lds_series_winner', 'lds_opponent_id'
         ),
         championshipSeries: pairRoundTeams(
-          nlTeams.filter(t => t.lcs_series_winner !== null),
-          'lcs_wins', 'lcs_losses', 'lcs_series_winner'
+          nlTeams, 'lcs_wins', 'lcs_losses', 'lcs_series_winner', 'lcs_opponent_id'
         ),
       },
       worldSeries: wsWinner && wsLoser ? { winner: wsWinner, loser: wsLoser } : null,
