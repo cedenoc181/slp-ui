@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../../context/AuthContext';
 
 function AccountPage() {
-  const { isAuthenticated, loading, login, register } = useAuth();
+  const { isAuthenticated, loading, login, register, requestPasswordReset } = useAuth();
   const navigate = useNavigate();
 
   // Form states
@@ -13,8 +13,14 @@ function AccountPage() {
   const [registerPassword, setRegisterPassword] = useState('');
   const [registerConfirm, setRegisterConfirm] = useState('');
   const [error, setError] = useState('');
-  const [registerSuccess, setRegisterSuccess] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+
+  // Forgot password states
+  const [showForgot, setShowForgot] = useState(false);
+  const [forgotEmail, setForgotEmail] = useState('');
+  const [forgotSubmitting, setForgotSubmitting] = useState(false);
+  const [forgotSent, setForgotSent] = useState(false);
+  const [forgotError, setForgotError] = useState('');
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -65,7 +71,9 @@ function AccountPage() {
     setSubmitting(true);
     try {
       await register(registerEmail, registerPassword);
-      setRegisterSuccess(true);
+      // Auto-login immediately after successful registration
+      await login(registerEmail, registerPassword);
+      // Redirect handled by useEffect when isAuthenticated flips
     } catch (err) {
       setError(mapAuthError(err?.message));
     } finally {
@@ -73,14 +81,27 @@ function AccountPage() {
     }
   };
 
-  // Map Supabase error messages to user-friendly text
+  const handleForgotPassword = async (e) => {
+    e.preventDefault();
+    setForgotError('');
+    if (!forgotEmail) { setForgotError('Please enter your email.'); return; }
+    setForgotSubmitting(true);
+    try {
+      await requestPasswordReset(forgotEmail);
+      setForgotSent(true);
+    } catch (err) {
+      setForgotError(err?.message || 'Something went wrong. Please try again.');
+    } finally {
+      setForgotSubmitting(false);
+    }
+  };
+
   function mapAuthError(msg) {
     if (!msg) return 'Something went wrong. Please try again.';
-    if (msg.includes('Invalid login credentials')) return 'Incorrect email or password. Please try again.';
-    if (msg.includes('Email not confirmed')) return 'Please confirm your email before signing in. Check your inbox.';
-    if (msg.includes('User already registered')) return 'An account with this email already exists. Try signing in.';
-    if (msg.includes('Password should be at least')) return 'Password must be at least 6 characters.';
-    if (msg.includes('Unable to validate email')) return 'Please enter a valid email address.';
+    if (msg.includes('Invalid email or password')) return 'Incorrect email or password. Please try again.';
+    if (msg.includes('Email already registered')) return 'An account with this email already exists. Try signing in.';
+    if (msg.includes('Account is deactivated')) return 'This account has been deactivated. Contact support for help.';
+    if (msg.includes('at least 6')) return 'Password must be at least 6 characters.';
     return msg;
   }
 
@@ -143,6 +164,48 @@ function AccountPage() {
                 {submitting ? 'Signing in…' : 'Sign In'}
               </button>
             </form>
+
+            {/* Forgot password */}
+            {!showForgot ? (
+              <button
+                className="auth-btn-link"
+                onClick={() => { setShowForgot(true); setForgotSent(false); setForgotError(''); }}
+              >
+                Forgot password?
+              </button>
+            ) : (
+              <div className="forgot-password-panel">
+                {forgotSent ? (
+                  <p className="forgot-success">
+                    Check your inbox — if that email is registered, a reset link is on its way.
+                  </p>
+                ) : (
+                  <form className="auth-form" onSubmit={handleForgotPassword}>
+                    <p className="forgot-label">Enter your email and we'll send a reset link.</p>
+                    {forgotError && <p className="forgot-error">{forgotError}</p>}
+                    <div className="form-group">
+                      <label htmlFor="forgot-email">Email</label>
+                      <input
+                        type="email"
+                        id="forgot-email"
+                        placeholder="your.email@example.com"
+                        value={forgotEmail}
+                        onChange={(e) => setForgotEmail(e.target.value)}
+                      />
+                    </div>
+                    <button type="submit" className="auth-btn primary" disabled={forgotSubmitting}>
+                      {forgotSubmitting ? 'Sending…' : 'Send Reset Link'}
+                    </button>
+                  </form>
+                )}
+                <button
+                  className="auth-btn-link"
+                  onClick={() => { setShowForgot(false); setForgotSent(false); setForgotError(''); }}
+                >
+                  Back to sign in
+                </button>
+              </div>
+            )}
           </div>
 
           {/* Register Card */}
@@ -158,52 +221,41 @@ function AccountPage() {
             <h2>Create Account</h2>
             <p>Sign up for free to unlock Player Analytics, Team Analytics, and personalized features.</p>
 
-            {registerSuccess ? (
-              <div className="register-success">
-                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
-                  <polyline points="22 4 12 14.01 9 11.01"/>
-                </svg>
-                <p><strong>Check your email!</strong></p>
-                <p>We sent a confirmation link to <strong>{registerEmail}</strong>. Click it to activate your account, then sign in.</p>
+            <form className="auth-form" onSubmit={handleRegister}>
+              <div className="form-group">
+                <label htmlFor="register-email">Email</label>
+                <input
+                  type="email"
+                  id="register-email"
+                  placeholder="your.email@example.com"
+                  value={registerEmail}
+                  onChange={(e) => setRegisterEmail(e.target.value)}
+                />
               </div>
-            ) : (
-              <form className="auth-form" onSubmit={handleRegister}>
-                <div className="form-group">
-                  <label htmlFor="register-email">Email</label>
-                  <input
-                    type="email"
-                    id="register-email"
-                    placeholder="your.email@example.com"
-                    value={registerEmail}
-                    onChange={(e) => setRegisterEmail(e.target.value)}
-                  />
-                </div>
-                <div className="form-group">
-                  <label htmlFor="register-password">Password</label>
-                  <input
-                    type="password"
-                    id="register-password"
-                    placeholder="••••••••"
-                    value={registerPassword}
-                    onChange={(e) => setRegisterPassword(e.target.value)}
-                  />
-                </div>
-                <div className="form-group">
-                  <label htmlFor="register-confirm">Confirm Password</label>
-                  <input
-                    type="password"
-                    id="register-confirm"
-                    placeholder="••••••••"
-                    value={registerConfirm}
-                    onChange={(e) => setRegisterConfirm(e.target.value)}
-                  />
-                </div>
-                <button type="submit" className="auth-btn secondary" disabled={submitting}>
-                  {submitting ? 'Creating account…' : 'Create Free Account'}
-                </button>
-              </form>
-            )}
+              <div className="form-group">
+                <label htmlFor="register-password">Password</label>
+                <input
+                  type="password"
+                  id="register-password"
+                  placeholder="••••••••"
+                  value={registerPassword}
+                  onChange={(e) => setRegisterPassword(e.target.value)}
+                />
+              </div>
+              <div className="form-group">
+                <label htmlFor="register-confirm">Confirm Password</label>
+                <input
+                  type="password"
+                  id="register-confirm"
+                  placeholder="••••••••"
+                  value={registerConfirm}
+                  onChange={(e) => setRegisterConfirm(e.target.value)}
+                />
+              </div>
+              <button type="submit" className="auth-btn secondary" disabled={submitting}>
+                {submitting ? 'Creating account…' : 'Create Free Account'}
+              </button>
+            </form>
           </div>
         </div>
 

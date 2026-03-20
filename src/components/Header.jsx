@@ -570,14 +570,14 @@ function Header() {
 
         {/* Navigation */}
         <nav className={`nav ${isMenuOpen ? 'nav-open' : ''}`}>
-          {/* Home */}
-          <button 
-            type="button" 
-            onClick={() => handleNavClick('/')} 
+          {/* Home — muted */}
+          {/* <button
+            type="button"
+            onClick={() => handleNavClick('/')}
             className={`nav-button ${location.pathname === '/' ? 'active' : ''}`}
           >
             Home
-          </button>
+          </button> */}
 
           {/* Stats Dropdown - NEW */}
           <div 
@@ -757,8 +757,8 @@ function Header() {
             </div>
           </div>
 
-          {/* Account/Login Icon — muted, not ready for deployment */}
-          {/* <button
+          {/* Account/Login Icon */}
+          <button
             type="button"
             onClick={() => handleNavClick(isAuthenticated ? '/account/settings' : '/account')}
             className={`account-icon ${location.pathname.startsWith('/account') ? 'active' : ''}`}
@@ -769,7 +769,7 @@ function Header() {
               <circle cx="12" cy="8" r="4"/>
               <path d="M4 21v-2a4 4 0 0 1 4-4h8a4 4 0 0 1 4 4v2"/>
             </svg>
-          </button> */}
+          </button>
         </nav>
       </div>
     </header>

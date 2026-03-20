@@ -4,6 +4,7 @@ import ReactGA from 'react-ga4';
 import { AuthProvider } from './context/AuthContext';
 
 import ApiTestPage from './components/ApiTestPage';
+import ProtectedRoute from './components/ProtectedRoute';
 
 
 // Home page component imports//
@@ -25,9 +26,10 @@ import FeaturesPage from './components/pages/About-Us/FeaturesPage';
 import ContactPage from './components/pages/About-Us/ContactPage';
 import UnsubscribePage from './components/pages/About-Us/UnsubscribePage';
 
-// Account page imports// (muted — not ready for deployment)
-// import AccountPage from './components/pages/Account/AccountPage';
-// import SettingsPage from './components/pages/Account/SettingsPage';
+// Account page imports
+import AccountPage from './components/pages/Account/AccountPage';
+import SettingsPage from './components/pages/Account/SettingsPage';
+import ResetPasswordPage from './components/pages/Account/ResetPasswordPage';
 
 // Admin page imports//
 import AdminPage from './components/pages/Admin/AdminPage';
@@ -102,9 +104,9 @@ import './styles/more-page-styling/about-page.css';
 import './styles/more-page-styling/features-page.css';
 import './styles/more-page-styling/contact-page.css';
 
-//Account-page-styles// (muted — not ready for deployment)
-// import './styles/account-page-styling/account-page.css';
-// import './styles/account-page-styling/settings-page.css';
+//Account-page-styles//
+import './styles/account-page-styling/account-page.css';
+import './styles/account-page-styling/settings-page.css';
 
 //Admin-page-styles//
 import './styles/admin-page-styling/admin.css';
@@ -219,9 +221,12 @@ function App() {
           <Route path="/features" element={<FeaturesPage />} />
           <Route path="/contact" element={<ContactPage />} />
 
-          {/* Account route — muted, not ready for deployment */}
-          {/* <Route path="/account" element={<AccountPage />} /> */}
-          {/* <Route path="/account/settings" element={<SettingsPage />} /> */}
+          {/* Account routes */}
+          <Route path="/account" element={<AccountPage />} />
+          <Route path="/account/settings" element={
+            <ProtectedRoute><SettingsPage /></ProtectedRoute>
+          } />
+          <Route path="/reset-password" element={<ResetPasswordPage />} />
 
           {/* Stats routes */}
           <Route path="/mlb-schedule" element={<MLBSchedule />} />
@@ -256,10 +261,16 @@ function App() {
           <Route path="/terms-of-use" element={<TermsOfUse />} />
           <Route path="/privacy-policy" element={<PrivacyPolicy />} />
 
-          {/* Admin routes (URL-only, access-controlled in component) */}
-          <Route path="/admin" element={<AdminPage />} />
-          <Route path="/admin/new" element={<ArticleEditor />} />
-          <Route path="/admin/edit/:id" element={<ArticleEditor />} />
+          {/* Admin routes — requires is_admin */}
+          <Route path="/admin" element={
+            <ProtectedRoute require="admin"><AdminPage /></ProtectedRoute>
+          } />
+          <Route path="/admin/new" element={
+            <ProtectedRoute require="admin"><ArticleEditor /></ProtectedRoute>
+          } />
+          <Route path="/admin/edit/:id" element={
+            <ProtectedRoute require="admin"><ArticleEditor /></ProtectedRoute>
+          } />
 
           {/* Unsubscribe route */}
           <Route path="/unsubscribe" element={<UnsubscribePage />} />
