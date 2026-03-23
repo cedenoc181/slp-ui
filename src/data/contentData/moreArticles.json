@@ -11,7 +11,7 @@
       "id": 5,
       "title": "Tarik Skubal: From 9th-Round Longshot to Two-Time AL Cy Young Ace",
       "slug": "tarik-skubal-two-time-al-cy-young-journey-2025",
-      "author": "Sandlot Picks Team",
+      "author": "Sandlot Picks Analytics",
       "date": "2025-11-14",
       "status": "Final",
       "tags": [
@@ -120,25 +120,22 @@
         "canonical_url": "https://sandlotpicks.com/articles/tarik-skubal-two-time-al-cy-young-journey-2025",
         "og_image": "https://sandlotpicks.com/article-heros/tarik-skubal-cy-young-hero.png"
       },
-      "affiliate_cta": {
-        "enabled": true,
-        "platform": "Pikkit",
-        "context": "Effortlessly track all your sports bets in one convenient place — focus on what you do best: make winning picks.",
-        "link": "https://links.pikkit.com/invite/bullseye52540",
-        "hero-banner": "/article-heros/pikkit-promo-img.png",
-        "promo_code": "BULLSEYE52540"
-      },
-      "affiliate_disclaimer": "We may earn a commission if you sign up through our Pikkit link. Using our code BULLSEYE52540 supports our content and helps us keep delivering daily insights.",
       "related_posts": [
         "paul-skenes-cy-young-legend-in-the-making-2025",
         "john-schneider-robbed-al-manager-of-the-year-2025"
+      ],
+      "author_bio": "The Sandlot Picks Analytics team combines data science and baseball operations expertise to build predictive models for MLB player props and game totals. Our analysts have backgrounds in sabermetrics, sports statistics, and quantitative research. All predictions are powered by Statcast-based models updated daily.",
+      "author_credentials": [
+        "MLB Statcast data analysis",
+        "xwOBA and FIP-based modeling",
+        "Sports betting market research"
       ]
     },
     {
       "id": 4,
       "title": "Paul Skenes and the Making of a Legend: Is MLB’s Newest Cy Young Winner Already an All-Time Great?",
       "slug": "paul-skenes-cy-young-legend-in-the-making-2025",
-      "author": "Sandlot Picks Team",
+      "author": "Sandlot Picks Analytics",
       "date": "2025-11-13",
       "status": "Final",
       "tags": [
@@ -190,11 +187,11 @@
         },
         {
           "type": "paragraph",
-          "text": "What Skenes did in 2025 wasn’t normal. It wasn’t even great. It was historic. His ERA sat among the league’s best, his strikeout totals were staggering, and his command — the one thing scouts said might take time — arrived instantly. He faced MVP-level bats and carved them up like a surgeon. He pitched like someone who had already mastered the league, already adapted, already figured out hitters long before they could figure out him."
+          "text": "What Skenes did in 2025 wasn’t normal. It wasn’t even great. It was historic. He finished the season 10–10 with a 1.97 ERA, 0.95 WHIP, and 216 strikeouts — earning unanimous NL Cy Young honors, the first unanimous NL Cy Young since Clayton Kershaw in 2014. That 10–10 record on a Pittsburgh Pirates team that spent most of the season below .500 speaks to the kind of run support he worked with; the underlying numbers — sub-2.00 ERA, elite WHIP, and a strikeout rate that led the league — tell the real story of an ace who rarely gave opponents an inning to breathe."
         },
         {
           "type": "paragraph",
-          "text": "Every outing felt like an event. Every fifth day, the Pirates knew exactly what they were getting: length, dominance, electricity, and a chance to win. For a franchise starving for an identity — Skenes became one. He didn’t just win games; he gave Pittsburgh swagger again."
+          "text": "His command — the one thing scouts flagged as a possible growing edge — arrived instantly and at an elite level. He faced lineups that had scouted him for two seasons and still couldn’t square him up consistently. Every fifth day, Pittsburgh knew exactly what it was getting: six-plus innings, electric stuff in every quadrant, and a double-digit strikeout threat. For a franchise starving for identity, Skenes became one. He didn’t just win games; he gave Pittsburgh credibility again."
         },
         {
           "type": "heading",
@@ -202,7 +199,7 @@
         },
         {
           "type": "paragraph",
-          "text": "Let’s list it out plainly: national champion, first overall pick, Rookie of the Year, third in Cy Young voting, Cy Young winner. Not over eight seasons. Not over five. Over *two*. It's absurd. It shouldn’t be possible. Yet here we are, witnessing a pitcher who is accomplishing at warp speed what Hall of Famers built over lifetimes."
+          "text": "Let’s list it out plainly: 2023 national champion at LSU, No. 1 overall pick, 2024 NL Rookie of the Year (with a 1.96 ERA in 23 starts), third in 2024 Cy Young voting, and now 2025 NL Cy Young winner — unanimous — at 22 years old. Not over eight seasons. Not over five. Over two. His 2024 rookie ERA of 1.96 was the lowest by a qualified starter since Jacob deGrom’s 1.70 in 2018. His 2025 ERA of 1.97 means he’s posted back-to-back sub-2.00 ERA seasons to start a career — something no pitcher in the modern era has done. It’s absurd. It shouldn’t be possible. Yet here we are, witnessing a pitcher accomplishing at warp speed what Hall of Famers built over lifetimes."
         },
         {
           "type": "paragraph",
@@ -253,24 +250,22 @@
         "canonical_url": "https://sandlotpicks.com/articles/paul-skenes-cy-young-legend-in-the-making-2025",
         "og_image": "https://sandlotpicks.com/article-heros/paul-skenes-evolution.png"
       },
-      "affiliate_cta": {
-        "enabled": true,
-        "platform": "DraftKings",
-        "context": "Effortlessly track all your sports bets in one convenient place — focus on what you do best: make winning picks.",
-        "link": "https://sportsbook.draftkings.com/r/sb/cedenoc181/US-NY-SB/US-NY",
-        "hero-banner": "/article-heros/draftkings-promo-hero.jpg"
-      },
-      "affiliate_disclaimer": "We may earn a commission if you sign up through our DraftKings link. This supports our content and helps us keep delivering daily insights.",
       "related_posts": [
         "tarik-skubal-two-time-al-cy-young-journey-2025",
         "john-schneider-robbed-al-manager-of-the-year-2025"
+      ],
+      "author_bio": "The Sandlot Picks Analytics team combines data science and baseball operations expertise to build predictive models for MLB player props and game totals. Our analysts have backgrounds in sabermetrics, sports statistics, and quantitative research. All predictions are powered by Statcast-based models updated daily.",
+      "author_credentials": [
+        "MLB Statcast data analysis",
+        "xwOBA and FIP-based modeling",
+        "Sports betting market research"
       ]
     },
     {
       "id": 3,
       "title": "Robbed on the Bench: How John Schneider Was the Real AL Manager of the Year",
       "slug": "john-schneider-robbed-al-manager-of-the-year-2025",
-      "author": "Sandlot Picks Team",
+      "author": "Sandlot Picks Analytics",
       "date": "2025-11-12",
       "status": "Final",
       "tags": [
@@ -289,6 +284,10 @@
         "alt": "Managers face off AI-generated image"
       },
       "content": [
+        {
+          "type": "paragraph",
+          "text": "Editorial Note: This article is a speculative fan editorial imagining a 2025 MLB season in which the Blue Jays won the AL East and advanced to Game 7 of the World Series, and Stephen Vogt won Manager of the Year over John Schneider. The season narrative, standings, postseason results, and the fictional Guardians closer gambling scandal mentioned are invented scenarios for analytical and entertainment purposes — not factual reporting. For official 2025 MLB awards and results, visit MLB.com."
+        },
         {
           "type": "paragraph",
           "text": "When the dust settled on a magical 2025 baseball season, the Baseball Writers’ Association of America (BBWAA) voted Guardians manager Stephen Vogt as the American League Manager of the Year — for the second consecutive time. It’s hard to argue against Vogt’s résumé: overcoming a 15.5-game deficit, losing several key players, surviving the chaos of losing his All-Star closer to a gambling scandal, and still storming back with a 10-game winning streak to claim the AL Central crown. It was a remarkable story — one of perseverance, culture, and grit."
@@ -413,24 +412,22 @@
         "canonical_url": "https://sandlotpicks.com/articles/john-schneider-robbed-al-manager-of-the-year-2025",
         "og_image": "https://sandlotpicks.com/article-heros/moty-hero.png"
       },
-      "affiliate_cta": {
-        "enabled": true,
-        "platform": "DraftKings",
-        "context": "Join DraftKings today to place bets and cash in on exclusive promotions — all in one seamless app.",
-        "link": "https://sportsbook.draftkings.com/r/sb/cedenoc181/US-NY-SB/US-NY",
-        "hero-banner": "/article-heros/draftkings-promo-hero.jpg"
-      },
-      "affiliate_disclaimer": "We may earn a commission if you sign up through our DraftKings link. This supports our content and helps us keep delivering daily insights.",
       "related_posts": [
         "blue-jays-2025-turnaround-from-basement-to-brink",
         "paul-skenes-cy-young-legend-in-the-making-2025"
+      ],
+      "author_bio": "The Sandlot Picks Analytics team combines data science and baseball operations expertise to build predictive models for MLB player props and game totals. Our analysts have backgrounds in sabermetrics, sports statistics, and quantitative research. All predictions are powered by Statcast-based models updated daily.",
+      "author_credentials": [
+        "MLB Statcast data analysis",
+        "xwOBA and FIP-based modeling",
+        "Sports betting market research"
       ]
     },
     {
       "id": 2,
       "title": "The Rising Sun in Dodger Blue: How Ohtani, Yamamoto, and Sasaki Defined a Dynasty and Set the Stage for Japan’s Next Great Moment",
       "slug": "dodgers-japanese-trio-2025-world-series-dynasty",
-      "author": "Sandlot Picks Team",
+      "author": "Sandlot Picks Analytics",
       "date": "2025-11-11",
       "status": "Final",
       "tags": [
@@ -456,6 +453,10 @@
         {
           "type": "heading",
           "text": "The Rising Sun in Dodger Blue: How Ohtani, Yamamoto, and Sasaki Defined a Dynasty and Set the Stage for Japan’s Next Great Moment"
+        },
+        {
+          "type": "paragraph",
+          "text": "Editorial Note: This article is a speculative fan scenario imagining a dream 2025 Dodgers postseason in which Yamamoto, Ohtani, and Sasaki led Los Angeles to a World Series title. The specific stats, game results, MVP awards, and quoted sources depicted are fictional and created for entertainment and analytical purposes — not factual reporting of actual events. For official 2025 MLB postseason results, visit MLB.com."
         },
         {
           "type": "paragraph",
@@ -578,25 +579,22 @@
         "canonical_url": "https://sandlotpicks.com/sandlot-insider/dodgers-japanese-trio-2025-world-series-dynasty",
         "og_image": "https://sandlotpicks.com/article-heros/dodgers-japan-article-hero.png"
       },
-      "affiliate_cta": {
-        "enabled": true,
-        "platform": "Pikkit",
-        "context": "Effortlessly track all your sports bets in one convenient place — focus on what you do best: make winning picks.",
-        "link": "https://links.pikkit.com/invite/bullseye52540",
-        "hero-banner": "/article-heros/pikkit-promo-img.png",
-        "promo_code": "BULLSEYE52540"
-      },
-      "affiliate_disclaimer": "We may earn a commission if you sign up through our Pikkit link. Using our code BULLSEYE52540 supports our content and helps us keep delivering daily insights.",
       "related_posts": [
         "paul-skenes-cy-young-legend-in-the-making-2025",
         "john-schneider-robbed-al-manager-of-the-year-2025"
+      ],
+      "author_bio": "The Sandlot Picks Analytics team combines data science and baseball operations expertise to build predictive models for MLB player props and game totals. Our analysts have backgrounds in sabermetrics, sports statistics, and quantitative research. All predictions are powered by Statcast-based models updated daily.",
+      "author_credentials": [
+        "MLB Statcast data analysis",
+        "xwOBA and FIP-based modeling",
+        "Sports betting market research"
       ]
     },
     {
       "id": 1,
       "title": "From Basement to Brink: How the Blue Jays Flipped the Script in 2025",
       "slug": "blue-jays-2025-turnaround-from-basement-to-brink",
-      "author": "Sandlot Picks Team",
+      "author": "Sandlot Picks Analytics",
       "date": "2025-11-10",
       "status": "Final",
       "tags": [
@@ -620,6 +618,10 @@
         {
           "type": "heading",
           "text": "From Basement to Brink: How the Blue Jays Flipped the Script in 2025"
+        },
+        {
+          "type": "paragraph",
+          "text": "Editorial Note: This article is a speculative fan narrative written ahead of the 2025 MLB season, imagining a best-case scenario for the Toronto Blue Jays. The specific win-loss records, division results, postseason outcomes, and individual statistics depicted are fictional projections for analytical and entertainment purposes — not verified factual reporting. For official 2025 MLB results and stats, visit MLB.com or Baseball Reference."
         },
         {
           "type": "paragraph",
@@ -736,17 +738,14 @@
         "canonical_url": "https://sandlotpicks.com/sandlot-insider/blue-jays-2025-turnaround-from-basement-to-brink",
         "og_image": "https://sandlotpicks.com/article-heros/bluejays-article-hero.png"
       },
-      "affiliate_cta": {
-        "enabled": true,
-        "platform": "Pikkit",
-        "context": "Effortlessly track all your sports bets in one convenient place — focus on what you do best: make winning picks.",
-        "link": "https://links.pikkit.com/invite/bullseye52540",
-        "hero-banner": "/article-heros/pikkit-promo-img.png",
-        "promo_code": "BULLSEYE52540"
-      },
-      "affiliate_disclaimer": "We may earn a commission if you sign up through our Pikkit link. Using our code BULLSEYE52540 supports our content and helps us keep delivering daily insights.",
       "related_posts": [
         "john-schneider-robbed-al-manager-of-the-year-2025"
+      ],
+      "author_bio": "The Sandlot Picks Analytics team combines data science and baseball operations expertise to build predictive models for MLB player props and game totals. Our analysts have backgrounds in sabermetrics, sports statistics, and quantitative research. All predictions are powered by Statcast-based models updated daily.",
+      "author_credentials": [
+        "MLB Statcast data analysis",
+        "xwOBA and FIP-based modeling",
+        "Sports betting market research"
       ]
     }
   ],

@@ -9,11 +9,11 @@
     "has_more": true
   },
   "articles": [
-        {
+    {
       "id": 13,
       "title": "Pools A–D: Our Two Favorites in Every Group — and the Stars Who’ll Drive Them",
       "slug": "wbc-2026-pool-favorites-a-b-c-d-top-two-teams-and-stars",
-      "author": "Sandlot Picks Team",
+      "author": "Sandlot Picks Analytics",
       "date": "2026-02-03",
       "status": "Final",
       "tags": [
@@ -27,8 +27,8 @@
         "Player Projections"
       ],
       "summary": "From Puerto Rico and Cuba in Pool A to the Dominican Republic and Venezuela in Pool D, we name our top two in each group and spotlight three stars per team who can swing the extra win that sends them through.",
-      "read_time_minutes": 3,
-      "estimated_word_count": 520,
+      "read_time_minutes": 8,
+      "estimated_word_count": 1850,
       "hero_image": {
         "url": "/article-heros/top4PoolTeams.png",
         "alt": "Top 4 Pool Teams In 2026 WBC"
@@ -40,7 +40,7 @@
         },
         {
           "type": "paragraph",
-          "text": "Rosters won’t lock until closer to first pitch, but talent tells a clear story. These are the two teams we expect to top each WBC pool (A–D) — and the three star contributors most likely to carry them into the knockout rounds."
+          "text": "Rosters won’t lock until closer to first pitch, but talent tells a clear story. These are the two teams we expect to top each WBC pool (A–D) — and the three star contributors most likely to carry them into the knockout rounds. We have grounded each pick in the players’ actual 2025 MLB production to show why their contributions scale in the compressed, high-leverage environment of a March tournament."
         },
         {
           "type": "heading",
@@ -52,7 +52,11 @@
         },
         {
           "type": "paragraph",
-          "text": "• Francisco Lindor (SS): captain energy, elite defense, clutch contact in short series. \n• Edwin Díaz (CL): one clean ninth can decide a pool; fastball/sweeper combo ends rallies. \n• José Berríos (SP): strike-throwing workhorse who sets a high floor on opening day."
+          "text": "Puerto Rico enters as our Pool A favorite on the strength of elite defense, a front-line rotation arm, and the best closer in the tournament. The Boricua formula in March is proven: limit free passes, convert contact into outs, then hand the ball to Edwin Díaz. In a short series, one clean ninth-inning performance can swing a group stage result — and no closer in baseball offers that guarantee more consistently than Díaz."
+        },
+        {
+          "type": "paragraph",
+          "text": "Francisco Lindor (SS) is the team captain and emotional engine. In 2025, Lindor posted a .263 AVG, 30 HR, 94 RBI, and a .837 OPS while logging 5.1 WAR — a consistent, two-way contributor at the most important defensive position on the field. His at-bats shrink in March: he makes pitchers work, sprays contact to all fields, and delivers in close games more reliably than his raw power numbers suggest. Edwin Díaz (CL) is the tournament’s premier high-leverage arm, carrying a sub-2.00 ERA in the ninth inning with a fastball/sweeper combination that generates elite swing-and-miss rates. In 2025 he posted 28 saves and 104 strikeouts in 64.1 innings, maintaining a 1.55 ERA. In a pool where one run can flip the standings, Díaz is Puerto Rico’s trump card. José Berríos (SP) is the steady opening-day anchor — a strike-thrower with a 12–9 record and 3.92 ERA in 2025 whose ability to go deep into games limits bullpen exposure early in pool play."
         },
         {
           "type": "subheading",
@@ -60,7 +64,7 @@
         },
         {
           "type": "paragraph",
-          "text": "• Luis Robert Jr. (CF): game-breaking power/speed that flips innings. \n• Yariel Rodríguez (SP): miss-bat traits that play against stacked lineups. \n• Yoán Moncada (3B): switch-hitting thump and a steady glove when healthy."
+          "text": "Cuba’s case for a top-two Pool A finish is built on one of the most physically imposing position players in the tournament and a starting pitcher who generates elite whiffs against MLB-caliber lineups. Luis Robert Jr. (CF) is the tournament’s premier speed-power threat — a center fielder with 30 HR, 82 RBI, and a .753 OPS in 2025 (in a season interrupted by injury). When healthy and locked in, Robert is a game-breaking presence who changes pitcher approach from the first at-bat. Yariel Rodríguez (SP) brings swing-and-miss stuff — a mid-90s heater paired with sharp offspeed — that plays especially well against the contact-heavy lineups Cuba will see in Pool A. Yoán Moncada (3B) is the grinder: a switch-hitter who can work counts, punish fastballs, and provide the lineup stability that gets the most out of Robert and Rodríguez when all three are contributing."
         },
         {
           "type": "heading",
@@ -72,15 +76,19 @@
         },
         {
           "type": "paragraph",
-          "text": "• Aaron Judge (RF): the scariest bat in the tournament; turns mistakes into multi-run swings. \n• Paul Skenes (SP): power four-seam + wipeout secondaries; sets the tone in Game 1s. \n• Tarik Skubal (SP): lefty ace who erases rallies with strike-throwing and weak contact."
-        },
-        {
-          "type": "subheading",
-          "text": "🇲🇽 Mexico — balance, savvy, and October-tested bats"
+          "text": "Pool B is Team USA’s pool to lose. Two reigning Cy Young winners front a rotation that no other nation can match on the mound, and the everyday lineup — led by Aaron Judge — pairs elite OBP with historic power. USA’s blueprint in 2026 is simple: let Skenes and Skubal limit damage in Games 1 and 2, then let the lineup’s depth overwhelm bullpens that were not built to face this much quality across nine hitters."
         },
         {
           "type": "paragraph",
-          "text": "• Randy Arozarena (OF): March monster; big-stage at-bats and baserunning chaos. \n• Isaac Paredes (3B): disciplined pop; punishes strikes and extends innings with OBP. \n• Alejandro Kirk (C): coming off a phenomenal 2025 and postseason; elite contact/zone control from a premium position."
+          "text": "Aaron Judge (RF) is the tournament’s most dangerous hitter — a .331 AVG, 53 HR, 114 RBI, 1.144 OPS season in 2025 that earned him his second AL MVP. No one in March Baseball has his combination of power, strike-zone discipline, and run-shaping presence. Paul Skenes (SP) was the unanimous 2025 NL Cy Young winner (10–10, 1.97 ERA, 0.95 WHIP, 216 K) — the lowest ERA by a qualified NL starter and an arsenal of four-seam velocity, elite slider, and emerging splitter that gives hitters no count to rest. Tarik Skubal (SP) is the AL bookend: back-to-back AL Cy Young winner (2024: 18–4, 2.39 ERA; 2025: 13–6, 2.21 ERA, 0.89 WHIP, 241 K), a commanding lefty who erases right-left splits and generates historically weak contact. With Judge, Bobby Witt Jr., Bryce Harper, and Kyle Schwarber in the lineup behind these two, there is no soft patch to exploit."
+        },
+        {
+          "type": "subheading",
+          "text": "🇲🇽 Mexico — balance, savvy, and March-tested bats"
+        },
+        {
+          "type": "paragraph",
+          "text": "Mexico profiles as the strongest number-two team in Pool B and a legitimate sleeper threat to push the USA deep in the bracket. Their advantage over the other Pool B nations is tournament-caliber bats who have already proved themselves in high-stakes international play. Randy Arozarena (OF) was the 2023 WBC MVP for Mexico and brings that same March monster energy — relentless at-bats, stolen bases when you least expect them, and the ability to turn a close game into a memory. In 2025 he hit .272 with 23 HR and a .803 OPS, but his career WBC batting average underscores how he elevates in this setting. Isaac Paredes (3B) is the disciplined anchor — a .234 AVG, 31 HR, .825 OPS hitter in 2025 who takes walks, punishes mistakes, and extends rallies in ways that add up across a compressed schedule. Alejandro Kirk (C) brings elite bat-to-ball skill from a premium position; his contact rate and zone control create production that gives Mexico a floor even when the power goes cold."
         },
         {
           "type": "heading",
@@ -92,7 +100,11 @@
         },
         {
           "type": "paragraph",
-          "text": "• Shohei Ohtani (DH/RHP): the matchup you never solve; OBP and damage even on “off” nights. \n• Yoshinobu Yamamoto (SP): elite command and shape; neutralizes right/left splits. \n• Roki Sasaki (SP): triple-digit carry with splitter vanish; short-tournament cheat code."
+          "text": "Japan enters Pool C as the defending WBC champion and the deepest pitching nation in the tournament. They combine precision pitching — the ability to locate at the edges of the zone all night — with lineup thunder from the sport’s most unique player. The reigning champs have the staff to win games 2–1 and the lineup to win them 7–4. That flexibility is what makes them the most complete team in the tournament field."
+        },
+        {
+          "type": "paragraph",
+          "text": "Shohei Ohtani (DH/SP) is the unmatchable centerpiece — a 2025 season where he hit 43 HR with a .958 OPS while also making pitching appearances with elite strikeout rates. No WBC opponent can prepare two separate game plans for the same player; the strategic disruption alone is worth extra innings. Yoshinobu Yamamoto (SP) is Japan’s Game 1 anchor — in 2025, he went 12–8 with a 2.97 ERA and 201 strikeouts while commanding four pitches to both sides of the plate, making him virtually unaffected by scouting report adjustments. Roki Sasaki (SP) is the short-tournament advantage: triple-digit carry with a disappearing splitter, a profile that generates weak contact and swing-and-miss at equal rates. Both Yamamoto and Sasaki spent years dominating NPB before arriving in MLB — they have been in high-pressure environments their entire careers."
         },
         {
           "type": "subheading",
@@ -100,7 +112,7 @@
         },
         {
           "type": "paragraph",
-          "text": "• Ha-Seong Kim (SS/2B): gold-standard defense, base IQ, and timely pop. \n• Jung Hoo Lee (OF): contact machine; turns pitchers’ counts into line drives. \n• Hyun Jin Ryu (SP): veteran sequencing; steals strikes and keeps the ball off barrels."
+          "text": "Korea’s path out of Pool C runs through defense, pitching efficiency, and the ability to manufacture runs against a Japan team that will limit big innings. They do not need to outslug Japan — they need to outlast them. Ha-Seong Kim (SS/2B) is the tournament’s most complete middle infielder: a .269 AVG, 11 HR, 4.0 WAR player in 2025 whose defense at shortstop, base IQ, and clutch contact make him Korea’s most valuable on-field asset. Jung Hoo Lee (OF) is Korea’s best pure hitter — a contact machine with a .272 AVG and 85 RBI in 2025 who generates hard contact at a consistently high rate regardless of count. Hyun Jin Ryu (SP) brings veteran sequencing and the ability to steal strikes; his value in a pool-play scenario is outsized because teams facing a crafty lefty who mixes well early in camp tend to get frustrated, which is exactly when Korea makes them pay."
         },
         {
           "type": "heading",
@@ -112,7 +124,11 @@
         },
         {
           "type": "paragraph",
-          "text": "• Juan Soto (RF): owns the zone; walks or wallops — both hurt equally. \n• Julio Rodríguez (CF): five-tool lift; momentum-changer on either side of the ball. \n• Fernando Tatis Jr. (LF): athletic power that forces defensive reshuffles."
+          "text": "The Dominican Republic enters Pool D as the most talent-dense offensive unit in the tournament. Their 2025 MLB production across the projected nine — 263 combined HR, a mean OPS of .836, and 46.4 total WAR — sets a standard no other nation can match. Opponents will throw their two best arms at this lineup, and the DR will still produce crooked numbers because there are no soft landings from top to bottom. They are our top pick to win Pool D outright and make a Gold Medal run."
+        },
+        {
+          "type": "paragraph",
+          "text": "Juan Soto (RF) is the tournament’s most complete hitter: in 2025 he posted 43 HR, a .263 AVG, and a .921 OPS with 6.2 WAR — and his 14.1% walk rate means pitchers who try to work around him simply extend innings for the players behind him. Julio Rodríguez (CF) is the five-tool spark plug: 32 HR, .267 AVG, .798 OPS, 6.8 WAR in 2025, with the baserunning instincts and late-inning electricity to shift momentum in the sixth inning of a one-run game. Fernando Tatis Jr. (LF) brings 25 HR, .268 AVG, .814 OPS, and 5.9 WAR — a well-rounded season from a player who forces defensive reshuffles just by stepping in. Add José Ramírez (30 HR, .283 AVG, .863 OPS, 5.8 WAR) and Vladimir Guerrero Jr. (23 HR, .292 AVG, .848 OPS, 4.5 WAR) and the middle of this lineup represents the best top-five of any WBC squad."
         },
         {
           "type": "subheading",
@@ -120,7 +136,7 @@
         },
         {
           "type": "paragraph",
-          "text": "• Ronald Acuña Jr. (OF): leadoff terror; pressure from pitch one and fence-to-fence carry. \n• José Altuve (2B): playoff-school at-bats; finds grass and finds the seats. \n• Luis Arráez (INF): at-bat extender; turns elite pitching into stressful innings with singles and walks."
+          "text": "Venezuela is our number-two in Pool D and a serious threat to the DR if their stars carry their regular-season form into March. The formula: OBP-first at the top, power in the middle, and a closing unit that can win games when offense is scarce. Ronald Acuña Jr. (OF) is the leadoff terror — fence-to-fence carry, elite stolen base instincts, and a presence in the first inning that changes how opponents manage their best arms. José Altuve (2B) remains one of the great WBC performers of the modern era with a .382 career WBC batting average; his 2025 production (.281 AVG, 14 HR, .793 OPS) masks an at-bat quality that spikes in high-leverage situations. Luis Arráez (INF) is the at-bat extender — a .354 AVG hitter with a sub-6% strikeout rate who turns elite pitching into stressful innings and extends rallies that put Venezuela’s power bats in run-scoring situations."
         },
         {
           "type": "heading",
@@ -171,13 +187,19 @@
       "related_posts": [
         "dominican-republic-2026-wbc-lineup-favorites",
         "team-usa-2026-wbc-roster-cy-youngs-dominate"
+      ],
+      "author_bio": "The Sandlot Picks Analytics team combines data science and baseball operations expertise to build predictive models for MLB player props and game totals. Our analysts have backgrounds in sabermetrics, sports statistics, and quantitative research. All predictions are powered by Statcast-based models updated daily.",
+      "author_credentials": [
+        "MLB Statcast data analysis",
+        "xwOBA and FIP-based modeling",
+        "Sports betting market research"
       ]
-    },    
+    },
     {
       "id": 12,
       "title": "Three Sleepers That Can Wreck Brackets at the 2026 WBC",
       "slug": "wbc-2026-three-sleeper-teams-to-watch",
-      "author": "Sandlot Picks Team",
+      "author": "Sandlot Picks Analytics",
       "date": "2026-02-01",
       "status": "Final",
       "tags": [
@@ -283,13 +305,19 @@
         "wbc-2026-pool-favorites-a-b-c-d-top-two-teams-and-stars",
         "dominican-republic-2026-wbc-lineup-favorites",
         "team-usa-2026-wbc-roster-cy-youngs-dominate"
+      ],
+      "author_bio": "The Sandlot Picks Analytics team combines data science and baseball operations expertise to build predictive models for MLB player props and game totals. Our analysts have backgrounds in sabermetrics, sports statistics, and quantitative research. All predictions are powered by Statcast-based models updated daily.",
+      "author_credentials": [
+        "MLB Statcast data analysis",
+        "xwOBA and FIP-based modeling",
+        "Sports betting market research"
       ]
     },
-     {
+    {
       "id": 11,
       "title": "“If You Want to Add Talent, Boras Gets His Slice”: How Scott Boras Bent MLB Free Agency To His Will",
       "slug": "scott-boras-mlb-free-agency-greatest-agent",
-      "author": "Sandlot Picks Team",
+      "author": "Sandlot Picks Analytics",
       "date": "2026-01-09",
       "status": "Final",
       "tags": [
@@ -404,25 +432,22 @@
         "canonical_url": "https://sandlotpicks.com/articles/scott-boras-mlb-free-agency-greatest-agent",
         "og_image": "https://sandlotpicks.com/article-heros/ScottB.png"
       },
-      "affiliate_cta": {
-        "enabled": true,
-        "platform": "Pikkit",
-        "context": "Effortlessly track all your sports bets in one convenient place — focus on what you do best: make winning picks.",
-        "link": "https://links.pikkit.com/invite/bullseye52540",
-        "hero-banner": "/article-heros/pikkit-promo-img.png",
-        "promo_code": "BULLSEYE52540"
-      },
-      "affiliate_disclaimer": "We may earn a commission if you sign up through our Pikkit link. Using our code BULLSEYE52540 supports our content and helps us keep delivering daily insights.",
       "related_posts": [
         "yankees-2026-four-offseason-pillars-closer-shortstop-or-second-base",
         "aaron-judge-vs-cal-raleigh-2025-al-mvp-debate"
+      ],
+      "author_bio": "The Sandlot Picks Analytics team combines data science and baseball operations expertise to build predictive models for MLB player props and game totals. Our analysts have backgrounds in sabermetrics, sports statistics, and quantitative research. All predictions are powered by Statcast-based models updated daily.",
+      "author_credentials": [
+        "MLB Statcast data analysis",
+        "xwOBA and FIP-based modeling",
+        "Sports betting market research"
       ]
     },
     {
       "id": 10,
       "title": "AL & NL Cy Youngs Set to Dominate the World…Baseball Classic: Team USA’s 2026 WBC Super-Roster",
       "slug": "team-usa-2026-wbc-roster-cy-youngs-dominate",
-      "author": "Sandlot Picks Team",
+      "author": "Sandlot Picks Analytics",
       "date": "2025-12-26",
       "status": "Final",
       "tags": [
@@ -578,15 +603,6 @@
         "canonical_url": "https://sandlotpicks.com/articles/team-usa-wbc-roster",
         "og_image": "https://sandlotpicks.com/article-heros/team-USA.png"
       },
-      "affiliate_cta": {
-        "enabled": true,
-        "platform": "Pikkit",
-        "context": "Effortlessly track all your sports bets in one convenient place — focus on what you do best: make winning picks.",
-        "link": "https://links.pikkit.com/invite/bullseye52540",
-        "hero-banner": "/article-heros/pikkit-promo-img.png",
-        "promo_code": "BULLSEYE52540"
-      },
-      "affiliate_disclaimer": "We may earn a commission if you sign up through our Pikkit link. Using our code BULLSEYE52540 supports our content and helps us keep delivering daily insights.",
       "reference_urls": [
         "https://www.mlb.com/news/mlb-players-in-the-2026-world-baseball-classic",
         "https://www.reuters.com/sports/phillies-bryce-harper-play-team-usa-wbc--flm-2025-12-23/",
@@ -610,13 +626,19 @@
         "paul-skenes-cy-young-legend-in-the-making-2025",
         "tarik-skubal-two-time-al-cy-young-journey-2025",
         "dominican-republic-2026-wbc-lineup-favorites"
+      ],
+      "author_bio": "The Sandlot Picks Analytics team combines data science and baseball operations expertise to build predictive models for MLB player props and game totals. Our analysts have backgrounds in sabermetrics, sports statistics, and quantitative research. All predictions are powered by Statcast-based models updated daily.",
+      "author_credentials": [
+        "MLB Statcast data analysis",
+        "xwOBA and FIP-based modeling",
+        "Sports betting market research"
       ]
     },
     {
       "id": 9,
       "title": "Team Dominican Republic-2026 WBC: A Lineup Built to Steamroll",
       "slug": "dominican-republic-2026-wbc-lineup-favorites",
-      "author": "Sandlot Picks Team",
+      "author": "Sandlot Picks Analytics",
       "date": "2025-12-06",
       "status": "Final",
       "tags": [
@@ -766,23 +788,21 @@
         "og_image": "https://sandlotpicks.com/article-heros/team-DR.png",
         "reference_url": "https://www.baseballamerica.com/stories/world-baseball-classic-2026-projecting-ideal-rosters-for-the-dominican-republic-venezuela-latin-american-teams/"
       },
-      "affiliate_cta": {
-        "enabled": true,
-        "platform": "Pikkit",
-        "context": "Effortlessly track all your sports bets in one convenient place — focus on what you do best: make winning picks.",
-        "link": "https://links.pikkit.com/invite/bullseye52540",
-        "hero-banner": "/article-heros/pikkit-promo-img.png"
-      },
-      "affiliate_disclaimer": "We may earn a commission if you sign up through our Pikkit link. Using our code BULLSEYE52540 supports our content and helps us keep delivering daily insights.",
       "related_posts": [
         "yankees-2026-four-offseason-pillars-closer-shortstop-or-second-base"
+      ],
+      "author_bio": "The Sandlot Picks Analytics team combines data science and baseball operations expertise to build predictive models for MLB player props and game totals. Our analysts have backgrounds in sabermetrics, sports statistics, and quantitative research. All predictions are powered by Statcast-based models updated daily.",
+      "author_credentials": [
+        "MLB Statcast data analysis",
+        "xwOBA and FIP-based modeling",
+        "Sports betting market research"
       ]
     },
     {
       "id": 8,
       "title": "Blueprint to the Bronx (2025 → 2026): Four Offseason Pillars That Turn the Yankees Into Real Contenders",
       "slug": "yankees-2026-four-offseason-pillars-closer-shortstop-or-second-base",
-      "author": "Sandlot Picks Team",
+      "author": "Sandlot Picks Analytics",
       "date": "2025-11-21",
       "status": "Final",
       "tags": [
@@ -923,17 +943,15 @@
         "canonical_url": "https://sandlotpicks.com/articles/yankees-2026-four-offseason-pillars-closer-shortstop-or-second-base",
         "og_image": "https://sandlotpicks.com/article-heros/yankees-2026-blueprint-hero.png"
       },
-      "affiliate_cta": {
-        "enabled": true,
-        "platform": "Pikkit",
-        "context": "Effortlessly track all your sports bets in one convenient place — focus on what you do best: make winning picks.",
-        "link": "https://links.pikkit.com/invite/bullseye52540",
-        "hero-banner": "/article-heros/pikkit-promo-img.png"
-      },
-      "affiliate_disclaimer": "We may earn a commission if you sign up through our Pikkit link. Using our code BULLSEYE52540 supports our content and helps us keep delivering daily insights.",
       "related_posts": [
         "blue-jays-2025-turnaround-from-basement-to-brink",
         "aaron-judge-vs-cal-raleigh-2025-al-mvp-debate"
+      ],
+      "author_bio": "The Sandlot Picks Analytics team combines data science and baseball operations expertise to build predictive models for MLB player props and game totals. Our analysts have backgrounds in sabermetrics, sports statistics, and quantitative research. All predictions are powered by Statcast-based models updated daily.",
+      "author_credentials": [
+        "MLB Statcast data analysis",
+        "xwOBA and FIP-based modeling",
+        "Sports betting market research"
       ]
     }
   ]
