@@ -8,6 +8,10 @@ import playerStatsService from '../../../../data/services/playerStatsServices';
 import gamesService from '../../../../data/services/gamesService';
 import { DEFAULT_SEASON, SEASON_TYPE_CODES, PLAYER_ROLES } from '../../../../data/constants/apiConstants';
 import '../../../../styles/stats-page-styling/matchup-analysis.css';
+import '../../../../styles/stats-page-styling/scout-ai.css';
+import { ScoutAiButton, ScoutAiModal } from './components';
+import { getScoutAnalysis } from '../../../../data/services/scoutAiService';
+import api from '../../../../data/services/apiService';
 
 import {
   MiniHero,
@@ -59,6 +63,12 @@ export default function MatchupDetailComp() {
   const [h2hPitchers, setH2hPitchers] = useState(null);
   const [h2hBatters,  setH2hBatters]  = useState(null);
   const [h2hTab,      setH2hTab]      = useState('pitchers'); // 'pitchers' | 'batters'
+
+  const [scoutAnalysis, setScoutAnalysis]       = useState(null);
+  const [scoutLoading, setScoutLoading]         = useState(false);
+  const [scoutError, setScoutError]             = useState(null);
+  const [showScoutModal, setShowScoutModal]     = useState(false);
+  const [scoutGeneratedAt, setScoutGeneratedAt] = useState(null);
 
   // Fallback: fetch game if navigated directly without router state
   useEffect(() => {
@@ -234,6 +244,104 @@ export default function MatchupDetailComp() {
   const awayMlbId = getMlbId(game.away_team_id);
   const homeMlbId = getMlbId(game.home_team_id);
 
+  const statusLower  = (game.status || '').toLowerCase();
+  const isFinal      = statusLower === 'final' || statusLower === 'game over' || statusLower === 'completed' || statusLower === 'completed early';
+  const isLive       = statusLower.includes('progress') || statusLower === 'live' || statusLower.includes('inning');
+  const isScheduled  = !isFinal && !isLive;
+
+  const handleScoutClick = async () => {
+    if (scoutAnalysis) { setShowScoutModal(true); return; }
+
+    setScoutLoading(true);
+    setScoutError(null);
+    setShowScoutModal(true);
+
+    try {
+      const pickBat = s => s ? { avg: s.avg, ops: s.ops } : null;
+      const pickPit = s => s ? { era: s.era, whip: s.whip } : null;
+
+      const gamePk = game.game_pk ?? game.id;
+      const mlPredRaw    = await api.get(`/predictions/${gamePk}`).catch(() => null);
+      const mlPrediction = mlPredRaw?.prediction ?? null;
+
+      const scoutPayload = {
+        gameId:   String(game.game_pk),
+        gameDate: game.date,
+        status:   { isFinal, isLive, isScheduled },
+        away: {
+          name:     game.away_team_name,
+          abbr:     awayAbbr,
+          record:   null,
+          last10:   null,
+          batting:           awaySplits?.vs_lhp || awaySplits?.vs_rhp
+                               ? pickBat(awaySplits.vs_lhp ?? awaySplits.vs_rhp)
+                               : null,
+          batting_vs_hand:   awaySplits ? {
+                               vs_lhp: pickBat(awaySplits.vs_lhp),
+                               vs_rhp: pickBat(awaySplits.vs_rhp),
+                             } : null,
+          batting_home_road: awayHomeRoadSplits ? {
+                               at_home: pickBat(awayHomeRoadSplits.at_home),
+                               on_road: pickBat(awayHomeRoadSplits.on_road),
+                             } : null,
+          pitching: null,
+          startingPitcher: {
+            name:            game.away_sp_name,
+            seasonStats:     null,
+            vs_hand_splits:  awaySPVsHandSplits ? {
+                               vs_lhb: pickPit(awaySPVsHandSplits.vs_lhb),
+                               vs_rhb: pickPit(awaySPVsHandSplits.vs_rhb),
+                             } : null,
+            home_road_splits: awaySPHomeRoadSplits ? {
+                               at_home: pickPit(awaySPHomeRoadSplits.at_home),
+                               on_road: pickPit(awaySPHomeRoadSplits.on_road),
+                             } : null,
+          },
+        },
+        home: {
+          name:     game.home_team_name,
+          abbr:     homeAbbr,
+          record:   null,
+          last10:   null,
+          batting:           homeSplits?.vs_lhp || homeSplits?.vs_rhp
+                               ? pickBat(homeSplits.vs_lhp ?? homeSplits.vs_rhp)
+                               : null,
+          batting_vs_hand:   homeSplits ? {
+                               vs_lhp: pickBat(homeSplits.vs_lhp),
+                               vs_rhp: pickBat(homeSplits.vs_rhp),
+                             } : null,
+          batting_home_road: homeHomeRoadSplits ? {
+                               at_home: pickBat(homeHomeRoadSplits.at_home),
+                               on_road: pickBat(homeHomeRoadSplits.on_road),
+                             } : null,
+          pitching: null,
+          startingPitcher: {
+            name:            game.home_sp_name,
+            seasonStats:     null,
+            vs_hand_splits:  homeSPVsHandSplits ? {
+                               vs_lhb: pickPit(homeSPVsHandSplits.vs_lhb),
+                               vs_rhb: pickPit(homeSPVsHandSplits.vs_rhb),
+                             } : null,
+            home_road_splits: homeSPHomeRoadSplits ? {
+                               at_home: pickPit(homeSPHomeRoadSplits.at_home),
+                               on_road: pickPit(homeSPHomeRoadSplits.on_road),
+                             } : null,
+          },
+        },
+        headToHead: null,
+        mlPrediction: mlPrediction ?? null,
+      };
+
+      const data = await getScoutAnalysis(scoutPayload);
+      setScoutAnalysis(data.analysis);
+      setScoutGeneratedAt(data.cached ? null : Date.now());
+    } catch (err) {
+      setScoutError(err.message || 'Scout AI is temporarily unavailable. Please try again.');
+    } finally {
+      setScoutLoading(false);
+    }
+  };
+
   const insights = (awaySplitLeaders === null || homeSplitLeaders === null)
     ? null
     : buildInsights(
@@ -250,7 +358,23 @@ export default function MatchupDetailComp() {
           <Link to={`/mlb-schedule/${gameId}`} state={{ game }} className="analysis-back-btn">
             ‹ Back to Matchup Detail
           </Link>
+          <ScoutAiButton
+            hasAnalysis={!!scoutAnalysis}
+            loading={scoutLoading}
+            onClick={handleScoutClick}
+          />
+          <div className="matchup-detail-top-nav__right" />
         </div>
+
+        <ScoutAiModal
+          isOpen={showScoutModal}
+          onClose={() => setShowScoutModal(false)}
+          analysis={scoutAnalysis}
+          error={scoutError}
+          loading={scoutLoading}
+          onRetry={scoutError ? handleScoutClick : null}
+          generatedAt={scoutGeneratedAt}
+        />
 
         {/* A. Mini Hero */}
         <MiniHero game={game} />

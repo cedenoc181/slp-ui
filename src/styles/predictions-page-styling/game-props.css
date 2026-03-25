@@ -425,9 +425,9 @@
 .gp-drawer-matchup {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
-  margin-bottom: 0.6rem;
-  padding-right: 2rem; /* room for close btn */
+  gap: 0.1rem;
+  margin-bottom: 0.1rem;
+  padding-right: 6rem; /* room for close btn */
 }
 
 .gp-drawer-logo {

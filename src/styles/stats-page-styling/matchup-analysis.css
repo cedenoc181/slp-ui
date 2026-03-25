@@ -907,10 +907,15 @@ a > .hero-team-logo:hover {
 
 /* ── Top nav row (back link + Deep Dive button) ───────────── */
 .matchup-detail-top-nav {
-  display: flex;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
   align-items: center;
-  justify-content: space-between;
   margin-bottom: 1.25rem;
+}
+
+.matchup-detail-top-nav__right {
+  display: flex;
+  justify-content: flex-end;
 }
 
 /* Override the plain text back-link to match the button style */
@@ -918,6 +923,7 @@ a > .hero-team-logo:hover {
   display: inline-flex;
   align-items: center;
   gap: 0.5rem;
+  justify-self: start;
   background: transparent;
   color: #fff;
   text-decoration: none;
@@ -942,6 +948,7 @@ a > .hero-team-logo:hover {
   display: inline-flex;
   align-items: center;
   gap: 0.35rem;
+  justify-self: start;
   background: transparent;
   color: #fff;
   text-decoration: none;

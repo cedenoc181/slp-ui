@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import scheduleService from '../../../../data/services/scheduleService';
 import gamesService from '../../../../data/services/gamesService';
+import predictionsService from '../../../../data/services/predictionsService';
 import { getTeamById } from '../../../../data/constants/apiConstants';
 import '../../../../styles/stats-page-styling/mlb-schedule.css';
 
@@ -34,6 +35,67 @@ function formatGameDate(dateStr) {
   return d.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
 }
 
+// Find the earliest regular season game date from a list of games
+function findOpeningDayDate(allGames) {
+  const regularSeasonGames = allGames.filter(g => g.season_type === 'regular');
+  if (regularSeasonGames.length === 0) return null;
+  
+  // Sort by date ascending and return the first date (YYYY-MM-DD format)
+  const sorted = [...regularSeasonGames].sort((a, b) => {
+    const dateA = (a.date ?? '').slice(0, 10);
+    const dateB = (b.date ?? '').slice(0, 10);
+    return dateA.localeCompare(dateB);
+  });
+  
+  // Return just the date portion (YYYY-MM-DD)
+  const firstDate = sorted[0]?.date;
+  if (!firstDate) return null;
+  
+  // Handle both "YYYY-MM-DD" and "YYYY-MM-DDTHH:MM:SS" formats
+  return firstDate.slice(0, 10);
+}
+
+// Check if game time is evening (7pm or later)
+function isEveningGame(gameTime) {
+  if (!gameTime) return false;
+  // game_time is in "HH:MM" format (e.g., "19:05", "13:10")
+  const hour = parseInt(gameTime.split(':')[0], 10);
+  return hour >= 19; // 7pm or later
+}
+
+// Check if a date is Opening Day for the season
+function isOpeningDay(dateStr, games = [], openingDayDate = null) {
+  if (!dateStr || !openingDayDate) return false;
+  
+  // Normalize both dates to YYYY-MM-DD format for comparison
+  const dateKey = dateStr.slice(0, 10);
+  const hasRegularSeasonGame = games.some(g => g.season_type === 'regular');
+  
+  return dateKey === openingDayDate && hasRegularSeasonGame;
+}
+
+// Determine "Opening Day" vs "Opening Night" based on game times
+function getOpeningDayLabel(games) {
+  const regularGames = games.filter(g => g.season_type === 'regular');
+  // Check if majority of games are evening games (7pm+)
+  const eveningGames = regularGames.filter(g => isEveningGame(g.game_time));
+  const isNight = eveningGames.length >= regularGames.length / 2;
+  return isNight ? 'Opening Night' : 'Opening Day';
+}
+
+function getDateGroupLabel(dateStr, games = [], openingDayDate = null) {
+  const baseLabel = formatGameDate(dateStr);
+  
+  if (openingDayDate && isOpeningDay(dateStr, games, openingDayDate)) {
+    // Extract year from the date string (YYYY-MM-DD format)
+    const season = dateStr.slice(0, 4);
+    const dayOrNight = getOpeningDayLabel(games);
+    return `${baseLabel} · ${dayOrNight} ${season} 🎉`;
+  }
+  
+  return baseLabel;
+}
+
 // Format pitcher name as "J. Smith"
 function formatPitcherName(fullName) {
   if (!fullName) return 'TBD';
@@ -42,6 +104,19 @@ function formatPitcherName(fullName) {
   const firstInitial = parts[0].charAt(0).toUpperCase();
   const lastName = parts.slice(1).join(' ');
   return `${firstInitial}. ${lastName}`;
+}
+
+// Format moneyline as "+150" / "-130"
+function formatMoneyline(value) {
+  if (value == null) return null;
+  const num = Math.round(value);
+  return num >= 0 ? `+${num}` : String(num);
+}
+
+// Format over/under as "O/U 8.5"
+function formatTotal(value) {
+  if (value == null) return null;
+  return `O/U ${value}`;
 }
 
 // Derive current inning from boxscore innings array
@@ -54,6 +129,7 @@ function getCurrentInning(boxscore) {
 }
 
 // ─── Matchup Row ─────────────────────────────────────────────────────────────
+// eslint-disable-next-line no-unused-vars
 function MatchupRow({ game, onClick, showDate, boxscore }) {
   const awayMlbId = getTeamMlbId(game.away_team_id);
   const homeMlbId = getTeamMlbId(game.home_team_id);
@@ -153,32 +229,135 @@ function MatchupRow({ game, onClick, showDate, boxscore }) {
   );
 }
 
-// ─── Skeleton Rows ────────────────────────────────────────────────────────────
-function SkeletonRow() {
+// ─── Compact Card (Alternative Layout) ────────────────────────────────────────
+function GameCardCompact({ game, onClick, boxscore, prediction }) {
+  const awayMlbId = getTeamMlbId(game.away_team_id);
+  const homeMlbId = getTeamMlbId(game.home_team_id);
+
+  const statusLower = game.status?.toLowerCase() || '';
+  const isFinal = statusLower === 'final' || statusLower === 'game over' || statusLower === 'completed' || statusLower === 'completed early';
+  const isLive = statusLower.includes('progress') || statusLower === 'live' || statusLower.includes('inning');
+
+  const inning = isLive ? getCurrentInning(boxscore) : null;
+
+  const timeClass = isFinal ? 'final' : isLive ? 'live' : '';
+  const timeLabel = isFinal
+    ? 'FINAL'
+    : isLive
+      ? inning ? `LIVE · ${inning.half} ${inning.num}` : 'LIVE'
+      : game.game_time || 'TBD';
+
+  // Extract odds from prediction data
+  const odds = prediction?.odds;
+  const homeML = formatMoneyline(odds?.home_moneyline_game);
+  const awayML = formatMoneyline(odds?.away_moneyline_game);
+  const total = formatTotal(odds?.over_under_line_game);
+  const hasOdds = !isFinal && (homeML || awayML || total);
+
   return (
-    <div className="matchup-row skeleton-row" aria-hidden="true">
-      <div className="matchup-team away-team">
-        <div className="skeleton skeleton-logo" />
-        <div className="matchup-team-info">
-          <div className="skeleton skeleton-text wide" />
-          <div className="skeleton skeleton-text narrow" />
+    <div
+      className="game-card-compact"
+      onClick={() => onClick(game.id ?? game.game_pk)}
+      role="button"
+      tabIndex={0}
+      onKeyDown={(e) => e.key === 'Enter' && onClick(game.id ?? game.game_pk)}
+    >
+      {/* Header: Time + Venue */}
+      <div className="compact-header">
+        <span className={`compact-time ${timeClass}`}>{timeLabel}</span>
+        {game.season_type === 'spring' && <span className="compact-venue">Spring Training</span>}
+        {game.season_type === 'postseason' && <span className="compact-venue">Postseason</span>}
+      </div>
+
+      {/* Teams Matchup */}
+      <div className="compact-matchup">
+        <div className="compact-team away">
+          {awayMlbId && <img src={logoUrl(awayMlbId)} alt={game.away_team_name} />}
+          <div className="compact-team-info">
+            <span className="compact-team-name">{game.away_team_name || 'Away'}</span>
+            <span className="compact-team-record">{getTeamById(game.away_team_id)?.id || ''}</span>
+          </div>
+        </div>
+
+        <div className="compact-center">
+          {(isFinal || isLive) ? (
+            <>
+              <div className="compact-score">
+                <span className={`compact-score-num ${game.winning_team_id === game.away_team_id ? 'winner' : ''}`}>
+                  {game.away_runs_score ?? 0}
+                </span>
+                <span className="compact-score-divider">-</span>
+                <span className={`compact-score-num ${game.winning_team_id === game.home_team_id ? 'winner' : ''}`}>
+                  {game.home_runs_score ?? 0}
+                </span>
+              </div>
+              {isLive && inning && <span className="compact-inning">{inning.half} {inning.num}</span>}
+            </>
+          ) : (
+            <span className="compact-vs">@</span>
+          )}
+        </div>
+
+        <div className="compact-team home">
+          {homeMlbId && <img src={logoUrl(homeMlbId)} alt={game.home_team_name} />}
+          <div className="compact-team-info">
+            <span className="compact-team-name">{game.home_team_name || 'Home'}</span>
+            <span className="compact-team-record">{getTeamById(game.home_team_id)?.id || ''}</span>
+          </div>
         </div>
       </div>
-      <div className="matchup-center">
-        <div className="skeleton skeleton-text narrow" />
-        <div className="matchup-vs">@</div>
+
+      {/* Footer: Pitchers + Odds */}
+      <div className="compact-footer">
+        {(game.away_sp_name || game.home_sp_name) && (
+          <div className="compact-pitchers">
+            <span>{formatPitcherName(game.away_sp_name)}</span>
+            <span style={{ color: '#555' }}>vs</span>
+            <span>{formatPitcherName(game.home_sp_name)}</span>
+          </div>
+        )}
+        {hasOdds && (
+          <div className="compact-odds">
+            {awayML && <span className={`compact-odds-item ${awayML.startsWith('+') ? 'positive' : 'negative'}`}>{awayML}</span>}
+            {homeML && <span className={`compact-odds-item ${homeML.startsWith('+') ? 'positive' : 'negative'}`}>{homeML}</span>}
+            {total && <span className="compact-odds-item">{total}</span>}
+          </div>
+        )}
       </div>
-      <div className="matchup-team home-team">
-        <div className="matchup-team-info home-info">
-          <div className="skeleton skeleton-text wide" />
-          <div className="skeleton skeleton-text narrow" />
+    </div>
+  );
+}
+
+// ─── Skeleton Card ────────────────────────────────────────────────────────────
+function SkeletonCard() {
+  return (
+    <div className="game-card-compact skeleton-card" aria-hidden="true">
+      <div className="compact-header">
+        <div className="skeleton skeleton-text-sm" style={{ width: '60px' }} />
+        <div className="skeleton skeleton-text-sm" style={{ width: '80px' }} />
+      </div>
+      <div className="compact-matchup">
+        <div className="compact-team away">
+          <div className="skeleton skeleton-logo-sm" />
+          <div className="compact-team-info">
+            <div className="skeleton skeleton-text" style={{ width: '70px' }} />
+            <div className="skeleton skeleton-text-sm" style={{ width: '30px' }} />
+          </div>
         </div>
-        <div className="skeleton skeleton-logo" />
+        <div className="compact-center">
+          <div className="skeleton skeleton-text-sm" style={{ width: '20px' }} />
+        </div>
+        <div className="compact-team home">
+          <div className="skeleton skeleton-logo-sm" />
+          <div className="compact-team-info">
+            <div className="skeleton skeleton-text" style={{ width: '70px' }} />
+            <div className="skeleton skeleton-text-sm" style={{ width: '30px' }} />
+          </div>
+        </div>
       </div>
-      <div className="matchup-meta">
-        <div className="skeleton skeleton-text wide" />
+      <div className="compact-footer">
+        <div className="skeleton skeleton-text" style={{ width: '120px' }} />
       </div>
-      <div className="matchup-arrow" />
     </div>
   );
 }
@@ -186,7 +365,7 @@ function SkeletonRow() {
 // ─── Date-grouped list with pagination ───────────────────────────────────────
 const DATES_PER_PAGE = 3;
 
-function groupGamesByDate(games) {
+function groupGamesByDate(games, openingDayDate = null) {
   const groups = [];
   let current = null;
   for (const game of games) {
@@ -197,12 +376,21 @@ function groupGamesByDate(games) {
     }
     current.games.push(game);
   }
+  // Update labels and opening day flag after grouping
+  groups.forEach(group => {
+    group.label = getDateGroupLabel(group.dateKey, group.games, openingDayDate);
+    group.isOpeningDay = isOpeningDay(group.dateKey, group.games, openingDayDate);
+  });
   return groups;
 }
 
 function GroupedGamesList({ games, onClick, prevLabel = '← Prev', nextLabel = 'Next →' }) {
   const [page, setPage] = useState(0);
-  const allGroups = groupGamesByDate(games);
+  
+  // Find opening day date from all games
+  const openingDayDate = findOpeningDayDate(games);
+  
+  const allGroups = groupGamesByDate(games, openingDayDate);
   const totalPages = Math.ceil(allGroups.length / DATES_PER_PAGE);
   const pageGroups = allGroups.slice(page * DATES_PER_PAGE, (page + 1) * DATES_PER_PAGE);
 
@@ -213,21 +401,21 @@ function GroupedGamesList({ games, onClick, prevLabel = '← Prev', nextLabel = 
 
   return (
     <>
-      <div className="schedule-list">
-        {pageGroups.map(group => (
-          <div key={group.dateKey} className="date-group">
-            <div className="date-group-header">{group.label}</div>
+      {pageGroups.map(group => (
+        <div key={group.dateKey} className="date-group" style={{ marginBottom: '1rem' }}>
+          <div className={`date-group-header ${group.isOpeningDay ? 'opening-night' : ''}`}>{group.label}</div>
+          <div className="schedule-card-grid">
             {group.games.map(game => (
-              <MatchupRow
+              <GameCardCompact
                 key={game.id ?? game.game_pk}
                 game={game}
                 onClick={onClick}
-                showDate={false}
+                boxscore={null}
               />
             ))}
           </div>
-        ))}
-      </div>
+        </div>
+      ))}
 
       {totalPages > 1 && (
         <div className="pagination">
@@ -306,6 +494,7 @@ function MLBSchedule() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [liveBoxscores, setLiveBoxscores] = useState({});
+  const [predictions, setPredictions] = useState({});
 
   const fetchGames = useCallback(async (tab) => {
     setLoading(true);
@@ -368,6 +557,25 @@ function MLBSchedule() {
     });
   }, [games, activeTab]);
 
+  // Fetch predictions for today's games
+  useEffect(() => {
+    if (activeTab !== 'today') {
+      setPredictions({});
+      return;
+    }
+
+    predictionsService.getToday().then(data => {
+      if (!Array.isArray(data)) { setPredictions({}); return; }
+      const map = {};
+      data.forEach(p => {
+        if (p.game_pk) map[p.game_pk] = p;
+      });
+      setPredictions(map);
+    }).catch(() => {
+      setPredictions({});
+    });
+  }, [activeTab]);
+
   const handleMatchupClick = (gameId) => {
     const selectedGame = games.find(g => (g.id ?? g.game_pk) === gameId);
     navigate(`/mlb-schedule/${gameId}`, { state: { game: selectedGame ?? null } });
@@ -414,8 +622,8 @@ function MLBSchedule() {
       <div className="schedule-content">
         <div className="container">
           {loading && (
-            <div className="schedule-list">
-              {[...Array(6)].map((_, i) => <SkeletonRow key={i} />)}
+            <div className="schedule-card-grid">
+              {[...Array(6)].map((_, i) => <SkeletonCard key={i} />)}
             </div>
           )}
 
@@ -445,23 +653,29 @@ function MLBSchedule() {
               ) : activeTab === 'upcoming' ? (
                 <GroupedGamesList games={games} onClick={handleMatchupClick} />
               ) : (
-                // Today tab — single date group with header
-                <div className="schedule-list">
-                  <div className="date-group">
-                    <div className="date-group-header">
-                      {formatGameDate(games[0]?.date)}
-                    </div>
-                    {games.map((game) => (
-                      <MatchupRow
-                        key={game.id ?? game.game_pk}
-                        game={game}
-                        onClick={handleMatchupClick}
-                        showDate={false}
-                        boxscore={liveBoxscores[game.game_pk ?? game.id] ?? null}
-                      />
-                    ))}
-                  </div>
-                </div>
+                // Today tab — Card Grid Layout
+                (() => {
+                  const openingDayDate = findOpeningDayDate(games);
+                  const todayIsOpeningDay = isOpeningDay(games[0]?.date, games, openingDayDate);
+                  return (
+                    <>
+                      <div className={`date-group-header ${todayIsOpeningDay ? 'opening-night' : ''}`} style={{ marginBottom: '0.75rem' }}>
+                        {getDateGroupLabel(games[0]?.date, games, openingDayDate)}
+                      </div>
+                      <div className="schedule-card-grid">
+                        {games.map((game) => (
+                          <GameCardCompact
+                            key={game.id ?? game.game_pk}
+                            game={game}
+                            onClick={handleMatchupClick}
+                            boxscore={liveBoxscores[game.game_pk ?? game.id] ?? null}
+                            prediction={predictions[game.game_pk ?? game.id] ?? null}
+                          />
+                        ))}
+                      </div>
+                    </>
+                  );
+                })()
               )}
             </>
           )}

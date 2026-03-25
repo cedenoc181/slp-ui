@@ -5,6 +5,7 @@ import gamesService from '../../../../../data/services/gamesService';
 import playerStatsService from '../../../../../data/services/playerStatsServices';
 import teamsService from '../../../../../data/services/teamsService';
 import teamStatsService from '../../../../../data/services/teamStatsService';
+import predictionsService from '../../../../../data/services/predictionsService';
 import { DEFAULT_SEASON } from '../../../../../data/constants/apiConstants';
 import { mapSeasonType, hasValidStats, parseLast10, findTeamRecord } from '../utils';
 
@@ -31,6 +32,7 @@ export function useMatchupData() {
   const [awayPitching, setAwayPitching] = useState(null);
   const [homePitching, setHomePitching] = useState(null);
   const [boxscore, setBoxscore] = useState(null);
+  const [prediction, setPrediction] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -76,6 +78,7 @@ export function useMatchupData() {
           awayBattingRes, homeBattingRes,
           awayPitchingRes, homePitchingRes,
           boxscoreRes,
+          predictionRes,
         ] = await Promise.allSettled([
           gamesService.getTeamLast10(awayId, season, seasonType),
           gamesService.getTeamLast10(homeId, season, seasonType),
@@ -121,6 +124,10 @@ export function useMatchupData() {
             : Promise.resolve(null),
           (isFinalGame || isLiveGame) && (gameData.game_pk ?? gameData.id)
             ? gamesService.getBoxscore(gameData.game_pk ?? gameData.id)
+            : Promise.resolve(null),
+          // Fetch prediction/odds for this game
+          (gameData.game_pk ?? gameData.id)
+            ? predictionsService.getByGamePk(gameData.game_pk ?? gameData.id)
             : Promise.resolve(null),
         ]);
 
@@ -193,6 +200,10 @@ export function useMatchupData() {
         // Boxscore (inning-by-inning)
         const bsVal = boxscoreRes.status === 'fulfilled' ? boxscoreRes.value : null;
         setBoxscore(bsVal?.innings?.length ? bsVal : null);
+
+        // Prediction/odds for this game
+        const predVal = predictionRes.status === 'fulfilled' ? predictionRes.value : null;
+        setPrediction(predVal);
       } catch (err) {
         setError(err?.message || 'Failed to load matchup details.');
       } finally {
@@ -233,5 +244,6 @@ export function useMatchupData() {
     awayBatting, homeBatting,
     awayPitching, homePitching,
     boxscore,
+    prediction,
   };
 }

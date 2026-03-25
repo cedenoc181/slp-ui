@@ -124,6 +124,57 @@
   line-height: 1;
 }
 
+/* Odds strip */
+.odds-strip {
+  display: flex;
+  justify-content: center;
+  gap: 0.75rem;
+  padding: 0.625rem 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  margin-bottom: 0.5rem;
+}
+
+.odds-item {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.25rem 0.625rem;
+  background: rgba(255, 255, 255, 0.04);
+  border-radius: 4px;
+  font-size: 0.72rem;
+}
+
+.odds-item.fav {
+  border: 1px solid rgba(76, 175, 80, 0.25);
+}
+
+.odds-item.dog {
+  border: 1px solid rgba(244, 67, 54, 0.2);
+}
+
+.odds-item.total {
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.odds-team {
+  font-weight: 700;
+  color: #bbb;
+  letter-spacing: 0.02em;
+}
+
+.odds-line {
+  font-weight: 600;
+  color: #888;
+}
+
+.odds-item.fav .odds-line {
+  color: #66bb6a;
+}
+
+.odds-item.dog .odds-line {
+  color: #ef5350;
+}
+
 /* Status strip */
 .hero-status-strip {
   display: flex;

@@ -10,3 +10,5 @@ export { default as LineupCard }        from './LineupCard';
 export { default as TeamStatsCard }     from './TeamStatsCard';
 export { default as RecentFormCard }    from './RecentFormCard';
 export { default as HeadToHeadSection } from './HeadToHeadSection';
+export { default as ScoutAiButton }    from './ScoutAiButton';
+export { default as ScoutAiModal }     from './ScoutAiModal';

@@ -1072,6 +1072,19 @@
   line-height: 1.5;
 }
 
+/* ── Coming soon empty state ─────────────────────────────── */
+.bp-coming-soon {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 3rem 1rem;
+  color: rgba(255, 255, 255, 0.4);
+  font-size: 0.9rem;
+}
+
+.bp-coming-soon-icon { font-size: 2rem; }
+
 /* ── Responsive ──────────────────────────────────────────── */
 @media (max-width: 1024px) {
   .bp-top-grid { grid-template-columns: 1fr 1fr; }

@@ -1,7 +1,8 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { useNavigate } from 'react-router-dom';
-import { TEAM_METADATA } from '../../../data/constants/apiConstants';
+import { TEAM_METADATA, getTeamById } from '../../../data/constants/apiConstants';
+import predictionsService from '../../../data/services/predictionsService';
 import '../../../styles/predictions-page-styling/predictions.css';
 import '../../../styles/predictions-page-styling/batter-props.css';
 
@@ -552,9 +553,30 @@ export default function BatterProps() {
   const [activeGamePk, setActiveGamePk] = useState(null);
   const [riskFilter,   setRiskFilter]   = useState('all');
   const [modalState,   setModalState]   = useState(null);
+  const [matchups,     setMatchups]     = useState(MOCK_MATCHUPS);
 
-  useEffect(() => { window.scrollTo(0, 0); }, []);
+  useEffect(() => {
+    window.scrollTo(0, 0);
+    predictionsService.getToday()
+      .then(rows => {
+        const today = Array.isArray(rows)
+          ? rows.filter(r => r.season_type !== 'spring' && r.season_type !== 'S')
+          : [];
+        if (today.length > 0) {
+          setMatchups(today.map(r => ({
+            gamePk:    r.game_pk,
+            awayAbbr:  getTeamById(r.away_team_id)?.id  || r.away_team_name,
+            awayMlbId: getTeamById(r.away_team_id)?.mlbId ?? null,
+            homeAbbr:  getTeamById(r.home_team_id)?.id  || r.home_team_name,
+            homeMlbId: getTeamById(r.home_team_id)?.mlbId ?? null,
+          })));
+        }
+      })
+      .catch(() => { /* keep MOCK_MATCHUPS */ });
+  }, []);
 
+  // When real matchups are loaded, batters keyed to mock game_pks won't match —
+  // show all mock batters when no game is filtered; show empty + coming-soon when one is.
   const visibleBatters = activeGamePk
     ? MOCK_BATTERS.filter(b => b.gamePk === activeGamePk)
     : MOCK_BATTERS;
@@ -565,7 +587,7 @@ export default function BatterProps() {
   const openModal  = useCallback((batter, marketKey) => setModalState({ batter, marketKey }), []);
   const closeModal = useCallback(() => setModalState(null), []);
 
-  const activeMatchup = activeGamePk ? MOCK_MATCHUPS.find(m => m.gamePk === activeGamePk) : null;
+  const activeMatchup = activeGamePk ? matchups.find(m => m.gamePk === activeGamePk) : null;
 
   return (
     <div className="predictions-page">
@@ -586,7 +608,7 @@ export default function BatterProps() {
             >
               All Games
             </button>
-            {MOCK_MATCHUPS.map(m => (
+            {matchups.map(m => (
               <MatchupCard
                 key={m.gamePk}
                 matchup={m}
@@ -621,12 +643,12 @@ export default function BatterProps() {
             <span className="bp-matchup-label-vs">vs</span>
             <img src={teamLogoUrl(activeMatchup.homeMlbId)} alt={activeMatchup.homeAbbr} className="bp-matchup-label-logo" />
             <span>{activeMatchup.homeAbbr}</span>
-            <a
+            <button
               className="bp-matchup-label-link"
               onClick={() => { closeModal(); window.location.href = `/mlb-schedule/${activeMatchup.gamePk}`; }}
             >
               Matchup Analysis →
-            </a>
+            </button>
           </div>
         )}
 
@@ -645,15 +667,22 @@ export default function BatterProps() {
           ))}
         </div>
 
-        {/* ── Category rows ─────────────────────────────────── */}
-        {rowMarkets.map(m => (
-          <BatterRow
-            key={m.key}
-            market={m}
-            entries={getBattersForMarket(visibleBatters, m.key, riskFilter)}
-            onCardClick={openModal}
-          />
-        ))}
+        {/* ── Category rows (or coming-soon if real game with no player data) ── */}
+        {visibleBatters.length === 0 && activeGamePk ? (
+          <div className="bp-coming-soon">
+            <span className="bp-coming-soon-icon">⚾</span>
+            <p>Live player props for this game are coming soon.</p>
+          </div>
+        ) : (
+          rowMarkets.map(m => (
+            <BatterRow
+              key={m.key}
+              market={m}
+              entries={getBattersForMarket(visibleBatters, m.key, riskFilter)}
+              onCardClick={openModal}
+            />
+          ))
+        )}
 
         <p className="bp-disclaimer">
           * Prediction data is model-generated and for informational purposes only. Please gamble responsibly.

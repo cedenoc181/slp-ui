@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { createPortal } from 'react-dom';
-import scheduleService from '../../../data/services/scheduleService';
+import predictionsService from '../../../data/services/predictionsService';
 import { getTeamById } from '../../../data/constants/apiConstants';
 import '../../../styles/predictions-page-styling/predictions.css';
 import '../../../styles/predictions-page-styling/game-props.css';
@@ -30,7 +30,7 @@ function statusLabel(game) {
   const s = (game.status || '').toLowerCase();
   if (s === 'final' || s === 'game over' || s === 'completed') return 'Final';
   if (s.includes('progress') || s === 'live') return 'Live';
-  return game.game_time || 'TBD';
+  return game.game_time_et || game.game_time || 'TBD';
 }
 
 // ─── Mock game slate ──────────────────────────────────────────────────────────
@@ -96,8 +96,7 @@ const MOCK_GAMES = [
   },
 ];
 
-// ─── Mock prediction data ─────────────────────────────────────────────────────
-// TODO: replace getMockPick() with a real predictions API call keyed by game_pk.
+// ─── Mock prediction data (fallback) ─────────────────────────────────────────
 
 function getMockPick(game) {
   const seed    = game.game_pk ?? game.id ?? 1;
@@ -133,17 +132,6 @@ function getMockPick(game) {
     nrfi:   54 + (seed % 14),
   };
 
-  // Prediction exchange prices (cents, 0–100 = implied probability %)
-  // Lower Yes price = better value for the buyer
-  const exBase = {
-    mlPick: conf,
-    rlPick: Math.max(40, conf - 8 + (seed % 10)),
-    total:  50 + (seed % 8),
-    f5Pick: Math.max(40, conf - 5 + (seed % 8)),
-    nrfi:   55 + (seed % 10),
-  };
-  const exOffsets = [-2, 0, 1, -1, 2]; // BetOpenly, Kalshi, Novig, Polymarket, ProphetX
-
   // DFS platforms — show available Over/Under lines (null = market not offered)
   const dfsLineOffsets = [-0.5, 0, 0, 0.5]; // PrizePicks, Underdog, DK Pick6, Betr Picks
 
@@ -162,14 +150,7 @@ function getMockPick(game) {
       f5Pick:  f5PickBase  + offsets[i],
       nrfi:    nrfiBase    + offsets[i],
     })),
-    exchanges: ['BetOpenly', 'Kalshi', 'Novig', 'Polymarket', 'ProphetX'].map((name, i) => ({
-      name,
-      mlPick: exBase.mlPick  + exOffsets[i],
-      rlPick: exBase.rlPick  + exOffsets[i],
-      total:  exBase.total   + exOffsets[i],
-      f5Pick: exBase.f5Pick  + exOffsets[i],
-      nrfi:   exBase.nrfi    + exOffsets[i],
-    })),
+    exchanges: [],
     dfs: ['PrizePicks', 'Underdog', 'DraftKings Pick6', 'Betr Picks'].map((name, i) => ({
       name,
       mlPick: null,
@@ -180,6 +161,87 @@ function getMockPick(game) {
     })),
     // Keep individual fields for the card summary display
     moneyline: { away: awayML, home: homeML },
+  };
+}
+
+// ─── Real prediction → pick shape ─────────────────────────────────────────────
+// Maps GamePredictionWithContextSchema fields onto the same pick shape used by
+// all UI components. Falls back to getMockPick() for any field not yet on server.
+
+function buildPick(row) {
+  const pred       = row?.prediction;
+  const odds       = row?.odds;
+  const bookmakers = Array.isArray(row?.bookmakers) ? row.bookmakers : [];
+
+  if (!pred && !odds && !bookmakers.length) return getMockPick(row);
+
+  const mock  = getMockPick(row);
+  const pHome = pred?.p_home_win ?? 0.5;
+  const pick  = pHome >= 0.5 ? 'home' : 'away';
+  const conf  = Math.round(Math.max(pHome, 1 - pHome) * 100);
+
+  const awayML = odds?.away_moneyline_game != null ? Math.round(odds.away_moneyline_game) : mock.moneyline.away;
+  const homeML = odds?.home_moneyline_game != null ? Math.round(odds.home_moneyline_game) : mock.moneyline.home;
+
+  const totalLine  = odds?.over_under_line_game ?? pred?.predicted_total ?? mock.totalLine;
+  const overOdds   = odds?.over_price  != null ? Math.round(odds.over_price)  : -110;
+  const underOdds  = odds?.under_price != null ? Math.round(odds.under_price) : -110;
+  const totalSide  = overOdds >= underOdds ? 'Over' : 'Under';
+
+  const predTotal = pred?.predicted_total ?? totalLine;
+  const totalProb = Math.min(70, 50 + Math.round(
+    Math.abs(predTotal - totalLine) / (pred?.total_std_dev ?? 4) * 15
+  ));
+
+  // Helper to map a bookmaker/market entry to the shared odds shape
+  const mapEntry = (b) => ({
+    name:   b.bookmaker_title,
+    mlPick: Math.round(pick === 'home' ? b.home_moneyline      : b.away_moneyline),
+    mlOpp:  Math.round(pick === 'home' ? b.away_moneyline      : b.home_moneyline),
+    rlPick: Math.round(pick === 'home' ? b.home_run_line_price : b.away_run_line_price),
+    total:  Math.round(totalSide === 'Over' ? b.over_price     : b.under_price),
+    f5Pick: b.f5_home_moneyline != null ? Math.round(pick === 'home' ? b.f5_home_moneyline : b.f5_away_moneyline) : null,
+    nrfi:   b.nrfi_yes_price    != null ? Math.round(b.nrfi_yes_price) : null,
+  });
+
+  // Sportsbooks
+  let books;
+  if (bookmakers.length > 0) {
+    books = bookmakers.map(mapEntry);
+  } else {
+    const pickML    = pick === 'away' ? awayML : homeML;
+    const oppML     = pick === 'away' ? homeML : awayML;
+    const rlBase    = pick === 'home'
+      ? (odds?.home_run_line_price != null ? Math.round(odds.home_run_line_price) : mock.books[0].rlPick)
+      : (odds?.away_run_line_price != null ? Math.round(odds.away_run_line_price) : mock.books[0].rlPick);
+    const totalBase = totalSide === 'Over' ? overOdds : underOdds;
+    const OFF = [-3, 0, 4, -2];
+    books = ['DraftKings', 'FanDuel', 'BetMGM', 'Caesars'].map((name, i) => ({
+      name, mlPick: pickML + OFF[i], mlOpp: oppML - OFF[i],
+      rlPick: rlBase + OFF[i], total: totalBase + OFF[i], f5Pick: null, nrfi: null,
+    }));
+  }
+
+  // Prediction markets and DFS — real data only, empty array = hide tab
+  const predMarkets = Array.isArray(row?.prediction_markets) ? row.prediction_markets : [];
+  const exchanges   = predMarkets.map(mapEntry);
+  const dfs         = Array.isArray(row?.dfs_props) ? row.dfs_props.map(mapEntry) : [];
+
+  return {
+    ...mock,
+    pick, confidence: conf,
+    totalSide, totalLine,
+    modelProbs: {
+      mlPick: conf,
+      rlPick: Math.max(50, conf - 6),
+      total:  totalProb,
+      f5Pick: Math.max(50, conf - 4),
+      nrfi:   mock.modelProbs.nrfi,
+    },
+    moneyline: { away: awayML, home: homeML },
+    books,
+    exchanges,
+    dfs,
   };
 }
 
@@ -194,10 +256,15 @@ function calcEV(modelProbPct, odds) {
 // ─── Sportsbook config ────────────────────────────────────────────────────────
 
 const BOOK_META = {
-  DraftKings: { abbr: 'DK',  color: '#62a800', bg: 'rgba(98,168,0,0.18)',   logo: 'https://logo.clearbit.com/draftkings.com' },
-  FanDuel:    { abbr: 'FD',  color: '#1493ff', bg: 'rgba(20,147,255,0.18)', logo: 'https://logo.clearbit.com/fanduel.com' },
-  BetMGM:     { abbr: 'MGM', color: '#c8a84b', bg: 'rgba(200,168,75,0.18)', logo: 'https://logo.clearbit.com/betmgm.com' },
-  Caesars:    { abbr: 'CZR', color: '#0057b8', bg: 'rgba(0,87,184,0.18)',   logo: 'https://logo.clearbit.com/caesarssportsbook.com' },
+  DraftKings:     { abbr: 'DK',  color: '#62a800', bg: 'rgba(98,168,0,0.18)',    logo: 'https://logo.clearbit.com/draftkings.com' },
+  FanDuel:        { abbr: 'FD',  color: '#1493ff', bg: 'rgba(20,147,255,0.18)',  logo: 'https://logo.clearbit.com/fanduel.com' },
+  BetMGM:         { abbr: 'MGM', color: '#c8a84b', bg: 'rgba(200,168,75,0.18)',  logo: 'https://logo.clearbit.com/betmgm.com' },
+  Caesars:        { abbr: 'CZR', color: '#0057b8', bg: 'rgba(0,87,184,0.18)',    logo: 'https://logo.clearbit.com/caesarssportsbook.com' },
+  BetRivers:      { abbr: 'BR',  color: '#e63946', bg: 'rgba(230,57,70,0.18)',   logo: 'https://logo.clearbit.com/betrivers.com' },
+  Fanatics:       { abbr: 'FAN', color: '#e84118', bg: 'rgba(232,65,24,0.18)',   logo: 'https://logo.clearbit.com/fanatics.com' },
+  'Hard Rock Bet':{ abbr: 'HRB', color: '#ffd700', bg: 'rgba(255,215,0,0.18)',   logo: 'https://logo.clearbit.com/hardrock.com' },
+  PointsBet:      { abbr: 'PB',  color: '#ff6b35', bg: 'rgba(255,107,53,0.18)',  logo: 'https://logo.clearbit.com/pointsbet.com' },
+  BetUS:          { abbr: 'BUS', color: '#7c3aed', bg: 'rgba(124,58,237,0.18)',  logo: 'https://logo.clearbit.com/betus.com' },
 };
 
 function BookLogo({ name }) {
@@ -237,9 +304,11 @@ function getBestEdgePick(games) {
   let best = null;
 
   for (const game of games) {
-    const pick = getMockPick(game);
-    const pickedTeam = pick.pick === 'away' ? game.away_team_name : game.home_team_name;
-    const pickedId   = pick.pick === 'away' ? game.away_team_id  : game.home_team_id;
+    const pick = buildPick(game);
+    const awayName   = getTeamById(game.away_team_id)?.name || game.away_team_name;
+    const homeName   = getTeamById(game.home_team_id)?.name || game.home_team_name;
+    const pickedTeam = pick.pick === 'away' ? awayName : homeName;
+    const pickedId   = pick.pick === 'away' ? game.away_team_id : game.home_team_id;
 
     for (const marketKey of Object.keys(MARKET_LABELS)) {
       // Best available odds for this market across all books
@@ -257,7 +326,7 @@ function getBestEdgePick(games) {
 
         // For non-directional markets show the game context, not just picked team
         const displayName = ['nrfi', 'total'].includes(marketKey)
-          ? `${game.away_team_name} @ ${game.home_team_name}`
+          ? `${awayName} @ ${homeName}`
           : pickedTeam;
         const displayId = ['nrfi', 'total'].includes(marketKey)
           ? null
@@ -338,6 +407,7 @@ function ConfidenceBar({ pct }) {
 
 // pickColIndex  — column index for the pick (null for totals with no direction)
 // bestOverCol   — for Total: find best over (col 0) and best under (col 1) separately
+// eslint-disable-next-line no-unused-vars
 function OddsTable({ headers, rows, pickColIndex, isTotalTable = false }) {
   const bestPickRow  = findBestBook(rows, pickColIndex);
   const bestOverRow  = isTotalTable ? findBestBook(rows, 0) : -1;
@@ -393,7 +463,7 @@ function OddsTable({ headers, rows, pickColIndex, isTotalTable = false }) {
 // Rows = sportsbooks · Columns = all markets
 // Best odds per column are highlighted · Book with most wins gets "Best Book" crown
 
-const COLUMNS = [
+const ALL_COLUMNS = [
   { key: 'mlPick',  label: 'ML',       accent: 'pick'  },
   { key: 'rlPick',  label: 'Run Line', accent: 'pick'  },
   { key: 'total',   label: 'Total',    accent: 'total' },
@@ -402,11 +472,16 @@ const COLUMNS = [
 ];
 
 function OddsMatrix({ pick, pickName, oppName }) {
+  // Only show columns where at least one book has real (non-null) data
+  const columns = ALL_COLUMNS.filter(col =>
+    pick.books.some(b => b[col.key] != null)
+  );
+
   // For each column find the row index with the highest (best) value
   const bestRow = {};
-  COLUMNS.forEach(col => {
+  columns.forEach(col => {
     bestRow[col.key] = pick.books.reduce((best, book, i, arr) =>
-      book[col.key] > arr[best][col.key] ? i : best
+      (book[col.key] ?? -Infinity) > (arr[best][col.key] ?? -Infinity) ? i : best
     , 0);
   });
 
@@ -416,13 +491,15 @@ function OddsMatrix({ pick, pickName, oppName }) {
   );
   const topBookIdx = winCount.indexOf(Math.max(...winCount));
 
+  const gridStyle = { gridTemplateColumns: `180px repeat(${columns.length}, 1fr)` };
+
   return (
     <div className="gp-matrix-wrap">
       <div className="gp-matrix-outer">
         {/* Fixed header row */}
-        <div className="gp-matrix-grid">
+        <div className="gp-matrix-grid" style={gridStyle}>
           <div className="gp-matrix-corner">Sportsbook</div>
-          {COLUMNS.map(col => (
+          {columns.map(col => (
             <div key={col.key} className={`gp-matrix-col-head accent-${col.accent}`}>
               <span className="gp-matrix-col-label">{col.label}</span>
               <span className="gp-matrix-col-sub">
@@ -436,7 +513,7 @@ function OddsMatrix({ pick, pickName, oppName }) {
 
         {/* Scrollable book rows */}
         <div className="gp-matrix-body">
-          <div className="gp-matrix-grid">
+          <div className="gp-matrix-grid" style={gridStyle}>
             {pick.books.map((book, bi) => (
               <>
                 <div
@@ -449,7 +526,7 @@ function OddsMatrix({ pick, pickName, oppName }) {
                     <span className="gp-matrix-crown" title="Best overall book">👑</span>
                   )}
                 </div>
-                {COLUMNS.map(col => {
+                {columns.map(col => {
                   const val    = book[col.key];
                   const isBest = bestRow[col.key] === bi;
                   return (
@@ -508,16 +585,20 @@ function ExchangeLogo({ name }) {
   return <img src={meta.logo} alt={name} className="gp-book-logo" onError={() => setErr(true)} />;
 }
 
-// Best exchange = lowest Yes price (cheapest to buy in = best value)
+// Best exchange = highest American odds value (same logic as sportsbooks)
 function findBestExchange(exchanges, key) {
   return exchanges.reduce((best, ex, i, arr) =>
-    ex[key] < arr[best][key] ? i : best
+    (ex[key] ?? -Infinity) > (arr[best][key] ?? -Infinity) ? i : best
   , 0);
 }
 
 function ExchangeMatrix({ pick, pickName }) {
+  const columns = ALL_COLUMNS.filter(col =>
+    pick.exchanges.some(ex => ex[col.key] != null)
+  );
+
   const bestRow = {};
-  COLUMNS.forEach(col => {
+  columns.forEach(col => {
     bestRow[col.key] = findBestExchange(pick.exchanges, col.key);
   });
 
@@ -525,18 +606,19 @@ function ExchangeMatrix({ pick, pickName }) {
     Object.values(bestRow).filter(best => best === ei).length
   );
   const topExIdx = winCount.indexOf(Math.max(...winCount));
+  const gridStyle = { gridTemplateColumns: `180px repeat(${columns.length}, 1fr)` };
 
   return (
     <div className="gp-matrix-wrap">
       <div className="gp-exchange-note">
-        Prices in cents (¢). Lower Yes price = better value. Platforms may not offer all markets.
+        Prediction market odds. Higher value = better price for bettors. Platforms may not offer all markets.
       </div>
 
       <div className="gp-matrix-outer">
         {/* Fixed header row */}
-        <div className="gp-matrix-grid">
+        <div className="gp-matrix-grid" style={gridStyle}>
           <div className="gp-matrix-corner">Platform</div>
-          {COLUMNS.map(col => (
+          {columns.map(col => (
             <div key={col.key} className={`gp-matrix-col-head accent-${col.accent}`}>
               <span className="gp-matrix-col-label">{col.label}</span>
               <span className="gp-matrix-col-sub">
@@ -550,7 +632,7 @@ function ExchangeMatrix({ pick, pickName }) {
 
         {/* Scrollable exchange rows */}
         <div className="gp-matrix-body">
-          <div className="gp-matrix-grid">
+          <div className="gp-matrix-grid" style={gridStyle}>
             {pick.exchanges.map((ex, ei) => (
               <>
                 <div
@@ -561,7 +643,7 @@ function ExchangeMatrix({ pick, pickName }) {
                   <span className="gp-matrix-book-name">{ex.name}</span>
                   {ei === topExIdx && <span className="gp-matrix-crown" title="Best overall platform">👑</span>}
                 </div>
-                {COLUMNS.map(col => {
+                {columns.map(col => {
                   const val    = ex[col.key];
                   const isBest = bestRow[col.key] === ei;
                   return (
@@ -569,7 +651,7 @@ function ExchangeMatrix({ pick, pickName }) {
                       key={`${ei}-${col.key}`}
                       className={`gp-matrix-cell accent-${col.accent} ${isBest ? 'best' : ''}`}
                     >
-                      <span className="gp-matrix-odds">{val}¢</span>
+                      <span className="gp-matrix-odds">{fmtOdds(val)}</span>
                       {isBest && <span className="gp-matrix-best-dot" aria-label="Best price" />}
                     </div>
                   );
@@ -583,7 +665,7 @@ function ExchangeMatrix({ pick, pickName }) {
       <div className="gp-matrix-legend">
         <span className="gp-legend-item pick">● Pick-side market</span>
         <span className="gp-legend-item total">● Total (favored side)</span>
-        <span className="gp-legend-item best-dot">◆ Lowest price (best value)</span>
+        <span className="gp-legend-item best-dot">◆ Best odds</span>
         <span className="gp-legend-item crown">👑 Best overall platform</span>
       </div>
     </div>
@@ -594,6 +676,11 @@ function ExchangeMatrix({ pick, pickName }) {
 // DFS platforms offer Over/Under lines (not odds). null = market not available.
 
 function DFSMatrix({ pick }) {
+  const columns = ALL_COLUMNS.filter(col =>
+    pick.dfs.some(p => p[col.key] != null)
+  );
+  const gridStyle = { gridTemplateColumns: `180px repeat(${columns.length}, 1fr)` };
+
   return (
     <div className="gp-matrix-wrap">
       <div className="gp-exchange-note">
@@ -602,9 +689,9 @@ function DFSMatrix({ pick }) {
 
       <div className="gp-matrix-outer">
         {/* Fixed header row */}
-        <div className="gp-matrix-grid">
+        <div className="gp-matrix-grid" style={gridStyle}>
           <div className="gp-matrix-corner">Platform</div>
-          {COLUMNS.map(col => (
+          {columns.map(col => (
             <div key={col.key} className={`gp-matrix-col-head accent-${col.accent}`}>
               <span className="gp-matrix-col-label">{col.label}</span>
               <span className="gp-matrix-col-sub">
@@ -618,14 +705,14 @@ function DFSMatrix({ pick }) {
 
         {/* Scrollable DFS rows */}
         <div className="gp-matrix-body">
-          <div className="gp-matrix-grid">
+          <div className="gp-matrix-grid" style={gridStyle}>
             {pick.dfs.map((platform, pi) => (
               <>
                 <div key={`dfs-${pi}`} className="gp-matrix-book-cell">
                   <ExchangeLogo name={platform.name} />
                   <span className="gp-matrix-book-name">{platform.name}</span>
                 </div>
-                {COLUMNS.map(col => {
+                {columns.map(col => {
                   const val = platform[col.key];
                   return (
                     <div
@@ -655,12 +742,14 @@ function DFSMatrix({ pick }) {
 // ─── Right-side drawer modal ──────────────────────────────────────────────────
 
 function OddsDrawer({ game, onClose }) {
-  const pick       = getMockPick(game);
+  const pick       = buildPick(game);
   const awayAbbr   = getTeamById(game.away_team_id)?.id || game.away_team_name;
   const homeAbbr   = getTeamById(game.home_team_id)?.id || game.home_team_name;
   const awayMlbId  = getTeamMlbId(game.away_team_id);
   const homeMlbId  = getTeamMlbId(game.home_team_id);
-  const pickedName = pick.pick === 'away' ? game.away_team_name : game.home_team_name;
+  const awayName   = getTeamById(game.away_team_id)?.name || game.away_team_name;
+  const homeName   = getTeamById(game.home_team_id)?.name || game.home_team_name;
+  const pickedName = pick.pick === 'away' ? awayName : homeName;
   const pickAbbr   = pick.pick === 'away' ? awayAbbr : homeAbbr;
   const oppAbbr    = pick.pick === 'away' ? homeAbbr : awayAbbr;
 
@@ -685,8 +774,8 @@ function OddsDrawer({ game, onClose }) {
           <div className="gp-drawer-matchup">
             {awayMlbId && <img src={logoUrl(awayMlbId)} alt={game.away_team_name} className="gp-drawer-logo" />}
             <div className="gp-drawer-teams">
-              <span className="gp-drawer-team-name">{game.away_team_name}</span>
-              <span className="gp-drawer-vs">@ {game.home_team_name}</span>
+              <span className="gp-drawer-team-name">{awayName}</span>
+              <span className="gp-drawer-vs">@ {homeName}</span>
             </div>
             {homeMlbId && <img src={logoUrl(homeMlbId)} alt={game.home_team_name} className="gp-drawer-logo" />}
           </div>
@@ -709,18 +798,22 @@ function OddsDrawer({ game, onClose }) {
           >
             Sportsbooks
           </button>
-          <button
-            className={`gp-view-toggle-btn ${view === 'exchange' ? 'active' : ''}`}
-            onClick={() => setView('exchange')}
-          >
-            Pred. Exchange
-          </button>
-          <button
-            className={`gp-view-toggle-btn ${view === 'dfs' ? 'active' : ''}`}
-            onClick={() => setView('dfs')}
-          >
-            DFS
-          </button>
+          {pick.exchanges.length > 0 && (
+            <button
+              className={`gp-view-toggle-btn ${view === 'exchange' ? 'active' : ''}`}
+              onClick={() => setView('exchange')}
+            >
+              Pred. Exchange
+            </button>
+          )}
+          {pick.dfs.length > 0 && (
+            <button
+              className={`gp-view-toggle-btn ${view === 'dfs' ? 'active' : ''}`}
+              onClick={() => setView('dfs')}
+            >
+              DFS
+            </button>
+          )}
         </div>
 
         {/* Matrix body */}
@@ -739,7 +832,7 @@ function OddsDrawer({ game, onClose }) {
 // ─── Game card ────────────────────────────────────────────────────────────────
 
 function GamePickCard({ game, isSelected, onSelect }) {
-  const pick       = getMockPick(game);
+  const pick       = buildPick(game);
   const awayMlbId  = getTeamMlbId(game.away_team_id);
   const homeMlbId  = getTeamMlbId(game.home_team_id);
   const awayAbbr   = getTeamById(game.away_team_id)?.id || game.away_team_name;
@@ -830,10 +923,10 @@ export default function GameProps() {
 
   useEffect(() => {
     window.scrollTo(0, 0);
-    scheduleService.getTodayGames()
-      .then(data => {
-        const today = Array.isArray(data)
-          ? data.filter(g => g.season_type !== 'spring' && g.season_type !== 'S')
+    predictionsService.getToday()
+      .then(rows => {
+        const today = Array.isArray(rows)
+          ? rows.filter(r => r.season_type !== 'spring' && r.season_type !== 'S')
           : [];
         if (today.length > 0) {
           setGames(today);

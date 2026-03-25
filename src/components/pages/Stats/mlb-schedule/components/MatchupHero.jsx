@@ -1,6 +1,45 @@
 import { Link } from 'react-router-dom';
 import { logoUrl, fmtDate } from '../utils';
 
+// Format moneyline as "+150" / "-130"
+function fmtML(value) {
+  if (value == null) return null;
+  const num = Math.round(value);
+  return num >= 0 ? `+${num}` : String(num);
+}
+
+function OddsStrip({ odds, awayAbbr, homeAbbr }) {
+  if (!odds) return null;
+  const awayML = fmtML(odds.away_moneyline_game);
+  const homeML = fmtML(odds.home_moneyline_game);
+  const total  = odds.over_under_line_game;
+
+  if (!awayML && !homeML && total == null) return null;
+
+  return (
+    <div className="odds-strip">
+      {awayML && (
+        <span className={`odds-item ${awayML.startsWith('+') ? 'dog' : 'fav'}`}>
+          <span className="odds-team">{awayAbbr}</span>
+          <span className="odds-line">{awayML}</span>
+        </span>
+      )}
+      {homeML && (
+        <span className={`odds-item ${homeML.startsWith('+') ? 'dog' : 'fav'}`}>
+          <span className="odds-team">{homeAbbr}</span>
+          <span className="odds-line">{homeML}</span>
+        </span>
+      )}
+      {total != null && (
+        <span className="odds-item total">
+          <span className="odds-team">O/U</span>
+          <span className="odds-line">{total}</span>
+        </span>
+      )}
+    </div>
+  );
+}
+
 function PredictionStrip({ publicFav, scoutFav }) {
   const hasPublic = publicFav?.abbr && publicFav?.pct != null;
   const hasScout  = scoutFav?.abbr  && scoutFav?.pct  != null;
@@ -34,6 +73,7 @@ export default function MatchupHero({
   isFinal, isLive, isScheduled,
   awayWon, homeWon,
   publicFav, scoutFav,
+  prediction,
 }) {
   const isCompletedEarly = (game.status || '').toLowerCase() === 'completed early';
 
@@ -48,6 +88,10 @@ export default function MatchupHero({
   return (
     <div className={`detail-hero${isFinal ? ' hero-final' : isLive ? ' hero-live' : ''}`}>
       {/* <PredictionStrip publicFav={publicFav} scoutFav={scoutFav} /> */}
+      {/* Odds strip (only for scheduled/live games) */}
+      {!isFinal && prediction?.odds && (
+        <OddsStrip odds={prediction.odds} awayAbbr={awayAbbr} homeAbbr={homeAbbr} />
+      )}
       {/* Status strip */}
       <div className="hero-status-strip">
         {isFinal     && <span className="hero-badge badge-final">FINAL</span>}

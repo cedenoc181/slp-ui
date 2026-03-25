@@ -1,7 +1,8 @@
 import { useState, useEffect, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 import { useNavigate } from 'react-router-dom';
-import { TEAM_METADATA } from '../../../data/constants/apiConstants';
+import { TEAM_METADATA, getTeamById } from '../../../data/constants/apiConstants';
+import predictionsService from '../../../data/services/predictionsService';
 import '../../../styles/predictions-page-styling/predictions.css';
 import '../../../styles/predictions-page-styling/pitcher-props.css';
 
@@ -81,8 +82,13 @@ const PROP_ACCENTS = {
   earnedRuns: 'red',
 };
 
+// Stable numeric seed from a pitcher name (used when no MLB ID is available)
+function nameHash(str) {
+  return String(str).split('').reduce((acc, c) => acc + c.charCodeAt(0), 0);
+}
+
 function getMockPitcherProps(pitcher) {
-  const s = pitcher.id % 97;
+  const s = (pitcher.id != null ? pitcher.id : nameHash(pitcher.name)) % 97;
 
   const raw = [
     {
@@ -226,7 +232,7 @@ function TopPitcherCard({ pitcher, bestProp, onClick }) {
 // ─── Pitcher list card ────────────────────────────────────────────────────────
 
 function PitcherCard({ pitcher, isSelected, onClick }) {
-  const { bestProp } = getMockPitcherProps(pitcher);
+  const { bestProp } = getMockPitcherProps(pitcher);  // eslint-disable-line
   return (
     <button
       className={`pp-top-card ${isSelected ? 'selected' : ''}`}
@@ -404,7 +410,7 @@ function PitcherModal({ pitcher, onClose }) {
     };
   }, [onClose, selectedProp]);
 
-  const goToPlayer = () => { onClose(); navigate(`/player/${pitcher.id}`); window.scrollTo(0, 0); };
+  const goToPlayer = () => { if (!pitcher.id) return; onClose(); navigate(`/player/${pitcher.id}`); window.scrollTo(0, 0); };
   const goToMatchup = () => { onClose(); navigate(`/mlb-schedule/${pitcher.gamePk}`); window.scrollTo(0, 0); };
   const goToTeam = () => {
     const urlName = TEAM_METADATA[pitcher.teamAbbr]?.urlName;
@@ -521,21 +527,69 @@ function PitcherModal({ pitcher, onClose }) {
 
 // ─── Main Component ───────────────────────────────────────────────────────────
 
+// Stable key for a pitcher (real pitchers from the API may not have an MLB ID yet)
+function pitcherKey(p) {
+  return p.id != null ? p.id : `${p.gamePk}-${p.name}`;
+}
+
 export default function PitcherProps() {
-  const [selectedId, setSelectedId] = useState(null);
+  const [pitchers,    setPitchers]    = useState(MOCK_PITCHERS);
+  const [selectedKey, setSelectedKey] = useState(null);
 
-  useEffect(() => { window.scrollTo(0, 0); }, []);
+  useEffect(() => {
+    window.scrollTo(0, 0);
+    predictionsService.getToday()
+      .then(rows => {
+        const today = Array.isArray(rows)
+          ? rows.filter(r => r.season_type !== 'spring' && r.season_type !== 'S')
+          : [];
+        if (today.length === 0) return;
 
-  const topPicks = getTopPicks(MOCK_PITCHERS);
-
-  const handleSelect = useCallback((id) => {
-    setSelectedId(prev => prev === id ? null : id);
+        // Build a pitcher entry for each SP in today's slate
+        const realPitchers = [];
+        for (const r of today) {
+          const awayAbbr  = getTeamById(r.away_team_id)?.id  || r.away_team_name;
+          const homeAbbr  = getTeamById(r.home_team_id)?.id  || r.home_team_name;
+          const awayMlbId = getTeamById(r.away_team_id)?.mlbId ?? null;
+          const homeMlbId = getTeamById(r.home_team_id)?.mlbId ?? null;
+          if (r.away_sp_name) {
+            realPitchers.push({
+              id: r.away_sp_mlb_id ?? null,
+              name: r.away_sp_name,
+              teamAbbr: awayAbbr,
+              teamMlbId: awayMlbId,
+              opponent: homeAbbr,
+              hand: '?',
+              gamePk: r.game_pk,
+            });
+          }
+          if (r.home_sp_name) {
+            realPitchers.push({
+              id: r.home_sp_mlb_id ?? null,
+              name: r.home_sp_name,
+              teamAbbr: homeAbbr,
+              teamMlbId: homeMlbId,
+              opponent: awayAbbr,
+              hand: '?',
+              gamePk: r.game_pk,
+            });
+          }
+        }
+        if (realPitchers.length > 0) setPitchers(realPitchers);
+      })
+      .catch(() => { /* keep MOCK_PITCHERS */ });
   }, []);
 
-  const handleClose = useCallback(() => setSelectedId(null), []);
+  const topPicks = getTopPicks(pitchers);
 
-  const selectedPitcher = selectedId
-    ? MOCK_PITCHERS.find(p => p.id === selectedId) ?? null
+  const handleSelect = useCallback((key) => {
+    setSelectedKey(prev => prev === key ? null : key);
+  }, []);
+
+  const handleClose = useCallback(() => setSelectedKey(null), []);
+
+  const selectedPitcher = selectedKey
+    ? pitchers.find(p => pitcherKey(p) === selectedKey) ?? null
     : null;
 
   return (
@@ -553,10 +607,10 @@ export default function PitcherProps() {
         <div className="pp-top-grid">
           {topPicks.map(({ pitcher, bestProp }) => (
             <TopPitcherCard
-              key={pitcher.id}
+              key={pitcherKey(pitcher)}
               pitcher={pitcher}
               bestProp={bestProp}
-              onClick={() => handleSelect(pitcher.id)}
+              onClick={() => handleSelect(pitcherKey(pitcher))}
             />
           ))}
         </div>
@@ -568,12 +622,12 @@ export default function PitcherProps() {
           <span className="pp-divider-line" />
         </div>
         <div className="pp-pitcher-grid">
-          {MOCK_PITCHERS.map(pitcher => (
+          {pitchers.map(pitcher => (
             <PitcherCard
-              key={pitcher.id}
+              key={pitcherKey(pitcher)}
               pitcher={pitcher}
-              isSelected={selectedId === pitcher.id}
-              onClick={() => handleSelect(pitcher.id)}
+              isSelected={selectedKey === pitcherKey(pitcher)}
+              onClick={() => handleSelect(pitcherKey(pitcher))}
             />
           ))}
         </div>
