@@ -155,13 +155,29 @@ export default function MatchupDetailComp() {
     if (!game) return;
     const season     = game.season || DEFAULT_SEASON;
     const seasonType = mapSeasonType(game.season_type);
-    Promise.all([
-      teamLeadersService.getTeamSplits(game.away_team_id, season, seasonType, PLAYER_ROLES.BATTER),
-      teamLeadersService.getTeamSplits(game.home_team_id, season, seasonType, PLAYER_ROLES.BATTER),
-    ]).then(([away, home]) => {
-      setAwaySplitLeaders(Array.isArray(away) && away.length ? away : false);
-      setHomeSplitLeaders(Array.isArray(home) && home.length ? home : false);
-    }).catch(() => { setAwaySplitLeaders(false); setHomeSplitLeaders(false); });
+
+    const fetchSplits = (st) => Promise.all([
+      teamLeadersService.getTeamSplits(game.away_team_id, season, st, PLAYER_ROLES.BATTER),
+      teamLeadersService.getTeamSplits(game.home_team_id, season, st, PLAYER_ROLES.BATTER),
+    ]);
+
+    fetchSplits(seasonType)
+      .then(([away, home]) => {
+        const awayHasData = Array.isArray(away) && away.length > 0;
+        const homeHasData = Array.isArray(home) && home.length > 0;
+
+        // No regular season data yet — fall back to spring training
+        if (!awayHasData && !homeHasData && seasonType === 'R') {
+          return fetchSplits('S').then(([awaySpring, homeSpring]) => {
+            setAwaySplitLeaders(Array.isArray(awaySpring) && awaySpring.length ? awaySpring : false);
+            setHomeSplitLeaders(Array.isArray(homeSpring) && homeSpring.length ? homeSpring : false);
+          });
+        }
+
+        setAwaySplitLeaders(awayHasData ? away : false);
+        setHomeSplitLeaders(homeHasData ? home : false);
+      })
+      .catch(() => { setAwaySplitLeaders(false); setHomeSplitLeaders(false); });
   }, [game?.away_team_id, game?.home_team_id]); // eslint-disable-line
 
   // ── Hot batting leaders (Top Batters card) ──

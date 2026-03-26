@@ -35,78 +35,16 @@ function formatGameDate(dateStr) {
   return d.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
 }
 
-// Find the earliest regular season game date from a list of games
-function findOpeningDayDate(allGames) {
-  const regularSeasonGames = allGames.filter(g => g.season_type === 'regular');
-  if (regularSeasonGames.length === 0) return null;
-  
-  // Sort by date ascending and return the first date (YYYY-MM-DD format)
-  const sorted = [...regularSeasonGames].sort((a, b) => {
-    const dateA = (a.date ?? '').slice(0, 10);
-    const dateB = (b.date ?? '').slice(0, 10);
-    return dateA.localeCompare(dateB);
-  });
-  
-  // Return just the date portion (YYYY-MM-DD)
-  const firstDate = sorted[0]?.date;
-  if (!firstDate) return null;
-  
-  // Handle both "YYYY-MM-DD" and "YYYY-MM-DDTHH:MM:SS" formats
-  return firstDate.slice(0, 10);
-}
+// Static opening day / night labels keyed by YYYY-MM-DD date
+const OPENING_DAY_LABELS = {
+  '2026-03-25': 'Opening Night 2026 🎉',
+  '2026-03-26': 'Opening Day 2026 🎉',
+};
 
-// Check if game time is evening (7pm or later).
-// Handles both 24-hour "20:05" and 12-hour "8:05 PM ET" formats.
-function isEveningGame(gameTime) {
-  if (!gameTime) return false;
-  const str = String(gameTime).trim();
-
-  // 12-hour format: "8:05 PM ET", "7:10 PM", etc.
-  const match = str.match(/(\d+)(?::\d+)?\s*(AM|PM)/i);
-  if (match) {
-    let hour = parseInt(match[1], 10);
-    const meridiem = match[2].toUpperCase();
-    if (meridiem === 'PM' && hour !== 12) hour += 12;
-    if (meridiem === 'AM' && hour === 12) hour = 0;
-    return hour >= 19;
-  }
-
-  // 24-hour format: "20:05", "19:05"
-  const hour = parseInt(str.split(':')[0], 10);
-  return !isNaN(hour) && hour >= 19;
-}
-
-// Check if a date is Opening Day for the season
-function isOpeningDay(dateStr, games = [], openingDayDate = null) {
-  if (!dateStr || !openingDayDate) return false;
-  
-  // Normalize both dates to YYYY-MM-DD format for comparison
-  const dateKey = dateStr.slice(0, 10);
-  const hasRegularSeasonGame = games.some(g => g.season_type === 'regular');
-  
-  return dateKey === openingDayDate && hasRegularSeasonGame;
-}
-
-// Determine "Opening Day" vs "Opening Night" based on game times
-function getOpeningDayLabel(games) {
-  const regularGames = games.filter(g => g.season_type === 'regular');
-  // Check if majority of games are evening games (7pm+)
-  const eveningGames = regularGames.filter(g => isEveningGame(g.game_time));
-  const isNight = eveningGames.length >= regularGames.length / 2;
-  return isNight ? 'Opening Night' : 'Opening Day';
-}
-
-function getDateGroupLabel(dateStr, games = [], openingDayDate = null) {
+function getDateGroupLabel(dateStr) {
   const baseLabel = formatGameDate(dateStr);
-  
-  if (openingDayDate && isOpeningDay(dateStr, games, openingDayDate)) {
-    // Extract year from the date string (YYYY-MM-DD format)
-    const season = dateStr.slice(0, 4);
-    const dayOrNight = getOpeningDayLabel(games);
-    return `${baseLabel} · ${dayOrNight} ${season} 🎉`;
-  }
-  
-  return baseLabel;
+  const special   = OPENING_DAY_LABELS[dateStr?.slice(0, 10)];
+  return special ? `${baseLabel} · ${special}` : baseLabel;
 }
 
 // Format pitcher name as "J. Smith"
@@ -378,32 +316,29 @@ function SkeletonCard() {
 // ─── Date-grouped list with pagination ───────────────────────────────────────
 const DATES_PER_PAGE = 3;
 
-function groupGamesByDate(games, openingDayDate = null) {
+function groupGamesByDate(games, showOpeningDay = true) {
   const groups = [];
   let current = null;
   for (const game of games) {
     const dateKey = game.date ? game.date.slice(0, 10) : 'unknown';
     if (!current || current.dateKey !== dateKey) {
-      current = { dateKey, label: formatGameDate(game.date), games: [] };
+      current = { dateKey, games: [] };
       groups.push(current);
     }
     current.games.push(game);
   }
-  // Update labels and opening day flag after grouping
   groups.forEach(group => {
-    group.label = getDateGroupLabel(group.dateKey, group.games, openingDayDate);
-    group.isOpeningDay = isOpeningDay(group.dateKey, group.games, openingDayDate);
+    const special = showOpeningDay && OPENING_DAY_LABELS[group.dateKey];
+    group.label        = showOpeningDay ? getDateGroupLabel(group.dateKey) : formatGameDate(group.games[0]?.date);
+    group.isOpeningDay = !!special;
   });
   return groups;
 }
 
-function GroupedGamesList({ games, onClick, prevLabel = '← Prev', nextLabel = 'Next →' }) {
+function GroupedGamesList({ games, onClick, prevLabel = '← Prev', nextLabel = 'Next →', showOpeningDay = true }) {
   const [page, setPage] = useState(0);
-  
-  // Find opening day date from all games
-  const openingDayDate = findOpeningDayDate(games);
-  
-  const allGroups = groupGamesByDate(games, openingDayDate);
+
+  const allGroups = groupGamesByDate(games, showOpeningDay);
   const totalPages = Math.ceil(allGroups.length / DATES_PER_PAGE);
   const pageGroups = allGroups.slice(page * DATES_PER_PAGE, (page + 1) * DATES_PER_PAGE);
 
@@ -556,7 +491,7 @@ function MLBSchedule() {
       } else if (tab === 'upcoming') {
         const yr    = new Date().getFullYear();
         const month = new Date().getMonth() + 1;
-        const st    = month <= 3 ? 'S' : month <= 9 ? 'R' : 'P';
+        const st    = month <= 2 ? 'S' : month <= 9 ? 'R' : 'P';
         data = await scheduleService.getUpcomingGames({ season: yr, seasonType: st, limit: 50 });
         const etToday = new Intl.DateTimeFormat('en-CA', { timeZone: 'America/New_York' }).format(new Date());
         data = Array.isArray(data) ? data.filter(g => (g.date ?? '').slice(0, 10) > etToday) : [];
@@ -709,16 +644,16 @@ function MLBSchedule() {
               {activeTab === 'prior' ? (
                 <PriorResults games={games} onClick={handleMatchupClick} />
               ) : activeTab === 'upcoming' ? (
-                <GroupedGamesList games={games} onClick={handleMatchupClick} />
+                <GroupedGamesList games={games} onClick={handleMatchupClick} showOpeningDay={false} />
               ) : (
                 // Today tab — Card Grid Layout
                 (() => {
-                  const openingDayDate = findOpeningDayDate(games);
-                  const todayIsOpeningDay = isOpeningDay(games[0]?.date, games, openingDayDate);
+                  const todayDateKey     = games[0]?.date?.slice(0, 10);
+                  const todayIsOpeningDay = !!OPENING_DAY_LABELS[todayDateKey];
                   return (
                     <>
                       <div className={`date-group-header ${todayIsOpeningDay ? 'opening-night' : ''}`} style={{ marginBottom: '0.75rem' }}>
-                        {getDateGroupLabel(games[0]?.date, games, openingDayDate)}
+                        {getDateGroupLabel(games[0]?.date)}
                       </div>
                       <div className="schedule-card-grid">
                         {games.map((game) => (
