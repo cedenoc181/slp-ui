@@ -863,6 +863,91 @@
   }
 }
 
+/* ── Muted card (no odds/prediction yet) ───────────────────────────────────── */
+.gp-card--muted {
+  opacity: 0.5;
+  pointer-events: auto;
+  filter: grayscale(0.4);
+}
+
+.gp-card--muted:hover {
+  opacity: 0.65;
+}
+
+/* ── Predictions loading state ─────────────────────────────────────────────── */
+.gp-card-pred-loading {
+  font-size: 0.72rem;
+  color: rgba(255, 255, 255, 0.45);
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  justify-content: center;
+  padding: 0.25rem 0;
+}
+
+/* ── No-predictions banner ──────────────────────────────────────────────────── */
+.gp-no-preds-banner {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  background: rgba(148, 163, 184, 0.07);
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  border-left: 3px solid rgba(148, 163, 184, 0.45);
+  border-radius: 10px;
+  padding: 0.9rem 1.1rem;
+  margin-bottom: 1.5rem;
+}
+
+.gp-no-preds-icon {
+  font-size: 1.4rem;
+  flex-shrink: 0;
+}
+
+.gp-no-preds-text {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.gp-no-preds-title {
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.75);
+}
+
+.gp-no-preds-sub {
+  font-size: 0.75rem;
+  color: rgba(255, 255, 255, 0.35);
+}
+
+/* ── Odds unavailable placeholder ──────────────────────────────────────────── */
+.gp-odds-unavailable {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 3rem 1.5rem;
+  text-align: center;
+  color: rgba(255, 255, 255, 0.45);
+}
+
+.gp-odds-unavailable-icon {
+  font-size: 2rem;
+}
+
+.gp-odds-unavailable p {
+  margin: 0;
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.gp-odds-unavailable-sub {
+  font-size: 0.78rem !important;
+  color: rgba(255, 255, 255, 0.35) !important;
+}
+
 @media (max-width: 480px) {
   .gp-grid {
     grid-template-columns: repeat(2, 1fr);

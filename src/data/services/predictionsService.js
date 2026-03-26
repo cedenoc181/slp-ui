@@ -57,6 +57,25 @@ class PredictionsService {
   async getByGamePk(gamePk) {
     return api.get(`/predictions/${gamePk}`);
   }
+
+  /**
+   * Pitcher prop predictions for all starters today.
+   * GET /predictions/pitchers/today
+   * @returns {Promise<Array>}
+   */
+  async getPitchersToday() {
+    return api.get('/predictions/pitchers/today');
+  }
+
+  /**
+   * Pitcher prop predictions for both starters in a specific game.
+   * GET /predictions/pitchers/{game_pk}
+   * @param {string|number} gamePk
+   * @returns {Promise<Object>}
+   */
+  async getPitchersByGamePk(gamePk) {
+    return api.get(`/predictions/pitchers/${gamePk}`);
+  }
 }
 
 const predictionsService = new PredictionsService();

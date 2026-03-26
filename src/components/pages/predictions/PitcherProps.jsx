@@ -3,6 +3,7 @@ import { createPortal } from 'react-dom';
 import { useNavigate } from 'react-router-dom';
 import { TEAM_METADATA, getTeamById } from '../../../data/constants/apiConstants';
 import predictionsService from '../../../data/services/predictionsService';
+import playerStatsService from '../../../data/services/playerStatsServices';
 import '../../../styles/predictions-page-styling/predictions.css';
 import '../../../styles/predictions-page-styling/pitcher-props.css';
 
@@ -27,26 +28,6 @@ function calcEV(modelProbPct, odds) {
   return ((prob * decimal - 1) * 100).toFixed(1);
 }
 
-// ─── Mock pitcher slate ───────────────────────────────────────────────────────
-
-const MOCK_PITCHERS = [
-  { id: 543037, name: 'Gerrit Cole',     teamAbbr: 'NYY', teamMlbId: 147, opponent: 'BOS', hand: 'R', gamePk: 745444 },
-  { id: 519242, name: 'Chris Sale',      teamAbbr: 'BOS', teamMlbId: 111, opponent: 'NYY', hand: 'L', gamePk: 745444 },
-  { id: 607192, name: 'Tyler Glasnow',   teamAbbr: 'LAD', teamMlbId: 119, opponent: 'SF',  hand: 'R', gamePk: 745445 },
-  { id: 657277, name: 'Logan Webb',      teamAbbr: 'SF',  teamMlbId: 137, opponent: 'LAD', hand: 'R', gamePk: 745445 },
-  { id: 675911, name: 'Spencer Strider', teamAbbr: 'ATL', teamMlbId: 144, opponent: 'NYM', hand: 'R', gamePk: 745446 },
-  { id: 673548, name: 'Kodai Senga',     teamAbbr: 'NYM', teamMlbId: 121, opponent: 'ATL', hand: 'R', gamePk: 745446 },
-  { id: 664285, name: 'Framber Valdez',  teamAbbr: 'HOU', teamMlbId: 117, opponent: 'TEX', hand: 'L', gamePk: 745447 },
-  { id: 543135, name: 'Nathan Eovaldi',  teamAbbr: 'TEX', teamMlbId: 140, opponent: 'HOU', hand: 'R', gamePk: 745447 },
-  { id: 554430, name: 'Zack Wheeler',    teamAbbr: 'PHI', teamMlbId: 143, opponent: 'MIA', hand: 'R', gamePk: 745448 },
-  { id: 645261, name: 'Sandy Alcantara', teamAbbr: 'MIA', teamMlbId: 146, opponent: 'PHI', hand: 'R', gamePk: 745448 },
-  { id: 506433, name: 'Yu Darvish',      teamAbbr: 'SD',  teamMlbId: 135, opponent: 'AZ',  hand: 'R', gamePk: 745449 },
-  { id: 668678, name: 'Zac Gallen',      teamAbbr: 'AZ',  teamMlbId: 109, opponent: 'SD',  hand: 'R', gamePk: 745449 },
-  { id: 641154, name: 'Pablo Lopez',     teamAbbr: 'MIN', teamMlbId: 142, opponent: 'DET', hand: 'R', gamePk: 745450 },
-  { id: 669373, name: 'Tarik Skubal',    teamAbbr: 'DET', teamMlbId: 116, opponent: 'MIN', hand: 'L', gamePk: 745450 },
-  { id: 657731, name: 'Justin Steele',   teamAbbr: 'CHC', teamMlbId: 112, opponent: 'STL', hand: 'L', gamePk: 745451 },
-  { id: 571945, name: 'Miles Mikolas',   teamAbbr: 'STL', teamMlbId: 138, opponent: 'CHC', hand: 'R', gamePk: 745451 },
-];
 
 // ─── Mock prop generator ──────────────────────────────────────────────────────
 
@@ -150,9 +131,78 @@ function getMockPitcherProps(pitcher) {
   return { props, bestProp };
 }
 
+// ─── Real prediction → prop shape ────────────────────────────────────────────
+// Uses pitcher.prediction (from /predictions/pitchers/today) when available,
+// falls back to getMockPitcherProps() for the prop lines.
+
+function buildPitcherProps(pitcher) {
+  const pred = pitcher.prediction;
+  if (!pred) return getMockPitcherProps(pitcher);
+
+  // Coefficient-of-variation-based confidence: lower spread → higher confidence
+  const cv = (mean, std) =>
+    Math.min(72, Math.max(52, Math.round(72 - (std / mean) * 100)));
+
+  const raw = [
+    {
+      key: 'strikeouts', label: 'Strikeouts',   icon: '🔥',
+      line:      Math.round(pred.predicted_strikeouts  * 10) / 10,
+      side:      'Over',
+      modelProb: cv(pred.predicted_strikeouts,  pred.strikeouts_std_dev),
+      baseOdds:  -115,
+    },
+    {
+      key: 'hits',       label: 'Hits Allowed',  icon: '🎯',
+      line:      Math.round(pred.predicted_hits_allowed * 10) / 10,
+      side:      'Under',
+      modelProb: cv(pred.predicted_hits_allowed, pred.hits_allowed_std_dev),
+      baseOdds:  -115,
+    },
+    {
+      key: 'outs',       label: 'Pitcher Outs',  icon: '⚾',
+      line:      Math.round(pred.predicted_outs  * 10) / 10,
+      side:      'Over',
+      modelProb: cv(pred.predicted_outs,  pred.outs_std_dev),
+      baseOdds:  -115,
+    },
+    {
+      key: 'earnedRuns', label: 'Earned Runs',   icon: '📊',
+      line:      Math.round(pred.predicted_earned_runs * 10) / 10,
+      side:      'Under',
+      modelProb: cv(pred.predicted_earned_runs,  pred.earned_runs_std_dev),
+      baseOdds:  -115,
+    },
+  ];
+
+  const props = raw.map(p => {
+    const bestOdds = p.baseOdds + 4;
+    return {
+      ...p,
+      bestOdds,
+      ev: calcEV(p.modelProb, bestOdds),
+      books: BOOK_NAMES.map((name, i) => {
+        const overOdds  = p.baseOdds + BOOK_OFFSETS[i];
+        const underOdds = -(Math.abs(overOdds) + 8 + (i * 2));
+        return { name, over: overOdds, under: underOdds };
+      }),
+      exchanges: EXCHANGE_NAMES.map((name, i) => {
+        const yes = 50 + (i % 5);
+        return { name, yes, no: 100 - yes + 2 };
+      }),
+      dfs: DFS_NAMES.map(name => ({ name, line: p.line })),
+    };
+  });
+
+  const bestProp = props.reduce((best, p) =>
+    parseFloat(p.ev) > parseFloat(best.ev) ? p : best
+  , props[0]);
+
+  return { props, bestProp };
+}
+
 function getTopPicks(pitchers) {
   return [...pitchers]
-    .map(p => ({ pitcher: p, ...getMockPitcherProps(p) }))
+    .map(p => ({ pitcher: p, ...buildPitcherProps(p) }))
     .sort((a, b) => parseFloat(b.bestProp.ev) - parseFloat(a.bestProp.ev))
     .slice(0, 4);
 }
@@ -170,7 +220,7 @@ function Headshot({ pitcher, className }) {
   }
   return (
     <img
-      src={headshotUrl(pitcher.id)}
+      src={headshotUrl(pitcher.mlbId)}
       alt={pitcher.name}
       className={`pp-headshot ${className || ''}`}
       onError={() => setErr(true)}
@@ -389,7 +439,7 @@ function PropDFSTable({ prop }) {
 // ─── Pitcher modal ────────────────────────────────────────────────────────────
 
 function PitcherModal({ pitcher, onClose }) {
-  const { props } = getMockPitcherProps(pitcher);
+  const { props } = buildPitcherProps(pitcher);
   const [hsErr, setHsErr]           = useState(false);
   const [selectedProp, setSelectedProp] = useState(null);
   const [oddsView, setOddsView]     = useState('books');
@@ -446,7 +496,7 @@ function PitcherModal({ pitcher, onClose }) {
                   </div>
                 ) : (
                   <img
-                    src={headshotUrl(pitcher.id)}
+                    src={headshotUrl(pitcher.mlbId)}
                     alt={pitcher.name}
                     className="pp-prop-strip-headshot"
                     onError={() => setHsErr(true)}
@@ -490,7 +540,7 @@ function PitcherModal({ pitcher, onClose }) {
                   </div>
                 ) : (
                   <img
-                    src={headshotUrl(pitcher.id)}
+                    src={headshotUrl(pitcher.mlbId)}
                     alt={pitcher.name}
                     className="pp-modal-headshot"
                     onError={() => setHsErr(true)}
@@ -533,13 +583,14 @@ function pitcherKey(p) {
 }
 
 export default function PitcherProps() {
-  const [pitchers,    setPitchers]    = useState(MOCK_PITCHERS);
+  const [pitchers,    setPitchers]    = useState([]);
+  const [loading,     setLoading]     = useState(true);
   const [selectedKey, setSelectedKey] = useState(null);
 
   useEffect(() => {
     window.scrollTo(0, 0);
     predictionsService.getToday()
-      .then(rows => {
+      .then(async rows => {
         const today = Array.isArray(rows)
           ? rows.filter(r => r.season_type !== 'spring' && r.season_type !== 'S')
           : [];
@@ -554,30 +605,64 @@ export default function PitcherProps() {
           const homeMlbId = getTeamById(r.home_team_id)?.mlbId ?? null;
           if (r.away_sp_name) {
             realPitchers.push({
-              id: r.away_sp_mlb_id ?? null,
-              name: r.away_sp_name,
-              teamAbbr: awayAbbr,
+              id:        r.away_sp_id ?? null,
+              mlbId:     null, // resolved below
+              name:      r.away_sp_name,
+              teamAbbr:  awayAbbr,
               teamMlbId: awayMlbId,
-              opponent: homeAbbr,
-              hand: '?',
-              gamePk: r.game_pk,
+              opponent:  homeAbbr,
+              hand:      '?',
+              gamePk:    r.game_pk,
             });
           }
           if (r.home_sp_name) {
             realPitchers.push({
-              id: r.home_sp_mlb_id ?? null,
-              name: r.home_sp_name,
-              teamAbbr: homeAbbr,
+              id:        r.home_sp_id ?? null,
+              mlbId:     null, // resolved below
+              name:      r.home_sp_name,
+              teamAbbr:  homeAbbr,
               teamMlbId: homeMlbId,
-              opponent: awayAbbr,
-              hand: '?',
-              gamePk: r.game_pk,
+              opponent:  awayAbbr,
+              hand:      '?',
+              gamePk:    r.game_pk,
             });
           }
         }
-        if (realPitchers.length > 0) setPitchers(realPitchers);
+        if (realPitchers.length === 0) return;
+
+        // Fetch MLB IDs and pitcher predictions in parallel
+        const [lookups, pitcherPreds] = await Promise.all([
+          Promise.all(
+            realPitchers.map(p =>
+              p.id
+                ? playerStatsService.lookupPlayer({ playerId: p.id }).catch(() => null)
+                : Promise.resolve(null)
+            )
+          ),
+          predictionsService.getPitchersToday().catch(() => []),
+        ]);
+
+        // Apply MLB player IDs for headshots
+        lookups.forEach((result, i) => {
+          if (result?.mlb_id) realPitchers[i].mlbId = result.mlb_id;
+        });
+
+        // Build prediction map keyed by internal player_id
+        const predMap = {};
+        for (const game of (Array.isArray(pitcherPreds) ? pitcherPreds : [])) {
+          if (game.home_pitcher?.player_id) predMap[game.home_pitcher.player_id] = game.home_pitcher;
+          if (game.away_pitcher?.player_id) predMap[game.away_pitcher.player_id] = game.away_pitcher;
+        }
+
+        // Attach prediction to each pitcher
+        realPitchers.forEach(p => {
+          if (p.id && predMap[p.id]) p.prediction = predMap[p.id];
+        });
+
+        setPitchers(realPitchers);
       })
-      .catch(() => { /* keep MOCK_PITCHERS */ });
+      .catch(() => {})
+      .finally(() => setLoading(false));
   }, []);
 
   const topPicks = getTopPicks(pitchers);
@@ -602,35 +687,49 @@ export default function PitcherProps() {
 
       <div className="predictions-content">
 
-        {/* ── Top picks ─────────────────────────────────────────── */}
-        <div className="pp-section-label">Top Picks Today</div>
-        <div className="pp-top-grid">
-          {topPicks.map(({ pitcher, bestProp }) => (
-            <TopPitcherCard
-              key={pitcherKey(pitcher)}
-              pitcher={pitcher}
-              bestProp={bestProp}
-              onClick={() => handleSelect(pitcherKey(pitcher))}
-            />
-          ))}
-        </div>
+        {loading ? (
+          <div className="pp-empty-state">
+            <div className="pp-empty-icon">⚾</div>
+            <p>Loading today's starters…</p>
+          </div>
+        ) : pitchers.length === 0 ? (
+          <div className="pp-empty-state">
+            <div className="pp-empty-icon">⚾</div>
+            <p>No starting pitchers found for today.</p>
+          </div>
+        ) : (
+          <>
+            {/* ── Top picks ───────────────────────────────────────── */}
+            <div className="pp-section-label">Top Picks Today</div>
+            <div className="pp-top-grid">
+              {topPicks.map(({ pitcher, bestProp }) => (
+                <TopPitcherCard
+                  key={pitcherKey(pitcher)}
+                  pitcher={pitcher}
+                  bestProp={bestProp}
+                  onClick={() => handleSelect(pitcherKey(pitcher))}
+                />
+              ))}
+            </div>
 
-        {/* ── Divider ────────────────────────────────────────────── */}
-        <div className="pp-divider">
-          <span className="pp-divider-line" />
-          <span className="pp-divider-label">Starting Pitchers Today</span>
-          <span className="pp-divider-line" />
-        </div>
-        <div className="pp-pitcher-grid">
-          {pitchers.map(pitcher => (
-            <PitcherCard
-              key={pitcherKey(pitcher)}
-              pitcher={pitcher}
-              isSelected={selectedKey === pitcherKey(pitcher)}
-              onClick={() => handleSelect(pitcherKey(pitcher))}
-            />
-          ))}
-        </div>
+            {/* ── Divider ─────────────────────────────────────────── */}
+            <div className="pp-divider">
+              <span className="pp-divider-line" />
+              <span className="pp-divider-label">Starting Pitchers Today</span>
+              <span className="pp-divider-line" />
+            </div>
+            <div className="pp-pitcher-grid">
+              {pitchers.map(pitcher => (
+                <PitcherCard
+                  key={pitcherKey(pitcher)}
+                  pitcher={pitcher}
+                  isSelected={selectedKey === pitcherKey(pitcher)}
+                  onClick={() => handleSelect(pitcherKey(pitcher))}
+                />
+              ))}
+            </div>
+          </>
+        )}
 
         <p className="gp-disclaimer">
           * Prediction data is model-generated and for informational purposes only.

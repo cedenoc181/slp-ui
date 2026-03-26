@@ -55,12 +55,25 @@ function findOpeningDayDate(allGames) {
   return firstDate.slice(0, 10);
 }
 
-// Check if game time is evening (7pm or later)
+// Check if game time is evening (7pm or later).
+// Handles both 24-hour "20:05" and 12-hour "8:05 PM ET" formats.
 function isEveningGame(gameTime) {
   if (!gameTime) return false;
-  // game_time is in "HH:MM" format (e.g., "19:05", "13:10")
-  const hour = parseInt(gameTime.split(':')[0], 10);
-  return hour >= 19; // 7pm or later
+  const str = String(gameTime).trim();
+
+  // 12-hour format: "8:05 PM ET", "7:10 PM", etc.
+  const match = str.match(/(\d+)(?::\d+)?\s*(AM|PM)/i);
+  if (match) {
+    let hour = parseInt(match[1], 10);
+    const meridiem = match[2].toUpperCase();
+    if (meridiem === 'PM' && hour !== 12) hour += 12;
+    if (meridiem === 'AM' && hour === 12) hour = 0;
+    return hour >= 19;
+  }
+
+  // 24-hour format: "20:05", "19:05"
+  const hour = parseInt(str.split(':')[0], 10);
+  return !isNaN(hour) && hour >= 19;
 }
 
 // Check if a date is Opening Day for the season
@@ -476,12 +489,12 @@ function sortTodayGames(games) {
 }
 
 // ─── Season type helper ───────────────────────────────────────────────────────
-// Feb–Mar  → Spring only            ['S']
-// Apr–Sep  → Spring + Regular       ['S', 'R']
+// Jan–Feb  → Spring only            ['S']
+// Mar–Sep  → Spring + Regular       ['S', 'R']  (Opening Day can be late March)
 // Oct+     → Spring + Regular + PS  ['S', 'R', 'P']
 function getPriorSeasonTypes() {
   const month = new Date().getMonth() + 1; // 1–12
-  if (month <= 3) return ['S'];
+  if (month <= 2) return ['S'];
   if (month <= 9) return ['S', 'R'];
   return ['S', 'R', 'P'];
 }
@@ -503,13 +516,32 @@ function MLBSchedule() {
       let data;
       if (tab === 'today') {
         data = await scheduleService.getTodayGames();
-        // Allow the backend to roll over to tomorrow's slate (happens ~8–9 pm).
-        // The tab label switches to "Tomorrow" automatically when that occurs.
-        data = sortTodayGames(Array.isArray(data) ? data : []);
+        data = Array.isArray(data) ? data : [];
+
+        // If the backend has rolled over to tomorrow, check for any live games
+        // still running from today's ET date and prepend them.
+        const etToday = new Intl.DateTimeFormat('en-CA', { timeZone: 'America/New_York' }).format(new Date());
+        const backendDate = (data[0]?.date ?? '').slice(0, 10);
+        if (backendDate > etToday) {
+          try {
+            const prior = await scheduleService.getPriorGames({ season: new Date().getFullYear(), seasonType: 'R', limit: 30 });
+            const todayLive = (Array.isArray(prior) ? prior : []).filter(g => {
+              const s = (g.status || '').toLowerCase();
+              return g.date?.slice(0, 10) === etToday &&
+                (s.includes('progress') || s === 'live' || s.includes('inning'));
+            });
+            if (todayLive.length > 0) data = [...todayLive, ...data];
+          } catch { /* ignore — tomorrow's slate still shown */ }
+        }
+
+        data = sortTodayGames(data);
       } else if (tab === 'upcoming') {
-        data = await scheduleService.getUpcomingGames({ limit: 50 });
-        const todayStr = new Date().toISOString().slice(0, 10);
-        data = Array.isArray(data) ? data.filter(g => (g.date ?? '').slice(0, 10) > todayStr) : [];
+        const yr    = new Date().getFullYear();
+        const month = new Date().getMonth() + 1;
+        const st    = month <= 3 ? 'S' : month <= 9 ? 'R' : 'P';
+        data = await scheduleService.getUpcomingGames({ season: yr, seasonType: st, limit: 50 });
+        const etToday = new Intl.DateTimeFormat('en-CA', { timeZone: 'America/New_York' }).format(new Date());
+        data = Array.isArray(data) ? data.filter(g => (g.date ?? '').slice(0, 10) > etToday) : [];
       } else {
         const seasonTypes = getPriorSeasonTypes();
         const results = await Promise.all(
@@ -532,6 +564,13 @@ function MLBSchedule() {
 
   useEffect(() => {
     fetchGames(activeTab);
+  }, [activeTab, fetchGames]);
+
+  // Poll today's games every 60 s so in-progress statuses stay current
+  useEffect(() => {
+    if (activeTab !== 'today') return;
+    const id = setInterval(() => fetchGames('today'), 60_000);
+    return () => clearInterval(id);
   }, [activeTab, fetchGames]);
 
   // Fetch boxscores for live games whenever today's game list updates
@@ -586,8 +625,9 @@ function MLBSchedule() {
     setActiveTab(tab);
   };
 
-  const todayStr = new Date().toISOString().slice(0, 10);
-  const isTomorrow = activeTab === 'today' && games.length > 0 && (games[0]?.date ?? '').slice(0, 10) > todayStr;
+  // Use ET timezone so rollover detection is accurate regardless of UTC offset
+  const etTodayStr = new Intl.DateTimeFormat('en-CA', { timeZone: 'America/New_York' }).format(new Date());
+  const isTomorrow = activeTab === 'today' && games.length > 0 && (games[0]?.date ?? '').slice(0, 10) > etTodayStr;
 
   const emptyMessage = {
     today:    'No games scheduled for today.',

@@ -33,6 +33,46 @@ function statusLabel(game) {
   return game.game_time_et || game.game_time || 'TBD';
 }
 
+// Parse a game time string ("8:05 PM ET" or "20:05") into minutes from midnight for sorting
+function parseGameTimeMinutes(game) {
+  const t = game.game_time_et || game.game_time || '';
+  const ampm = t.match(/(\d+):(\d+)\s*(AM|PM)/i);
+  if (ampm) {
+    let h = parseInt(ampm[1], 10);
+    const m = parseInt(ampm[2], 10);
+    const mer = ampm[3].toUpperCase();
+    if (mer === 'PM' && h !== 12) h += 12;
+    if (mer === 'AM' && h === 12) h = 0;
+    return h * 60 + m;
+  }
+  const parts = t.split(':');
+  if (parts.length >= 2) return parseInt(parts[0], 10) * 60 + parseInt(parts[1], 10);
+  return 9999;
+}
+
+// Returns true when a game has no odds or prediction data yet
+function hasNoPredictions(game) {
+  return !game.prediction &&
+    !game.odds &&
+    (!Array.isArray(game.bookmakers) || game.bookmakers.length === 0);
+}
+
+// Subtract 1 hour from a game time string and return display string e.g. "7:05 PM ET"
+function predReadyTime(game) {
+  const t = game.game_time_et || game.game_time || '';
+  const ampm = t.match(/(\d+):(\d+)\s*(AM|PM)/i);
+  if (!ampm) return t || 'game time';
+  let h = parseInt(ampm[1], 10);
+  const min = ampm[2];
+  const mer = ampm[3].toUpperCase();
+  if (mer === 'PM' && h !== 12) h += 12;
+  if (mer === 'AM' && h === 12) h = 0;
+  h = (h - 1 + 24) % 24;
+  const displayH = h % 12 || 12;
+  const displayMer = h >= 12 ? 'PM' : 'AM';
+  return `${displayH}:${min} ${displayMer} ET`;
+}
+
 // ─── Mock game slate ──────────────────────────────────────────────────────────
 // Fallback when the API returns no games (off-season / pre-season).
 // Remove MOCK_GAMES and the fallback logic in useEffect once the season is live.
@@ -180,8 +220,8 @@ function buildPick(row) {
   const pick  = pHome >= 0.5 ? 'home' : 'away';
   const conf  = Math.round(Math.max(pHome, 1 - pHome) * 100);
 
-  const awayML = odds?.away_moneyline_game != null ? Math.round(odds.away_moneyline_game) : mock.moneyline.away;
-  const homeML = odds?.home_moneyline_game != null ? Math.round(odds.home_moneyline_game) : mock.moneyline.home;
+  const awayML = odds?.away_moneyline_game != null ? Math.round(odds.away_moneyline_game) : null;
+  const homeML = odds?.home_moneyline_game != null ? Math.round(odds.home_moneyline_game) : null;
 
   const totalLine  = odds?.over_under_line_game ?? pred?.predicted_total ?? mock.totalLine;
   const overOdds   = odds?.over_price  != null ? Math.round(odds.over_price)  : -110;
@@ -209,17 +249,7 @@ function buildPick(row) {
   if (bookmakers.length > 0) {
     books = bookmakers.map(mapEntry);
   } else {
-    const pickML    = pick === 'away' ? awayML : homeML;
-    const oppML     = pick === 'away' ? homeML : awayML;
-    const rlBase    = pick === 'home'
-      ? (odds?.home_run_line_price != null ? Math.round(odds.home_run_line_price) : mock.books[0].rlPick)
-      : (odds?.away_run_line_price != null ? Math.round(odds.away_run_line_price) : mock.books[0].rlPick);
-    const totalBase = totalSide === 'Over' ? overOdds : underOdds;
-    const OFF = [-3, 0, 4, -2];
-    books = ['DraftKings', 'FanDuel', 'BetMGM', 'Caesars'].map((name, i) => ({
-      name, mlPick: pickML + OFF[i], mlOpp: oppML - OFF[i],
-      rlPick: rlBase + OFF[i], total: totalBase + OFF[i], f5Pick: null, nrfi: null,
-    }));
+    books = [];
   }
 
   // Prediction markets and DFS — real data only, empty array = hide tab
@@ -310,11 +340,13 @@ function getBestEdgePick(games) {
     const pickedTeam = pick.pick === 'away' ? awayName : homeName;
     const pickedId   = pick.pick === 'away' ? game.away_team_id : game.home_team_id;
 
+    if (!pick.books.length) continue;
+
     for (const marketKey of Object.keys(MARKET_LABELS)) {
       // Best available odds for this market across all books
       const bestOdds = pick.books.reduce((max, b) =>
-        b[marketKey] > max ? b[marketKey] : max
-      , pick.books[0][marketKey]);
+        (b[marketKey] ?? -Infinity) > max ? b[marketKey] : max
+      , pick.books[0][marketKey] ?? -Infinity);
 
       const modelProb = pick.modelProbs[marketKey];
       const ev = parseFloat(calcEV(modelProb, bestOdds));
@@ -341,9 +373,11 @@ function getBestEdgePick(games) {
 }
 
 function TopPick({ games }) {
-  if (!games.length) return null;
+  const gamesWithOdds = games.filter(g => !hasNoPredictions(g));
+  if (!gamesWithOdds.length) return null;
 
-  const top      = getBestEdgePick(games);
+  const top      = getBestEdgePick(gamesWithOdds);
+  if (!top) return null;
   const mlbId    = top.displayId ? getTeamMlbId(top.displayId) : null;
   const evPos = top.ev > 0;
 
@@ -818,7 +852,17 @@ function OddsDrawer({ game, onClose }) {
 
         {/* Matrix body */}
         <div className="gp-drawer-body">
-          {view === 'books'    && <OddsMatrix    pick={pick} pickName={pickAbbr} oppName={oppAbbr} />}
+          {view === 'books' && (
+            pick.books.length > 0
+              ? <OddsMatrix pick={pick} pickName={pickAbbr} oppName={oppAbbr} />
+              : (
+                <div className="gp-odds-unavailable">
+                  <span className="gp-odds-unavailable-icon">⏳</span>
+                  <p>Odds not yet available</p>
+                  <p className="gp-odds-unavailable-sub">Check back closer to game time ({statusLabel(game)})</p>
+                </div>
+              )
+          )}
           {view === 'exchange' && <ExchangeMatrix pick={pick} pickName={pickAbbr} />}
           {view === 'dfs'      && <DFSMatrix      pick={pick} />}
         </div>
@@ -842,7 +886,7 @@ function GamePickCard({ game, isSelected, onSelect }) {
 
   return (
     <button
-      className={`gp-card ${isSelected ? 'selected' : ''}`}
+      className={`gp-card ${isSelected ? 'selected' : ''} ${hasNoPredictions(game) ? 'gp-card--muted' : ''}`}
       data-pick={pick.pick}
       onClick={onSelect}
       aria-pressed={isSelected}
@@ -858,9 +902,11 @@ function GamePickCard({ game, isSelected, onSelect }) {
         <div className={`gp-card-side ${awayIsPick ? 'is-pick' : ''}`}>
           {awayMlbId && <img src={logoUrl(awayMlbId)} alt={game.away_team_name} className="gp-card-logo" />}
           <span className="gp-card-abbr">{awayAbbr}</span>
-          <span className={`gp-card-odds ${pick.moneyline.away > 0 ? 'pos' : 'neg'}`}>
-            {fmtOdds(pick.moneyline.away)}
-          </span>
+          {pick.moneyline.away != null && (
+            <span className={`gp-card-odds ${pick.moneyline.away > 0 ? 'pos' : 'neg'}`}>
+              {fmtOdds(pick.moneyline.away)}
+            </span>
+          )}
           {awayIsPick && <span className="gp-pick-badge">PICK</span>}
         </div>
 
@@ -871,17 +917,23 @@ function GamePickCard({ game, isSelected, onSelect }) {
 
         <div className={`gp-card-side right ${homeIsPick ? 'is-pick' : ''}`}>
           {homeIsPick && <span className="gp-pick-badge">PICK</span>}
-          <span className={`gp-card-odds ${pick.moneyline.home > 0 ? 'pos' : 'neg'}`}>
-            {fmtOdds(pick.moneyline.home)}
-          </span>
+          {pick.moneyline.home != null && (
+            <span className={`gp-card-odds ${pick.moneyline.home > 0 ? 'pos' : 'neg'}`}>
+              {fmtOdds(pick.moneyline.home)}
+            </span>
+          )}
           <span className="gp-card-abbr">{homeAbbr}</span>
           {homeMlbId && <img src={logoUrl(homeMlbId)} alt={game.home_team_name} className="gp-card-logo" />}
         </div>
       </div>
 
-      {/* Confidence bar */}
+      {/* Confidence bar or "predictions loading" */}
       <div className="gp-card-footer">
-        <ConfidenceBar pct={pick.confidence} />
+        {hasNoPredictions(game) ? (
+          <span className="gp-card-pred-loading">⏳ Predictions loading {predReadyTime(game)}</span>
+        ) : (
+          <ConfidenceBar pct={pick.confidence} />
+        )}
       </div>
     </button>
   );
@@ -929,7 +981,7 @@ export default function GameProps() {
           ? rows.filter(r => r.season_type !== 'spring' && r.season_type !== 'S')
           : [];
         if (today.length > 0) {
-          setGames(today);
+          setGames([...today].sort((a, b) => parseGameTimeMinutes(a) - parseGameTimeMinutes(b)));
         } else {
           setGames(MOCK_GAMES);
           setUsingMock(true);
@@ -974,8 +1026,22 @@ export default function GameProps() {
           </div>
         )}
 
+        {/* "No predictions yet" banner — shown when every game is missing odds + predictions */}
+        {!loading && games.length > 0 && games.every(g => hasNoPredictions(g)) && (() => {
+          const firstGame = [...games].sort((a, b) => parseGameTimeMinutes(a) - parseGameTimeMinutes(b))[0];
+          return (
+            <div className="gp-no-preds-banner">
+              <span className="gp-no-preds-icon">⏳</span>
+              <div className="gp-no-preds-text">
+                <span className="gp-no-preds-title">Predictions not yet available</span>
+                <span className="gp-no-preds-sub">Check back closer to game time · Ready around {predReadyTime(firstGame)}</span>
+              </div>
+            </div>
+          );
+        })()}
+
         {/* Top Pick */}
-        {!loading && games.length > 0 && <TopPick games={games} />}
+        {!loading && games.length > 0 && !games.every(g => hasNoPredictions(g)) && <TopPick games={games} />}
 
         {/* Card grid */}
         {loading ? (
