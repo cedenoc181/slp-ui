@@ -40,17 +40,12 @@
   margin-bottom: 1.25rem;
 }
 
-/* ── Top Pick ────────────────────────────────────────────── */
-.gp-top-pick {
+/* ── Top Picks ───────────────────────────────────────────── */
+.gp-top-picks-section {
   margin-bottom: 2rem;
-  border: 1px solid rgba(74, 222, 128, 0.2);
-  border-left: 3px solid #4ade80;
-  border-radius: 12px;
-  background: rgba(74, 222, 128, 0.04);
-  padding: 1rem 1.25rem;
 }
 
-.gp-top-pick-label {
+.gp-top-picks-header {
   display: flex;
   align-items: center;
   gap: 0.45rem;
@@ -59,7 +54,7 @@
   letter-spacing: 0.14em;
   text-transform: uppercase;
   color: #4ade80;
-  margin-bottom: 0.9rem;
+  margin-bottom: 0.75rem;
 }
 
 .gp-top-pick-dot {
@@ -71,33 +66,42 @@
   flex-shrink: 0;
 }
 
-.gp-top-pick-body {
+.gp-top-picks-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.75rem;
+}
+
+.gp-top-pick-card {
+  border: 1px solid rgba(74, 222, 128, 0.2);
+  border-top: 3px solid #4ade80;
+  border-radius: 12px;
+  background: rgba(74, 222, 128, 0.04);
+  padding: 1rem 1.1rem;
   display: flex;
-  align-items: center;
-  gap: 1.25rem;
-  flex-wrap: wrap;
+  flex-direction: column;
+  gap: 0.75rem;
 }
 
 .gp-top-pick-identity {
   display: flex;
   align-items: center;
   gap: 0.6rem;
-  flex: 1;
-  min-width: 160px;
+  min-width: 0;
 }
 
 .gp-top-pick-logo {
-  width: 32px;
-  height: 32px;
+  width: 28px;
+  height: 28px;
   object-fit: contain;
   background: rgba(255, 255, 255, 0.9);
-  border-radius: 7px;
-  padding: 3px;
+  border-radius: 6px;
+  padding: 2px;
   flex-shrink: 0;
 }
 
 .gp-top-pick-name {
-  font-size: 0.95rem;
+  font-size: 0.88rem;
   font-weight: 700;
   color: #fff;
   white-space: nowrap;
@@ -105,18 +109,29 @@
   text-overflow: ellipsis;
 }
 
-.gp-top-pick-divider {
-  width: 1px;
-  height: 32px;
-  background: rgba(255, 255, 255, 0.08);
+.gp-top-pick-vs {
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.35);
   flex-shrink: 0;
+}
+
+.gp-top-pick-divider {
+  width: 100%;
+  height: 1px;
+  background: rgba(255, 255, 255, 0.07);
+}
+
+.gp-top-pick-stats {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.55rem 0.5rem;
 }
 
 .gp-top-pick-stat {
   display: flex;
   flex-direction: column;
-  gap: 0.15rem;
-  min-width: 56px;
+  gap: 0.1rem;
 }
 
 .gp-top-pick-stat-label {
@@ -128,7 +143,7 @@
 }
 
 .gp-top-pick-stat-value {
-  font-size: 0.9rem;
+  font-size: 0.88rem;
   font-weight: 700;
   color: rgba(255, 255, 255, 0.85);
 }
@@ -136,6 +151,12 @@
 .gp-top-pick-stat-value.odds { color: #fff; }
 .gp-top-pick-stat-value.edge.pos { color: #4ade80; }
 .gp-top-pick-stat-value.edge.neg { color: #f87171; }
+
+@media (max-width: 640px) {
+  .gp-top-picks-grid {
+    grid-template-columns: 1fr;
+  }
+}
 
 /* ── Section divider ─────────────────────────────────────── */
 .pp-divider {

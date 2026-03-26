@@ -330,96 +330,157 @@ const MARKET_LABELS = {
   nrfi:   'NRFI',
 };
 
-function getBestEdgePick(games) {
-  let best = null;
+// Returns the top N picks across all games sorted by model probability (highest first).
+// Probabilities are derived directly from the prediction object, not mock fallbacks.
+// Markets are skipped when no book has real (non-null) odds for that column.
+function getTopPicks(games, n = 3) {
+  const candidates = [];
 
   for (const game of games) {
     const pick = buildPick(game);
+    const pred = game.prediction;
+
+    // Need real books and a prediction to evaluate
+    if (!pick.books.length || !pred) continue;
+
     const awayName   = getTeamById(game.away_team_id)?.name || game.away_team_name;
     const homeName   = getTeamById(game.home_team_id)?.name || game.home_team_name;
     const pickedTeam = pick.pick === 'away' ? awayName : homeName;
     const pickedId   = pick.pick === 'away' ? game.away_team_id : game.home_team_id;
 
-    if (!pick.books.length) continue;
+    // Best real odds for a column across all books — returns null if every book is null
+    const bestReal = (key) => {
+      const valid = pick.books.map(b => b[key]).filter(v => v != null);
+      return valid.length ? Math.max(...valid) : null;
+    };
 
-    for (const marketKey of Object.keys(MARKET_LABELS)) {
-      // Best available odds for this market across all books
-      const bestOdds = pick.books.reduce((max, b) =>
-        (b[marketKey] ?? -Infinity) > max ? b[marketKey] : max
-      , pick.books[0][marketKey] ?? -Infinity);
-
-      const modelProb = pick.modelProbs[marketKey];
-      const ev = parseFloat(calcEV(modelProb, bestOdds));
-
-      if (!best || ev > best.ev) {
-        const label = marketKey === 'total'
-          ? `${pick.totalSide} ${pick.totalLine}`
-          : MARKET_LABELS[marketKey];
-
-        // For non-directional markets show the game context, not just picked team
-        const displayName = ['nrfi', 'total'].includes(marketKey)
-          ? `${awayName} @ ${homeName}`
-          : pickedTeam;
-        const displayId = ['nrfi', 'total'].includes(marketKey)
-          ? null
-          : pickedId;
-
-        best = { game, pick, marketKey, label, bestOdds, modelProb, ev, displayName, displayId };
-      }
+    // 1. Moneyline — probability from p_home_win
+    const pHome  = pred.p_home_win ?? 0.5;
+    const mlProb = Math.round(Math.max(pHome, 1 - pHome) * 100);
+    const mlOdds = bestReal('mlPick');
+    if (mlOdds != null) {
+      candidates.push({
+        game, pick, marketKey: 'mlPick', label: 'ML',
+        bestOdds: mlOdds, modelProb: mlProb,
+        ev: parseFloat(calcEV(mlProb, mlOdds)),
+        displayName: pickedTeam, displayId: pickedId,
+      });
     }
+
+    // 2. Run Line — confidence from |predicted_margin| / margin_std_dev
+    const margin    = Math.abs(pred.predicted_margin ?? 0);
+    const marginStd = pred.margin_std_dev ?? 4;
+    const rlProb    = Math.min(80, Math.round(50 + (margin / marginStd) * 15));
+    const rlOdds    = bestReal('rlPick');
+    if (rlOdds != null) {
+      candidates.push({
+        game, pick, marketKey: 'rlPick', label: 'Run Line',
+        bestOdds: rlOdds, modelProb: rlProb,
+        ev: parseFloat(calcEV(rlProb, rlOdds)),
+        displayName: pickedTeam, displayId: pickedId,
+      });
+    }
+
+    // 3. Total — confidence from |predicted_total - line| / total_std_dev
+    const ouLine    = game.odds?.over_under_line_game ?? pred.predicted_total;
+    const predTotal = pred.predicted_total ?? ouLine;
+    const totalStd  = pred.total_std_dev ?? 4;
+    const totalProb = Math.min(70, Math.round(50 + (Math.abs(predTotal - ouLine) / totalStd) * 15));
+    const totalOdds = bestReal('total');
+    if (totalOdds != null) {
+      candidates.push({
+        game, pick, marketKey: 'total', label: `${pick.totalSide} ${pick.totalLine}`,
+        bestOdds: totalOdds, modelProb: totalProb,
+        ev: parseFloat(calcEV(totalProb, totalOdds)),
+        displayName: `${awayName} @ ${homeName}`, displayId: null,
+      });
+    }
+
+    // 4. F5 ML — only when real odds exist across books
+    const f5Odds = bestReal('f5Pick');
+    if (f5Odds != null) {
+      const f5Prob = Math.min(80, Math.round(50 + (margin / marginStd) * 12));
+      candidates.push({
+        game, pick, marketKey: 'f5Pick', label: 'F5 ML',
+        bestOdds: f5Odds, modelProb: f5Prob,
+        ev: parseFloat(calcEV(f5Prob, f5Odds)),
+        displayName: pickedTeam, displayId: pickedId,
+      });
+    }
+
+    // NRFI — not yet wired; skip until prediction model supports it
   }
 
-  return best;
+  return candidates
+    .sort((a, b) => b.modelProb - a.modelProb)
+    .slice(0, n);
 }
 
 function TopPick({ games }) {
   const gamesWithOdds = games.filter(g => !hasNoPredictions(g));
   if (!gamesWithOdds.length) return null;
 
-  const top      = getBestEdgePick(gamesWithOdds);
-  if (!top) return null;
-  const mlbId    = top.displayId ? getTeamMlbId(top.displayId) : null;
-  const evPos = top.ev > 0;
+  const tops = getTopPicks(gamesWithOdds, 3);
+  if (!tops.length) return null;
 
   return (
-    <div className="gp-top-pick">
-      <div className="gp-top-pick-label">
+    <div className="gp-top-picks-section">
+      <div className="gp-top-picks-header">
         <span className="gp-top-pick-dot" />
-        Top Pick
+        Top Picks
       </div>
 
-      <div className="gp-top-pick-body">
-        {/* Team / context identity */}
-        <div className="gp-top-pick-identity">
-          {mlbId && <img src={logoUrl(mlbId)} alt={top.displayName} className="gp-top-pick-logo" />}
-          <span className="gp-top-pick-name">{top.displayName}</span>
-        </div>
+      <div className="gp-top-picks-grid">
+        {tops.map((top, i) => {
+          const isTotal  = top.marketKey === 'total';
+          const mlbId    = top.displayId ? getTeamMlbId(top.displayId) : null;
+          const awayMlbId = isTotal ? getTeamMlbId(top.game.away_team_id) : null;
+          const homeMlbId = isTotal ? getTeamMlbId(top.game.home_team_id) : null;
+          const evPos = top.ev > 0;
+          return (
+            <div key={i} className="gp-top-pick-card">
+              {/* Identity */}
+              <div className="gp-top-pick-identity">
+                {isTotal ? (
+                  <>
+                    {awayMlbId && <img src={logoUrl(awayMlbId)} alt={top.game.away_team_name} className="gp-top-pick-logo" />}
+                    <span className="gp-top-pick-vs">@</span>
+                    {homeMlbId && <img src={logoUrl(homeMlbId)} alt={top.game.home_team_name} className="gp-top-pick-logo" />}
+                  </>
+                ) : (
+                  <>
+                    {mlbId && <img src={logoUrl(mlbId)} alt={top.displayName} className="gp-top-pick-logo" />}
+                    <span className="gp-top-pick-name">{top.displayName}</span>
+                  </>
+                )}
+              </div>
 
-        {/* Divider */}
-        <div className="gp-top-pick-divider" />
+              <div className="gp-top-pick-divider" />
 
-        {/* Market + odds */}
-        <div className="gp-top-pick-stat">
-          <span className="gp-top-pick-stat-label">Market</span>
-          <span className="gp-top-pick-stat-value">{top.label}</span>
-        </div>
-
-        <div className="gp-top-pick-stat">
-          <span className="gp-top-pick-stat-label">Odds</span>
-          <span className="gp-top-pick-stat-value odds">{fmtOdds(top.bestOdds)}</span>
-        </div>
-
-        <div className="gp-top-pick-stat">
-          <span className="gp-top-pick-stat-label">Probability</span>
-          <span className="gp-top-pick-stat-value">{top.modelProb}%</span>
-        </div>
-
-        <div className="gp-top-pick-stat">
-          <span className="gp-top-pick-stat-label">EV</span>
-          <span className={`gp-top-pick-stat-value edge ${evPos ? 'pos' : 'neg'}`}>
-            {evPos ? '+' : ''}{top.ev}%
-          </span>
-        </div>
+              {/* Stats */}
+              <div className="gp-top-pick-stats">
+                <div className="gp-top-pick-stat">
+                  <span className="gp-top-pick-stat-label">Market</span>
+                  <span className="gp-top-pick-stat-value">{top.label}</span>
+                </div>
+                <div className="gp-top-pick-stat">
+                  <span className="gp-top-pick-stat-label">Odds</span>
+                  <span className="gp-top-pick-stat-value odds">{fmtOdds(top.bestOdds)}</span>
+                </div>
+                <div className="gp-top-pick-stat">
+                  <span className="gp-top-pick-stat-label">Probability</span>
+                  <span className="gp-top-pick-stat-value">{top.modelProb}%</span>
+                </div>
+                <div className="gp-top-pick-stat">
+                  <span className="gp-top-pick-stat-label">EV</span>
+                  <span className={`gp-top-pick-stat-value edge ${evPos ? 'pos' : 'neg'}`}>
+                    {evPos ? '+' : ''}{top.ev}%
+                  </span>
+                </div>
+              </div>
+            </div>
+          );
+        })}
       </div>
     </div>
   );
