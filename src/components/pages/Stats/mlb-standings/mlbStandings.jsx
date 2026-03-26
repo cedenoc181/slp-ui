@@ -7,12 +7,12 @@ import MLBStandingsPostseason from './mlbStandingsPostseason';
 import MLBStandingsSpringTraining from './mlbStandingsSpringTraning';
 
 // Derive the correct initial season type + league from the calendar date.
-// Spring Training runs Feb 15 – Mar 31; everything else defaults to regular season.
+// Spring Training runs Feb 15 – Feb 28; regular season starts March onwards.
 function getInitialStandingsState() {
   const now = new Date();
   const month = now.getMonth() + 1; // 1-based
   const day = now.getDate();
-  if ((month === 2 && day >= 15) || month === 3) {
+  if (month === 2 && day >= 15) {
     return { seasonType: 'spring', league: 'Cactus' };
   }
   return { seasonType: 'regular', league: 'AL' };

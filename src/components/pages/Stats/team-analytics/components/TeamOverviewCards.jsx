@@ -5,7 +5,7 @@ function isSpringTrainingView(selectedSeason) {
   const currentYear = new Date().getFullYear().toString();
   if (selectedSeason !== currentYear) return false;
   const month = new Date().getMonth() + 1;
-  return month <= 3;
+  return month <= 2;
 }
 
 /**

@@ -1080,12 +1080,6 @@ export default function GameProps() {
       <div className="predictions-content">
         <div className="gp-date-label">{todayLabel}</div>
 
-        {!loading && usingMock && (
-          <div className="gp-mock-banner">
-            <span>🔬</span>
-            <span>Preview mode — showing a sample slate. Live picks will appear here once the season is active.</span>
-          </div>
-        )}
 
         {/* "No predictions yet" banner — shown when every game is missing odds + predictions */}
         {!loading && games.length > 0 && games.every(g => hasNoPredictions(g)) && (() => {

@@ -33,9 +33,8 @@ export const SEASON_RANGE = {
   END: 2026,
 };
 
-// Last completed regular season — used as the default for analytics pages until
-// the current season begins. Update to '2026' once the 2026 season starts.
-export const ACTIVE_SEASON = '2025';
+// Last completed regular season — updated to current season on Opening Day.
+export const ACTIVE_SEASON = '2026';
 
 // Generate seasons array: ['2026', '2025', ... '2010']
 export const SEASONS = Array.from(

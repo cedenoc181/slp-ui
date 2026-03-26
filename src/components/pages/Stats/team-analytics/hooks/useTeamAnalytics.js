@@ -28,10 +28,10 @@ import {
   getTeamIdFromAbbr,
 } from '../../../../../data/constants/apiConstants';
 
-// Returns 'S' (spring, Jan–Mar), 'R' (regular, Apr–Sep), or 'P' (postseason, Oct+)
+// Returns 'S' (spring, Jan–Feb), 'R' (regular, Mar–Sep), or 'P' (postseason, Oct+)
 function getCurrentSeasonType() {
   const month = new Date().getMonth() + 1;
-  if (month <= 3) return SEASON_TYPES.SPRING_TRAINING;
+  if (month <= 2) return SEASON_TYPES.SPRING_TRAINING;
   if (month <= 9) return SEASON_TYPES.REGULAR;
   return SEASON_TYPES.POSTSEASON;
 }

@@ -7,14 +7,14 @@ function getSeasonTypeLabel(selectedSeason) {
   const currentYear = new Date().getFullYear().toString();
   if (selectedSeason !== currentYear) return 'Regular Season';
   const month = new Date().getMonth() + 1;
-  const key = month <= 3 ? 'S' : month <= 9 ? 'R' : 'P';
+  const key = month <= 2 ? 'S' : month <= 9 ? 'R' : 'P';
   return SEASON_TYPE_LABELS[key];
 }
 
 function isSpringTrainingView(selectedSeason) {
   const currentYear = new Date().getFullYear().toString();
   if (selectedSeason !== currentYear) return false;
-  return new Date().getMonth() + 1 <= 3;
+  return new Date().getMonth() + 1 <= 2;
 }
 
 /**
