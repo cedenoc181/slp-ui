@@ -1,4 +1,5 @@
-export default function ScoutAiButton({ hasAnalysis, loading, onClick }) {
+export default function ScoutAiButton({ hasAnalysis, loading, onClick, isToday = false }) {
+  if (!isToday) return null;
   return (
     <button
       className={`scout-ai-btn${loading ? ' scout-ai-btn--loading' : ''}${hasAnalysis ? ' scout-ai-btn--ready' : ''}`}

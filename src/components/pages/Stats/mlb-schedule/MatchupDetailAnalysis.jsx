@@ -362,6 +362,7 @@ export default function MatchupDetailComp() {
             hasAnalysis={!!scoutAnalysis}
             loading={scoutLoading}
             onClick={handleScoutClick}
+            isToday={game?.date === new Intl.DateTimeFormat('en-CA', { timeZone: 'America/New_York' }).format(new Date())}
           />
           <div className="matchup-detail-top-nav__right" />
         </div>
