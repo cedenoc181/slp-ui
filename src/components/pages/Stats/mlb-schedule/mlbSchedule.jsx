@@ -472,6 +472,25 @@ const TABS = [
   { key: 'prior',    label: 'Final' },
 ];
 
+// Parse a game_time string to minutes from midnight for numeric sorting.
+// Handles 24h "10:10" / "4:10" and 12h "10:10 PM ET" / "4:10 PM" formats.
+function parseTimeToMinutes(timeStr) {
+  if (!timeStr) return 9999;
+  const str = String(timeStr).trim();
+  const ampm = str.match(/(\d+):(\d+)\s*(AM|PM)/i);
+  if (ampm) {
+    let h = parseInt(ampm[1], 10);
+    const m = parseInt(ampm[2], 10);
+    const mer = ampm[3].toUpperCase();
+    if (mer === 'PM' && h !== 12) h += 12;
+    if (mer === 'AM' && h === 12) h = 0;
+    return h * 60 + m;
+  }
+  const parts = str.split(':');
+  if (parts.length >= 2) return parseInt(parts[0], 10) * 60 + parseInt(parts[1], 10);
+  return 9999;
+}
+
 // Sort today's games: live first, then scheduled (by game time), then final
 function sortTodayGames(games) {
   const priority = (g) => {
@@ -483,8 +502,7 @@ function sortTodayGames(games) {
   return [...games].sort((a, b) => {
     const pd = priority(a) - priority(b);
     if (pd !== 0) return pd;
-    // Within same priority, sort scheduled games by game_time ascending
-    return (a.game_time || '').localeCompare(b.game_time || '');
+    return parseTimeToMinutes(a.game_time) - parseTimeToMinutes(b.game_time);
   });
 }
 
@@ -509,8 +527,8 @@ function MLBSchedule() {
   const [liveBoxscores, setLiveBoxscores] = useState({});
   const [predictions, setPredictions] = useState({});
 
-  const fetchGames = useCallback(async (tab) => {
-    setLoading(true);
+  const fetchGames = useCallback(async (tab, { silent = false } = {}) => {
+    if (!silent) setLoading(true);
     setError(null);
     try {
       let data;
@@ -554,7 +572,7 @@ function MLBSchedule() {
       setError(err?.message || 'Failed to load schedule.');
       setGames([]);
     } finally {
-      setLoading(false);
+      if (!silent) setLoading(false);
     }
   }, []);
 
@@ -569,7 +587,7 @@ function MLBSchedule() {
   // Poll today's games every 60 s so in-progress statuses stay current
   useEffect(() => {
     if (activeTab !== 'today') return;
-    const id = setInterval(() => fetchGames('today'), 60_000);
+    const id = setInterval(() => fetchGames('today', { silent: true }), 60_000);
     return () => clearInterval(id);
   }, [activeTab, fetchGames]);
 
