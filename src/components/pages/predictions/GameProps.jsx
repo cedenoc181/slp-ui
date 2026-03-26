@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 import predictionsService from '../../../data/services/predictionsService';
 import { getTeamById } from '../../../data/constants/apiConstants';
+import PredictionsNav from './PredictionsNav';
 import '../../../styles/predictions-page-styling/predictions.css';
 import '../../../styles/predictions-page-styling/game-props.css';
 
@@ -1073,6 +1074,7 @@ export default function GameProps() {
       <div className="predictions-header">
         <div className="predictions-header-inner">
           <h1>Game Predictions</h1>
+          <PredictionsNav />
         </div>
       </div>
 

@@ -3,6 +3,7 @@ import { createPortal } from 'react-dom';
 import { useNavigate } from 'react-router-dom';
 import { TEAM_METADATA, getTeamById } from '../../../data/constants/apiConstants';
 import predictionsService from '../../../data/services/predictionsService';
+import PredictionsNav from './PredictionsNav';
 import '../../../styles/predictions-page-styling/predictions.css';
 import '../../../styles/predictions-page-styling/batter-props.css';
 
@@ -594,6 +595,7 @@ export default function BatterProps() {
       <div className="predictions-header">
         <div className="predictions-header-inner">
           <h1>Batter Props</h1>
+          <PredictionsNav />
         </div>
       </div>
 

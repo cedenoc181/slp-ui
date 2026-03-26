@@ -20,8 +20,36 @@
   margin: 0 auto;
   padding: 0 1.5rem;
   display: flex;
-  align-items: baseline;
-  gap: 0.75rem;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+/* ── Props nav tabs ───────────────────────────────────────── */
+.predictions-nav {
+  display: flex;
+  gap: 0.25rem;
+}
+
+.predictions-nav-link {
+  padding: 0.45rem 1rem;
+  border-radius: 8px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.45);
+  text-decoration: none;
+  transition: color 0.15s ease, background 0.15s ease;
+  white-space: nowrap;
+}
+
+.predictions-nav-link:hover {
+  color: rgba(255, 255, 255, 0.8);
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.predictions-nav-link.active {
+  color: #fff;
+  background: rgba(99, 102, 241, 0.18);
+  border: 1px solid rgba(99, 102, 241, 0.3);
 }
 
 .predictions-header-tag {

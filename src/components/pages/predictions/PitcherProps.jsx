@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { TEAM_METADATA, getTeamById } from '../../../data/constants/apiConstants';
 import predictionsService from '../../../data/services/predictionsService';
 import playerStatsService from '../../../data/services/playerStatsServices';
+import PredictionsNav from './PredictionsNav';
 import '../../../styles/predictions-page-styling/predictions.css';
 import '../../../styles/predictions-page-styling/pitcher-props.css';
 
@@ -575,28 +576,114 @@ function PitcherModal({ pitcher, onClose }) {
   );
 }
 
-// ─── Main Component ───────────────────────────────────────────────────────────
-
 // Stable key for a pitcher (real pitchers from the API may not have an MLB ID yet)
 function pitcherKey(p) {
   return p.id != null ? p.id : `${p.gamePk}-${p.name}`;
 }
 
+// ─── Skeleton & comeback banner ───────────────────────────────────────────────
+
+function parseTimeStrToMinutes(timeStr) {
+  if (!timeStr) return Infinity;
+  const ampm = timeStr.match(/(\d+):(\d+)\s*(AM|PM)/i);
+  if (ampm) {
+    let h = parseInt(ampm[1]);
+    const m = parseInt(ampm[2]);
+    const p = ampm[3].toUpperCase();
+    if (p === 'PM' && h !== 12) h += 12;
+    if (p === 'AM' && h === 12) h = 0;
+    return h * 60 + m;
+  }
+  const h24 = timeStr.match(/^(\d+):(\d+)/);
+  if (h24) return parseInt(h24[1]) * 60 + parseInt(h24[2]);
+  return Infinity;
+}
+
+function minutesToDisplay(totalMins) {
+  if (!isFinite(totalMins)) return null;
+  totalMins = ((totalMins % 1440) + 1440) % 1440;
+  const h = Math.floor(totalMins / 60);
+  const m = totalMins % 60;
+  const period = h >= 12 ? 'PM' : 'AM';
+  const displayH = h > 12 ? h - 12 : h === 0 ? 12 : h;
+  return `${displayH}:${String(m).padStart(2, '0')} ${period} ET`;
+}
+
+function PitcherSkeletonCard() {
+  return (
+    <div className="pp-top-card pp-skeleton-card" aria-hidden="true">
+      <div className="pp-top-card-header">
+        <div className="pp-skeleton pp-skeleton-headshot" />
+        <div className="pp-skeleton pp-skeleton-logo" />
+      </div>
+      <div className="pp-top-card-info">
+        <div className="pp-skeleton pp-skeleton-name" />
+        <div className="pp-skeleton pp-skeleton-meta" />
+        <div className="pp-skeleton pp-skeleton-prop" />
+        <div className="pp-skeleton pp-skeleton-badge" />
+      </div>
+    </div>
+  );
+}
+
+function LoadingBanner() {
+  return (
+    <div className="pp-loading-banner">
+      <div className="pp-loading-spinner" />
+      <div className="pp-loading-text">Loading pitcher props predictions</div>
+    </div>
+  );
+}
+
+function ComebackBanner({ gameSlate }) {
+  const earliest = [...(gameSlate || [])]
+    .map(g => g.game_time)
+    .filter(Boolean)
+    .sort((a, b) => parseTimeStrToMinutes(a) - parseTimeStrToMinutes(b))[0];
+
+  const checkBackTime = earliest
+    ? minutesToDisplay(parseTimeStrToMinutes(earliest) - 60)
+    : null;
+
+  return (
+    <div className="pp-comeback-banner">
+      <div className="pp-comeback-icon">⏰</div>
+      <div className="pp-comeback-text">
+        <div className="pp-comeback-title">Pitcher props are on their way</div>
+        <div className="pp-comeback-sub">
+          {checkBackTime
+            ? <>Props are typically available 1 hour before first pitch. Check back around <strong>{checkBackTime}</strong>.</>
+            : <>Props are typically available 1 hour before first pitch. Check back closer to game time.</>}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── Main Component ───────────────────────────────────────────────────────────
+
 export default function PitcherProps() {
   const [pitchers,    setPitchers]    = useState([]);
   const [loading,     setLoading]     = useState(true);
+  const [gameSlate,   setGameSlate]   = useState([]);
   const [selectedKey, setSelectedKey] = useState(null);
 
   useEffect(() => {
     window.scrollTo(0, 0);
-    predictionsService.getToday()
-      .then(async rows => {
+
+    // Fire both requests immediately in parallel — neither depends on the other
+    const todayPromise        = predictionsService.getToday();
+    const pitcherPredsPromise = predictionsService.getPitchersToday().catch(() => []);
+
+    Promise.all([todayPromise, pitcherPredsPromise])
+      .then(([rows, pitcherPreds]) => {
         const today = Array.isArray(rows)
           ? rows.filter(r => r.season_type !== 'spring' && r.season_type !== 'S')
           : [];
         if (today.length === 0) return;
+        setGameSlate(today);
 
-        // Build a pitcher entry for each SP in today's slate
+        // Build pitcher entries
         const realPitchers = [];
         for (const r of today) {
           const awayAbbr  = getTeamById(r.away_team_id)?.id  || r.away_team_name;
@@ -606,7 +693,7 @@ export default function PitcherProps() {
           if (r.away_sp_name) {
             realPitchers.push({
               id:        r.away_sp_id ?? null,
-              mlbId:     null, // resolved below
+              mlbId:     null,
               name:      r.away_sp_name,
               teamAbbr:  awayAbbr,
               teamMlbId: awayMlbId,
@@ -618,7 +705,7 @@ export default function PitcherProps() {
           if (r.home_sp_name) {
             realPitchers.push({
               id:        r.home_sp_id ?? null,
-              mlbId:     null, // resolved below
+              mlbId:     null,
               name:      r.home_sp_name,
               teamAbbr:  homeAbbr,
               teamMlbId: homeMlbId,
@@ -630,36 +717,32 @@ export default function PitcherProps() {
         }
         if (realPitchers.length === 0) return;
 
-        // Fetch MLB IDs and pitcher predictions in parallel
-        const [lookups, pitcherPreds] = await Promise.all([
-          Promise.all(
-            realPitchers.map(p =>
-              p.id
-                ? playerStatsService.lookupPlayer({ playerId: p.id }).catch(() => null)
-                : Promise.resolve(null)
-            )
-          ),
-          predictionsService.getPitchersToday().catch(() => []),
-        ]);
-
-        // Apply MLB player IDs for headshots
-        lookups.forEach((result, i) => {
-          if (result?.mlb_id) realPitchers[i].mlbId = result.mlb_id;
-        });
-
-        // Build prediction map keyed by internal player_id
+        // Attach predictions
         const predMap = {};
         for (const game of (Array.isArray(pitcherPreds) ? pitcherPreds : [])) {
           if (game.home_pitcher?.player_id) predMap[game.home_pitcher.player_id] = game.home_pitcher;
           if (game.away_pitcher?.player_id) predMap[game.away_pitcher.player_id] = game.away_pitcher;
         }
-
-        // Attach prediction to each pitcher
         realPitchers.forEach(p => {
           if (p.id && predMap[p.id]) p.prediction = predMap[p.id];
         });
 
+        // Show pitchers immediately — don't wait for headshot lookups
         setPitchers(realPitchers);
+
+        // Background: resolve MLB IDs for headshots and update each card as they arrive
+        realPitchers.forEach((p, i) => {
+          if (!p.id) return;
+          playerStatsService.lookupPlayer({ playerId: p.id })
+            .then(result => {
+              if (result?.mlb_id) {
+                setPitchers(prev => prev.map((pp, j) =>
+                  j === i ? { ...pp, mlbId: result.mlb_id } : pp
+                ));
+              }
+            })
+            .catch(() => {});
+        });
       })
       .catch(() => {})
       .finally(() => setLoading(false));
@@ -682,21 +765,40 @@ export default function PitcherProps() {
       <div className="predictions-header">
         <div className="predictions-header-inner">
           <h1>Pitcher Props</h1>
+          <PredictionsNav />
         </div>
       </div>
 
       <div className="predictions-content">
 
         {loading ? (
-          <div className="pp-empty-state">
-            <div className="pp-empty-icon">⚾</div>
-            <p>Loading today's starters…</p>
-          </div>
+          <>
+            <LoadingBanner />
+            <div className="pp-divider">
+              <span className="pp-divider-line" />
+              <span className="pp-divider-label">Starting Pitchers Today</span>
+              <span className="pp-divider-line" />
+            </div>
+            <div className="pp-pitcher-grid">
+              {Array.from({ length: 10 }).map((_, i) => (
+                <PitcherSkeletonCard key={i} />
+              ))}
+            </div>
+          </>
         ) : pitchers.length === 0 ? (
-          <div className="pp-empty-state">
-            <div className="pp-empty-icon">⚾</div>
-            <p>No starting pitchers found for today.</p>
-          </div>
+          <>
+            <ComebackBanner gameSlate={gameSlate} />
+            <div className="pp-divider">
+              <span className="pp-divider-line" />
+              <span className="pp-divider-label">Starting Pitchers Today</span>
+              <span className="pp-divider-line" />
+            </div>
+            <div className="pp-pitcher-grid">
+              {Array.from({ length: 10 }).map((_, i) => (
+                <PitcherSkeletonCard key={i} />
+              ))}
+            </div>
+          </>
         ) : (
           <>
             {/* ── Top picks ───────────────────────────────────────── */}
