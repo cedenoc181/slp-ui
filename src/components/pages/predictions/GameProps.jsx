@@ -27,9 +27,14 @@ function fmtOdds(n) {
   return n > 0 ? `+${n}` : String(n);
 }
 
-function statusLabel(game) {
+function isFinal(game) {
   const s = (game.status || '').toLowerCase();
-  if (s === 'final' || s === 'game over' || s === 'completed') return 'Final';
+  return s === 'final' || s === 'game over' || s === 'completed';
+}
+
+function statusLabel(game) {
+  if (isFinal(game)) return 'Final';
+  const s = (game.status || '').toLowerCase();
   if (s.includes('progress') || s === 'live') return 'Live';
   return game.game_time_et || game.game_time || 'TBD';
 }
@@ -902,14 +907,6 @@ function OddsDrawer({ game, onClose }) {
               Pred. Exchange
             </button>
           )}
-          {pick.dfs.length > 0 && (
-            <button
-              className={`gp-view-toggle-btn ${view === 'dfs' ? 'active' : ''}`}
-              onClick={() => setView('dfs')}
-            >
-              DFS
-            </button>
-          )}
         </div>
 
         {/* Matrix body */}
@@ -926,7 +923,6 @@ function OddsDrawer({ game, onClose }) {
               )
           )}
           {view === 'exchange' && <ExchangeMatrix pick={pick} pickName={pickAbbr} />}
-          {view === 'dfs'      && <DFSMatrix      pick={pick} />}
         </div>
 
       </div>
@@ -1040,7 +1036,7 @@ export default function GameProps() {
     predictionsService.getToday()
       .then(rows => {
         const today = Array.isArray(rows)
-          ? rows.filter(r => r.season_type !== 'spring' && r.season_type !== 'S')
+          ? rows.filter(r => r.season_type !== 'spring' && r.season_type !== 'S' && !isFinal(r))
           : [];
         if (today.length > 0) {
           setGames([...today].sort((a, b) => parseGameTimeMinutes(a) - parseGameTimeMinutes(b)));

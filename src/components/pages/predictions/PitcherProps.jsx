@@ -677,8 +677,12 @@ export default function PitcherProps() {
 
     Promise.all([todayPromise, pitcherPredsPromise])
       .then(([rows, pitcherPreds]) => {
+        const isFinal = r => {
+          const s = (r.status || '').toLowerCase();
+          return s === 'final' || s === 'game over' || s === 'completed';
+        };
         const today = Array.isArray(rows)
-          ? rows.filter(r => r.season_type !== 'spring' && r.season_type !== 'S')
+          ? rows.filter(r => r.season_type !== 'spring' && r.season_type !== 'S' && !isFinal(r))
           : [];
         if (today.length === 0) return;
         setGameSlate(today);
