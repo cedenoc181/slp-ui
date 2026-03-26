@@ -1106,9 +1106,15 @@ export default function GameProps() {
 
         {/* Card grid */}
         {loading ? (
-          <div className="gp-grid">
-            {[...Array(8)].map((_, i) => <SkeletonCard key={i} />)}
-          </div>
+          <>
+            <div className="gp-loading-banner">
+              <span className="gp-loading-spinner" />
+              <span>Predictions loading</span>
+            </div>
+            <div className="gp-grid">
+              {[...Array(8)].map((_, i) => <SkeletonCard key={i} />)}
+            </div>
+          </>
         ) : games.length === 0 ? (
           <div className="gp-empty">
             <span className="gp-empty-icon">⚾</span>
