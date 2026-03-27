@@ -28,6 +28,7 @@ function TeamInfoGrid({
   teamSeasonData,
   battingLeaders,
   pitchingLeaders,
+  leadersSeason,
   currentBattingStats,
   currentPitchingStats,
   leadersToggle,
@@ -97,7 +98,9 @@ function TeamInfoGrid({
         <div className="card-header">
           <div>
             <h3>Team Leaders</h3>
-            <p className="card-subtitle">{seasonLabel} Top Performers</p>
+            <p className="card-subtitle">
+              {leadersSeason === 'S' ? 'Spring Training' : seasonLabel} Top Performers
+            </p>
           </div>
           <div className="toggle-buttons" onClick={(e) => e.stopPropagation()}>
             <button 

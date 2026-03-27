@@ -595,6 +595,12 @@
   color: #4ade80;
 }
 
+.gp-view-toggle-right {
+  margin-left: auto;
+  display: flex;
+  gap: 0.4rem;
+}
+
 /* ── Exchange note ───────────────────────────────────────── */
 .gp-exchange-note {
   font-size: 0.65rem;

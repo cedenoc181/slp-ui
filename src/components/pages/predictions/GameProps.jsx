@@ -1,10 +1,14 @@
 import { useState, useEffect, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 import predictionsService from '../../../data/services/predictionsService';
+import { getScoutAnalysis } from '../../../data/services/scoutAiService';
 import { getTeamById } from '../../../data/constants/apiConstants';
+import ScoutAiButton from '../Stats/mlb-schedule/components/ScoutAiButton';
+import ScoutAiModal  from '../Stats/mlb-schedule/components/ScoutAiModal';
 import PredictionsNav from './PredictionsNav';
 import '../../../styles/predictions-page-styling/predictions.css';
 import '../../../styles/predictions-page-styling/game-props.css';
+import '../../../styles/stats-page-styling/scout-ai.css';
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
@@ -856,6 +860,26 @@ function OddsDrawer({ game, onClose }) {
 
   const [view, setView] = useState('books'); // 'books' | 'exchange'
 
+  const [scoutAnalysis,   setScoutAnalysis]   = useState(null);
+  const [scoutLoading,    setScoutLoading]     = useState(false);
+  const [scoutError,      setScoutError]       = useState(null);
+  const [showScoutModal,  setShowScoutModal]   = useState(false);
+
+  const handleScoutClick = useCallback(async () => {
+    setShowScoutModal(true);
+    if (scoutAnalysis) return;
+    setScoutLoading(true);
+    setScoutError(null);
+    try {
+      const { analysis } = await getScoutAnalysis(game.game_pk);
+      setScoutAnalysis(analysis);
+    } catch (err) {
+      setScoutError(err.message || 'Scout AI unavailable');
+    } finally {
+      setScoutLoading(false);
+    }
+  }, [game.game_pk, scoutAnalysis]);
+
   useEffect(() => {
     const onKey = (e) => { if (e.key === 'Escape') onClose(); };
     document.addEventListener('keydown', onKey);
@@ -893,21 +917,39 @@ function OddsDrawer({ game, onClose }) {
 
         {/* View toggle */}
         <div className="gp-view-toggle">
-          <button
-            className={`gp-view-toggle-btn ${view === 'books' ? 'active' : ''}`}
-            onClick={() => setView('books')}
-          >
-            Sportsbooks
-          </button>
-          {pick.exchanges.length > 0 && (
+          <ScoutAiButton
+            isToday={true}
+            hasAnalysis={!!scoutAnalysis}
+            loading={scoutLoading}
+            onClick={handleScoutClick}
+          />
+          <div className="gp-view-toggle-right">
             <button
-              className={`gp-view-toggle-btn ${view === 'exchange' ? 'active' : ''}`}
-              onClick={() => setView('exchange')}
+              className={`gp-view-toggle-btn ${view === 'books' ? 'active' : ''}`}
+              onClick={() => setView('books')}
             >
-              Pred. Exchange
+              Sportsbooks
             </button>
-          )}
+            {pick.exchanges.length > 0 && (
+              <button
+                className={`gp-view-toggle-btn ${view === 'exchange' ? 'active' : ''}`}
+                onClick={() => setView('exchange')}
+              >
+                Pred. Exchange
+              </button>
+            )}
+          </div>
         </div>
+
+        {/* Scout AI Modal */}
+        <ScoutAiModal
+          isOpen={showScoutModal}
+          onClose={() => setShowScoutModal(false)}
+          analysis={scoutAnalysis}
+          error={scoutError}
+          loading={scoutLoading}
+          onRetry={handleScoutClick}
+        />
 
         {/* Matrix body */}
         <div className="gp-drawer-body">

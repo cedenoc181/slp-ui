@@ -1,11 +1,23 @@
-import { API_BASE_URL } from '../config/apiConfig';
+import predictionsService from './predictionsService';
 
-const SCOUT_AI_ENDPOINT = `${API_BASE_URL}/api/scout-ai`;
-const CACHE_TTL_MS = 4 * 60 * 60 * 1000; // 4 hours
+const CACHE_TTL_MS   = 4 * 60 * 60 * 1000; // 4 hours per game
+const TODAY_DEDUP_MS = 5 * 60 * 1000;       // reuse the bulk fetch for 5 min
+
+// Module-level dedup: if two games open quickly, share one /predictions/today call
+let todayPromise   = null;
+let todayPromiseTs = 0;
+
+function getTodayOnce() {
+  const now = Date.now();
+  if (todayPromise && now - todayPromiseTs < TODAY_DEDUP_MS) return todayPromise;
+  todayPromise   = predictionsService.getToday().catch(err => { todayPromise = null; throw err; });
+  todayPromiseTs = now;
+  return todayPromise;
+}
 
 export async function getScoutAnalysis(gamePk) {
   const cacheKey = `scout:${gamePk}`;
-  const cached = localStorage.getItem(cacheKey);
+  const cached   = localStorage.getItem(cacheKey);
   if (cached) {
     try {
       const { analysis, timestamp } = JSON.parse(cached);
@@ -17,26 +29,22 @@ export async function getScoutAnalysis(gamePk) {
     }
   }
 
-  const response = await fetch(`${SCOUT_AI_ENDPOINT}?game_pk=${gamePk}`);
+  const games = await getTodayOnce();
 
-  if (response.status === 429) {
-    const retryAfter = response.headers.get('Retry-After');
-    const minutes = retryAfter ? Math.ceil(Number(retryAfter) / 60) : 5;
-    const err = new Error(`Rate limited. Try again in ${minutes} minute${minutes !== 1 ? 's' : ''}.`);
-    err.code = 'RATE_LIMITED';
-    err.retryAfter = minutes;
-    throw err;
+  if (!Array.isArray(games)) {
+    throw new Error('Scout AI data unavailable');
   }
 
-  if (!response.ok) {
-    const body = await response.json().catch(() => ({}));
-    throw new Error(body.detail || body.message || `Scout AI unavailable (${response.status})`);
+  const game = games.find(g => String(g.game_pk) === String(gamePk));
+  if (!game) {
+    throw new Error('No Scout AI analysis found for this game');
   }
 
-  const data = await response.json();
-  const analysis = data.analysis ?? data;
+  const analysis = game.scout_ai;
+  if (!analysis) {
+    throw new Error('Scout AI analysis is not yet available for this game');
+  }
 
   localStorage.setItem(cacheKey, JSON.stringify({ analysis, timestamp: Date.now() }));
-
   return { analysis };
 }

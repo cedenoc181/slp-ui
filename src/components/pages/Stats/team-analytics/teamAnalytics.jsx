@@ -72,6 +72,7 @@ function TeamAnalytics() {
     pitchingStats,
     battingLeaders,
     pitchingLeaders,
+    leadersSeason,
     last10Games,
     homeGames,
     awayGames,
@@ -217,6 +218,7 @@ function TeamAnalytics() {
           teamSeasonData={teamSeasonData}
           battingLeaders={battingLeaders}
           pitchingLeaders={pitchingLeaders}
+          leadersSeason={leadersSeason}
           currentBattingStats={currentBattingStats}
           currentPitchingStats={currentPitchingStats}
           leadersToggle={leadersToggle}

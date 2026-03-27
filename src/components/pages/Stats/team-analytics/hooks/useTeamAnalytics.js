@@ -112,6 +112,7 @@ export function useTeamAnalytics() {
   const [pitchingStats, setPitchingStats] = useState(null);
   const [battingLeaders, setBattingLeaders] = useState(null);
   const [pitchingLeaders, setPitchingLeaders] = useState(null);
+  const [leadersSeason, setLeadersSeason] = useState(null); // null = regular, 'S' = spring fallback
   const [last10Games, setLast10Games] = useState(null);
   const [homeGames, setHomeGames] = useState(null);
   const [awayGames, setAwayGames] = useState(null);
@@ -141,13 +142,18 @@ export function useTeamAnalytics() {
     try {
       console.log(`📡 Fetching data for team ${teamId}, season ${season}...`);
 
+      const currentYear = new Date().getFullYear().toString();
+      const hasLeadersData = d => d && typeof d === 'object' && Object.values(d).some(v => v?.player_name != null);
+
       const [
         seasonData,
         monthlyData,
         battingStatsData,
         pitchingStatsData,
-        battingLeadersData,
-        pitchingLeadersData,
+        battingLeadersR,
+        pitchingLeadersR,
+        battingLeadersS,
+        pitchingLeadersS,
         last10Data,
         homeGamesData,
         awayGamesData,
@@ -161,8 +167,14 @@ export function useTeamAnalytics() {
         teamsService.getTeamMonthly(teamId, season).catch(err => { console.warn('Team monthly failed:', err); return null; }),
         teamStatsService.getTeamBattingStats(teamId, season, getStatsSeasonType(season)).catch(err => { console.warn('Batting stats failed:', err); return null; }),
         teamStatsService.getTeamPitchingStats(teamId, season, getStatsSeasonType(season)).catch(err => { console.warn('Pitching stats failed:', err); return null; }),
-        teamLeadersService.getTeamBattingLeaders(teamId, season, getStatsSeasonType(season)).catch(err => { console.warn('Batting leaders failed:', err); return null; }),
-        teamLeadersService.getTeamPitchingLeaders(teamId, season, getStatsSeasonType(season)).catch(err => { console.warn('Pitching leaders failed:', err); return null; }),
+        teamLeadersService.getTeamBattingLeaders(teamId, season, 'R').catch(err => { console.warn('Batting leaders (R) failed:', err); return null; }),
+        teamLeadersService.getTeamPitchingLeaders(teamId, season, 'R').catch(err => { console.warn('Pitching leaders (R) failed:', err); return null; }),
+        season === currentYear
+          ? teamLeadersService.getTeamBattingLeaders(teamId, season, 'S').catch(err => { console.warn('Batting leaders (S) failed:', err); return null; })
+          : Promise.resolve(null),
+        season === currentYear
+          ? teamLeadersService.getTeamPitchingLeaders(teamId, season, 'S').catch(err => { console.warn('Pitching leaders (S) failed:', err); return null; })
+          : Promise.resolve(null),
         gamesService.getTeamLast10(teamId, season, getStatsSeasonType(season)).catch(err => { console.warn('Last 10 failed:', err); return null; }),
         gamesService.getTeamHomeGames(teamId, season, getStatsSeasonType(season)).catch(err => { console.warn('Home games failed:', err); return null; }),
         gamesService.getTeamAwayGames(teamId, season, getStatsSeasonType(season)).catch(err => { console.warn('Away games failed:', err); return null; }),
@@ -173,12 +185,18 @@ export function useTeamAnalytics() {
         injuryService.getTeamInjuriesSecondHalf(teamId, season).catch(err => { console.warn('Injuries second half failed:', err); return null; }),
       ]);
 
+      // Leaders: prefer regular season; fall back to spring training if R has no data
+      const battingLeadersData  = hasLeadersData(battingLeadersR)  ? battingLeadersR  : battingLeadersS;
+      const pitchingLeadersData = hasLeadersData(pitchingLeadersR) ? pitchingLeadersR : pitchingLeadersS;
+      const usedSpringLeaders   = !hasLeadersData(battingLeadersR) && !hasLeadersData(pitchingLeadersR);
+
       setTeamSeasonData(seasonData);
       setTeamMonthlyData(monthlyData);
       setBattingStats(battingStatsData);
       setPitchingStats(pitchingStatsData);
       setBattingLeaders(battingLeadersData);
       setPitchingLeaders(pitchingLeadersData);
+      setLeadersSeason(usedSpringLeaders ? 'S' : null);
       setLast10Games(last10Data);
       setHomeGames(homeGamesData);
       setAwayGames(awayGamesData);
@@ -509,6 +527,7 @@ export function useTeamAnalytics() {
     pitchingStats,
     battingLeaders,
     pitchingLeaders,
+    leadersSeason,
     last10Games,
     homeGames,
     awayGames,
