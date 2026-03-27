@@ -58,7 +58,6 @@ export function useMatchupData() {
         const seasonType = mapSeasonType(gameData.season_type);
 
         const FALLBACK_SEASON  = String(new Date().getFullYear() - 1);
-        const needsFallback    = seasonType === 'S'; // only fall back during Spring Training
         const needsL10Fallback = seasonType === 'S';
 
         const gameStatusLower = (gameData.status || '').toLowerCase();
@@ -69,10 +68,10 @@ export function useMatchupData() {
 
         const [
           awayL10Res, homeL10Res,
-          awaySPRes, homeSPRes,
+          awaySPTier1Res, awaySPTier2Res, awaySPTier3Res,
+          homeSPTier1Res, homeSPTier2Res, homeSPTier3Res,
           h2hRes,
           awaySPInfoRes, homeSPInfoRes,
-          awaySPFallbackRes, homeSPFallbackRes,
           standingsRes,
           awayL10FallbackRes, homeL10FallbackRes,
           awayBattingRes, homeBattingRes,
@@ -82,12 +81,14 @@ export function useMatchupData() {
         ] = await Promise.allSettled([
           gamesService.getTeamLast10(awayId, season, seasonType),
           gamesService.getTeamLast10(homeId, season, seasonType),
-          awaySPId
-            ? playerStatsService.getPitcherCurrentStats(awaySPId, season, seasonType)
-            : Promise.resolve(null),
-          homeSPId
-            ? playerStatsService.getPitcherCurrentStats(homeSPId, season, seasonType)
-            : Promise.resolve(null),
+          // Away SP — three tiers: current R → current S → prior year R
+          awaySPId ? playerStatsService.getPitcherCurrentStats(awaySPId, season, 'R')              : Promise.resolve(null),
+          awaySPId ? playerStatsService.getPitcherCurrentStats(awaySPId, season, 'S')              : Promise.resolve(null),
+          awaySPId ? playerStatsService.getPitcherCurrentStats(awaySPId, FALLBACK_SEASON, 'R')     : Promise.resolve(null),
+          // Home SP — three tiers: current R → current S → prior year R
+          homeSPId ? playerStatsService.getPitcherCurrentStats(homeSPId, season, 'R')              : Promise.resolve(null),
+          homeSPId ? playerStatsService.getPitcherCurrentStats(homeSPId, season, 'S')              : Promise.resolve(null),
+          homeSPId ? playerStatsService.getPitcherCurrentStats(homeSPId, FALLBACK_SEASON, 'R')     : Promise.resolve(null),
           gamesService.getHeadToHead(awayId, homeId, { season: String(season), seasonType, limit: 10 }),
           awaySPId
             ? playerStatsService.getPlayerInfo(awaySPId)
@@ -95,19 +96,13 @@ export function useMatchupData() {
           homeSPId
             ? playerStatsService.getPlayerInfo(homeSPId)
             : Promise.resolve(null),
-          awaySPId && needsFallback
-            ? playerStatsService.getPitcherCurrentStats(awaySPId, FALLBACK_SEASON, 'R')
-            : Promise.resolve(null),
-          homeSPId && needsFallback
-            ? playerStatsService.getPitcherCurrentStats(homeSPId, FALLBACK_SEASON, 'R')
-            : Promise.resolve(null),
           seasonType === 'S'
             ? teamsService.getTeamSpringTrainingStandings(season)
             : teamsService.getTeamRegularSeasonStandings(season),
-          needsL10Fallback || needsFallback
+          needsL10Fallback
             ? gamesService.getTeamLast10(awayId, FALLBACK_SEASON, 'R')
             : Promise.resolve(null),
-          needsL10Fallback || needsFallback
+          needsL10Fallback
             ? gamesService.getTeamLast10(homeId, FALLBACK_SEASON, 'R')
             : Promise.resolve(null),
           needsTeamStats
@@ -145,33 +140,25 @@ export function useMatchupData() {
         setAwayLast10(awayHasCompleted ? awayPrimary.games : awayFBParsed.games);
         setHomeLast10(homeHasCompleted ? homePrimary.games : homeFBParsed.games);
 
-        // Starting pitcher stats — prefer current season, fall back to prior season
-        const awaySPPrimary  = awaySPRes.status  === 'fulfilled' ? awaySPRes.value  : null;
-        const homeSPPrimary  = homeSPRes.status  === 'fulfilled' ? homeSPRes.value  : null;
-        const awaySPFallback = awaySPFallbackRes.status === 'fulfilled' ? awaySPFallbackRes.value : null;
-        const homeSPFallback = homeSPFallbackRes.status === 'fulfilled' ? homeSPFallbackRes.value : null;
+        // Starting pitcher stats — three-tier fallback: current R → current S → prior year R
+        const resolve = res => res.status === 'fulfilled' ? res.value : null;
+        const spTiers = [
+          { stats: resolve(awaySPTier1Res), label: String(season) },
+          { stats: resolve(awaySPTier2Res), label: `${String(season)} Spring` },
+          { stats: resolve(awaySPTier3Res), label: FALLBACK_SEASON },
+        ];
+        const awayTier = spTiers.find(t => hasValidStats(t.stats));
+        setAwaySP(awayTier?.stats ?? null);
+        setAwaySPStatSeason(awayTier?.label ?? null);
 
-        if (hasValidStats(awaySPPrimary)) {
-          setAwaySP(awaySPPrimary);
-          setAwaySPStatSeason(String(season));
-        } else if (hasValidStats(awaySPFallback)) {
-          setAwaySP(awaySPFallback);
-          setAwaySPStatSeason(FALLBACK_SEASON);
-        } else {
-          setAwaySP(null);
-          setAwaySPStatSeason(null);
-        }
-
-        if (hasValidStats(homeSPPrimary)) {
-          setHomeSP(homeSPPrimary);
-          setHomeSPStatSeason(String(season));
-        } else if (hasValidStats(homeSPFallback)) {
-          setHomeSP(homeSPFallback);
-          setHomeSPStatSeason(FALLBACK_SEASON);
-        } else {
-          setHomeSP(null);
-          setHomeSPStatSeason(null);
-        }
+        const homeTiers = [
+          { stats: resolve(homeSPTier1Res), label: String(season) },
+          { stats: resolve(homeSPTier2Res), label: `${String(season)} Spring` },
+          { stats: resolve(homeSPTier3Res), label: FALLBACK_SEASON },
+        ];
+        const homeTier = homeTiers.find(t => hasValidStats(t.stats));
+        setHomeSP(homeTier?.stats ?? null);
+        setHomeSPStatSeason(homeTier?.label ?? null);
 
         setAwaySPInfo(awaySPInfoRes.status === 'fulfilled' ? awaySPInfoRes.value : null);
         setHomeSPInfo(homeSPInfoRes.status === 'fulfilled' ? homeSPInfoRes.value : null);

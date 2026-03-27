@@ -52,7 +52,7 @@ function handednessLabel(throws) {
   return throws.toUpperCase() === 'L' ? 'LHP' : 'RHP';
 }
 
-export default function PitcherSplitCard({ abbr, mlbId, spPlayerId, side, spName, spThrows, vsHandSplits, homeRoadSplits }) {
+export default function PitcherSplitCard({ abbr, mlbId, spPlayerId, side, spName, spThrows, vsHandSplits, vsHandSeason, homeRoadSplits, homeRoadSeason }) {
   const [tab, setTab] = useState('location'); // 'location' | 'hand'
 
   const hasSP = !!spName;
@@ -65,6 +65,8 @@ export default function PitcherSplitCard({ abbr, mlbId, spPlayerId, side, spName
   const vsRight = vsHandSplits?.vs_rhb  ?? vsHandSplits?.[0]?.vs_rhb  ?? null;
   const atHome  = homeRoadSplits?.at_home ?? homeRoadSplits?.[0]?.at_home ?? null;
   const onRoad  = homeRoadSplits?.on_road ?? homeRoadSplits?.[0]?.on_road ?? null;
+
+  const activeSeason = tab === 'location' ? homeRoadSeason : vsHandSeason;
 
   const statDefs = tab === 'location' ? PITCHER_LOC_STATS : PITCHER_HAND_STATS;
   const colAData = tab === 'location' ? atHome  : vsLeft;
@@ -120,6 +122,9 @@ export default function PitcherSplitCard({ abbr, mlbId, spPlayerId, side, spName
             </div>
           </div>
         </div>
+        {hasSP && activeSeason && (
+          <span className="sp-fallback-season-badge">{activeSeason} Stats</span>
+        )}
         {hasSP && activeBadges.length > 0 && (
           <div className="sp-warning-badges">
             {activeBadges.map(label => (

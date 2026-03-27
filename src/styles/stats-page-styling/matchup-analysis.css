@@ -216,6 +216,12 @@ a > .hero-team-logo:hover {
   margin-bottom: 0;
 }
 
+/* Insights fallback season subtitle */
+.analysis-insights-season {
+  margin-top: -0.5rem;
+  margin-bottom: 0.75rem;
+}
+
 /* ── Key Insights Panel (carousel) ───────────────────────── */
 .insights-panel {
   display: flex;
@@ -638,6 +644,21 @@ a > .hero-team-logo:hover {
   color: #ef9a9a;
   border-radius: 4px;
   padding: 0.15rem 0.4rem;
+}
+
+/* Fallback season badge */
+.sp-fallback-season-badge {
+  display: inline-block;
+  font-size: 0.6rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  background: rgba(99,102,241,0.12);
+  color: rgba(165,166,246,0.85);
+  border: 1px solid rgba(99,102,241,0.25);
+  border-radius: 4px;
+  padding: 0.15rem 0.4rem;
+  align-self: center;
 }
 
 /* ── Top Batters This Week ────────────────────────────────── */

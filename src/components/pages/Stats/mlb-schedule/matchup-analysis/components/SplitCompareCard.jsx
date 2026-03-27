@@ -24,9 +24,10 @@ const BATTING_SPLIT_STATS = [
   { label: 'K',    keyHand: ['strikeouts', 'strikeouts'], keyLoc: ['strikeouts', 'strikeouts'], dec: 0, lowerBetter: true },
 ];
 
-export default function SplitCompareCard({ abbr, mlbId, side, opposingThrows, vsHandSplits, homeRoadSplits }) {
+export default function SplitCompareCard({ abbr, mlbId, side, opposingThrows, vsHandSplits, vsHandSeason, homeRoadSplits, homeRoadSeason }) {
   const [tab, setTab] = useState('hand'); // 'hand' | 'location'
 
+  const activeSeason  = tab === 'hand' ? vsHandSeason : homeRoadSeason;
   const isLoading     = tab === 'hand' ? vsHandSplits   === null : homeRoadSplits === null;
   const isUnavailable = tab === 'hand' ? vsHandSplits   === false : homeRoadSplits === false;
   const vsLeft  = vsHandSplits?.vs_lhp  ?? vsHandSplits?.[0]?.vs_lhp  ?? null;
@@ -46,7 +47,12 @@ export default function SplitCompareCard({ abbr, mlbId, side, opposingThrows, vs
           {mlbId && <img src={logoUrl(mlbId)} alt={abbr} className="split-card-logo" />}
           <div>
             <div className="split-card-team-name">{abbr}</div>
-            <div className="split-card-subtitle">{side} Offense</div>
+            <div className="split-card-subtitle">
+              {side} Offense
+              {activeSeason && (
+                <span className="sp-fallback-season-badge" style={{ marginLeft: '0.4rem' }}>{activeSeason} Stats</span>
+              )}
+            </div>
           </div>
         </div>
         <div className="split-toggle">

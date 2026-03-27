@@ -38,26 +38,37 @@ export default function MatchupDetailComp() {
   const [loading, setLoading] = useState(!state?.game);
   const [error, setError]     = useState(null);
 
-  const [awaySplits, setAwaySplits] = useState(null);
-  const [homeSplits, setHomeSplits] = useState(null);
+  const [awaySplits,              setAwaySplits]              = useState(null);
+  const [awaySplitsSeason,        setAwaySplitsSeason]        = useState(null);
+  const [homeSplits,              setHomeSplits]              = useState(null);
+  const [homeSplitsSeason,        setHomeSplitsSeason]        = useState(null);
 
-  const [awaySPVsHandSplits,   setAwaySPVsHandSplits]   = useState(null);
-  const [awaySPHomeRoadSplits, setAwaySPHomeRoadSplits]  = useState(null);
-  const [awaySPThrows,         setAwaySPThrows]          = useState(state?.awaySPThrows ?? null);
-  const [homeSPVsHandSplits,   setHomeSPVsHandSplits]   = useState(null);
-  const [homeSPHomeRoadSplits, setHomeSPHomeRoadSplits]  = useState(null);
-  const [homeSPThrows,         setHomeSPThrows]          = useState(state?.homeSPThrows ?? null);
-  const [awaySPPlayerMlbId,    setAwaySPPlayerMlbId]    = useState(null);
-  const [homeSPPlayerMlbId,    setHomeSPPlayerMlbId]    = useState(null);
+  const [awaySPVsHandSplits,    setAwaySPVsHandSplits]    = useState(null);
+  const [awaySPVsHandSeason,    setAwaySPVsHandSeason]    = useState(null);
+  const [awaySPHomeRoadSplits,  setAwaySPHomeRoadSplits]  = useState(null);
+  const [awaySPHomeRoadSeason,  setAwaySPHomeRoadSeason]  = useState(null);
+  const [awaySPThrows,          setAwaySPThrows]          = useState(state?.awaySPThrows ?? null);
+  const [homeSPVsHandSplits,    setHomeSPVsHandSplits]    = useState(null);
+  const [homeSPVsHandSeason,    setHomeSPVsHandSeason]    = useState(null);
+  const [homeSPHomeRoadSplits,  setHomeSPHomeRoadSplits]  = useState(null);
+  const [homeSPHomeRoadSeason,  setHomeSPHomeRoadSeason]  = useState(null);
+  const [homeSPThrows,          setHomeSPThrows]          = useState(state?.homeSPThrows ?? null);
+  const [awaySPPlayerMlbId,     setAwaySPPlayerMlbId]    = useState(null);
+  const [homeSPPlayerMlbId,     setHomeSPPlayerMlbId]    = useState(null);
 
-  const [awayHomeRoadSplits, setAwayHomeRoadSplits] = useState(null);
-  const [homeHomeRoadSplits, setHomeHomeRoadSplits] = useState(null);
+  const [awayHomeRoadSplits,       setAwayHomeRoadSplits]       = useState(null);
+  const [awayHomeRoadSplitsSeason, setAwayHomeRoadSplitsSeason] = useState(null);
+  const [homeHomeRoadSplits,       setHomeHomeRoadSplits]       = useState(null);
+  const [homeHomeRoadSplitsSeason, setHomeHomeRoadSplitsSeason] = useState(null);
 
   const [awaySplitLeaders, setAwaySplitLeaders] = useState(null);
   const [homeSplitLeaders, setHomeSplitLeaders] = useState(null);
+  const [insightsSeason,   setInsightsSeason]   = useState(null);
 
-  const [awayHotLeaders, setAwayHotLeaders] = useState(null);
-  const [homeHotLeaders, setHomeHotLeaders] = useState(null);
+  const [awayHotLeaders,       setAwayHotLeaders]       = useState(null);
+  const [awayHotLeadersSeason, setAwayHotLeadersSeason] = useState(null);
+  const [homeHotLeaders,       setHomeHotLeaders]       = useState(null);
+  const [homeHotLeadersSeason, setHomeHotLeadersSeason] = useState(null);
 
   const [h2hPitchers, setH2hPitchers] = useState(null);
   const [h2hBatters,  setH2hBatters]  = useState(null);
@@ -84,113 +95,189 @@ export default function MatchupDetailComp() {
 
   useEffect(() => { window.scrollTo(0, 0); }, []);
 
-  // ── Offensive splits ──
+  // ── Offensive splits + home/road splits — three-tier fallback: current R → current S → prior year R ──
   useEffect(() => {
     if (!game) return;
-    const season     = game.season || DEFAULT_SEASON;
-    const seasonType = mapSeasonType(game.season_type);
-    Promise.all([
-      teamStatsService.getTeamBattingStats(game.away_team_id, season, seasonType),
-      teamStatsService.getTeamBattingStats(game.home_team_id, season, seasonType),
-    ]).then(([away, home]) => {
-      setAwaySplits(normalizeBattingStats(away) ?? false);
-      setHomeSplits(normalizeBattingStats(home) ?? false);
-    }).catch(() => { setAwaySplits(false); setHomeSplits(false); });
+    const season      = game.season || DEFAULT_SEASON;
+    const priorSeason = String(Number(season) - 1);
+    const TIER_LABELS = [null, `${season} Spring`, priorSeason];
+
+    Promise.allSettled([
+      teamStatsService.getTeamBattingStats(game.away_team_id, season,      'R'),
+      teamStatsService.getTeamBattingStats(game.away_team_id, season,      'S'),
+      teamStatsService.getTeamBattingStats(game.away_team_id, priorSeason, 'R'),
+      teamStatsService.getTeamBattingStats(game.home_team_id, season,      'R'),
+      teamStatsService.getTeamBattingStats(game.home_team_id, season,      'S'),
+      teamStatsService.getTeamBattingStats(game.home_team_id, priorSeason, 'R'),
+      teamStatsService.getTeamBattingHomeVsRoad(game.away_team_id, season,      'R'),
+      teamStatsService.getTeamBattingHomeVsRoad(game.away_team_id, season,      'S'),
+      teamStatsService.getTeamBattingHomeVsRoad(game.away_team_id, priorSeason, 'R'),
+      teamStatsService.getTeamBattingHomeVsRoad(game.home_team_id, season,      'R'),
+      teamStatsService.getTeamBattingHomeVsRoad(game.home_team_id, season,      'S'),
+      teamStatsService.getTeamBattingHomeVsRoad(game.home_team_id, priorSeason, 'R'),
+    ]).then(([awVH1, awVH2, awVH3, hmVH1, hmVH2, hmVH3, awHR1, awHR2, awHR3, hmHR1, hmHR2, hmHR3]) => {
+      const ok = res => res.status === 'fulfilled' ? res.value : null;
+
+      const awayVHTiers = [normalizeBattingStats(ok(awVH1)), normalizeBattingStats(ok(awVH2)), normalizeBattingStats(ok(awVH3))];
+      const homeVHTiers = [normalizeBattingStats(ok(hmVH1)), normalizeBattingStats(ok(hmVH2)), normalizeBattingStats(ok(hmVH3))];
+      const awayHRTiers = [normalizeBattingHomeRoad(ok(awHR1)), normalizeBattingHomeRoad(ok(awHR2)), normalizeBattingHomeRoad(ok(awHR3))];
+      const homeHRTiers = [normalizeBattingHomeRoad(ok(hmHR1)), normalizeBattingHomeRoad(ok(hmHR2)), normalizeBattingHomeRoad(ok(hmHR3))];
+
+      const awayVHIdx = awayVHTiers.findIndex(t => t !== null);
+      const homeVHIdx = homeVHTiers.findIndex(t => t !== null);
+      const awayHRIdx = awayHRTiers.findIndex(t => t !== null);
+      const homeHRIdx = homeHRTiers.findIndex(t => t !== null);
+
+      setAwaySplits(              awayVHIdx >= 0 ? awayVHTiers[awayVHIdx] : false);
+      setAwaySplitsSeason(        awayVHIdx >= 0 ? TIER_LABELS[awayVHIdx] : null);
+      setHomeSplits(              homeVHIdx >= 0 ? homeVHTiers[homeVHIdx] : false);
+      setHomeSplitsSeason(        homeVHIdx >= 0 ? TIER_LABELS[homeVHIdx] : null);
+      setAwayHomeRoadSplits(      awayHRIdx >= 0 ? awayHRTiers[awayHRIdx] : false);
+      setAwayHomeRoadSplitsSeason(awayHRIdx >= 0 ? TIER_LABELS[awayHRIdx] : null);
+      setHomeHomeRoadSplits(      homeHRIdx >= 0 ? homeHRTiers[homeHRIdx] : false);
+      setHomeHomeRoadSplitsSeason(homeHRIdx >= 0 ? TIER_LABELS[homeHRIdx] : null);
+    }).catch(() => {
+      setAwaySplits(false); setHomeSplits(false);
+      setAwayHomeRoadSplits(false); setHomeHomeRoadSplits(false);
+    });
   }, [game?.away_team_id, game?.home_team_id]); // eslint-disable-line
 
-  // ── Team batting home/road splits ──
+  // ── SP splits — three-tier fallback: current R → current S → prior year R ──
   useEffect(() => {
     if (!game) return;
-    const season     = game.season || DEFAULT_SEASON;
-    const seasonType = mapSeasonType(game.season_type);
-    Promise.all([
-      teamStatsService.getTeamBattingHomeVsRoad(game.away_team_id, season, seasonType),
-      teamStatsService.getTeamBattingHomeVsRoad(game.home_team_id, season, seasonType),
-    ]).then(([away, home]) => {
-      setAwayHomeRoadSplits(normalizeBattingHomeRoad(away) ?? false);
-      setHomeHomeRoadSplits(normalizeBattingHomeRoad(home) ?? false);
-    }).catch(() => { setAwayHomeRoadSplits(false); setHomeHomeRoadSplits(false); });
-  }, [game?.away_team_id, game?.home_team_id]); // eslint-disable-line
+    const season      = game.season || DEFAULT_SEASON;
+    const priorSeason = String(Number(season) - 1);
 
-  // ── SP splits ──
-  useEffect(() => {
-    if (!game) return;
-    const season = game.season || DEFAULT_SEASON;
-    const stLower = (game.season_type || '').toLowerCase();
-    const spSeasonTypeCode =
-      (stLower === 'spring'     || stLower === 's')                        ? SEASON_TYPE_CODES.SPRING_TRAINING :
-      (stLower === 'postseason' || stLower === 'post' || stLower === 'p')  ? SEASON_TYPE_CODES.POSTSEASON      :
-      SEASON_TYPE_CODES.REGULAR;
+    const fetchSPSplits = async (spId) => {
+      const [
+        t1vsHand,  t1homeRoad,
+        t2vsHand,  t2homeRoad,
+        t3vsHand,  t3homeRoad,
+        info,
+      ] = await Promise.allSettled([
+        playerStatsService.getPitcherVsHandSplits(spId, season,      SEASON_TYPE_CODES.REGULAR),
+        playerStatsService.getPitcherHomeRoadSplits(spId, season,      SEASON_TYPE_CODES.REGULAR),
+        playerStatsService.getPitcherVsHandSplits(spId, season,      SEASON_TYPE_CODES.SPRING_TRAINING),
+        playerStatsService.getPitcherHomeRoadSplits(spId, season,      SEASON_TYPE_CODES.SPRING_TRAINING),
+        playerStatsService.getPitcherVsHandSplits(spId, priorSeason, SEASON_TYPE_CODES.REGULAR),
+        playerStatsService.getPitcherHomeRoadSplits(spId, priorSeason, SEASON_TYPE_CODES.REGULAR),
+        playerStatsService.getPlayerInfo(spId),
+      ]);
+
+      const ok = res => res.status === 'fulfilled' ? res.value : null;
+      // null label = current season (no badge); string label = fallback season
+      const TIER_LABELS = [null, `${season} Spring`, priorSeason];
+
+      const vsHandTiers   = [
+        normalizePitcherVsHandSplits(ok(t1vsHand)),
+        normalizePitcherVsHandSplits(ok(t2vsHand)),
+        normalizePitcherVsHandSplits(ok(t3vsHand)),
+      ];
+      const homeRoadTiers = [
+        normalizePitcherHomeRoadSplits(ok(t1homeRoad), season,      SEASON_TYPE_CODES.REGULAR),
+        normalizePitcherHomeRoadSplits(ok(t2homeRoad), season,      SEASON_TYPE_CODES.SPRING_TRAINING),
+        normalizePitcherHomeRoadSplits(ok(t3homeRoad), priorSeason, SEASON_TYPE_CODES.REGULAR),
+      ];
+
+      const vsHandIdx   = vsHandTiers.findIndex(t => t !== null);
+      const homeRoadIdx = homeRoadTiers.findIndex(t => t !== null);
+
+      return {
+        vsHand:         vsHandIdx   >= 0 ? vsHandTiers[vsHandIdx]     : false,
+        vsHandSeason:   vsHandIdx   >= 0 ? TIER_LABELS[vsHandIdx]     : null,
+        homeRoad:       homeRoadIdx >= 0 ? homeRoadTiers[homeRoadIdx] : false,
+        homeRoadSeason: homeRoadIdx >= 0 ? TIER_LABELS[homeRoadIdx]   : null,
+        info:           ok(info),
+      };
+    };
 
     if (game.away_sp_id) {
-      Promise.all([
-        playerStatsService.getPitcherVsHandSplits(game.away_sp_id, season, spSeasonTypeCode),
-        playerStatsService.getPitcherHomeRoadSplits(game.away_sp_id, season, spSeasonTypeCode),
-        playerStatsService.getPlayerInfo(game.away_sp_id),
-      ]).then(([vsHand, homeRoad, info]) => {
-        setAwaySPVsHandSplits(normalizePitcherVsHandSplits(vsHand) ?? false);
-        setAwaySPHomeRoadSplits(normalizePitcherHomeRoadSplits(homeRoad, season, spSeasonTypeCode) ?? false);
-        setAwaySPThrows(info?.throws ?? null);
-        setAwaySPPlayerMlbId(info?.player_mlb_id ?? null);
-      }).catch(() => { setAwaySPVsHandSplits(false); setAwaySPHomeRoadSplits(false); });
+      fetchSPSplits(game.away_sp_id)
+        .then(({ vsHand, vsHandSeason, homeRoad, homeRoadSeason, info }) => {
+          setAwaySPVsHandSplits(vsHand);
+          setAwaySPVsHandSeason(vsHandSeason);
+          setAwaySPHomeRoadSplits(homeRoad);
+          setAwaySPHomeRoadSeason(homeRoadSeason);
+          setAwaySPThrows(info?.throws ?? null);
+          setAwaySPPlayerMlbId(info?.player_mlb_id ?? null);
+        })
+        .catch(() => { setAwaySPVsHandSplits(false); setAwaySPHomeRoadSplits(false); });
     }
 
     if (game.home_sp_id) {
-      Promise.all([
-        playerStatsService.getPitcherVsHandSplits(game.home_sp_id, season, spSeasonTypeCode),
-        playerStatsService.getPitcherHomeRoadSplits(game.home_sp_id, season, spSeasonTypeCode),
-        playerStatsService.getPlayerInfo(game.home_sp_id),
-      ]).then(([vsHand, homeRoad, info]) => {
-        setHomeSPVsHandSplits(normalizePitcherVsHandSplits(vsHand) ?? false);
-        setHomeSPHomeRoadSplits(normalizePitcherHomeRoadSplits(homeRoad, season, spSeasonTypeCode) ?? false);
-        setHomeSPThrows(info?.throws ?? null);
-        setHomeSPPlayerMlbId(info?.player_mlb_id ?? null);
-      }).catch(() => { setHomeSPVsHandSplits(false); setHomeSPHomeRoadSplits(false); });
+      fetchSPSplits(game.home_sp_id)
+        .then(({ vsHand, vsHandSeason, homeRoad, homeRoadSeason, info }) => {
+          setHomeSPVsHandSplits(vsHand);
+          setHomeSPVsHandSeason(vsHandSeason);
+          setHomeSPHomeRoadSplits(homeRoad);
+          setHomeSPHomeRoadSeason(homeRoadSeason);
+          setHomeSPThrows(info?.throws ?? null);
+          setHomeSPPlayerMlbId(info?.player_mlb_id ?? null);
+        })
+        .catch(() => { setHomeSPVsHandSplits(false); setHomeSPHomeRoadSplits(false); });
     }
   }, [game?.away_sp_id, game?.home_sp_id]); // eslint-disable-line
 
-  // ── Team split leaders (Key Insights) ──
+  // ── Team split leaders (Key Insights) — three-tier fallback: current R → current S → prior year R ──
   useEffect(() => {
     if (!game) return;
-    const season     = game.season || DEFAULT_SEASON;
-    const seasonType = mapSeasonType(game.season_type);
+    const season      = game.season || DEFAULT_SEASON;
+    const priorSeason = String(Number(season) - 1);
+    const TIER_LABELS = [null, `${season} Spring`, priorSeason];
+    const hasArr      = v => Array.isArray(v) && v.length > 0;
 
-    const fetchSplits = (st) => Promise.all([
-      teamLeadersService.getTeamSplits(game.away_team_id, season, st, PLAYER_ROLES.BATTER),
-      teamLeadersService.getTeamSplits(game.home_team_id, season, st, PLAYER_ROLES.BATTER),
-    ]);
-
-    fetchSplits(seasonType)
-      .then(([away, home]) => {
-        const awayHasData = Array.isArray(away) && away.length > 0;
-        const homeHasData = Array.isArray(home) && home.length > 0;
-
-        // No regular season data yet — fall back to spring training
-        if (!awayHasData && !homeHasData && seasonType === 'R') {
-          return fetchSplits('S').then(([awaySpring, homeSpring]) => {
-            setAwaySplitLeaders(Array.isArray(awaySpring) && awaySpring.length ? awaySpring : false);
-            setHomeSplitLeaders(Array.isArray(homeSpring) && homeSpring.length ? homeSpring : false);
-          });
-        }
-
-        setAwaySplitLeaders(awayHasData ? away : false);
-        setHomeSplitLeaders(homeHasData ? home : false);
-      })
-      .catch(() => { setAwaySplitLeaders(false); setHomeSplitLeaders(false); });
+    Promise.allSettled([
+      teamLeadersService.getTeamSplits(game.away_team_id, season,      'R', PLAYER_ROLES.BATTER),
+      teamLeadersService.getTeamSplits(game.home_team_id, season,      'R', PLAYER_ROLES.BATTER),
+      teamLeadersService.getTeamSplits(game.away_team_id, season,      'S', PLAYER_ROLES.BATTER),
+      teamLeadersService.getTeamSplits(game.home_team_id, season,      'S', PLAYER_ROLES.BATTER),
+      teamLeadersService.getTeamSplits(game.away_team_id, priorSeason, 'R', PLAYER_ROLES.BATTER),
+      teamLeadersService.getTeamSplits(game.home_team_id, priorSeason, 'R', PLAYER_ROLES.BATTER),
+    ]).then(([awT1, hmT1, awT2, hmT2, awT3, hmT3]) => {
+      const ok  = res => res.status === 'fulfilled' ? res.value : null;
+      const tiers = [
+        { away: ok(awT1), home: ok(hmT1) },
+        { away: ok(awT2), home: ok(hmT2) },
+        { away: ok(awT3), home: ok(hmT3) },
+      ];
+      const idx = tiers.findIndex(t => hasArr(t.away) || hasArr(t.home));
+      if (idx < 0) {
+        setAwaySplitLeaders(false); setHomeSplitLeaders(false); setInsightsSeason(null);
+        return;
+      }
+      const { away, home } = tiers[idx];
+      setAwaySplitLeaders(hasArr(away) ? away : false);
+      setHomeSplitLeaders(hasArr(home) ? home : false);
+      setInsightsSeason(TIER_LABELS[idx]);
+    }).catch(() => { setAwaySplitLeaders(false); setHomeSplitLeaders(false); });
   }, [game?.away_team_id, game?.home_team_id]); // eslint-disable-line
 
-  // ── Hot batting leaders (Top Batters card) ──
+  // ── Hot batting leaders (Top Batters card) — three-tier fallback ──
   useEffect(() => {
     if (!game) return;
-    const season     = game.season || DEFAULT_SEASON;
-    const seasonType = mapSeasonType(game.season_type);
-    const asOfDate   = game.date || null;
-    Promise.all([
-      teamLeadersService.getHotTeamBattingLeaders(game.away_team_id, season, seasonType, 10, asOfDate),
-      teamLeadersService.getHotTeamBattingLeaders(game.home_team_id, season, seasonType, 10, asOfDate),
-    ]).then(([away, home]) => {
-      setAwayHotLeaders(away && typeof away === 'object' ? away : false);
-      setHomeHotLeaders(home && typeof home === 'object' ? home : false);
+    const season      = game.season || DEFAULT_SEASON;
+    const priorSeason = String(Number(season) - 1);
+    const asOfDate    = game.date || null;
+    const hasData     = d => d && typeof d === 'object' && Object.values(d).some(a => Array.isArray(a) && a.length > 0);
+    const TIER_LABELS = [null, `${season} Spring`, priorSeason];
+
+    Promise.allSettled([
+      teamLeadersService.getHotTeamBattingLeaders(game.away_team_id, season,      'R', 10, asOfDate),
+      teamLeadersService.getHotTeamBattingLeaders(game.home_team_id, season,      'R', 10, asOfDate),
+      teamLeadersService.getHotTeamBattingLeaders(game.away_team_id, season,      'S', 10, asOfDate),
+      teamLeadersService.getHotTeamBattingLeaders(game.home_team_id, season,      'S', 10, asOfDate),
+      teamLeadersService.getHotTeamBattingLeaders(game.away_team_id, priorSeason, 'R', 10, null),
+      teamLeadersService.getHotTeamBattingLeaders(game.home_team_id, priorSeason, 'R', 10, null),
+    ]).then(([awayT1, homeT1, awayT2, homeT2, awayT3, homeT3]) => {
+      const ok = res => res.status === 'fulfilled' ? res.value : null;
+      const awayTiers = [ok(awayT1), ok(awayT2), ok(awayT3)];
+      const homeTiers = [ok(homeT1), ok(homeT2), ok(homeT3)];
+      const awayIdx   = awayTiers.findIndex(d => hasData(d));
+      const homeIdx   = homeTiers.findIndex(d => hasData(d));
+      setAwayHotLeaders(      awayIdx >= 0 ? awayTiers[awayIdx] : false);
+      setAwayHotLeadersSeason(awayIdx >= 0 ? TIER_LABELS[awayIdx] : null);
+      setHomeHotLeaders(      homeIdx >= 0 ? homeTiers[homeIdx] : false);
+      setHomeHotLeadersSeason(homeIdx >= 0 ? TIER_LABELS[homeIdx] : null);
     }).catch(() => { setAwayHotLeaders(false); setHomeHotLeaders(false); });
   }, [game?.away_team_id, game?.home_team_id]); // eslint-disable-line
 
@@ -333,7 +420,9 @@ export default function MatchupDetailComp() {
               spName={game.away_sp_name || null}
               spThrows={awaySPThrows}
               vsHandSplits={awaySPVsHandSplits}
+              vsHandSeason={awaySPVsHandSeason}
               homeRoadSplits={awaySPHomeRoadSplits}
+              homeRoadSeason={awaySPHomeRoadSeason}
             />
             <PitcherSplitCard
               abbr={homeAbbr}
@@ -343,7 +432,9 @@ export default function MatchupDetailComp() {
               spName={game.home_sp_name || null}
               spThrows={homeSPThrows}
               vsHandSplits={homeSPVsHandSplits}
+              vsHandSeason={homeSPVsHandSeason}
               homeRoadSplits={homeSPHomeRoadSplits}
+              homeRoadSeason={homeSPHomeRoadSeason}
             />
           </div>
         </div>
@@ -351,6 +442,11 @@ export default function MatchupDetailComp() {
         {/* C. Key Insights */}
         <div className="analysis-section">
           <div className="analysis-section-title">Key Matchup Insights</div>
+          {insightsSeason && (
+            <div className="analysis-insights-season">
+              <span className="sp-fallback-season-badge">{insightsSeason} Stats</span>
+            </div>
+          )}
           <InsightsPanel insights={insights} />
         </div>
 
@@ -365,7 +461,9 @@ export default function MatchupDetailComp() {
                 side="Away"
                 opposingThrows={homeSPThrows}
                 vsHandSplits={awaySplits}
+                vsHandSeason={awaySplitsSeason}
                 homeRoadSplits={awayHomeRoadSplits}
+                homeRoadSeason={awayHomeRoadSplitsSeason}
               />
             </div>
             <div className="asb-home">
@@ -375,7 +473,9 @@ export default function MatchupDetailComp() {
                 side="Home"
                 opposingThrows={awaySPThrows}
                 vsHandSplits={homeSplits}
+                vsHandSeason={homeSplitsSeason}
                 homeRoadSplits={homeHomeRoadSplits}
+                homeRoadSeason={homeHomeRoadSplitsSeason}
               />
             </div>
             <div className="asb-top-batters">
@@ -385,7 +485,9 @@ export default function MatchupDetailComp() {
                 awayMlbId={awayMlbId}
                 homeMlbId={homeMlbId}
                 awayData={awayHotLeaders}
+                awayDataSeason={awayHotLeadersSeason}
                 homeData={homeHotLeaders}
+                homeDataSeason={homeHotLeadersSeason}
               />
             </div>
           </div>

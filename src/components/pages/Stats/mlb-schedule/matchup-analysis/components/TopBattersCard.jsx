@@ -40,15 +40,16 @@ function GameSparkbar({ games }) {
   );
 }
 
-export default function TopBattersCard({ awayAbbr, homeAbbr, awayMlbId, homeMlbId, awayData, homeData }) {
+export default function TopBattersCard({ awayAbbr, homeAbbr, awayMlbId, homeMlbId, awayData, awayDataSeason, homeData, homeDataSeason }) {
   const [activeTeam,   setActiveTeam]   = useState('away');
   const [activeMetric, setActiveMetric] = useState('home_runs');
 
-  const data      = activeTeam === 'away' ? awayData : homeData;
-  const isLoading = data === null;
-  const isUnavail = data === false;
-  const players   = (!isLoading && !isUnavail && data?.[activeMetric]) ? data[activeMetric] : [];
-  const teamMlbId = activeTeam === 'away' ? awayMlbId : homeMlbId;
+  const data         = activeTeam === 'away' ? awayData      : homeData;
+  const activeSeason = activeTeam === 'away' ? awayDataSeason : homeDataSeason;
+  const isLoading    = data === null;
+  const isUnavail    = data === false;
+  const players      = (!isLoading && !isUnavail && data?.[activeMetric]) ? data[activeMetric] : [];
+  const teamMlbId    = activeTeam === 'away' ? awayMlbId : homeMlbId;
 
   return (
     <div className="top-batters-card">
@@ -56,6 +57,9 @@ export default function TopBattersCard({ awayAbbr, homeAbbr, awayMlbId, homeMlbI
         <div className="top-batters-title">
           {teamMlbId && <img src={logoUrl(teamMlbId)} alt="" className="top-batters-logo" />}
           Top Batters This Week
+          {activeSeason && (
+            <span className="sp-fallback-season-badge">{activeSeason} Stats</span>
+          )}
         </div>
         <div className="split-toggle">
           <button
