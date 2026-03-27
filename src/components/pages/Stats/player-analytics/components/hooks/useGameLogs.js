@@ -42,11 +42,11 @@ function getDefaultRecentFormSeasonType(season) {
   if (selectedYear < currentYear) return 'R';
 
   const now = new Date();
-  const regularSeasonStart = new Date(currentYear, 3, 1);  // April 1
-  const postseasonStart    = new Date(currentYear, 9, 1);  // October 1
+  const month = now.getMonth() + 1; // 1-based
+  const day = now.getDate();
 
-  if (now < regularSeasonStart) return 'S';
-  if (now >= postseasonStart)   return 'P';
+  if (month === 2 && day >= 15) return 'S'; // Mid-Feb spring training
+  if (month >= 10) return 'P';              // October+ postseason
   return 'R';
 }
 

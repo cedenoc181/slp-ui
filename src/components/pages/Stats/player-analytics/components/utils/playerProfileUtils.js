@@ -178,7 +178,7 @@ export const getCurrentSeasonType = () => {
   const now = new Date();
   const month = now.getMonth() + 1; // 1-based
   const day = now.getDate();
-  if ((month === 2 && day >= 15) || month === 3) return 'S';
+  if (month === 2 && day >= 15) return 'S';
   return 'R';
 };
 
