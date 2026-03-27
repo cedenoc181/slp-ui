@@ -222,19 +222,19 @@ function buildPick(row) {
   if (!pred && !odds && !bookmakers.length) return getMockPick(row);
 
   const mock  = getMockPick(row);
-  const pHome = pred?.p_home_win ?? 0.5;
+  const pHome = pred?.blended_p_home_win ?? pred?.p_home_win ?? 0.5;
   const pick  = pHome >= 0.5 ? 'home' : 'away';
   const conf  = Math.round(Math.max(pHome, 1 - pHome) * 100);
 
   const awayML = odds?.away_moneyline_game != null ? Math.round(odds.away_moneyline_game) : null;
   const homeML = odds?.home_moneyline_game != null ? Math.round(odds.home_moneyline_game) : null;
 
-  const totalLine  = odds?.over_under_line_game ?? pred?.predicted_total ?? mock.totalLine;
+  const totalLine  = odds?.over_under_line_game ?? pred?.blended_predicted_total ?? pred?.predicted_total ?? mock.totalLine;
   const overOdds   = odds?.over_price  != null ? Math.round(odds.over_price)  : -110;
   const underOdds  = odds?.under_price != null ? Math.round(odds.under_price) : -110;
   const totalSide  = overOdds >= underOdds ? 'Over' : 'Under';
 
-  const predTotal = pred?.predicted_total ?? totalLine;
+  const predTotal = pred?.blended_predicted_total ?? pred?.predicted_total ?? totalLine;
   const totalProb = Math.min(70, 50 + Math.round(
     Math.abs(predTotal - totalLine) / (pred?.total_std_dev ?? 4) * 15
   ));
@@ -360,8 +360,8 @@ function getTopPicks(games, n = 3) {
       return valid.length ? Math.max(...valid) : null;
     };
 
-    // 1. Moneyline — probability from p_home_win
-    const pHome  = pred.p_home_win ?? 0.5;
+    // 1. Moneyline — probability from blended_p_home_win, fallback to p_home_win
+    const pHome  = pred.blended_p_home_win ?? pred.p_home_win ?? 0.5;
     const mlProb = Math.round(Math.max(pHome, 1 - pHome) * 100);
     const mlOdds = bestReal('mlPick');
     if (mlOdds != null) {
@@ -373,8 +373,8 @@ function getTopPicks(games, n = 3) {
       });
     }
 
-    // 2. Run Line — confidence from |predicted_margin| / margin_std_dev
-    const margin    = Math.abs(pred.predicted_margin ?? 0);
+    // 2. Run Line — confidence from blended_predicted_margin, fallback to predicted_margin
+    const margin    = Math.abs(pred.blended_predicted_margin ?? pred.predicted_margin ?? 0);
     const marginStd = pred.margin_std_dev ?? 4;
     const rlProb    = Math.min(80, Math.round(50 + (margin / marginStd) * 15));
     const rlOdds    = bestReal('rlPick');
@@ -387,9 +387,9 @@ function getTopPicks(games, n = 3) {
       });
     }
 
-    // 3. Total — confidence from |predicted_total - line| / total_std_dev
-    const ouLine    = game.odds?.over_under_line_game ?? pred.predicted_total;
-    const predTotal = pred.predicted_total ?? ouLine;
+    // 3. Total — confidence from blended_predicted_total, fallback to predicted_total
+    const ouLine    = game.odds?.over_under_line_game ?? pred.blended_predicted_total ?? pred.predicted_total;
+    const predTotal = pred.blended_predicted_total ?? pred.predicted_total ?? ouLine;
     const totalStd  = pred.total_std_dev ?? 4;
     const totalProb = Math.min(70, Math.round(50 + (Math.abs(predTotal - ouLine) / totalStd) * 15));
     const totalOdds = bestReal('total');

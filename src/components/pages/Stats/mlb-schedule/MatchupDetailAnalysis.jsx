@@ -11,7 +11,6 @@ import '../../../../styles/stats-page-styling/matchup-analysis.css';
 import '../../../../styles/stats-page-styling/scout-ai.css';
 import { ScoutAiButton, ScoutAiModal } from './components';
 import { getScoutAnalysis } from '../../../../data/services/scoutAiService';
-import api from '../../../../data/services/apiService';
 
 import {
   MiniHero,
@@ -273,82 +272,8 @@ export default function MatchupDetailComp() {
     setShowScoutModal(true);
 
     try {
-      const pickBat = s => s ? { avg: s.avg, ops: s.ops } : null;
-      const pickPit = s => s ? { era: s.era, whip: s.whip } : null;
-
       const gamePk = game.game_pk ?? game.id;
-      const mlPredRaw    = await api.get(`/predictions/${gamePk}`).catch(() => null);
-      const mlPrediction = mlPredRaw?.prediction ?? null;
-
-      const scoutPayload = {
-        gameId:   String(game.game_pk),
-        gameDate: game.date,
-        status:   { isFinal, isLive, isScheduled },
-        away: {
-          name:     game.away_team_name,
-          abbr:     awayAbbr,
-          record:   null,
-          last10:   null,
-          batting:           awaySplits?.vs_lhp || awaySplits?.vs_rhp
-                               ? pickBat(awaySplits.vs_lhp ?? awaySplits.vs_rhp)
-                               : null,
-          batting_vs_hand:   awaySplits ? {
-                               vs_lhp: pickBat(awaySplits.vs_lhp),
-                               vs_rhp: pickBat(awaySplits.vs_rhp),
-                             } : null,
-          batting_home_road: awayHomeRoadSplits ? {
-                               at_home: pickBat(awayHomeRoadSplits.at_home),
-                               on_road: pickBat(awayHomeRoadSplits.on_road),
-                             } : null,
-          pitching: null,
-          startingPitcher: {
-            name:            game.away_sp_name,
-            seasonStats:     null,
-            vs_hand_splits:  awaySPVsHandSplits ? {
-                               vs_lhb: pickPit(awaySPVsHandSplits.vs_lhb),
-                               vs_rhb: pickPit(awaySPVsHandSplits.vs_rhb),
-                             } : null,
-            home_road_splits: awaySPHomeRoadSplits ? {
-                               at_home: pickPit(awaySPHomeRoadSplits.at_home),
-                               on_road: pickPit(awaySPHomeRoadSplits.on_road),
-                             } : null,
-          },
-        },
-        home: {
-          name:     game.home_team_name,
-          abbr:     homeAbbr,
-          record:   null,
-          last10:   null,
-          batting:           homeSplits?.vs_lhp || homeSplits?.vs_rhp
-                               ? pickBat(homeSplits.vs_lhp ?? homeSplits.vs_rhp)
-                               : null,
-          batting_vs_hand:   homeSplits ? {
-                               vs_lhp: pickBat(homeSplits.vs_lhp),
-                               vs_rhp: pickBat(homeSplits.vs_rhp),
-                             } : null,
-          batting_home_road: homeHomeRoadSplits ? {
-                               at_home: pickBat(homeHomeRoadSplits.at_home),
-                               on_road: pickBat(homeHomeRoadSplits.on_road),
-                             } : null,
-          pitching: null,
-          startingPitcher: {
-            name:            game.home_sp_name,
-            seasonStats:     null,
-            vs_hand_splits:  homeSPVsHandSplits ? {
-                               vs_lhb: pickPit(homeSPVsHandSplits.vs_lhb),
-                               vs_rhb: pickPit(homeSPVsHandSplits.vs_rhb),
-                             } : null,
-            home_road_splits: homeSPHomeRoadSplits ? {
-                               at_home: pickPit(homeSPHomeRoadSplits.at_home),
-                               on_road: pickPit(homeSPHomeRoadSplits.on_road),
-                             } : null,
-          },
-        },
-        headToHead: null,
-        mlPrediction: mlPrediction ?? null,
-      };
-
-      const data = await getScoutAnalysis(scoutPayload);
+      const data = await getScoutAnalysis(gamePk);
       setScoutAnalysis(data.analysis);
       setScoutGeneratedAt(data.cached ? null : Date.now());
     } catch (err) {

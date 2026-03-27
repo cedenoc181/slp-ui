@@ -1,15 +1,15 @@
 import { API_BASE_URL } from '../config/apiConfig';
 
 const SCOUT_AI_ENDPOINT = `${API_BASE_URL}/api/scout-ai`;
-const TIMEOUT_MS = 90_000; // 90 s — LLM calls can be slow
+const CACHE_TTL_MS = 4 * 60 * 60 * 1000; // 4 hours
 
-export async function getScoutAnalysis(matchupData) {
-  const cacheKey = `scout:${matchupData.gameId}:${matchupData.gameDate}`;
+export async function getScoutAnalysis(gamePk) {
+  const cacheKey = `scout:${gamePk}`;
   const cached = localStorage.getItem(cacheKey);
   if (cached) {
     try {
       const { analysis, timestamp } = JSON.parse(cached);
-      if (Date.now() - timestamp < 4 * 60 * 60 * 1000) {
+      if (Date.now() - timestamp < CACHE_TTL_MS) {
         return { analysis, cached: true };
       }
     } catch {
@@ -17,25 +17,7 @@ export async function getScoutAnalysis(matchupData) {
     }
   }
 
-  const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), TIMEOUT_MS);
-
-  let response;
-  try {
-    response = await fetch(SCOUT_AI_ENDPOINT, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(matchupData),
-      signal: controller.signal,
-    });
-  } catch (err) {
-    if (err.name === 'AbortError') {
-      throw new Error('Scout AI timed out. Please try again.');
-    }
-    throw new Error('Could not reach Scout AI. Check your connection.');
-  } finally {
-    clearTimeout(timeoutId);
-  }
+  const response = await fetch(`${SCOUT_AI_ENDPOINT}?game_pk=${gamePk}`);
 
   if (response.status === 429) {
     const retryAfter = response.headers.get('Retry-After');
@@ -52,15 +34,9 @@ export async function getScoutAnalysis(matchupData) {
   }
 
   const data = await response.json();
-
-  // Server returns structured object directly — normalise so callers
-  // always receive { analysis: <object|string> }
   const analysis = data.analysis ?? data;
 
-  localStorage.setItem(cacheKey, JSON.stringify({
-    analysis,
-    timestamp: Date.now(),
-  }));
+  localStorage.setItem(cacheKey, JSON.stringify({ analysis, timestamp: Date.now() }));
 
   return { analysis };
 }

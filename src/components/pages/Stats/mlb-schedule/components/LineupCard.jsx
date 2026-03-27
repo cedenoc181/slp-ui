@@ -116,9 +116,10 @@ export default function LineupCard({ abbr, mlbId, season, seasonType, gamePk, te
     return () => clearInterval(intervalId);
   }, [isLive, gamePk, teamAId, teamBId, season, seasonType, side]); // eslint-disable-line
 
-  // Loading skeleton
-  if (loading) {
-    return (
+  // While loading or when no data — show fallback (TeamStatsCard) so it stays
+  // visible until real lineup data is ready to replace it.
+  if (loading || (batters.length === 0 && pitchers.length === 0)) {
+    return fallback ?? (loading ? (
       <div className="detail-card lineup-card">
         <div className="lineup-card-header">
           <h3 className="card-title">
@@ -132,12 +133,7 @@ export default function LineupCard({ abbr, mlbId, season, seasonType, gamePk, te
           ))}
         </div>
       </div>
-    );
-  }
-
-  // No lineup data — render TeamStatsCard fallback or nothing
-  if (batters.length === 0 && pitchers.length === 0) {
-    return fallback ?? null;
+    ) : null);
   }
 
   const sortedBatters = [...batters]

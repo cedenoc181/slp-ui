@@ -913,6 +913,11 @@ a > .hero-team-logo:hover {
   margin-bottom: 1.25rem;
 }
 
+.matchup-detail-top-nav__center {
+  display: flex;
+  justify-content: center;
+}
+
 .matchup-detail-top-nav__right {
   display: flex;
   justify-content: flex-end;
