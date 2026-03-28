@@ -18,6 +18,49 @@
   cursor: pointer;
   transition: background 0.2s ease, border-color 0.2s ease, transform 0.15s ease, box-shadow 0.2s ease;
   white-space: nowrap;
+  position: relative;
+}
+
+/* Tooltip */
+.scout-ai-btn::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  bottom: calc(100% + 8px);
+  left: 50%;
+  transform: translateX(-50%);
+  background: #1a1f2e;
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 0.65rem;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  white-space: nowrap;
+  padding: 0.3rem 0.6rem;
+  border-radius: 5px;
+  border: 1px solid rgba(100, 181, 246, 0.25);
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.15s ease;
+  z-index: 20;
+}
+
+/* Tooltip caret */
+.scout-ai-btn::before {
+  content: '';
+  position: absolute;
+  bottom: calc(100% + 2px);
+  left: 50%;
+  transform: translateX(-50%);
+  border: 5px solid transparent;
+  border-top-color: rgba(100, 181, 246, 0.25);
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.15s ease;
+  z-index: 20;
+}
+
+.scout-ai-btn:hover:not(:disabled)::after,
+.scout-ai-btn:hover:not(:disabled)::before {
+  opacity: 1;
 }
 
 .scout-ai-btn:hover:not(:disabled) {
@@ -327,16 +370,27 @@
   border-radius: 0 8px 8px 0;
 }
 
+/* Picks section */
+.scout-picks-section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
 /* Picks row */
 .scout-picks-row {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.75rem;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.6rem;
+}
+
+@media (max-width: 480px) {
+  .scout-picks-row {
+    grid-template-columns: 1fr;
+  }
 }
 
 .scout-pick-card {
-  flex: 1;
-  min-width: 140px;
   display: flex;
   flex-direction: column;
   gap: 0.3rem;

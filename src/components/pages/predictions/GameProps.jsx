@@ -234,11 +234,12 @@ function buildPick(row) {
   const homeML = odds?.home_moneyline_game != null ? Math.round(odds.home_moneyline_game) : null;
 
   const totalLine  = odds?.over_under_line_game ?? pred?.blended_predicted_total ?? pred?.predicted_total ?? mock.totalLine;
-  const overOdds   = odds?.over_price  != null ? Math.round(odds.over_price)  : -110;
-  const underOdds  = odds?.under_price != null ? Math.round(odds.under_price) : -110;
-  const totalSide  = overOdds >= underOdds ? 'Over' : 'Under';
+  const overOdds  = odds?.over_price  != null ? Math.round(odds.over_price)  : -110;
+  const underOdds = odds?.under_price != null ? Math.round(odds.under_price) : -110;
 
+  // Lean toward the side the model predicts: if blended total > line → Over, else → Under
   const predTotal = pred?.blended_predicted_total ?? pred?.predicted_total ?? totalLine;
+  const totalSide = predTotal >= totalLine ? 'Over' : 'Under';
   const totalProb = Math.min(70, 50 + Math.round(
     Math.abs(predTotal - totalLine) / (pred?.total_std_dev ?? 4) * 15
   ));
@@ -865,20 +866,18 @@ function OddsDrawer({ game, onClose }) {
   const [scoutError,      setScoutError]       = useState(null);
   const [showScoutModal,  setShowScoutModal]   = useState(false);
 
-  const handleScoutClick = useCallback(async () => {
+  const handleScoutClick = useCallback(() => {
     setShowScoutModal(true);
     if (scoutAnalysis) return;
-    setScoutLoading(true);
-    setScoutError(null);
-    try {
-      const { analysis } = await getScoutAnalysis(game.game_pk);
-      setScoutAnalysis(analysis);
-    } catch (err) {
-      setScoutError(err.message || 'Scout AI unavailable');
-    } finally {
-      setScoutLoading(false);
+    // Use scout_ai already embedded on the game object from predictions/today —
+    // avoids the localStorage cache which can serve stale pick directions.
+    const ai = game.scout_ai ?? null;
+    if (!ai) {
+      setScoutError('Scout AI analysis is not yet available for this game');
+      return;
     }
-  }, [game.game_pk, scoutAnalysis]);
+    setScoutAnalysis(ai);
+  }, [game.scout_ai, scoutAnalysis]);
 
   useEffect(() => {
     const onKey = (e) => { if (e.key === 'Escape') onClose(); };
@@ -920,7 +919,7 @@ function OddsDrawer({ game, onClose }) {
           <ScoutAiButton
             isToday={true}
             hasAnalysis={!!scoutAnalysis}
-            loading={scoutLoading}
+            loading={false}
             onClick={handleScoutClick}
           />
           <div className="gp-view-toggle-right">

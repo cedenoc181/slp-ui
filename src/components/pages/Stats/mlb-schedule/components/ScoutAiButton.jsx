@@ -6,6 +6,7 @@ export default function ScoutAiButton({ hasAnalysis, loading, onClick, isToday =
       onClick={onClick}
       disabled={loading}
       aria-label="Get Scout AI analysis for this matchup"
+      data-tooltip="ML · Run Line · Totals"
     >
       {loading ? (
         <>

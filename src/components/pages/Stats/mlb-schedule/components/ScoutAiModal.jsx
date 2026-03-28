@@ -77,6 +77,14 @@ function ConfidenceDots({ value }) {
   );
 }
 
+// ── Pick type visual metadata ─────────────────────────────────────────────────
+const PICK_TYPE_META = {
+  'Moneyline': { icon: '💰', color: '#64b5f6', borderColor: 'rgba(100,181,246,0.4)' },
+  'Run Line':  { icon: '📏', color: '#4ade80', borderColor: 'rgba(74,222,128,0.4)'  },
+  'Total':     { icon: '📈', color: '#fbbf24', borderColor: 'rgba(251,191,36,0.4)'  },
+  '_default':  { icon: '🎯', color: '#a78bfa', borderColor: 'rgba(167,139,250,0.4)' },
+};
+
 // ── Structured analysis renderer ─────────────────────────────────────────────
 function StructuredAnalysis({ analysis: raw }) {
   // Server may return the structured object as a JSON string — parse if needed
@@ -97,14 +105,24 @@ function StructuredAnalysis({ analysis: raw }) {
 
       {/* Picks */}
       {Array.isArray(a.picks) && a.picks.length > 0 && (
-        <div className="scout-picks-row">
-          {a.picks.map((pick, i) => (
-            <div key={i} className="scout-pick-card">
-              <span className="scout-pick-type">{pick.type}</span>
-              <span className="scout-pick-value">{pick.pick}</span>
-              <ConfidenceDots value={pick.confidence} />
-            </div>
-          ))}
+        <div className="scout-picks-section">
+          <h4 className="scout-section-title">
+            <span className="scout-section-icon">🎯</span> Recommended Plays
+          </h4>
+          <div className="scout-picks-row">
+            {a.picks.map((p, i) => {
+              const meta = PICK_TYPE_META[p.type] ?? PICK_TYPE_META._default;
+              return (
+                <div key={i} className="scout-pick-card" style={{ borderColor: meta.borderColor }}>
+                  <span className="scout-pick-type" style={{ color: meta.color }}>
+                    {meta.icon} {p.type ?? '—'}
+                  </span>
+                  <span className="scout-pick-value">{p.pick ?? '—'}</span>
+                  <ConfidenceDots value={p.confidence ?? 0} />
+                </div>
+              );
+            })}
+          </div>
         </div>
       )}
 
