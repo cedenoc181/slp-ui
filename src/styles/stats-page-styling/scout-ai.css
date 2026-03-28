@@ -365,6 +365,49 @@
   display: flex;
   gap: 3px;
   margin-top: 0.1rem;
+  position: relative;
+  cursor: default;
+}
+
+/* Tooltip */
+.scout-confidence::after {
+  content: attr(aria-label);
+  position: absolute;
+  bottom: calc(100% + 7px);
+  left: 50%;
+  transform: translateX(-50%);
+  background: #1a1f2e;
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 0.65rem;
+  font-weight: 600;
+  white-space: nowrap;
+  padding: 0.3rem 0.55rem;
+  border-radius: 5px;
+  border: 1px solid rgba(100, 181, 246, 0.25);
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.15s ease;
+  z-index: 10;
+}
+
+/* Tooltip caret */
+.scout-confidence::before {
+  content: '';
+  position: absolute;
+  bottom: calc(100% + 1px);
+  left: 50%;
+  transform: translateX(-50%);
+  border: 5px solid transparent;
+  border-top-color: rgba(100, 181, 246, 0.25);
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.15s ease;
+  z-index: 10;
+}
+
+.scout-confidence:hover::after,
+.scout-confidence:hover::before {
+  opacity: 1;
 }
 
 .scout-conf-dot {
