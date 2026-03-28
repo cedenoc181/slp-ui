@@ -7,6 +7,7 @@ import playerStatsService from '../../../data/services/playerStatsServices';
 import PredictionsNav from './PredictionsNav';
 import '../../../styles/predictions-page-styling/predictions.css';
 import '../../../styles/predictions-page-styling/pitcher-props.css';
+import '../../../styles/stats-page-styling/scout-ai.css';
 
 // ─── URL helpers ──────────────────────────────────────────────────────────────
 
@@ -38,10 +39,13 @@ const EXCHANGE_NAMES  = ['BetOpenly', 'Kalshi', 'Novig', 'Polymarket', 'ProphetX
 const DFS_NAMES       = ['PrizePicks', 'Underdog', 'DraftKings Pick6', 'Betr Picks'];
 
 const BOOK_META = {
-  DraftKings:        { abbr: 'DK',  color: '#62a800', bg: 'rgba(98,168,0,0.18)',    logo: 'https://logo.clearbit.com/draftkings.com' },
-  FanDuel:           { abbr: 'FD',  color: '#1493ff', bg: 'rgba(20,147,255,0.18)',  logo: 'https://logo.clearbit.com/fanduel.com' },
-  BetMGM:            { abbr: 'MGM', color: '#c8a84b', bg: 'rgba(200,168,75,0.18)',  logo: 'https://logo.clearbit.com/betmgm.com' },
-  Caesars:           { abbr: 'CZR', color: '#0057b8', bg: 'rgba(0,87,184,0.18)',    logo: 'https://logo.clearbit.com/caesarssportsbook.com' },
+  DraftKings:      { abbr: 'DK',  color: '#62a800', bg: 'rgba(98,168,0,0.18)',    logo: 'https://logo.clearbit.com/draftkings.com' },
+  FanDuel:         { abbr: 'FD',  color: '#1493ff', bg: 'rgba(20,147,255,0.18)',  logo: 'https://logo.clearbit.com/fanduel.com' },
+  BetMGM:          { abbr: 'MGM', color: '#c8a84b', bg: 'rgba(200,168,75,0.18)',  logo: 'https://logo.clearbit.com/betmgm.com' },
+  Caesars:         { abbr: 'CZR', color: '#0057b8', bg: 'rgba(0,87,184,0.18)',    logo: 'https://logo.clearbit.com/caesarssportsbook.com' },
+  BetRivers:       { abbr: 'BR',  color: '#e63946', bg: 'rgba(230,57,70,0.18)',   logo: 'https://logo.clearbit.com/betrivers.com' },
+  Fanatics:        { abbr: 'FAN', color: '#e84118', bg: 'rgba(232,65,24,0.18)',   logo: 'https://logo.clearbit.com/fanatics.com' },
+  'Hard Rock Bet': { abbr: 'HRB', color: '#ffd700', bg: 'rgba(255,215,0,0.18)',   logo: 'https://logo.clearbit.com/hardrock.com' },
 };
 const EXCHANGE_META = {
   BetOpenly:  { abbr: 'BO',  color: '#e879f9', bg: 'rgba(232,121,249,0.15)', logo: 'https://logo.clearbit.com/betopenly.com' },
@@ -133,64 +137,90 @@ function getMockPitcherProps(pitcher) {
 }
 
 // ─── Real prediction → prop shape ────────────────────────────────────────────
-// Uses pitcher.prediction (from /predictions/pitchers/today) when available,
-// falls back to getMockPitcherProps() for the prop lines.
+// Maps pitcher prediction fields (blended values) + sportsbook_props/dfs_props
+// onto the internal prop shape consumed by all UI components.
+
+// Maps API stat_type → component key + display metadata
+const STAT_MAP = {
+  strikeouts:   { key: 'strikeouts', label: 'Strikeouts',   icon: '🔥', blendedKey: 'blended_strikeouts',   stdKey: 'strikeouts_std_dev'   },
+  hits_allowed: { key: 'hits',       label: 'Hits Allowed', icon: '🎯', blendedKey: 'blended_hits_allowed',  stdKey: 'hits_allowed_std_dev'  },
+  outs:         { key: 'outs',       label: 'Pitcher Outs', icon: '⚾', blendedKey: 'blended_outs',          stdKey: 'outs_std_dev'          },
+  earned_runs:  { key: 'earnedRuns', label: 'Earned Runs',  icon: '📊', blendedKey: 'blended_earned_runs',   stdKey: 'earned_runs_std_dev'   },
+};
 
 function buildPitcherProps(pitcher) {
   const pred = pitcher.prediction;
   if (!pred) return getMockPitcherProps(pitcher);
 
-  // Coefficient-of-variation-based confidence: lower spread → higher confidence
-  const cv = (mean, std) =>
-    Math.min(72, Math.max(52, Math.round(72 - (std / mean) * 100)));
+  const sbProps  = Array.isArray(pred.sportsbook_props) ? pred.sportsbook_props : [];
+  const dfsProps = Array.isArray(pred.dfs_props)        ? pred.dfs_props        : [];
+  const scoutAI  = pred.scout_ai ?? null;
 
-  const raw = [
-    {
-      key: 'strikeouts', label: 'Strikeouts',   icon: '🔥',
-      line:      Math.round(pred.predicted_strikeouts  * 10) / 10,
-      side:      'Over',
-      modelProb: cv(pred.predicted_strikeouts,  pred.strikeouts_std_dev),
-      baseOdds:  -115,
-    },
-    {
-      key: 'hits',       label: 'Hits Allowed',  icon: '🎯',
-      line:      Math.round(pred.predicted_hits_allowed * 10) / 10,
-      side:      'Under',
-      modelProb: cv(pred.predicted_hits_allowed, pred.hits_allowed_std_dev),
-      baseOdds:  -115,
-    },
-    {
-      key: 'outs',       label: 'Pitcher Outs',  icon: '⚾',
-      line:      Math.round(pred.predicted_outs  * 10) / 10,
-      side:      'Over',
-      modelProb: cv(pred.predicted_outs,  pred.outs_std_dev),
-      baseOdds:  -115,
-    },
-    {
-      key: 'earnedRuns', label: 'Earned Runs',   icon: '📊',
-      line:      Math.round(pred.predicted_earned_runs * 10) / 10,
-      side:      'Under',
-      modelProb: cv(pred.predicted_earned_runs,  pred.earned_runs_std_dev),
-      baseOdds:  -115,
-    },
-  ];
+  // Confidence: how far the blended projection is from the sportsbook line in std-dev units
+  const confidence = (blended, line, std) => {
+    if (!std) return 55;
+    const dist = Math.abs(blended - line);
+    return Math.min(78, Math.max(52, Math.round(52 + (dist / std) * 30)));
+  };
 
-  const props = raw.map(p => {
-    const bestOdds = p.baseOdds + 4;
+  const props = Object.entries(STAT_MAP).map(([apiKey, cfg]) => {
+    const blended = pred[cfg.blendedKey] ?? 0;
+    const std     = pred[cfg.stdKey]     ?? 1;
+
+    // Group sportsbook entries for this stat by platform
+    const statSB  = sbProps.filter(p => p.stat_type === apiKey);
+    const bookMap = {};
+    for (const sp of statSB) {
+      const title = sp.platform_title;
+      if (!bookMap[title]) bookMap[title] = { name: title, line: sp.line, over: null, under: null };
+      if (sp.over_price  != null) bookMap[title].over  = Math.round(sp.over_price);
+      if (sp.under_price != null) bookMap[title].under = Math.round(sp.under_price);
+    }
+    const books = Object.values(bookMap);
+
+    // Use first sportsbook line; fall back to rounded blended value
+    const sbLine = statSB.length > 0 ? statSB[0].line : null;
+    const line   = sbLine ?? Math.round(blended * 10) / 10;
+
+    // Side: blended prediction vs sportsbook line
+    const side    = blended >= line ? 'Over' : 'Under';
+    const sideKey = side === 'Over' ? 'over' : 'under';
+
+    // Best odds for the predicted side across all books
+    const bestOdds = books.reduce((best, b) => {
+      const v = b[sideKey];
+      return v != null && (best == null || v > best) ? v : best;
+    }, null) ?? -115;
+
+    const modelProb = confidence(blended, line, std);
+
+    // DFS props for this stat
+    const statDFS = dfsProps.filter(p => p.stat_type === apiKey);
+    const dfsMap  = {};
+    for (const dp of statDFS) {
+      if (!dfsMap[dp.platform_title]) dfsMap[dp.platform_title] = { name: dp.platform_title, line: dp.line };
+    }
+    const dfs = Object.values(dfsMap);
+
+    // Scout AI pick for this stat
+    const scoutProp = scoutAI?.props?.[apiKey] ?? null;
+
     return {
-      ...p,
+      key:         cfg.key,
+      label:       cfg.label,
+      icon:        cfg.icon,
+      line,
+      blended:     Math.round(blended * 100) / 100,
+      side,
+      modelProb,
       bestOdds,
-      ev: calcEV(p.modelProb, bestOdds),
-      books: BOOK_NAMES.map((name, i) => {
-        const overOdds  = p.baseOdds + BOOK_OFFSETS[i];
-        const underOdds = -(Math.abs(overOdds) + 8 + (i * 2));
-        return { name, over: overOdds, under: underOdds };
-      }),
-      exchanges: EXCHANGE_NAMES.map((name, i) => {
-        const yes = 50 + (i % 5);
-        return { name, yes, no: 100 - yes + 2 };
-      }),
-      dfs: DFS_NAMES.map(name => ({ name, line: p.line })),
+      ev:          calcEV(modelProb, bestOdds),
+      scoutPick:   scoutProp?.pick        ?? null,
+      scoutConf:   scoutProp?.confidence  ?? null,
+      scoutReason: scoutProp?.reasoning   ?? null,
+      books,
+      exchanges:   [],
+      dfs,
     };
   });
 
@@ -283,7 +313,7 @@ function TopPitcherCard({ pitcher, bestProp, onClick }) {
 // ─── Pitcher list card ────────────────────────────────────────────────────────
 
 function PitcherCard({ pitcher, isSelected, onClick }) {
-  const { bestProp } = getMockPitcherProps(pitcher);  // eslint-disable-line
+  const { bestProp } = buildPitcherProps(pitcher);
   return (
     <button
       className={`pp-top-card ${isSelected ? 'selected' : ''}`}
@@ -328,10 +358,21 @@ function PropPanel({ prop, onClick }) {
         <span className="pp-prop-label">{prop.label}</span>
       </div>
 
-      <div className="pp-prop-line">
-        <span className="pp-prop-side">{prop.side}</span>
-        <span className="pp-prop-number">{prop.line}</span>
-      </div>
+      {(() => {
+        const parts  = prop.scoutPick ? prop.scoutPick.split(' ') : null;
+        const pSide  = parts ? parts[0] : prop.side;
+        const pLine  = parts ? parts[1] : prop.line;
+        const label  = parts ? 'Scout Pick' : 'Model Pick';
+        return (
+          <div className="pp-prop-line">
+            <span className="pp-prop-line-label">{label}</span>
+            <div className="pp-prop-line-pick">
+              <span className="pp-prop-side">{pSide}</span>
+              <span className="pp-prop-number">{pLine}</span>
+            </div>
+          </div>
+        );
+      })()}
 
       <div className="pp-prop-stats">
         <div className="pp-prop-stat">
@@ -358,13 +399,19 @@ function PropPanel({ prop, onClick }) {
 // ─── Odds tables (inside prop-selected drawer) ────────────────────────────────
 
 function PropBooksTable({ prop }) {
-  const isOver  = prop.side === 'Over';
-  const bestOvIdx = prop.books.reduce((bi, b, i, a) => b.over  > a[bi].over  ? i : bi, 0);
-  const bestUnIdx = prop.books.reduce((bi, b, i, a) => b.under > a[bi].under ? i : bi, 0);
+  if (!prop.books.length) {
+    return <div className="pp-odds-empty">No sportsbook lines available yet.</div>;
+  }
+  const isOver    = prop.side === 'Over';
+  const bestOvIdx = prop.books.reduce((bi, b, i, a) =>
+    (b.over  ?? -Infinity) > (a[bi].over  ?? -Infinity) ? i : bi, 0);
+  const bestUnIdx = prop.books.reduce((bi, b, i, a) =>
+    (b.under ?? -Infinity) > (a[bi].under ?? -Infinity) ? i : bi, 0);
   return (
-    <div className="pp-odds-table">
+    <div className="pp-odds-table pp-odds-table--4col">
       <div className="pp-odds-table-head">
         <div>Platform</div>
+        <div>Line</div>
         <div className={isOver ? 'pp-odds-col-active' : ''}>Over</div>
         <div className={!isOver ? 'pp-odds-col-active' : ''}>Under</div>
       </div>
@@ -374,10 +421,11 @@ function PropBooksTable({ prop }) {
             <PlatformLogo name={b.name} metaMap={BOOK_META} />
             <span>{b.name}</span>
           </div>
-          <div className={`pp-odds-val${i === bestOvIdx ? ' best' : ''}${isOver ? ' side-pick' : ''}`}>
+          <div className="pp-odds-val pp-odds-line">{b.line ?? '—'}</div>
+          <div className={`pp-odds-val${i === bestOvIdx && b.over != null ? ' best' : ''}${isOver ? ' side-pick' : ''}`}>
             {fmtOdds(b.over)}
           </div>
-          <div className={`pp-odds-val${i === bestUnIdx ? ' best' : ''}${!isOver ? ' side-pick' : ''}`}>
+          <div className={`pp-odds-val${i === bestUnIdx && b.under != null ? ' best' : ''}${!isOver ? ' side-pick' : ''}`}>
             {fmtOdds(b.under)}
           </div>
         </div>
@@ -437,13 +485,90 @@ function PropDFSTable({ prop }) {
   );
 }
 
+// ─── Pitcher Scout AI modal ───────────────────────────────────────────────────
+
+const PITCHER_PROP_META = {
+  strikeouts:   { label: 'Strikeouts',   icon: '🔥' },
+  earned_runs:  { label: 'Earned Runs',  icon: '📊' },
+  hits_allowed: { label: 'Hits Allowed', icon: '🎯' },
+  outs:         { label: 'Pitcher Outs', icon: '⚾' },
+};
+
+function PitcherConfidenceDots({ value }) {
+  return (
+    <span className="scout-confidence" aria-label={`Confidence ${value} of 5`}>
+      {Array.from({ length: 5 }, (_, i) => (
+        <span key={i} className={`scout-conf-dot${i < value ? ' filled' : ''}`} />
+      ))}
+    </span>
+  );
+}
+
+function PitcherScoutModal({ scoutAi, pitcherName, onClose }) {
+  useEffect(() => {
+    const onKey = (e) => { if (e.key === 'Escape') onClose(); };
+    document.addEventListener('keydown', onKey);
+    return () => document.removeEventListener('keydown', onKey);
+  }, [onClose]);
+
+  return createPortal(
+    <div className="scout-modal-backdrop" onClick={onClose} role="dialog" aria-modal="true" aria-label="Scout AI Pitcher Analysis">
+      <div className="scout-modal" onClick={e => e.stopPropagation()}>
+
+        <div className="scout-modal__header">
+          <div className="scout-modal__title">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <path d="M9.5 2A2.5 2.5 0 0 1 12 4.5v15a2.5 2.5 0 0 1-4.96-.46 2.5 2.5 0 0 1-2.96-3.08 3 3 0 0 1-.34-5.58 2.5 2.5 0 0 1 1.32-4.24 2.5 2.5 0 0 1 4.44-1.14Z"/>
+              <path d="M14.5 2A2.5 2.5 0 0 0 12 4.5v15a2.5 2.5 0 0 0 4.96-.46 2.5 2.5 0 0 0 2.96-3.08 3 3 0 0 0 .34-5.58 2.5 2.5 0 0 0-1.32-4.24 2.5 2.5 0 0 0-4.44-1.14Z"/>
+            </svg>
+            <span>Scout AI</span>
+            <span className="scout-modal__beta">BETA</span>
+          </div>
+          <button className="scout-modal__close" onClick={onClose} aria-label="Close">✕</button>
+        </div>
+
+        <div className="scout-modal__body">
+          {scoutAi.summary && (
+            <p className="scout-section-body pp-scout-summary">{scoutAi.summary}</p>
+          )}
+
+          {scoutAi.props && Object.entries(scoutAi.props).map(([key, data]) => {
+            const meta = PITCHER_PROP_META[key] ?? { label: key, icon: '📌' };
+            return (
+              <div key={key} className="scout-section">
+                <h4 className="scout-section-title">
+                  <span className="scout-section-icon">{meta.icon}</span>
+                  {meta.label}
+                  <span className="pp-scout-prop-pick">{data.pick}</span>
+                  <PitcherConfidenceDots value={data.confidence ?? 0} />
+                </h4>
+                <p className="scout-section-body">{data.reasoning}</p>
+              </div>
+            );
+          })}
+        </div>
+
+        <div className="scout-modal__footer">
+          <p className="scout-modal__disclaimer">
+            ⚠ For entertainment purposes only. Scout AI does not guarantee outcomes. Please gamble responsibly.
+          </p>
+        </div>
+
+      </div>
+    </div>,
+    document.body
+  );
+}
+
 // ─── Pitcher modal ────────────────────────────────────────────────────────────
 
 function PitcherModal({ pitcher, onClose }) {
   const { props } = buildPitcherProps(pitcher);
-  const [hsErr, setHsErr]           = useState(false);
+  const [hsErr, setHsErr]               = useState(false);
   const [selectedProp, setSelectedProp] = useState(null);
-  const [oddsView, setOddsView]     = useState('books');
+  const [oddsView, setOddsView]         = useState('books');
+  const [showScoutModal, setShowScoutModal] = useState(false);
+  const scoutAi = pitcher.prediction?.scout_ai ?? null;
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -478,7 +603,7 @@ function PitcherModal({ pitcher, onClose }) {
 
   const accent = selectedProp ? PROP_ACCENTS[selectedProp.key] || 'green' : null;
 
-  return createPortal(
+  const portal = createPortal(
     <div className="pp-modal-overlay" onClick={() => selectedProp ? setSelectedProp(null) : onClose()} aria-modal="true" role="dialog">
       <div className="pp-modal-wrapper" onClick={e => e.stopPropagation()}>
 
@@ -520,8 +645,12 @@ function PitcherModal({ pitcher, onClose }) {
             <div className="pp-odds-panel">
               <div className="pp-odds-toggle">
                 <button className={oddsView === 'books'    ? 'active' : ''} onClick={() => setOddsView('books')}>Sportsbooks</button>
-                <button className={oddsView === 'exchange' ? 'active' : ''} onClick={() => setOddsView('exchange')}>Pred. Exchange</button>
-                <button className={oddsView === 'dfs'      ? 'active' : ''} onClick={() => setOddsView('dfs')}>DFS</button>
+                {selectedProp.exchanges.length > 0 && (
+                  <button className={oddsView === 'exchange' ? 'active' : ''} onClick={() => setOddsView('exchange')}>Pred. Exchange</button>
+                )}
+                {selectedProp.dfs.length > 0 && (
+                  <button className={oddsView === 'dfs'      ? 'active' : ''} onClick={() => setOddsView('dfs')}>DFS</button>
+                )}
               </div>
               <div className="pp-odds-panel-body">
                 {oddsView === 'books'    && <PropBooksTable    prop={selectedProp} />}
@@ -555,6 +684,16 @@ function PitcherModal({ pitcher, onClose }) {
                 </div>
               </div>
 
+              {scoutAi && (
+                <button className="pp-modal-scout-btn" onClick={() => setShowScoutModal(true)}>
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                    <path d="M9.5 2A2.5 2.5 0 0 1 12 4.5v15a2.5 2.5 0 0 1-4.96-.46 2.5 2.5 0 0 1-2.96-3.08 3 3 0 0 1-.34-5.58 2.5 2.5 0 0 1 1.32-4.24 2.5 2.5 0 0 1 4.44-1.14Z"/>
+                    <path d="M14.5 2A2.5 2.5 0 0 0 12 4.5v15a2.5 2.5 0 0 0 4.96-.46 2.5 2.5 0 0 0 2.96-3.08 3 3 0 0 0 .34-5.58 2.5 2.5 0 0 0-1.32-4.24 2.5 2.5 0 0 0-4.44-1.14Z"/>
+                  </svg>
+                  Scouting Report
+                </button>
+              )}
+
               <button className="pp-modal-team-logo-btn" onClick={goToTeam} aria-label={`${pitcher.teamAbbr} team analytics`}>
                 <img src={teamLogoUrl(pitcher.teamMlbId)} alt={pitcher.teamAbbr} className="pp-modal-team-logo" />
               </button>
@@ -573,6 +712,20 @@ function PitcherModal({ pitcher, onClose }) {
       </div>
     </div>,
     document.body
+  );
+
+  // Scout AI modal rendered in its own portal above the pitcher modal
+  return (
+    <>
+      {portal}
+      {showScoutModal && scoutAi && (
+        <PitcherScoutModal
+          scoutAi={scoutAi}
+          pitcherName={pitcher.name}
+          onClose={() => setShowScoutModal(false)}
+        />
+      )}
+    </>
   );
 }
 
