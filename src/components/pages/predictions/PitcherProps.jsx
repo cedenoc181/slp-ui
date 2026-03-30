@@ -616,8 +616,17 @@ function PitcherModal({ pitcher, onClose }) {
     };
   }, [onClose, selectedProp]);
 
-  const goToPlayer = () => { if (!pitcher.id) return; onClose(); navigate(`/player/${pitcher.id}`); window.scrollTo(0, 0); };
-  const goToMatchup = () => { onClose(); navigate(`/mlb-schedule/${pitcher.gamePk}`); window.scrollTo(0, 0); };
+  const goToPlayer  = () => { const slug = pitcher.nameSlug ?? pitcher.mlbId; if (!slug) return; onClose(); navigate(`/player/${slug}`); window.scrollTo(0, 0); };
+  const goToMatchup = () => {
+    onClose();
+    const g = pitcher.game;
+    const isComplete = g?.away_team_id && g?.home_team_id && g?.game_pk;
+    navigate(
+      `/mlb-schedule/${pitcher.gameId ?? pitcher.gamePk}`,
+      { state: isComplete ? { game: g } : null }
+    );
+    window.scrollTo(0, 0);
+  };
   const goToTeam = () => {
     const urlName = TEAM_METADATA[pitcher.teamAbbr]?.urlName;
     if (!urlName) return;
@@ -887,24 +896,28 @@ export default function PitcherProps() {
             realPitchers.push({
               id:        r.away_sp_id ?? null,
               mlbId:     null,
+              nameSlug:  null,
               name:      r.away_sp_name,
               teamAbbr:  awayAbbr,
               teamMlbId: awayMlbId,
               opponent:  homeAbbr,
-              hand:      '?',
+              gameId:    r.id ?? r.game_pk,
               gamePk:    r.game_pk,
+              game:      r,
             });
           }
           if (r.home_sp_name) {
             realPitchers.push({
               id:        r.home_sp_id ?? null,
               mlbId:     null,
+              nameSlug:  null,
               name:      r.home_sp_name,
               teamAbbr:  homeAbbr,
               teamMlbId: homeMlbId,
               opponent:  awayAbbr,
-              hand:      '?',
+              gameId:    r.id ?? r.game_pk,
               gamePk:    r.game_pk,
+              game:      r,
             });
           }
         }
@@ -930,7 +943,7 @@ export default function PitcherProps() {
             .then(result => {
               if (result?.mlb_id) {
                 setPitchers(prev => prev.map((pp, j) =>
-                  j === i ? { ...pp, mlbId: result.mlb_id } : pp
+                  j === i ? { ...pp, mlbId: result.mlb_id, nameSlug: result.name_slug ?? null } : pp
                 ));
               }
             })
