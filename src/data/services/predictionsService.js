@@ -59,6 +59,16 @@ class PredictionsService {
   }
 
   /**
+   * Batter prop predictions for all players in a specific game.
+   * GET /predictions/batters/{game_pk}
+   * @param {string|number} gamePk
+   * @returns {Promise<Object>}
+   */
+  async getBattersByGamePk(gamePk, options = {}) {
+    return api.get(`/predictions/batters/${gamePk}`, options);
+  }
+
+  /**
    * Pitcher prop predictions for all starters today.
    * GET /predictions/pitchers/today
    * @returns {Promise<Array>}

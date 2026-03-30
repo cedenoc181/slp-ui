@@ -13,18 +13,22 @@ class ApiService {
 
   async request(endpoint, options = {}) {
     const url = `${this.baseUrl}${endpoint}`;
+    const { signal: externalSignal, timeout = this.timeout, ...restOptions } = options;
 
     const config = {
       headers: {
         ...this.defaultHeaders,
-        ...options.headers,
+        ...restOptions.headers,
       },
-      ...options,
+      ...restOptions,
     };
 
-    // Add timeout
+    // Add timeout; also honour any externally-supplied AbortSignal
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), this.timeout);
+    const timeoutId = setTimeout(() => controller.abort(), timeout);
+    if (externalSignal) {
+      externalSignal.addEventListener('abort', () => controller.abort(), { once: true });
+    }
 
     try {
       const response = await fetch(url, {
@@ -54,17 +58,18 @@ class ApiService {
    * Pass `{ ttl: 0 }` in options to bypass cache for a specific call.
    */
   get(endpoint, options = {}) {
-    const { ttl = DEFAULT_CACHE_TTL, ...fetchOptions } = options;
+    const { ttl = DEFAULT_CACHE_TTL, signal, ...fetchOptions } = options;
     const url = `${this.baseUrl}${endpoint}`;
 
-    if (ttl > 0) {
+    // Skip cache when a cancel signal is provided (fresh per-request call)
+    if (ttl > 0 && !signal) {
       const cached = this._cache.get(url);
       if (cached && Date.now() < cached.expiresAt) {
         return Promise.resolve(cached.data);
       }
     }
 
-    return this.request(endpoint, { ...fetchOptions, method: 'GET' }).then(data => {
+    return this.request(endpoint, { ...fetchOptions, signal, method: 'GET' }).then(data => {
       if (ttl > 0) {
         this._cache.set(url, { data, expiresAt: Date.now() + ttl });
       }

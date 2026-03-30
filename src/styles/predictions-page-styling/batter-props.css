@@ -1105,3 +1105,107 @@
 @media (max-width: 480px) {
   .bp-markets-grid { grid-template-columns: 1fr 1fr; }
 }
+
+/* ── Loading state ────────────────────────────────────────── */
+.bp-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  padding: 4rem 1rem;
+  color: rgba(255,255,255,0.4);
+  font-size: 0.9rem;
+}
+
+.bp-loading-spinner {
+  width: 36px;
+  height: 36px;
+  border: 3px solid rgba(74,222,128,0.15);
+  border-top-color: #4ade80;
+  border-radius: 50%;
+  animation: bp-spin 0.8s linear infinite;
+}
+
+@keyframes bp-spin { to { transform: rotate(360deg); } }
+
+/* ── Empty / no-data states ───────────────────────────────── */
+.bp-no-picks {
+  font-size: 0.82rem;
+  color: rgba(255,255,255,0.35);
+  padding: 1rem 0 1.5rem;
+}
+
+.bp-no-markets {
+  padding: 2rem 1rem;
+  text-align: center;
+  font-size: 0.85rem;
+  color: rgba(255,255,255,0.35);
+}
+
+.bp-odds-empty {
+  padding: 1.25rem;
+  text-align: center;
+  font-size: 0.82rem;
+  color: rgba(255,255,255,0.3);
+}
+
+/* ── Team logo fallback (text initials) ───────────────────── */
+.bp-matchup-logo-fallback {
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  background: rgba(255,255,255,0.08);
+  border: 1px solid rgba(255,255,255,0.12);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.5rem;
+  font-weight: 800;
+  color: rgba(255,255,255,0.5);
+  letter-spacing: 0.04em;
+}
+
+/* ── Prediction summary in modal ──────────────────────────── */
+.bp-pred-summary {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0.5rem;
+  margin-bottom: 1.5rem;
+  padding: 0.85rem 1rem;
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.07);
+  border-radius: 12px;
+}
+
+.bp-pred-stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.2rem;
+}
+
+.bp-pred-stat-icon { font-size: 1rem; line-height: 1; }
+
+.bp-pred-stat-label {
+  font-size: 0.55rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.4);
+}
+
+.bp-pred-stat-value {
+  font-size: 1rem;
+  font-weight: 800;
+  color: #fff;
+}
+
+/* ── Scout AI button (small, in modal header) ─────────────── */
+.scout-ai-btn--sm {
+  padding: 0.4rem 0.9rem;
+  font-size: 0.75rem;
+}
+
+@media (max-width: 600px) {
+  .bp-pred-summary { grid-template-columns: repeat(2, 1fr); }
+}
