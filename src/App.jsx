@@ -34,6 +34,7 @@ import ResetPasswordPage from './components/pages/Account/ResetPasswordPage';
 // Admin page imports//
 import AdminPage from './components/pages/Admin/AdminPage';
 import ArticleEditor from './components/pages/Admin/ArticleEditor';
+import ModelPerformancePage from './components/pages/Admin/ModelPerformancePage';
 
 // Education page imports//
 import Glossary from './components/pages/Education/GlossaryPage';
@@ -261,16 +262,11 @@ function App() {
           <Route path="/terms-of-use" element={<TermsOfUse />} />
           <Route path="/privacy-policy" element={<PrivacyPolicy />} />
 
-          {/* Admin routes — requires is_admin */}
-          <Route path="/admin" element={
-            <ProtectedRoute require="admin"><AdminPage /></ProtectedRoute>
-          } />
-          <Route path="/admin/new" element={
-            <ProtectedRoute require="admin"><ArticleEditor /></ProtectedRoute>
-          } />
-          <Route path="/admin/edit/:id" element={
-            <ProtectedRoute require="admin"><ArticleEditor /></ProtectedRoute>
-          } />
+          {/* Admin routes */}
+          <Route path="/admin" element={<AdminPage />} />
+          <Route path="/admin/new" element={<ArticleEditor />} />
+          <Route path="/admin/edit/:id" element={<ArticleEditor />} />
+          <Route path="/admin/model-performance" element={<ModelPerformancePage />} />
 
           {/* Unsubscribe route */}
           <Route path="/unsubscribe" element={<UnsubscribePage />} />

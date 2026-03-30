@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { TEAM_METADATA, getTeamById } from '../../../data/constants/apiConstants';
 import predictionsService from '../../../data/services/predictionsService';
 import playerStatsService from '../../../data/services/playerStatsServices';
+import api from '../../../data/services/apiService';
 import PredictionsNav from './PredictionsNav';
 import '../../../styles/predictions-page-styling/predictions.css';
 import '../../../styles/predictions-page-styling/pitcher-props.css';
@@ -182,15 +183,26 @@ function buildPitcherProps(pitcher) {
     const sbLine = statSB.length > 0 ? statSB[0].line : null;
     const line   = sbLine ?? Math.round(blended * 10) / 10;
 
-    // Side: blended prediction vs sportsbook line
-    const side    = blended >= line ? 'Over' : 'Under';
+    // Scout AI pick for this stat (read early to inform odds filtering)
+    const scoutProp     = scoutAI?.props?.[apiKey] ?? null;
+    const scoutPickParts = scoutProp?.pick ? scoutProp.pick.split(' ') : null;
+    const scoutPickSide  = scoutPickParts?.[0] ?? null;
+    const scoutPickLine  = scoutPickParts?.[1] ? parseFloat(scoutPickParts[1]) : null;
+
+    // Side: Scout AI pick side if available, else blended vs line
+    const side    = scoutPickSide ?? (blended >= line ? 'Over' : 'Under');
     const sideKey = side === 'Over' ? 'over' : 'under';
 
-    // Best odds for the predicted side across all books
-    const bestOdds = books.reduce((best, b) => {
-      const v = b[sideKey];
-      return v != null && (best == null || v > best) ? v : best;
-    }, null) ?? -115;
+    // Best odds: only from books whose line exactly matches the pick's line.
+    // This prevents showing a favourable price from a different (higher/lower) line
+    // than the one the algorithm is actually recommending.
+    const pickLine = scoutPickLine ?? line;
+    const bestOdds = books
+      .filter(b => b.line === pickLine)
+      .reduce((best, b) => {
+        const v = b[sideKey];
+        return v != null && (best == null || v > best) ? v : best;
+      }, null) ?? -115;
 
     const modelProb = confidence(blended, line, std);
 
@@ -201,9 +213,6 @@ function buildPitcherProps(pitcher) {
       if (!dfsMap[dp.platform_title]) dfsMap[dp.platform_title] = { name: dp.platform_title, line: dp.line };
     }
     const dfs = Object.values(dfsMap);
-
-    // Scout AI pick for this stat
-    const scoutProp = scoutAI?.props?.[apiKey] ?? null;
 
     return {
       key:         cfg.key,
@@ -231,10 +240,25 @@ function buildPitcherProps(pitcher) {
   return { props, bestProp };
 }
 
+// Composite score: 40% EV, 35% model probability, 25% Scout AI confidence
+function compositeScore(prop) {
+  const ev      = Math.min(Math.max(parseFloat(prop.ev), -20), 40);
+  const evNorm  = (ev + 20) / 60 * 100;        // −20 → 0,  +40 → 100
+  const probNorm = prop.modelProb;              // already 0–100
+  const confNorm = (prop.scoutConf ?? 0) * 20; // 0–5 → 0–100
+  return evNorm * 0.40 + probNorm * 0.35 + confNorm * 0.25;
+}
+
 function getTopPicks(pitchers) {
-  return [...pitchers]
-    .map(p => ({ pitcher: p, ...buildPitcherProps(p) }))
-    .sort((a, b) => parseFloat(b.bestProp.ev) - parseFloat(a.bestProp.ev))
+  const candidates = [];
+  for (const pitcher of pitchers) {
+    const { props } = buildPitcherProps(pitcher);
+    for (const prop of props) {
+      candidates.push({ pitcher, bestProp: prop, score: compositeScore(prop) });
+    }
+  }
+  return candidates
+    .sort((a, b) => b.score - a.score)
     .slice(0, 4);
 }
 
@@ -543,6 +567,12 @@ function PitcherScoutModal({ scoutAi, pitcherName, onClose }) {
                   <PitcherConfidenceDots value={data.confidence ?? 0} />
                 </h4>
                 <p className="scout-section-body">{data.reasoning}</p>
+                {data.recommended_book && (
+                  <div className="pp-scout-book-rec">
+                    <span className="pp-scout-book-rec__label">Best at</span>
+                    <span className="pp-scout-book-rec__value">{data.recommended_book}</span>
+                  </div>
+                )}
               </div>
             );
           })}
@@ -630,14 +660,16 @@ function PitcherModal({ pitcher, onClose }) {
                 )}
                 <div className="pp-prop-strip-info">
                   <span className="pp-prop-strip-name">{pitcher.name}</span>
-                  <span className="pp-prop-strip-meta">{pitcher.teamAbbr} · {pitcher.hand}HP · vs {pitcher.opponent}</span>
+                  <span className="pp-prop-strip-meta">{pitcher.teamAbbr} · vs {pitcher.opponent}</span>
                 </div>
               </div>
 
               <div className={`pp-prop-strip-chip accent-${accent}`}>
                 <span>{selectedProp.icon}</span>
                 <span>{selectedProp.label}</span>
-                <span className="pp-prop-strip-chip-line">{selectedProp.side} {selectedProp.line}</span>
+                <span className="pp-prop-strip-chip-line">
+                  {selectedProp.scoutPick ?? `${selectedProp.side} ${selectedProp.line}`}
+                </span>
               </div>
             </div>
 
@@ -679,7 +711,7 @@ function PitcherModal({ pitcher, onClose }) {
                 <div className="pp-modal-info">
                   <button className="pp-modal-name pp-modal-link" onClick={goToPlayer}>{pitcher.name}</button>
                   <button className="pp-modal-meta pp-modal-link" onClick={goToMatchup}>
-                    {pitcher.teamAbbr} · {pitcher.hand}HP · vs {pitcher.opponent}
+                    {pitcher.teamAbbr} · vs {pitcher.opponent}
                   </button>
                 </div>
               </div>
@@ -823,6 +855,10 @@ export default function PitcherProps() {
 
   useEffect(() => {
     window.scrollTo(0, 0);
+
+    // Bust cache so scout_ai prompt changes are always reflected
+    api.invalidate('/predictions/pitchers/today');
+    api.invalidate('/predictions/today');
 
     // Fire both requests immediately in parallel — neither depends on the other
     const todayPromise        = predictionsService.getToday();
