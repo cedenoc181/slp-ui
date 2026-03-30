@@ -25,7 +25,7 @@
 .scout-ai-btn::after {
   content: attr(data-tooltip);
   position: absolute;
-  bottom: calc(100% + 8px);
+  top: calc(100% + 8px);
   left: 50%;
   transform: translateX(-50%);
   background: #1a1f2e;
@@ -47,11 +47,11 @@
 .scout-ai-btn::before {
   content: '';
   position: absolute;
-  bottom: calc(100% + 2px);
+  top: calc(100% + 2px);
   left: 50%;
   transform: translateX(-50%);
   border: 5px solid transparent;
-  border-top-color: rgba(100, 181, 246, 0.25);
+  border-bottom-color: rgba(100, 181, 246, 0.25);
   pointer-events: none;
   opacity: 0;
   transition: opacity 0.15s ease;
@@ -77,6 +77,25 @@
 .scout-ai-btn:disabled {
   opacity: 0.65;
   cursor: not-allowed;
+}
+
+.scout-ai-btn--pending {
+  background: rgba(255, 255, 255, 0.04);
+  border-color: rgba(255, 255, 255, 0.15);
+  color: rgba(255, 255, 255, 0.35);
+  cursor: not-allowed;
+}
+
+.scout-ai-btn--pending:hover {
+  background: rgba(255, 255, 255, 0.04);
+  border-color: rgba(255, 255, 255, 0.15);
+  box-shadow: none;
+  transform: none;
+}
+
+.scout-ai-btn--pending:hover::after,
+.scout-ai-btn--pending:hover::before {
+  opacity: 1;
 }
 
 .scout-ai-btn--ready {

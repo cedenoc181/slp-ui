@@ -370,6 +370,11 @@
   padding: 1rem 1.1rem;
 }
 
+.pp-pending-banner--page {
+  margin-bottom: 1.25rem;
+  padding: 1.25rem 1.4rem;
+}
+
 .pp-pending-banner-icon {
   font-size: 1.2rem;
   line-height: 1;

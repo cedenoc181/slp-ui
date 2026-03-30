@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { DEFAULT_SEASON } from '../../../../data/constants/apiConstants';
-import { useMatchupData } from './hooks';
+import { useMatchupData, useEarliestGameLabel } from './hooks';
 import '../../../../styles/stats-page-styling/matchup-analysis.css';
 import '../../../../styles/stats-page-styling/scout-ai.css';
 import { getMlbId, getAbbr, getUrlName, formGames, mapSeasonType } from './utils';
@@ -19,6 +19,7 @@ import {
 import { getScoutAnalysis } from '../../../../data/services/scoutAiService';
 
 export default function MatchupDetail() {
+  const scoutUnlockLabel = useEarliestGameLabel();
   const [scoutAnalysis, setScoutAnalysis]   = useState(null);
   const [scoutLoading, setScoutLoading]     = useState(false);
   const [scoutError, setScoutError]         = useState(null);
@@ -150,12 +151,14 @@ export default function MatchupDetail() {
               loading={scoutLoading}
               onClick={handleScoutClick}
               isToday={game?.date === new Intl.DateTimeFormat('en-CA', { timeZone: 'America/New_York' }).format(new Date())}
+              scoutAiAvailable={!!prediction?.scout_ai}
+              pendingLabel={scoutUnlockLabel}
             />
           </div>
           <div className="matchup-detail-top-nav__right">
             <Link
               to={`/mlb-schedule/${currentGamePk}/analysis`}
-              state={{ game }}
+              state={{ game, prediction }}
               className="deep-dive-btn"
             >
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">

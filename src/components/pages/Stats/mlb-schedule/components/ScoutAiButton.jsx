@@ -1,12 +1,17 @@
-export default function ScoutAiButton({ hasAnalysis, loading, onClick, isToday = false }) {
+export default function ScoutAiButton({ hasAnalysis, loading, onClick, isToday = false, scoutAiAvailable = true, pendingLabel = null }) {
   if (!isToday) return null;
+  const isPending = !scoutAiAvailable;
+  const pendingTooltip = pendingLabel
+    ? `Scouting report available by ${pendingLabel}`
+    : 'Come back 2 hours before game time to see scouting report';
   return (
     <button
-      className={`scout-ai-btn${loading ? ' scout-ai-btn--loading' : ''}${hasAnalysis ? ' scout-ai-btn--ready' : ''}`}
-      onClick={onClick}
+      className={`scout-ai-btn${loading ? ' scout-ai-btn--loading' : ''}${hasAnalysis ? ' scout-ai-btn--ready' : ''}${isPending ? ' scout-ai-btn--pending' : ''}`}
+      onClick={isPending ? undefined : onClick}
       disabled={loading}
-      aria-label="Get Scout AI analysis for this matchup"
-      data-tooltip="ML · Run Line · Totals"
+      aria-disabled={isPending || undefined}
+      aria-label={isPending ? 'Scouting report not yet available' : 'Get Scout AI analysis for this matchup'}
+      data-tooltip={isPending ? pendingTooltip : 'ML · Run Line · Totals'}
     >
       {loading ? (
         <>

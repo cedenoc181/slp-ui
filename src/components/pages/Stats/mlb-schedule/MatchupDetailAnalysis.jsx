@@ -11,6 +11,7 @@ import '../../../../styles/stats-page-styling/matchup-analysis.css';
 import '../../../../styles/stats-page-styling/scout-ai.css';
 import { ScoutAiButton, ScoutAiModal } from './components';
 import { getScoutAnalysis } from '../../../../data/services/scoutAiService';
+import { useEarliestGameLabel } from './hooks';
 
 import {
   MiniHero,
@@ -31,10 +32,12 @@ import {
 } from './matchup-analysis/utils/analysisUtils';
 
 export default function MatchupDetailComp() {
+  const scoutUnlockLabel = useEarliestGameLabel();
   const { gameId } = useParams();
   const { state }  = useLocation();
 
-  const [game, setGame]       = useState(state?.game ?? null);
+  const [game, setGame]           = useState(state?.game ?? null);
+  const [prediction, setPrediction] = useState(state?.prediction ?? null);
   const [loading, setLoading] = useState(!state?.game);
   const [error, setError]     = useState(null);
 
@@ -383,7 +386,7 @@ export default function MatchupDetailComp() {
       <div className="analysis-container">
 
         <div className="matchup-detail-top-nav">
-          <Link to={`/mlb-schedule/${gameId}`} state={{ game }} className="analysis-back-btn">
+          <Link to={`/mlb-schedule/${gameId}`} state={{ game, prediction }} className="analysis-back-btn">
             ‹ Back to Matchup Detail
           </Link>
           <ScoutAiButton
@@ -391,6 +394,8 @@ export default function MatchupDetailComp() {
             loading={scoutLoading}
             onClick={handleScoutClick}
             isToday={game?.date === new Intl.DateTimeFormat('en-CA', { timeZone: 'America/New_York' }).format(new Date())}
+            scoutAiAvailable={!!prediction?.scout_ai}
+            pendingLabel={scoutUnlockLabel}
           />
           <div className="matchup-detail-top-nav__right" />
         </div>

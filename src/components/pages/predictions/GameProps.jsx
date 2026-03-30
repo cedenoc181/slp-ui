@@ -67,6 +67,34 @@ function hasNoPredictions(game) {
     (!Array.isArray(game.bookmakers) || game.bookmakers.length === 0);
 }
 
+// ─── Prediction gate: 2 h before earliest first pitch ────────────────────────
+
+// Returns true only when: unlocked by time AND prediction exists AND scout_ai exists
+function isReadyToShow(game, unlocked) {
+  return unlocked && !!game.prediction && !!game.scout_ai;
+}
+
+// Computes the unlock time string ("6:10 PM ET") = earliest game − 2 h
+function getPredReadyLabel(games) {
+  const mins = games.map(g => parseGameTimeMinutes(g)).filter(m => m < 9999);
+  if (!mins.length) return null;
+  const unlockMins = Math.min(...mins) - 120;
+  const h   = Math.floor(((unlockMins % 1440) + 1440) % 1440 / 60);
+  const min = String(unlockMins % 60).padStart(2, '0');
+  const period   = h >= 12 ? 'PM' : 'AM';
+  const displayH = h % 12 || 12;
+  return `${displayH}:${min} ${period} ET`;
+}
+
+// Returns true if current local time is at or past the unlock threshold
+function arePredictionsUnlocked(games) {
+  const mins = games.map(g => parseGameTimeMinutes(g)).filter(m => m < 9999);
+  if (!mins.length) return false;
+  const unlockMins = Math.min(...mins) - 120;
+  const now = new Date();
+  return (now.getHours() * 60 + now.getMinutes()) >= unlockMins;
+}
+
 // Subtract 1 hour from a game time string and return display string e.g. "7:05 PM ET"
 function predReadyTime(game) {
   const t = game.game_time_et || game.game_time || '';
@@ -344,10 +372,13 @@ const MARKET_LABELS = {
 // Returns the top N picks across all games sorted by model probability (highest first).
 // Probabilities are derived directly from the prediction object, not mock fallbacks.
 // Markets are skipped when no book has real (non-null) odds for that column.
-function getTopPicks(games, n = 3) {
+function getTopPicks(games, n = 3, unlocked = false) {
   const candidates = [];
 
   for (const game of games) {
+    // All 3 conditions must be met before we surface any picks
+    if (!isReadyToShow(game, unlocked)) continue;
+
     const pick = buildPick(game);
     const pred = game.prediction;
 
@@ -427,11 +458,27 @@ function getTopPicks(games, n = 3) {
     .slice(0, n);
 }
 
-function TopPick({ games }) {
-  const gamesWithOdds = games.filter(g => !hasNoPredictions(g));
-  if (!gamesWithOdds.length) return null;
+function TopPick({ games, unlocked, predReadyLabel }) {
+  const eligibleGames = games.filter(g => isReadyToShow(g, unlocked));
 
-  const tops = getTopPicks(gamesWithOdds, 3);
+  if (!eligibleGames.length) {
+    return (
+      <div className="gp-pending-banner">
+        <span className="gp-pending-banner-icon">⏳</span>
+        <div>
+          <div className="gp-pending-banner-title">
+            {predReadyLabel ? `Predictions available by ${predReadyLabel}` : 'Predictions Coming Soon'}
+          </div>
+          <div className="gp-pending-banner-sub">
+            Our model and Scout AI analysis will be ready approximately 2 hours before first pitch.
+            {predReadyLabel ? ` Come back at ${predReadyLabel} for full game predictions and analysis.` : ' Check back closer to game time.'}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  const tops = getTopPicks(eligibleGames, 3, unlocked);
   if (!tops.length) return null;
 
   return (
@@ -847,8 +894,9 @@ function DFSMatrix({ pick }) {
 
 // ─── Right-side drawer modal ──────────────────────────────────────────────────
 
-function OddsDrawer({ game, onClose }) {
+function OddsDrawer({ game, onClose, unlocked }) {
   const pick       = buildPick(game);
+  const ready      = isReadyToShow(game, unlocked);
   const awayAbbr   = getTeamById(game.away_team_id)?.id || game.away_team_name;
   const homeAbbr   = getTeamById(game.home_team_id)?.id || game.home_team_name;
   const awayMlbId  = getTeamMlbId(game.away_team_id);
@@ -905,23 +953,27 @@ function OddsDrawer({ game, onClose }) {
           </div>
           <div className="gp-drawer-subrow">
             <span className="gp-drawer-time">{statusLabel(game)}</span>
-            <div className="gp-drawer-pick-chip">
-              <span className="gp-pick-badge">PICK</span>
-              <span className="gp-drawer-pick-name">{pickedName}</span>
-              <span className="gp-drawer-conf">{pick.confidence}%</span>
-            </div>
+            {ready && (
+              <div className="gp-drawer-pick-chip">
+                <span className="gp-pick-badge">PICK</span>
+                <span className="gp-drawer-pick-name">{pickedName}</span>
+                <span className="gp-drawer-conf">{pick.confidence}%</span>
+              </div>
+            )}
           </div>
           <button className="gp-drawer-close" onClick={onClose} aria-label="Close">✕</button>
         </div>
 
         {/* View toggle */}
         <div className="gp-view-toggle">
-          <ScoutAiButton
-            isToday={true}
-            hasAnalysis={!!scoutAnalysis}
-            loading={false}
-            onClick={handleScoutClick}
-          />
+          {ready && (
+            <ScoutAiButton
+              isToday={true}
+              hasAnalysis={!!scoutAnalysis}
+              loading={false}
+              onClick={handleScoutClick}
+            />
+          )}
           <div className="gp-view-toggle-right">
             <button
               className={`gp-view-toggle-btn ${view === 'books' ? 'active' : ''}`}
@@ -974,19 +1026,20 @@ function OddsDrawer({ game, onClose }) {
 
 // ─── Game card ────────────────────────────────────────────────────────────────
 
-function GamePickCard({ game, isSelected, onSelect }) {
+function GamePickCard({ game, isSelected, onSelect, unlocked, predReadyLabel }) {
   const pick       = buildPick(game);
+  const ready      = isReadyToShow(game, unlocked);
   const awayMlbId  = getTeamMlbId(game.away_team_id);
   const homeMlbId  = getTeamMlbId(game.home_team_id);
   const awayAbbr   = getTeamById(game.away_team_id)?.id || game.away_team_name;
   const homeAbbr   = getTeamById(game.home_team_id)?.id || game.home_team_name;
-  const awayIsPick = pick.pick === 'away';
-  const homeIsPick = pick.pick === 'home';
+  const awayIsPick = ready && pick.pick === 'away';
+  const homeIsPick = ready && pick.pick === 'home';
 
   return (
     <button
-      className={`gp-card ${isSelected ? 'selected' : ''} ${hasNoPredictions(game) ? 'gp-card--muted' : ''}`}
-      data-pick={pick.pick}
+      className={`gp-card ${isSelected ? 'selected' : ''} ${!ready ? 'gp-card--muted' : ''}`}
+      data-pick={ready ? pick.pick : null}
       onClick={onSelect}
       aria-pressed={isSelected}
     >
@@ -1026,12 +1079,16 @@ function GamePickCard({ game, isSelected, onSelect }) {
         </div>
       </div>
 
-      {/* Confidence bar or "predictions loading" */}
+      {/* Confidence bar or pending notice */}
       <div className="gp-card-footer">
-        {hasNoPredictions(game) ? (
+        {ready ? (
+          <ConfidenceBar pct={pick.confidence} />
+        ) : hasNoPredictions(game) ? (
           <span className="gp-card-pred-loading">⏳ Predictions loading {predReadyTime(game)}</span>
         ) : (
-          <ConfidenceBar pct={pick.confidence} />
+          <span className="gp-card-pred-loading">
+            ⏳ {predReadyLabel ? `Predictions by ${predReadyLabel}` : 'Predictions coming soon'}
+          </span>
         )}
       </div>
     </button>
@@ -1099,7 +1156,9 @@ export default function GameProps() {
 
   const handleClose = useCallback(() => setSelectedId(null), []);
 
-  const selectedGame = games.find(g => (g.id ?? g.game_pk) === selectedId) ?? null;
+  const selectedGame     = games.find(g => (g.id ?? g.game_pk) === selectedId) ?? null;
+  const predictionsUnlocked = arePredictionsUnlocked(games);
+  const predReadyLabel      = getPredReadyLabel(games);
 
   const todayLabel = new Date().toLocaleDateString('en-US', {
     weekday: 'long', month: 'long', day: 'numeric',
@@ -1135,7 +1194,7 @@ export default function GameProps() {
         })()}
 
         {/* Top Pick */}
-        {!loading && games.length > 0 && !games.every(g => hasNoPredictions(g)) && <TopPick games={games} />}
+        {!loading && games.length > 0 && <TopPick games={games} unlocked={predictionsUnlocked} predReadyLabel={predReadyLabel} />}
 
         {/* Card grid */}
         {loading ? (
@@ -1171,6 +1230,8 @@ export default function GameProps() {
                     game={game}
                     isSelected={selectedId === gid}
                     onSelect={() => handleCardClick(gid)}
+                    unlocked={predictionsUnlocked}
+                    predReadyLabel={predReadyLabel}
                   />
                 );
               })}
@@ -1186,7 +1247,7 @@ export default function GameProps() {
 
       {/* Right-side drawer modal */}
       {selectedGame && (
-        <OddsDrawer game={selectedGame} onClose={handleClose} />
+        <OddsDrawer game={selectedGame} onClose={handleClose} unlocked={predictionsUnlocked} />
       )}
     </div>
   );

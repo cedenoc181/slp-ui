@@ -33,6 +33,38 @@ export function mapSeasonType(gameSeasonType) {
   return 'R';
 }
 
+// ─── Scout AI unlock time helpers ────────────────────────────────────────────
+
+// Parse a game_time string ("8:05 PM ET" / "20:05") to minutes from midnight
+function parseGameTimeToMins(timeStr) {
+  if (!timeStr) return null;
+  const ampm = timeStr.match(/(\d+):(\d+)\s*(AM|PM)/i);
+  if (ampm) {
+    let h = parseInt(ampm[1], 10);
+    const m = parseInt(ampm[2], 10);
+    const mer = ampm[3].toUpperCase();
+    if (mer === 'PM' && h !== 12) h += 12;
+    if (mer === 'AM' && h === 12) h = 0;
+    return h * 60 + m;
+  }
+  const parts = timeStr.split(':');
+  if (parts.length >= 2) return parseInt(parts[0], 10) * 60 + parseInt(parts[1], 10);
+  return null;
+}
+
+// Returns formatted unlock label "2:10 PM ET" (game time − 2 h) for a single game object
+export function getScoutUnlockLabel(game) {
+  const timeStr = game?.game_time_et || game?.game_time || '';
+  const gameMins = parseGameTimeToMins(timeStr);
+  if (gameMins == null) return null;
+  const unlockMins = ((gameMins - 120) % 1440 + 1440) % 1440;
+  const h = Math.floor(unlockMins / 60);
+  const min = String(unlockMins % 60).padStart(2, '0');
+  const period = h >= 12 ? 'PM' : 'AM';
+  const displayH = h % 12 || 12;
+  return `${displayH}:${min} ${period} ET`;
+}
+
 // ─── Stat helpers ─────────────────────────────────────────────────────────────
 
 export function hasValidStats(stats) {

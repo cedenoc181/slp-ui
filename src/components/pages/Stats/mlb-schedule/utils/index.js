@@ -15,6 +15,9 @@ export {
   // Season / status helpers
   mapSeasonType,
 
+  // Scout AI helpers
+  getScoutUnlockLabel,
+
   // Stat helpers
   hasValidStats,
   fmt,

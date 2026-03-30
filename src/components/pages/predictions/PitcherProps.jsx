@@ -240,7 +240,51 @@ function buildPitcherProps(pitcher) {
   return { props, bestProp };
 }
 
-// Composite score: 40% EV, 35% model probability, 25% Scout AI confidence
+// ─── Prediction gate: 2 h before earliest first pitch ────────────────────────
+
+function parseGameTimes(pitchers) {
+  return pitchers
+    .map(p => {
+      const str = p.game?.game_time_et;
+      if (!str) return null;
+      const m = str.match(/(\d+):(\d+)\s*(AM|PM)/i);
+      if (!m) return null;
+      let h = parseInt(m[1]), min = parseInt(m[2]);
+      const period = m[3].toUpperCase();
+      if (period === 'PM' && h !== 12) h += 12;
+      if (period === 'AM' && h === 12) h = 0;
+      const d = new Date();
+      d.setHours(h, min, 0, 0);
+      return d;
+    })
+    .filter(Boolean);
+}
+
+function getUnlockDate(pitchers) {
+  const times = parseGameTimes(pitchers);
+  if (!times.length) return null;
+  const earliest = new Date(Math.min(...times.map(t => t.getTime())));
+  earliest.setHours(earliest.getHours() - 2);
+  return earliest;
+}
+
+function getPredictionReadyTime(pitchers) {
+  const unlock = getUnlockDate(pitchers);
+  if (!unlock) return null;
+  let h = unlock.getHours();
+  const min = String(unlock.getMinutes()).padStart(2, '0');
+  const period = h >= 12 ? 'PM' : 'AM';
+  h = h % 12 || 12;
+  return `${h}:${min} ${period} ET`;
+}
+
+function arePredictionsUnlocked(pitchers) {
+  const unlock = getUnlockDate(pitchers);
+  if (!unlock) return false;
+  return new Date() >= unlock;
+}
+
+// ─── Composite score: 40% EV, 35% model probability, 25% Scout AI confidence ──
 function compositeScore(prop) {
   const ev      = Math.min(Math.max(parseFloat(prop.ev), -20), 40);
   const evNorm  = (ev + 20) / 60 * 100;        // −20 → 0,  +40 → 100
@@ -249,9 +293,9 @@ function compositeScore(prop) {
   return evNorm * 0.40 + probNorm * 0.35 + confNorm * 0.25;
 }
 
-function getTopPicks(pitchers) {
+function getTopPicks(pitchers, unlocked) {
   const candidates = [];
-  for (const pitcher of pitchers.filter(p => !!p.prediction)) {
+  for (const pitcher of pitchers.filter(p => unlocked && !!p.prediction && !!p.prediction.scout_ai)) {
     const { props } = buildPitcherProps(pitcher);
     for (const prop of props) {
       candidates.push({ pitcher, bestProp: prop, score: compositeScore(prop) });
@@ -336,8 +380,8 @@ function TopPitcherCard({ pitcher, bestProp, onClick }) {
 
 // ─── Pitcher list card ────────────────────────────────────────────────────────
 
-function PitcherCard({ pitcher, isSelected, onClick }) {
-  const hasPred = !!pitcher.prediction;
+function PitcherCard({ pitcher, isSelected, onClick, predictionsUnlocked }) {
+  const hasPred = predictionsUnlocked && !!pitcher.prediction && !!pitcher.prediction.scout_ai;
   const { bestProp } = hasPred ? buildPitcherProps(pitcher) : { bestProp: null };
   return (
     <button
@@ -378,7 +422,7 @@ function PitcherCard({ pitcher, isSelected, onClick }) {
 
 // ─── No-prediction fallback body ─────────────────────────────────────────────
 
-function NoPredictionBody({ pitcher }) {
+function NoPredictionBody({ pitcher, predictionTime }) {
   const dfsList = (pitcher.game?.dfs_props ?? [])
     .filter(d => d.player_id === pitcher.id);
 
@@ -387,9 +431,14 @@ function NoPredictionBody({ pitcher }) {
       <div className="pp-pending-banner">
         <span className="pp-pending-banner-icon">⏳</span>
         <div>
-          <div className="pp-pending-banner-title">Predictions Coming Soon</div>
+          <div className="pp-pending-banner-title">
+            {predictionTime
+              ? `Predictions available by ${predictionTime}`
+              : 'Predictions Coming Soon'}
+          </div>
           <div className="pp-pending-banner-sub">
-            Our model analysis for this start will be available closer to game time. Check back later today.
+            Our model and Scout AI analysis for this start will be ready approximately 2 hours before first pitch.
+            {predictionTime ? ` Come back at ${predictionTime} for full prop predictions and analysis.` : ' Check back closer to game time.'}
           </div>
         </div>
       </div>
@@ -639,7 +688,7 @@ function PitcherScoutModal({ scoutAi, pitcherName, onClose }) {
 
 // ─── Pitcher modal ────────────────────────────────────────────────────────────
 
-function PitcherModal({ pitcher, onClose }) {
+function PitcherModal({ pitcher, onClose, predictionTime, predictionsUnlocked }) {
   const { props } = buildPitcherProps(pitcher);
   const [hsErr, setHsErr]               = useState(false);
   const [selectedProp, setSelectedProp] = useState(null);
@@ -789,14 +838,14 @@ function PitcherModal({ pitcher, onClose }) {
             </div>
 
             <div className="pp-modal-body">
-              {pitcher.prediction ? (
+              {predictionsUnlocked && pitcher.prediction && pitcher.prediction.scout_ai ? (
                 <div className="pp-props-grid">
                   {props.map(prop => (
                     <PropPanel key={prop.key} prop={prop} onClick={() => handlePropClick(prop)} />
                   ))}
                 </div>
               ) : (
-                <NoPredictionBody pitcher={pitcher} />
+                <NoPredictionBody pitcher={pitcher} predictionTime={predictionTime} />
               )}
             </div>
           </div>
@@ -1005,7 +1054,9 @@ export default function PitcherProps() {
       .finally(() => setLoading(false));
   }, []);
 
-  const topPicks = getTopPicks(pitchers);
+  const predictionTime       = getPredictionReadyTime(pitchers);
+  const predictionsUnlocked  = arePredictionsUnlocked(pitchers);
+  const topPicks             = getTopPicks(pitchers, predictionsUnlocked);
 
   const handleSelect = useCallback((key) => {
     setSelectedKey(prev => prev === key ? null : key);
@@ -1059,17 +1110,34 @@ export default function PitcherProps() {
         ) : (
           <>
             {/* ── Top picks ───────────────────────────────────────── */}
-            <div className="pp-section-label">Top Picks Today</div>
-            <div className="pp-top-grid">
-              {topPicks.map(({ pitcher, bestProp }) => (
-                <TopPitcherCard
-                  key={pitcherKey(pitcher)}
-                  pitcher={pitcher}
-                  bestProp={bestProp}
-                  onClick={() => handleSelect(pitcherKey(pitcher))}
-                />
-              ))}
-            </div>
+            {topPicks.length > 0 ? (
+              <>
+                <div className="pp-section-label">Top Picks Today</div>
+                <div className="pp-top-grid">
+                  {topPicks.map(({ pitcher, bestProp }) => (
+                    <TopPitcherCard
+                      key={pitcherKey(pitcher)}
+                      pitcher={pitcher}
+                      bestProp={bestProp}
+                      onClick={() => handleSelect(pitcherKey(pitcher))}
+                    />
+                  ))}
+                </div>
+              </>
+            ) : (
+              <div className="pp-pending-banner pp-pending-banner--page">
+                <span className="pp-pending-banner-icon">⏳</span>
+                <div>
+                  <div className="pp-pending-banner-title">
+                    {predictionTime ? `Predictions available by ${predictionTime}` : 'Predictions Coming Soon'}
+                  </div>
+                  <div className="pp-pending-banner-sub">
+                    Our model and Scout AI analysis will be ready approximately 2 hours before first pitch.
+                    {predictionTime ? ` Come back at ${predictionTime} for full prop predictions and analysis.` : ' Check back closer to game time.'}
+                  </div>
+                </div>
+              </div>
+            )}
 
             {/* ── Divider ─────────────────────────────────────────── */}
             <div className="pp-divider">
@@ -1084,6 +1152,7 @@ export default function PitcherProps() {
                   pitcher={pitcher}
                   isSelected={selectedKey === pitcherKey(pitcher)}
                   onClick={() => handleSelect(pitcherKey(pitcher))}
+                  predictionsUnlocked={predictionsUnlocked}
                 />
               ))}
             </div>
@@ -1097,7 +1166,12 @@ export default function PitcherProps() {
       </div>
 
       {selectedPitcher && (
-        <PitcherModal pitcher={selectedPitcher} onClose={handleClose} />
+        <PitcherModal
+          pitcher={selectedPitcher}
+          onClose={handleClose}
+          predictionTime={predictionTime}
+          predictionsUnlocked={predictionsUnlocked}
+        />
       )}
     </div>
   );
