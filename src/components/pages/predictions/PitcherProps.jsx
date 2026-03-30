@@ -251,7 +251,7 @@ function compositeScore(prop) {
 
 function getTopPicks(pitchers) {
   const candidates = [];
-  for (const pitcher of pitchers) {
+  for (const pitcher of pitchers.filter(p => !!p.prediction)) {
     const { props } = buildPitcherProps(pitcher);
     for (const prop of props) {
       candidates.push({ pitcher, bestProp: prop, score: compositeScore(prop) });
@@ -337,10 +337,11 @@ function TopPitcherCard({ pitcher, bestProp, onClick }) {
 // ─── Pitcher list card ────────────────────────────────────────────────────────
 
 function PitcherCard({ pitcher, isSelected, onClick }) {
-  const { bestProp } = buildPitcherProps(pitcher);
+  const hasPred = !!pitcher.prediction;
+  const { bestProp } = hasPred ? buildPitcherProps(pitcher) : { bestProp: null };
   return (
     <button
-      className={`pp-top-card ${isSelected ? 'selected' : ''}`}
+      className={`pp-top-card${isSelected ? ' selected' : ''}${!hasPred ? ' pp-top-card--pending' : ''}`}
       onClick={onClick}
       aria-pressed={isSelected}
     >
@@ -357,16 +358,62 @@ function PitcherCard({ pitcher, isSelected, onClick }) {
         <div className="pp-top-card-name">{pitcher.name}</div>
         <div className="pp-top-card-matchup">{pitcher.teamAbbr} · vs {pitcher.opponent}</div>
 
-        <div className="pp-top-card-prop">
-          <span className="pp-top-card-prop-label">{bestProp.label}</span>
-          <span className="pp-top-card-prop-line">
-            {bestProp.side} {bestProp.line} · {fmtOdds(bestProp.bestOdds)}
-          </span>
-        </div>
-
-        <EVBadge ev={bestProp.ev} />
+        {hasPred ? (
+          <>
+            <div className="pp-top-card-prop">
+              <span className="pp-top-card-prop-label">{bestProp.label}</span>
+              <span className="pp-top-card-prop-line">
+                {bestProp.side} {bestProp.line} · {fmtOdds(bestProp.bestOdds)}
+              </span>
+            </div>
+            <EVBadge ev={bestProp.ev} />
+          </>
+        ) : (
+          <span className="pp-pending-chip">Predictions Pending</span>
+        )}
       </div>
     </button>
+  );
+}
+
+// ─── No-prediction fallback body ─────────────────────────────────────────────
+
+function NoPredictionBody({ pitcher }) {
+  const dfsList = (pitcher.game?.dfs_props ?? [])
+    .filter(d => d.player_id === pitcher.id);
+
+  return (
+    <div className="pp-pending-body">
+      <div className="pp-pending-banner">
+        <span className="pp-pending-banner-icon">⏳</span>
+        <div>
+          <div className="pp-pending-banner-title">Predictions Coming Soon</div>
+          <div className="pp-pending-banner-sub">
+            Our model analysis for this start will be available closer to game time. Check back later today.
+          </div>
+        </div>
+      </div>
+
+      {dfsList.length > 0 && (
+        <div className="pp-pending-dfs">
+          <div className="pp-pending-dfs-label">Available DFS Lines</div>
+          <div className="pp-pending-dfs-table">
+            <div className="pp-pending-dfs-head">
+              <span>Platform</span>
+              <span>Prop</span>
+              <span>Line</span>
+            </div>
+            {dfsList.map((d, i) => (
+              <div key={i} className="pp-pending-dfs-row">
+                <span className="pp-pending-dfs-platform">{d.platform_title}</span>
+                <span className="pp-pending-dfs-stat">{d.stat_type.replace(/_/g, ' ')}</span>
+                <span className="pp-pending-dfs-line">{d.line}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
   );
 }
 
@@ -742,11 +789,15 @@ function PitcherModal({ pitcher, onClose }) {
             </div>
 
             <div className="pp-modal-body">
-              <div className="pp-props-grid">
-                {props.map(prop => (
-                  <PropPanel key={prop.key} prop={prop} onClick={() => handlePropClick(prop)} />
-                ))}
-              </div>
+              {pitcher.prediction ? (
+                <div className="pp-props-grid">
+                  {props.map(prop => (
+                    <PropPanel key={prop.key} prop={prop} onClick={() => handlePropClick(prop)} />
+                  ))}
+                </div>
+              ) : (
+                <NoPredictionBody pitcher={pitcher} />
+              )}
             </div>
           </div>
         )}
