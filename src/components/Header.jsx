@@ -475,7 +475,14 @@ function Header() {
   };
 
   const handleSearchChange = (e) => {
-    const value = e.target.value;
+    const raw = e.target.value;
+    // Sanitize: cap length, strip control chars, whitelist valid search characters
+    // Allows: letters, digits, spaces, hyphens, apostrophes, periods, parens,
+    // and Latin-extended chars (é, á, ó…) for international player names.
+    const value = raw
+      .slice(0, 60)
+      .replace(/[\x00-\x1F\x7F]/g, '')
+      .replace(/[^a-zA-Z0-9\s\-'.()\u00C0-\u024F]/g, '');
     setSearchQuery(value);
     buildSuggestions(value);
   };
@@ -508,6 +515,7 @@ function Header() {
         <form className="nav-search" onSubmit={handleSearchSubmit}>
           <input
             type="search"
+            maxLength={60}
             value={searchQuery}
             onChange={handleSearchChange}
             onFocus={() => setIsSearchFocused(true)}
