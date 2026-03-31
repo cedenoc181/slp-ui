@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { createPortal } from 'react-dom';
 import { useNavigate } from 'react-router-dom';
 import { TEAM_METADATA, getTeamById } from '../../../data/constants/apiConstants';
@@ -68,6 +68,32 @@ const PROP_ACCENTS = {
   outs:       'yellow',
   earnedRuns: 'red',
 };
+
+// ─── Matchup selector card ────────────────────────────────────────────────────
+
+function MatchupCard({ matchup, isActive, onClick }) {
+  return (
+    <button className={`pp-matchup-card ${isActive ? 'active' : ''}`} onClick={onClick}>
+      <div className="pp-matchup-teams">
+        <div className="pp-matchup-team">
+          {matchup.awayMlbId
+            ? <img src={teamLogoUrl(matchup.awayMlbId)} alt={matchup.awayAbbr} className="pp-matchup-logo" />
+            : <span className="pp-matchup-logo-fallback">{matchup.awayAbbr.slice(0, 3)}</span>
+          }
+          <span className="pp-matchup-abbr">{matchup.awayAbbr}</span>
+        </div>
+        <span className="pp-matchup-vs">vs</span>
+        <div className="pp-matchup-team">
+          {matchup.homeMlbId
+            ? <img src={teamLogoUrl(matchup.homeMlbId)} alt={matchup.homeAbbr} className="pp-matchup-logo" />
+            : <span className="pp-matchup-logo-fallback">{matchup.homeAbbr.slice(0, 3)}</span>
+          }
+          <span className="pp-matchup-abbr">{matchup.homeAbbr}</span>
+        </div>
+      </div>
+    </button>
+  );
+}
 
 // Stable numeric seed from a pitcher name (used when no MLB ID is available)
 function nameHash(str) {
@@ -957,10 +983,12 @@ function ComebackBanner({ gameSlate }) {
 // ─── Main Component ───────────────────────────────────────────────────────────
 
 export default function PitcherProps() {
+  const navigate = useNavigate();
   const [pitchers,    setPitchers]    = useState([]);
   const [loading,     setLoading]     = useState(true);
   const [gameSlate,   setGameSlate]   = useState([]);
   const [selectedKey, setSelectedKey] = useState(null);
+  const [activeGamePk, setActiveGamePk] = useState(null);
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -969,9 +997,11 @@ export default function PitcherProps() {
     api.invalidate('/predictions/pitchers/today');
     api.invalidate('/predictions/today');
 
+    const controller = new AbortController();
+
     // Fire both requests immediately in parallel — neither depends on the other
-    const todayPromise        = predictionsService.getToday();
-    const pitcherPredsPromise = predictionsService.getPitchersToday().catch(() => []);
+    const todayPromise        = predictionsService.getToday({ signal: controller.signal, timeout: 120000 });
+    const pitcherPredsPromise = predictionsService.getPitchersToday({ signal: controller.signal, timeout: 120000 }).catch(() => []);
 
     Promise.all([todayPromise, pitcherPredsPromise])
       .then(([rows, pitcherPreds]) => {
@@ -1050,13 +1080,48 @@ export default function PitcherProps() {
             .catch(() => {});
         });
       })
-      .catch(() => {})
+      .catch(err => {
+        if (err.name === 'AbortError' || err.message === 'Request timeout - please try again') return;
+      })
       .finally(() => setLoading(false));
+
+    return () => controller.abort();
   }, []);
 
   const predictionTime       = getPredictionReadyTime(pitchers);
   const predictionsUnlocked  = arePredictionsUnlocked(pitchers);
   const topPicks             = getTopPicks(pitchers, predictionsUnlocked);
+
+  const games = useMemo(() => {
+    const seen = new Set();
+    const result = [];
+    for (const p of pitchers) {
+      if (!seen.has(p.gamePk)) {
+        seen.add(p.gamePk);
+        const awayTeam = getTeamById(p.game?.away_team_id);
+        const homeTeam = getTeamById(p.game?.home_team_id);
+        result.push({
+          gamePk:    p.gamePk,
+          gameId:    p.gameId,
+          awayAbbr:  awayTeam?.id    || p.game?.away_team_name || '???',
+          awayMlbId: awayTeam?.mlbId ?? null,
+          homeAbbr:  homeTeam?.id    || p.game?.home_team_name || '???',
+          homeMlbId: homeTeam?.mlbId ?? null,
+        });
+      }
+    }
+    return result;
+  }, [pitchers]);
+
+  const visiblePitchers = activeGamePk
+    ? pitchers.filter(p => p.gamePk === activeGamePk)
+    : pitchers;
+
+  const visibleTopPicks = activeGamePk
+    ? topPicks.filter(({ pitcher }) => pitcher.gamePk === activeGamePk)
+    : topPicks;
+
+  const activeMatchup = activeGamePk ? games.find(m => m.gamePk === activeGamePk) : null;
 
   const handleSelect = useCallback((key) => {
     setSelectedKey(prev => prev === key ? null : key);
@@ -1109,12 +1174,51 @@ export default function PitcherProps() {
           </>
         ) : (
           <>
+            {/* ── Matchup filter ───────────────────────────────────── */}
+            {games.length > 1 && (
+              <div className="pp-matchup-bar">
+                <div className="pp-matchup-scroll">
+                  <button
+                    className={`pp-matchup-all ${activeGamePk === null ? 'active' : ''}`}
+                    onClick={() => setActiveGamePk(null)}
+                  >
+                    All
+                  </button>
+                  {games.map(m => (
+                    <MatchupCard
+                      key={m.gamePk}
+                      matchup={m}
+                      isActive={activeGamePk === m.gamePk}
+                      onClick={() => setActiveGamePk(m.gamePk)}
+                    />
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* ── Active matchup label ─────────────────────────────── */}
+            {activeMatchup && (
+              <div className="pp-matchup-label">
+                {activeMatchup.awayMlbId && <img src={teamLogoUrl(activeMatchup.awayMlbId)} alt={activeMatchup.awayAbbr} className="pp-matchup-label-logo" />}
+                <span>{activeMatchup.awayAbbr}</span>
+                <span className="pp-matchup-label-vs">vs</span>
+                {activeMatchup.homeMlbId && <img src={teamLogoUrl(activeMatchup.homeMlbId)} alt={activeMatchup.homeAbbr} className="pp-matchup-label-logo" />}
+                <span>{activeMatchup.homeAbbr}</span>
+                <button
+                  className="pp-matchup-label-link"
+                  onClick={() => { navigate(`/mlb-schedule/${activeMatchup.gameId}`); window.scrollTo(0, 0); }}
+                >
+                  Matchup Analysis →
+                </button>
+              </div>
+            )}
+
             {/* ── Top picks ───────────────────────────────────────── */}
-            {topPicks.length > 0 ? (
+            {visibleTopPicks.length > 0 ? (
               <>
                 <div className="pp-section-label">Top Picks Today</div>
                 <div className="pp-top-grid">
-                  {topPicks.map(({ pitcher, bestProp }) => (
+                  {visibleTopPicks.map(({ pitcher, bestProp }) => (
                     <TopPitcherCard
                       key={pitcherKey(pitcher)}
                       pitcher={pitcher}
@@ -1146,7 +1250,7 @@ export default function PitcherProps() {
               <span className="pp-divider-line" />
             </div>
             <div className="pp-pitcher-grid">
-              {pitchers.map(pitcher => (
+              {visiblePitchers.map(pitcher => (
                 <PitcherCard
                   key={pitcherKey(pitcher)}
                   pitcher={pitcher}

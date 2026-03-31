@@ -61,112 +61,67 @@ export function useBatterStats({ teamId = 'ALL', teamDbId = null, season = DEFAU
   const [splitsData, setSplitsData] = useState(null);
   const [splitsLoading, setSplitsLoading] = useState(false);
 
-  // ========== API CALLS ==========
+  // ========== BATCHED API CALL ==========
 
-  // Fetch top batters - team-specific or league-wide
   useEffect(() => {
-    const fetchTopBatters = async () => {
-      if (!season) return;
+    if (!season) return;
+    const controller = new AbortController();
+    const { signal } = controller;
 
-      setTopBattersLoading(true);
-      setTopBattersError(null);
+    setTopBattersLoading(true);
+    setLeadersLoading(true);
+    setHotBattersLoading(true);
+    setSplitsLoading(true);
+    setTopBattersError(null);
 
-      try {
-        let data;
-        if (isTeamSelected && teamDbId) {
-          data = await teamLeadersService.getTopTeamBattingLeaders(teamDbId, season, 'R');
-        } else {
-          data = await leagueLeadersService.getTopBattingLeaders(season, 'R');
-        }
-        setTopBattersData(Array.isArray(data) ? data : []);
-      } catch (error) {
-        console.error('Error fetching top batters:', error);
+    async function fetchAll() {
+      const [topResult, leadersResult, hotResult, splitsResult] = await Promise.allSettled([
+        isTeamSelected && teamDbId
+          ? teamLeadersService.getTopTeamBattingLeaders(teamDbId, season, 'R')
+          : leagueLeadersService.getTopBattingLeaders(season, 'R'),
+        isTeamSelected && teamDbId
+          ? teamLeadersService.getTeamBattingLeaders(teamDbId, season, 'R')
+          : leagueLeadersService.getLeagueBattingLeaders(season, 'R'),
+        isTeamSelected && teamDbId
+          ? teamLeadersService.getHotTeamBattingLeaders(teamDbId, season, 'R')
+          : leagueLeadersService.getHotBattingLeaders(season, 'R'),
+        isTeamSelected && teamDbId
+          ? teamLeadersService.getTeamSplits(teamDbId, season, 'R', 'batters')
+          : leagueLeadersService.getLeagueSplits(season, 'R', 'batters'),
+      ]);
+
+      if (signal.aborted) return;
+
+      if (topResult.status === 'fulfilled') {
+        setTopBattersData(Array.isArray(topResult.value) ? topResult.value : []);
+      } else {
+        console.error('Error fetching top batters:', topResult.reason);
         setTopBattersError('Failed to load top batters');
         setTopBattersData([]);
-      } finally {
-        setTopBattersLoading(false);
       }
-    };
 
-    fetchTopBatters();
-  }, [season, isTeamSelected, teamDbId]);
+      setBattingLeaders(leadersResult.status === 'fulfilled' ? leadersResult.value : null);
+      setHotBattersData(hotResult.status === 'fulfilled' ? hotResult.value : null);
+      setSplitsData(splitsResult.status === 'fulfilled' ? splitsResult.value : null);
 
-  // Fetch batting leaders (team-specific or league-wide for leader cards)
-  useEffect(() => {
-    const fetchLeaders = async () => {
-      if (!season) return;
+      setTopBattersLoading(false);
+      setLeadersLoading(false);
+      setHotBattersLoading(false);
+      setSplitsLoading(false);
+    }
 
-      setLeadersLoading(true);
+    fetchAll().catch(err => {
+      if (signal.aborted) return;
+      console.error('Error fetching batter stats:', err);
+      setTopBattersData([]);
+      setTopBattersError('Failed to load batter stats');
+      setTopBattersLoading(false);
+      setLeadersLoading(false);
+      setHotBattersLoading(false);
+      setSplitsLoading(false);
+    });
 
-      try {
-        let data;
-        if (isTeamSelected && teamDbId) {
-          data = await teamLeadersService.getTeamBattingLeaders(teamDbId, season, 'R');
-        } else {
-          data = await leagueLeadersService.getLeagueBattingLeaders(season, 'R');
-        }
-        setBattingLeaders(data);
-      } catch (error) {
-        console.error('Error fetching batting leaders:', error);
-        setBattingLeaders(null);
-      } finally {
-        setLeadersLoading(false);
-      }
-    };
-
-    fetchLeaders();
-  }, [season, isTeamSelected, teamDbId]);
-
-  // Fetch hot batters - team-specific or league-wide
-  useEffect(() => {
-    const fetchHotBatters = async () => {
-      if (!season) return;
-
-      setHotBattersLoading(true);
-
-      try {
-        let data;
-        if (isTeamSelected && teamDbId) {
-          data = await teamLeadersService.getHotTeamBattingLeaders(teamDbId, season, 'R');
-        } else {
-          data = await leagueLeadersService.getHotBattingLeaders(season, 'R');
-        }
-        setHotBattersData(data);
-      } catch (error) {
-        console.error('Error fetching hot batters:', error);
-        setHotBattersData(null);
-      } finally {
-        setHotBattersLoading(false);
-      }
-    };
-
-    fetchHotBatters();
-  }, [season, isTeamSelected, teamDbId]);
-
-  // Fetch splits - team-specific or league-wide
-  useEffect(() => {
-    const fetchSplits = async () => {
-      if (!season) return;
-
-      setSplitsLoading(true);
-
-      try {
-        let data;
-        if (isTeamSelected && teamDbId) {
-          data = await teamLeadersService.getTeamSplits(teamDbId, season, 'R', 'batters');
-        } else {
-          data = await leagueLeadersService.getLeagueSplits(season, 'R', 'batters');
-        }
-        setSplitsData(data);
-      } catch (error) {
-        console.error('Error fetching splits:', error);
-        setSplitsData(null);
-      } finally {
-        setSplitsLoading(false);
-      }
-    };
-
-    fetchSplits();
+    return () => controller.abort();
   }, [season, isTeamSelected, teamDbId]);
 
   // ========== COMPUTED DATA ==========

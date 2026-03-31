@@ -301,22 +301,23 @@ export const useGameLogs = ({ playerInfo, selectedSeason, twoWayViewMode }) => {
   // ============================================================================
   useEffect(() => {
     if (!playerInfo?.id) return;
-    
-    let isCancelled = false;
+
+    const controller = new AbortController();
+    const { signal } = controller;
     const internalPlayerId = playerInfo.id;
-    
+
     const checkAvailableSeasonTypes = async () => {
       const pos = getPlayerPosition(playerInfo);
       const isPitcherPos = isPitcherPosition(pos);
       const isTruelyTwoWay = isTwoWayPosition(pos);
-      
+
       // Determine which service to use
       const fetchService = (isPitcherPos && !isTruelyTwoWay)
-        ? gamesService.getPitcherGameLogs
-        : gamesService.getBatterGameLogs;
-      
+        ? gamesService.getPitcherGameLogs.bind(gamesService)
+        : gamesService.getBatterGameLogs.bind(gamesService);
+
       const seasonTypes = ['R', 'S', 'P']; // Regular, Spring, Postseason
-      
+
       try {
         // Check each season type in parallel
         const checks = await Promise.all(
@@ -330,10 +331,9 @@ export const useGameLogs = ({ playerInfo, selectedSeason, twoWayViewMode }) => {
             }
           })
         );
-        
-        // Check if this effect was cancelled while awaiting
-        if (isCancelled || currentPlayerIdRef.current !== internalPlayerId) return;
-        
+
+        if (signal.aborted || currentPlayerIdRef.current !== internalPlayerId) return;
+
         const available = checks
           .filter(({ hasGames }) => hasGames)
           .map(({ type }) => type);
@@ -361,18 +361,15 @@ export const useGameLogs = ({ playerInfo, selectedSeason, twoWayViewMode }) => {
           setRecentFormSeasonType(best);
         }
       } catch (err) {
-        // Silently handle errors - just use default
-        if (!isCancelled) {
+        if (!signal.aborted) {
           setAvailableRecentFormSeasonTypes(['R']);
         }
       }
     };
-    
+
     checkAvailableSeasonTypes();
-    
-    return () => {
-      isCancelled = true;
-    };
+
+    return () => controller.abort();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [playerInfo?.id, selectedSeason]);
 

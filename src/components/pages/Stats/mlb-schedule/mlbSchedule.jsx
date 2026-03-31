@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import scheduleService from '../../../../data/services/scheduleService';
 import gamesService from '../../../../data/services/gamesService';
@@ -462,6 +462,10 @@ function MLBSchedule() {
   const [liveBoxscores, setLiveBoxscores] = useState({});
   const [predictions, setPredictions] = useState({});
 
+  // Per-tab cache so switching back is instant (no spinner, no re-fetch flash)
+  const tabCacheRef  = useRef({}); // { [tab]: games[] }
+  const predCacheRef = useRef(null); // today's predictions map
+
   const fetchGames = useCallback(async (tab, { silent = false } = {}) => {
     if (!silent) setLoading(true);
     setError(null);
@@ -502,21 +506,32 @@ function MLBSchedule() {
         );
         data = results.flat().sort((a, b) => (b.date ?? '').localeCompare(a.date ?? ''));
       }
-      setGames(Array.isArray(data) ? data : []);
+      const result = Array.isArray(data) ? data : [];
+      setGames(result);
+      tabCacheRef.current[tab] = result;
     } catch (err) {
-      setError(err?.message || 'Failed to load schedule.');
-      setGames([]);
+      if (!silent) {
+        setError(err?.message || 'Failed to load schedule.');
+        setGames([]);
+      }
     } finally {
       if (!silent) setLoading(false);
     }
-  }, []);
+  }, []); // eslint-disable-line
 
   useEffect(() => {
     window.scrollTo(0, 0);
   }, []);
 
   useEffect(() => {
-    fetchGames(activeTab);
+    const cached = tabCacheRef.current[activeTab];
+    if (cached) {
+      setGames(cached);
+      setLoading(false);
+      fetchGames(activeTab, { silent: true }); // background refresh
+    } else {
+      fetchGames(activeTab);
+    }
   }, [activeTab, fetchGames]);
 
   // Poll today's games every 60 s so in-progress statuses stay current
@@ -556,15 +571,19 @@ function MLBSchedule() {
       return;
     }
 
+    // Show cached predictions instantly, then refresh in background
+    if (predCacheRef.current) {
+      setPredictions(predCacheRef.current);
+    }
+
     predictionsService.getToday().then(data => {
-      if (!Array.isArray(data)) { setPredictions({}); return; }
+      if (!Array.isArray(data)) return;
       const map = {};
-      data.forEach(p => {
-        if (p.game_pk) map[p.game_pk] = p;
-      });
+      data.forEach(p => { if (p.game_pk) map[p.game_pk] = p; });
+      predCacheRef.current = map;
       setPredictions(map);
     }).catch(() => {
-      setPredictions({});
+      if (!predCacheRef.current) setPredictions({});
     });
   }, [activeTab]);
 

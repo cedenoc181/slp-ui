@@ -181,29 +181,26 @@ export const usePlayerProfile = (mlbIdFromSlug, selectedSeason, isPitcher, isTwo
   // ============================================================================
   useEffect(() => {
     if (!playerInfo?.id) return;
-    
-    let isCancelled = false;
+
+    const controller = new AbortController();
     const playerId = playerInfo.id;
-    
+
     const fetchInjuryHistory = async () => {
       try {
         const response = await injuryService.getPlayerInjuryHistory(playerId);
-        if (isCancelled || currentPlayerIdRef.current !== playerId) return;
+        if (controller.signal.aborted || currentPlayerIdRef.current !== playerId) return;
         const injuries = response?.injuries || [];
         setInjuryHistory(Array.isArray(injuries) ? injuries : []);
       } catch (err) {
-        if (!isCancelled) {
+        if (!controller.signal.aborted) {
           console.error('Error fetching injury history:', err);
           setInjuryHistory([]);
         }
       }
     };
-    
+
     fetchInjuryHistory();
-    
-    return () => {
-      isCancelled = true;
-    };
+    return () => controller.abort();
   }, [playerInfo?.id]);
 
   // ============================================================================
@@ -211,29 +208,26 @@ export const usePlayerProfile = (mlbIdFromSlug, selectedSeason, isPitcher, isTwo
   // ============================================================================
   useEffect(() => {
     if (!playerInfo?.id) return;
-    
-    let isCancelled = false;
+
+    const controller = new AbortController();
     const playerId = playerInfo.id;
-    
+
     const fetchTeamHistory = async () => {
       try {
         const response = await rosterService.getPlayerRosterHistory(playerId);
-        if (isCancelled || currentPlayerIdRef.current !== playerId) return;
+        if (controller.signal.aborted || currentPlayerIdRef.current !== playerId) return;
         const seasons = response?.seasons || [];
         setTeamHistory(Array.isArray(seasons) ? seasons : []);
       } catch (err) {
-        if (!isCancelled) {
+        if (!controller.signal.aborted) {
           console.error('Error fetching team history:', err);
           setTeamHistory([]);
         }
       }
     };
-    
+
     fetchTeamHistory();
-    
-    return () => {
-      isCancelled = true;
-    };
+    return () => controller.abort();
   }, [playerInfo?.id]);
 
   // ============================================================================
@@ -352,9 +346,14 @@ export const usePlayerProfile = (mlbIdFromSlug, selectedSeason, isPitcher, isTwo
     // Early returns - prevent duplicate fetches
     if (isFetchingCareerRef.current || !playerInfo?.id) return;
     if (hasCareerDataRef.current && currentPlayerIdRef.current === playerInfo.id) return;
-    
+
     isFetchingCareerRef.current = true;
     const playerIdAtFetchStart = playerInfo.id;
+
+    // Abort any previous career fetch (e.g. rapid player switching)
+    if (careerFetchAbortRef.current) careerFetchAbortRef.current.abort();
+    const controller = new AbortController();
+    careerFetchAbortRef.current = controller;
     
     // Determine player type from playerInfo directly (not from hook params)
     const pos = playerInfo.position_abbreviation || playerInfo.position || playerInfo.primary_position;

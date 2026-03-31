@@ -61,112 +61,67 @@ export function usePitcherStats({ teamId = 'ALL', teamDbId = null, season = DEFA
   const [splitsData, setSplitsData] = useState(null);
   const [splitsLoading, setSplitsLoading] = useState(false);
 
-  // ========== API CALLS ==========
+  // ========== BATCHED API CALL ==========
 
-  // Fetch top pitchers - team-specific or league-wide
   useEffect(() => {
-    const fetchTopPitchers = async () => {
-      if (!season) return;
+    if (!season) return;
+    const controller = new AbortController();
+    const { signal } = controller;
 
-      setTopPitchersLoading(true);
-      setTopPitchersError(null);
+    setTopPitchersLoading(true);
+    setLeadersLoading(true);
+    setHotPitchersLoading(true);
+    setSplitsLoading(true);
+    setTopPitchersError(null);
 
-      try {
-        let data;
-        if (isTeamSelected && teamDbId) {
-          data = await teamLeadersService.getTopTeamPitchingLeaders(teamDbId, season, 'R');
-        } else {
-          data = await leagueLeadersService.getTopPitchingLeaders(season, 'R');
-        }
-        setTopPitchersData(Array.isArray(data) ? data : []);
-      } catch (error) {
-        console.error('Error fetching top pitchers:', error);
+    async function fetchAll() {
+      const [topResult, leadersResult, hotResult, splitsResult] = await Promise.allSettled([
+        isTeamSelected && teamDbId
+          ? teamLeadersService.getTopTeamPitchingLeaders(teamDbId, season, 'R')
+          : leagueLeadersService.getTopPitchingLeaders(season, 'R'),
+        isTeamSelected && teamDbId
+          ? teamLeadersService.getTeamPitchingLeaders(teamDbId, season, 'R')
+          : leagueLeadersService.getLeaguePitchingLeaders(season, 'R'),
+        isTeamSelected && teamDbId
+          ? teamLeadersService.getHotTeamPitchingLeaders(teamDbId, season, 'R')
+          : leagueLeadersService.getHotPitchingLeaders(season, 'R'),
+        isTeamSelected && teamDbId
+          ? teamLeadersService.getTeamSplits(teamDbId, season, 'R', 'pitcher')
+          : leagueLeadersService.getLeagueSplits(season, 'R', 'pitcher'),
+      ]);
+
+      if (signal.aborted) return;
+
+      if (topResult.status === 'fulfilled') {
+        setTopPitchersData(Array.isArray(topResult.value) ? topResult.value : []);
+      } else {
+        console.error('Error fetching top pitchers:', topResult.reason);
         setTopPitchersError('Failed to load top pitchers');
         setTopPitchersData([]);
-      } finally {
-        setTopPitchersLoading(false);
       }
-    };
 
-    fetchTopPitchers();
-  }, [season, isTeamSelected, teamDbId]);
+      setPitchingLeaders(leadersResult.status === 'fulfilled' ? leadersResult.value : null);
+      setHotPitchersData(hotResult.status === 'fulfilled' ? hotResult.value : null);
+      setSplitsData(splitsResult.status === 'fulfilled' ? splitsResult.value : null);
 
-  // Fetch pitching leaders (team-specific or league-wide for leader cards)
-  useEffect(() => {
-    const fetchLeaders = async () => {
-      if (!season) return;
+      setTopPitchersLoading(false);
+      setLeadersLoading(false);
+      setHotPitchersLoading(false);
+      setSplitsLoading(false);
+    }
 
-      setLeadersLoading(true);
+    fetchAll().catch(err => {
+      if (signal.aborted) return;
+      console.error('Error fetching pitcher stats:', err);
+      setTopPitchersData([]);
+      setTopPitchersError('Failed to load pitcher stats');
+      setTopPitchersLoading(false);
+      setLeadersLoading(false);
+      setHotPitchersLoading(false);
+      setSplitsLoading(false);
+    });
 
-      try {
-        let data;
-        if (isTeamSelected && teamDbId) {
-          data = await teamLeadersService.getTeamPitchingLeaders(teamDbId, season, 'R');
-        } else {
-          data = await leagueLeadersService.getLeaguePitchingLeaders(season, 'R');
-        }
-        setPitchingLeaders(data);
-      } catch (error) {
-        console.error('Error fetching pitching leaders:', error);
-        setPitchingLeaders(null);
-      } finally {
-        setLeadersLoading(false);
-      }
-    };
-
-    fetchLeaders();
-  }, [season, isTeamSelected, teamDbId]);
-
-  // Fetch hot pitchers - team-specific or league-wide
-  useEffect(() => {
-    const fetchHotPitchers = async () => {
-      if (!season) return;
-
-      setHotPitchersLoading(true);
-
-      try {
-        let data;
-        if (isTeamSelected && teamDbId) {
-          data = await teamLeadersService.getHotTeamPitchingLeaders(teamDbId, season, 'R');
-        } else {
-          data = await leagueLeadersService.getHotPitchingLeaders(season, 'R');
-        }
-        setHotPitchersData(data);
-      } catch (error) {
-        console.error('Error fetching hot pitchers:', error);
-        setHotPitchersData(null);
-      } finally {
-        setHotPitchersLoading(false);
-      }
-    };
-
-    fetchHotPitchers();
-  }, [season, isTeamSelected, teamDbId]);
-
-  // Fetch splits - team-specific or league-wide
-  useEffect(() => {
-    const fetchSplits = async () => {
-      if (!season) return;
-
-      setSplitsLoading(true);
-
-      try {
-        let data;
-        if (isTeamSelected && teamDbId) {
-          data = await teamLeadersService.getTeamSplits(teamDbId, season, 'R', 'pitcher');
-        } else {
-          data = await leagueLeadersService.getLeagueSplits(season, 'R', 'pitcher');
-        }
-        setSplitsData(data);
-      } catch (error) {
-        console.error('Error fetching splits:', error);
-        setSplitsData(null);
-      } finally {
-        setSplitsLoading(false);
-      }
-    };
-
-    fetchSplits();
+    return () => controller.abort();
   }, [season, isTeamSelected, teamDbId]);
 
   // ========== COMPUTED DATA ==========

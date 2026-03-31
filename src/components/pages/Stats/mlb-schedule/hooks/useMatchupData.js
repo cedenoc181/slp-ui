@@ -38,6 +38,7 @@ export function useMatchupData() {
 
   useEffect(() => {
     window.scrollTo(0, 0);
+    const controller = new AbortController();
 
     async function loadAll() {
       setLoading(true);
@@ -48,6 +49,7 @@ export function useMatchupData() {
           gameData = await scheduleService.getGameById(gameId, state?.seasonType || null, state?.season || null);
         }
         if (!gameData) throw new Error('Game not found');
+        if (controller.signal.aborted) return;
         setGame(gameData);
 
         const awayId     = gameData.away_team_id;
@@ -122,9 +124,11 @@ export function useMatchupData() {
             : Promise.resolve(null),
           // Fetch prediction/odds for this game
           (gameData.game_pk ?? gameData.id)
-            ? predictionsService.getByGamePk(gameData.game_pk ?? gameData.id)
+            ? predictionsService.getByGamePk(gameData.game_pk ?? gameData.id, { signal: controller.signal })
             : Promise.resolve(null),
         ]);
+
+        if (controller.signal.aborted) return;
 
         // Last 10 — split summary from game objects; fall back to 2025 regular season for spring
         const awayPrimary  = parseLast10(awayL10Res.status  === 'fulfilled' ? awayL10Res.value  : null);
@@ -192,13 +196,15 @@ export function useMatchupData() {
         const predVal = predictionRes.status === 'fulfilled' ? predictionRes.value : null;
         setPrediction(predVal);
       } catch (err) {
+        if (controller.signal.aborted) return;
         setError(err?.message || 'Failed to load matchup details.');
       } finally {
-        setLoading(false);
+        if (!controller.signal.aborted) setLoading(false);
       }
     }
 
     loadAll();
+    return () => controller.abort();
   }, [gameId]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // ── Live-game polling: keep boxscore current for BoxScoreCard ────────────────

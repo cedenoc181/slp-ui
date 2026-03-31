@@ -110,8 +110,9 @@ function buildBatterGames(apiGames) {
     const awayMlbId = awayTeam?.mlbId ?? null;
     const homeMlbId = homeTeam?.mlbId ?? null;
 
-    games.push({ gamePk: game.game_pk, awayAbbr, awayMlbId, homeAbbr, homeMlbId });
+    games.push({ gamePk: game.game_pk, gameId: game.id ?? game.game_pk, awayAbbr, awayMlbId, homeAbbr, homeMlbId });
 
+    const gameId = game.id ?? game.game_pk;
     const addBatter = (player, isHome) => batters.push({
       id:         player.player_id,
       mlbId:      player.mlb_id ?? player.player_mlb_id ?? null,
@@ -120,6 +121,7 @@ function buildBatterGames(apiGames) {
       teamMlbId:  isHome ? homeMlbId : awayMlbId,
       opponent:   isHome ? awayAbbr  : homeAbbr,
       gamePk:     game.game_pk,
+      gameId,
       predicted_hits: player.predicted_hits ?? 0,
       predicted_hr:   player.predicted_hr   ?? 0,
       predicted_rbi:  player.predicted_rbi  ?? 0,
@@ -221,6 +223,7 @@ function passes(market, riskFilter) {
 function getBattersForMarketKey(batters, marketKey, riskFilter = 'all') {
   const result = [];
   for (const batter of batters) {
+    if (!batter.scout_ai) continue;
     const market = buildBatterMarkets(batter).find(m => m.key === marketKey);
     if (!market || !passes(market, riskFilter)) continue;
     result.push({ batter, market });
@@ -231,6 +234,7 @@ function getBattersForMarketKey(batters, marketKey, riskFilter = 'all') {
 function getTopPicks(batters, riskFilter = 'all') {
   const all = [];
   for (const batter of batters) {
+    if (!batter.scout_ai) continue;
     for (const market of buildBatterMarkets(batter).filter(m => m.inRows)) {
       if (!passes(market, riskFilter)) continue;
       all.push({ batter, market, ev: parseFloat(market.ev) });
@@ -256,6 +260,105 @@ function EVBadge({ ev }) {
     <span className={`bp-ev-badge ${val > 0 ? 'pos' : 'neg'}`}>
       {val > 0 ? '+' : ''}{ev}% EV
     </span>
+  );
+}
+
+// ─── Prediction gate: 2 h before earliest first pitch ────────────────────────
+
+function parseGameTimesFromGames(games) {
+  return games.map(g => {
+    const str = g.game_time_et;
+    if (!str) return null;
+    const m = str.match(/(\d+):(\d+)\s*(AM|PM)/i);
+    if (!m) return null;
+    let h = parseInt(m[1]), min = parseInt(m[2]);
+    const period = m[3].toUpperCase();
+    if (period === 'PM' && h !== 12) h += 12;
+    if (period === 'AM' && h === 12) h = 0;
+    const d = new Date();
+    d.setHours(h, min, 0, 0);
+    return d;
+  }).filter(Boolean);
+}
+
+function getUnlockDate(games) {
+  const times = parseGameTimesFromGames(games);
+  if (!times.length) return null;
+  const earliest = new Date(Math.min(...times.map(t => t.getTime())));
+  earliest.setHours(earliest.getHours() - 2);
+  return earliest;
+}
+
+function getPredictionReadyTime(games) {
+  const unlock = getUnlockDate(games);
+  if (!unlock) return null;
+  let h = unlock.getHours();
+  const min = String(unlock.getMinutes()).padStart(2, '0');
+  const period = h >= 12 ? 'PM' : 'AM';
+  h = h % 12 || 12;
+  return `${h}:${min} ${period} ET`;
+}
+
+function arePredictionsUnlocked(games) {
+  const unlock = getUnlockDate(games);
+  if (!unlock) return false;
+  return new Date() >= unlock;
+}
+
+// ─── Pending state components ─────────────────────────────────────────────────
+
+function PendingBanner({ predictionTime }) {
+  return (
+    <div className="bp-pending-banner">
+      <span className="bp-pending-banner-icon">⏳</span>
+      <div>
+        <div className="bp-pending-banner-title">
+          {predictionTime ? `Predictions available by ${predictionTime}` : 'Predictions Coming Soon'}
+        </div>
+        <div className="bp-pending-banner-sub">
+          Our model and Scout AI analysis will be ready approximately 2 hours before first pitch.
+          {predictionTime
+            ? ` Come back at ${predictionTime} for full prop predictions and analysis.`
+            : ' Check back closer to game time.'}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function PendingBatterCard({ batter }) {
+  const [hsErr,   setHsErr]   = useState(false);
+  const [logoErr, setLogoErr] = useState(false);
+  return (
+    <div className="bp-pending-card">
+      <div className="bp-pending-card-top">
+        {hsErr ? (
+          <div className="bp-batter-card-hs-fallback">
+            {batter.name.split(' ').map(w => w[0]).join('').slice(0, 2)}
+          </div>
+        ) : (
+          <img
+            src={headshotUrl(batter.mlbId)}
+            alt={batter.name}
+            className="bp-batter-card-headshot"
+            onError={() => setHsErr(true)}
+          />
+        )}
+        <div className="bp-batter-card-info">
+          <div className="bp-batter-card-name">{batter.name}</div>
+          <div className="bp-batter-card-matchup">{batter.teamAbbr} · vs {batter.opponent}</div>
+          <div className="bp-pending-card-label">Predictions pending</div>
+        </div>
+        {batter.teamMlbId && !logoErr && (
+          <img
+            src={teamLogoUrl(batter.teamMlbId)}
+            alt={batter.teamAbbr}
+            className="bp-batter-card-logo"
+            onError={() => setLogoErr(true)}
+          />
+        )}
+      </div>
+    </div>
   );
 }
 
@@ -520,7 +623,7 @@ function BatterModal({ batter, initialMarketKey, onClose }) {
   }, [onClose, selectedMarket]);
 
   const goToPlayer  = () => { onClose(); navigate(`/player/${batter.mlbId ?? batter.id}`); window.scrollTo(0, 0); };
-  const goToMatchup = () => { onClose(); navigate(`/mlb-schedule/${batter.gamePk}`); window.scrollTo(0, 0); };
+  const goToMatchup = () => { onClose(); navigate(`/mlb-schedule/${batter.gameId ?? batter.gamePk}`); window.scrollTo(0, 0); };
   const goToTeam    = () => {
     const urlName = Object.entries(TEAM_METADATA).find(([abbr]) => abbr === batter.teamAbbr)?.[1]?.urlName;
     if (!urlName) return;
@@ -645,9 +748,12 @@ export default function BatterProps() {
   const [gameData,      setGameData]      = useState({});
   const [riskFilter,    setRiskFilter]    = useState('all');
   const [modalState,    setModalState]    = useState(null);
+  const navigate = useNavigate();
 
   // Tracks which gamePks have an in-flight or completed fetch (prevents double-fetching)
   const startedRef = useRef(new Set());
+  // Ref to always-current games list so fetchBattersForGame can look up internal gameId
+  const gamesRef   = useRef([]);
 
   // Shared fetch logic — used by both step 2 (active game) and step 3 (prefetch)
   const fetchBattersForGame = useCallback((pk, controller, { silent = false } = {}) => {
@@ -658,7 +764,10 @@ export default function BatterProps() {
 
     predictionsService.getBattersByGamePk(pk, { signal: controller.signal, timeout: 120000 })
       .then(result => {
-        const { batters: b } = buildBatterGames([result]);
+        // Guarantee we use the internal game.id from predictions/today (step-1 data)
+        // even if the batter endpoint doesn't return it
+        const knownGameId = gamesRef.current.find(g => g.gamePk === pk)?.gameId ?? pk;
+        const { batters: b } = buildBatterGames([{ ...result, id: result.id ?? knownGameId }]);
         setGameData(prev => ({ ...prev, [pk]: { batters: b, loading: false, error: null } }));
 
         // Background: resolve MLB IDs for headshots (same pattern as PitcherProps)
@@ -686,6 +795,11 @@ export default function BatterProps() {
           startedRef.current.delete(pk);
           return;
         }
+        // 404 means props aren't available yet — treat as empty, let pending UI render
+        if (err?.message?.includes('404') || err?.status === 404) {
+          setGameData(prev => ({ ...prev, [pk]: { batters: [], loading: false, error: null } }));
+          return;
+        }
         if (!silent) {
           console.error(`[BatterProps] batters fetch error for ${pk}:`, err);
           setGameData(prev => ({ ...prev, [pk]: { batters: [], loading: false, error: err?.message || 'Failed to load.' } }));
@@ -702,11 +816,13 @@ export default function BatterProps() {
           ? rows.filter(r => r.season_type !== 'spring' && r.season_type !== 'S')
           : [];
         const mapped = today.map(r => ({
-          gamePk:    r.game_pk,
-          awayAbbr:  getTeamById(r.away_team_id)?.id    || r.away_team_name,
-          awayMlbId: getTeamById(r.away_team_id)?.mlbId ?? null,
-          homeAbbr:  getTeamById(r.home_team_id)?.id    || r.home_team_name,
-          homeMlbId: getTeamById(r.home_team_id)?.mlbId ?? null,
+          gamePk:      r.game_pk,
+          gameId:      r.id ?? r.game_pk,
+          awayAbbr:    getTeamById(r.away_team_id)?.id    || r.away_team_name,
+          awayMlbId:   getTeamById(r.away_team_id)?.mlbId ?? null,
+          homeAbbr:    getTeamById(r.home_team_id)?.id    || r.home_team_name,
+          homeMlbId:   getTeamById(r.home_team_id)?.mlbId ?? null,
+          game_time_et: r.game_time_et ?? r.game_time ?? null,
         }));
         setGames(mapped);
         if (mapped.length) setActiveGamePk(mapped[0].gamePk);
@@ -750,10 +866,23 @@ export default function BatterProps() {
     };
   }, [games, fetchBattersForGame]);
 
+  // Keep ref in sync so fetchBattersForGame always sees the latest gameId mapping
+  gamesRef.current = games;
+
   const activeEntry    = activeGamePk ? (gameData[activeGamePk] ?? null) : null;
   const battersLoading = !!activeEntry?.loading;
   const battersError   = activeEntry?.error ?? null;
   const visibleBatters = activeEntry?.batters ?? [];
+
+  const predictionsUnlocked = arePredictionsUnlocked(games);
+  const predictionTime      = getPredictionReadyTime(games);
+
+  // Show pending state if: time gate hasn't passed, OR time passed but no batter
+  // has both scout_ai and sportsbook_props (data not ready yet).
+  const hasReadyBatters = predictionsUnlocked &&
+    visibleBatters.some(b => b.scout_ai && b.sportsbook_props?.length > 0);
+  const showPending = !predictionsUnlocked ||
+    (visibleBatters.length > 0 && !hasReadyBatters);
 
   const rowMarkets = Object.values(STAT_KEY_MAP).filter(m => m.inRows);
   const topPicks   = getTopPicks(visibleBatters, riskFilter);
@@ -831,7 +960,7 @@ export default function BatterProps() {
                 <span>{activeMatchup.homeAbbr}</span>
                 <button
                   className="bp-matchup-label-link"
-                  onClick={() => { closeModal(); window.location.href = `/mlb-schedule/${activeMatchup.gamePk}`; }}
+                  onClick={() => { closeModal(); navigate(`/mlb-schedule/${activeMatchup.gameId}`); window.scrollTo(0, 0); }}
                 >
                   Matchup Analysis →
                 </button>
@@ -849,6 +978,17 @@ export default function BatterProps() {
                 <span className="bp-coming-soon-icon">⚾</span>
                 <p>{battersError}</p>
               </div>
+            ) : showPending ? (
+              <>
+                <PendingBanner predictionTime={predictionTime} />
+                {visibleBatters.length > 0 && (
+                  <div className="bp-pending-grid">
+                    {visibleBatters.map(b => (
+                      <PendingBatterCard key={b.id} batter={b} />
+                    ))}
+                  </div>
+                )}
+              </>
             ) : (
               <>
                 {/* ── Top picks ──────────────────────────────────── */}

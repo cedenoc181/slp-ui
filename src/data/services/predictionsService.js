@@ -54,8 +54,8 @@ class PredictionsService {
    * @param {string|number} gamePk
    * @returns {Promise<Object>}
    */
-  async getByGamePk(gamePk) {
-    return api.get(`/predictions/${gamePk}`);
+  async getByGamePk(gamePk, options = {}) {
+    return api.get(`/predictions/${gamePk}`, options);
   }
 
   /**
@@ -73,8 +73,8 @@ class PredictionsService {
    * GET /predictions/pitchers/today
    * @returns {Promise<Array>}
    */
-  async getPitchersToday() {
-    return api.get('/predictions/pitchers/today');
+  async getPitchersToday(options = {}) {
+    return api.get('/predictions/pitchers/today', options);
   }
 
   /**
@@ -83,8 +83,8 @@ class PredictionsService {
    * @param {string|number} gamePk
    * @returns {Promise<Object>}
    */
-  async getPitchersByGamePk(gamePk) {
-    return api.get(`/predictions/pitchers/${gamePk}`);
+  async getPitchersByGamePk(gamePk, options = {}) {
+    return api.get(`/predictions/pitchers/${gamePk}`, options);
   }
 }
 

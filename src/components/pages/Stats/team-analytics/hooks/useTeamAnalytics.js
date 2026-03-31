@@ -99,6 +99,8 @@ export function useTeamAnalytics() {
   
   // Track current fetch to prevent double-fetching
   const currentFetchRef = useRef(null);
+  // AbortController for cancelling in-flight fetchTeamData on team/season switch
+  const fetchAbortRef = useRef(null);
 
   // ========== API Data State ==========
   const [loading, setLoading] = useState(true);
@@ -132,97 +134,87 @@ export function useTeamAnalytics() {
   const isInitialLoadRef = useRef(true);
 
   // ========== Fetch All Team Data ==========
-  const fetchTeamData = useCallback(async (teamId, season, isTeamSwitch = false) => {
-    // Only show full loading skeleton on initial load, not team switches
-    if (!isTeamSwitch) {
-      setLoading(true);
-    }
+  const fetchTeamData = useCallback(async (teamId, season, isTeamSwitch = false, signal = null) => {
+    if (!isTeamSwitch) setLoading(true);
     setError(null);
 
+    const sst = getStatsSeasonType(season);
+    const currentYear = new Date().getFullYear().toString();
+    const hasLeadersData = d => d && typeof d === 'object' && Object.values(d).some(v => v?.player_name != null);
+
     try {
-      console.log(`📡 Fetching data for team ${teamId}, season ${season}...`);
-
-      const currentYear = new Date().getFullYear().toString();
-      const hasLeadersData = d => d && typeof d === 'object' && Object.values(d).some(v => v?.player_name != null);
-
-      const [
-        seasonData,
-        monthlyData,
-        battingStatsData,
-        pitchingStatsData,
-        battingLeadersR,
-        pitchingLeadersR,
-        battingLeadersS,
-        pitchingLeadersS,
-        last10Data,
-        homeGamesData,
-        awayGamesData,
-        rosterData,
-        splitsData,
-        injuriesFullSeasonData,
-        injuriesFirstHalfData,
-        injuriesSecondHalfData,
-      ] = await Promise.all([
-        teamsService.getTeamSeason(teamId, season).catch(err => { console.warn('Team season failed:', err); return null; }),
-        teamsService.getTeamMonthly(teamId, season).catch(err => { console.warn('Team monthly failed:', err); return null; }),
-        teamStatsService.getTeamBattingStats(teamId, season, getStatsSeasonType(season)).catch(err => { console.warn('Batting stats failed:', err); return null; }),
-        teamStatsService.getTeamPitchingStats(teamId, season, getStatsSeasonType(season)).catch(err => { console.warn('Pitching stats failed:', err); return null; }),
-        teamLeadersService.getTeamBattingLeaders(teamId, season, 'R').catch(err => { console.warn('Batting leaders (R) failed:', err); return null; }),
-        teamLeadersService.getTeamPitchingLeaders(teamId, season, 'R').catch(err => { console.warn('Pitching leaders (R) failed:', err); return null; }),
-        season === currentYear
-          ? teamLeadersService.getTeamBattingLeaders(teamId, season, 'S').catch(err => { console.warn('Batting leaders (S) failed:', err); return null; })
-          : Promise.resolve(null),
-        season === currentYear
-          ? teamLeadersService.getTeamPitchingLeaders(teamId, season, 'S').catch(err => { console.warn('Pitching leaders (S) failed:', err); return null; })
-          : Promise.resolve(null),
-        gamesService.getTeamLast10(teamId, season, getStatsSeasonType(season)).catch(err => { console.warn('Last 10 failed:', err); return null; }),
-        gamesService.getTeamHomeGames(teamId, season, getStatsSeasonType(season)).catch(err => { console.warn('Home games failed:', err); return null; }),
-        gamesService.getTeamAwayGames(teamId, season, getStatsSeasonType(season)).catch(err => { console.warn('Away games failed:', err); return null; }),
-        rosterService.getTeamRoster(teamId, season).catch(err => { console.warn('Roster failed:', err); return null; }),
-        teamLeadersService.getTeamSplits(teamId, season, getStatsSeasonType(season), PLAYER_ROLES.BATTER).catch(err => { console.warn('Splits failed:', err); return null; }),
-        injuryService.getTeamInjuriesFullSeason(teamId, season).catch(err => { console.warn('Injuries full season failed:', err); return null; }),
-        injuryService.getTeamInjuriesFirstHalf(teamId, season).catch(err => { console.warn('Injuries first half failed:', err); return null; }),
-        injuryService.getTeamInjuriesSecondHalf(teamId, season).catch(err => { console.warn('Injuries second half failed:', err); return null; }),
+      // ── Tier 1: 5 requests — render the page skeleton immediately ──────────
+      const [seasonData, monthlyData, battingStatsData, pitchingStatsData, rosterData] = await Promise.all([
+        teamsService.getTeamSeason(teamId, season).catch(() => null),
+        teamsService.getTeamMonthly(teamId, season).catch(() => null),
+        teamStatsService.getTeamBattingStats(teamId, season, sst).catch(() => null),
+        teamStatsService.getTeamPitchingStats(teamId, season, sst).catch(() => null),
+        rosterService.getTeamRoster(teamId, season).catch(() => null),
       ]);
 
-      // Leaders: prefer regular season; fall back to spring training if R has no data
-      const battingLeadersData  = hasLeadersData(battingLeadersR)  ? battingLeadersR  : battingLeadersS;
-      const pitchingLeadersData = hasLeadersData(pitchingLeadersR) ? pitchingLeadersR : pitchingLeadersS;
-      const usedSpringLeaders   = !hasLeadersData(battingLeadersR) && !hasLeadersData(pitchingLeadersR);
+      if (signal?.aborted) return;
 
       setTeamSeasonData(seasonData);
       setTeamMonthlyData(monthlyData);
       setBattingStats(battingStatsData);
       setPitchingStats(pitchingStatsData);
+      setRoster(rosterData);
+      setLoading(false);
+      setTimeout(() => setTransitionLoading(false), 100);
+
+      // ── Tier 2: 6–8 requests — leaders + splits + home/away/last10 ─────────
+      const [
+        battingLeadersR, pitchingLeadersR,
+        battingLeadersS, pitchingLeadersS,
+        last10Data, homeGamesData, awayGamesData, splitsData,
+      ] = await Promise.all([
+        teamLeadersService.getTeamBattingLeaders(teamId, season, 'R').catch(() => null),
+        teamLeadersService.getTeamPitchingLeaders(teamId, season, 'R').catch(() => null),
+        season === currentYear
+          ? teamLeadersService.getTeamBattingLeaders(teamId, season, 'S').catch(() => null)
+          : Promise.resolve(null),
+        season === currentYear
+          ? teamLeadersService.getTeamPitchingLeaders(teamId, season, 'S').catch(() => null)
+          : Promise.resolve(null),
+        gamesService.getTeamLast10(teamId, season, sst).catch(() => null),
+        gamesService.getTeamHomeGames(teamId, season, sst).catch(() => null),
+        gamesService.getTeamAwayGames(teamId, season, sst).catch(() => null),
+        teamLeadersService.getTeamSplits(teamId, season, sst, PLAYER_ROLES.BATTER).catch(() => null),
+      ]);
+
+      if (signal?.aborted) return;
+
+      const battingLeadersData  = hasLeadersData(battingLeadersR)  ? battingLeadersR  : battingLeadersS;
+      const pitchingLeadersData = hasLeadersData(pitchingLeadersR) ? pitchingLeadersR : pitchingLeadersS;
       setBattingLeaders(battingLeadersData);
       setPitchingLeaders(pitchingLeadersData);
-      setLeadersSeason(usedSpringLeaders ? 'S' : null);
+      setLeadersSeason(!hasLeadersData(battingLeadersR) && !hasLeadersData(pitchingLeadersR) ? 'S' : null);
       setLast10Games(last10Data);
       setHomeGames(homeGamesData);
       setAwayGames(awayGamesData);
-      setRoster(rosterData);
       setTeamSplits(splitsData);
-      setInjuriesFullSeason(injuriesFullSeasonData);
-      setInjuriesFirstHalf(injuriesFirstHalfData);
-      setInjuriesSecondHalf(injuriesSecondHalfData);
 
-      console.log('✅ All data fetched successfully!');
-      
-      // First hide the main loading state so the page can render
-      setLoading(false);
-      
-      // Give React a brief moment to render, then hide transition overlay
-      setTimeout(() => {
-        setTransitionLoading(false);
-      }, 100);
-      
+      // ── Tier 3: 3 requests — injuries (least critical) ─────────────────────
+      const [injFull, injFirst, injSecond] = await Promise.all([
+        injuryService.getTeamInjuriesFullSeason(teamId, season).catch(() => null),
+        injuryService.getTeamInjuriesFirstHalf(teamId, season).catch(() => null),
+        injuryService.getTeamInjuriesSecondHalf(teamId, season).catch(() => null),
+      ]);
+
+      if (signal?.aborted) return;
+
+      setInjuriesFullSeason(injFull);
+      setInjuriesFirstHalf(injFirst);
+      setInjuriesSecondHalf(injSecond);
+
     } catch (err) {
+      if (signal?.aborted) return;
       console.error('❌ Error fetching team data:', err);
       setError(err.message || 'Failed to load team data. Please try again.');
       setLoading(false);
       setTransitionLoading(false);
     }
-  }, []);
+  }, []); // eslint-disable-line
 
   // ========== Fetch Team Games (separate for season type switching) ==========
   const fetchTeamGames = useCallback(async (teamId, season, seasonType) => {
@@ -318,14 +310,21 @@ export function useTeamAnalytics() {
     if (currentFetchRef.current === fetchKey) return;
     currentFetchRef.current = fetchKey;
 
+    // Abort any previous in-flight fetch before starting a new one
+    if (fetchAbortRef.current) fetchAbortRef.current.abort();
+    const controller = new AbortController();
+    fetchAbortRef.current = controller;
+
     // After initial load, subsequent fetches are team switches
     const isTeamSwitch = !isInitialLoadRef.current;
-    fetchTeamData(teamId, selectedSeason, isTeamSwitch);
+    fetchTeamData(teamId, selectedSeason, isTeamSwitch, controller.signal);
     fetchTeamGames(teamId, selectedSeason, gameLogSeasonType);
     checkAvailableSeasonTypes(teamId, selectedSeason);
 
     // Mark that initial load is done
     isInitialLoadRef.current = false;
+
+    return () => controller.abort();
   }, [selectedTeam, selectedSeason, fetchTeamData, fetchTeamGames, checkAvailableSeasonTypes]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Re-fetch game log when season type selector changes

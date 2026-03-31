@@ -1,7 +1,6 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import teamsService from '../data/services/teamsService';
-import { TEAM_IDS, TEAM_METADATA } from '../data/constants/apiConstants';
+import { TEAMS } from '../data/constants/apiConstants';
 import '../styles/home-page-styling/teams-carousel.css';
 
 // Team colors mapping (not available from API)
@@ -38,25 +37,16 @@ const TEAM_COLORS = {
   NYM: '#002D72',
 };
 
-// Map API division names to division IDs
-const mapDivisionName = (divisionName) => {
-  const mapping = {
-    'American League East': 'al-east',
-    'American League Central': 'al-central',
-    'American League West': 'al-west',
-    'National League East': 'nl-east',
-    'National League Central': 'nl-central',
-    'National League West': 'nl-west',
-  };
-  return mapping[divisionName] || 'unknown';
-};
+// Static team list sorted by division order — no API call needed
+const divOrder = ['al-east', 'al-central', 'al-west', 'nl-east', 'nl-central', 'nl-west'];
+const ALL_TEAMS = TEAMS
+  .filter(t => t.city && t.division)
+  .map(t => ({ ...t, color: TEAM_COLORS[t.id] || '#1976D2' }))
+  .sort((a, b) => divOrder.indexOf(a.division) - divOrder.indexOf(b.division));
 
 function TeamsCarousel() {
   const navigate = useNavigate();
   const [activeDiv, setActiveDiv] = useState('all');
-  const [teams, setTeams] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
   const scrollRef = useRef(null);
 
   const divisions = [
@@ -69,80 +59,9 @@ function TeamsCarousel() {
     { id: 'nl-west', label: 'NL West' },
   ];
 
-  // Fetch all teams on mount
-  useEffect(() => {
-    const fetchAllTeams = async () => {
-      setLoading(true);
-      setError(null);
-      
-      try {
-        // Get all team IDs (1-30)
-        const teamIds = Object.values(TEAM_IDS);
-        
-        // Fetch teams in batches to reduce browser load
-        const BATCH_SIZE = 6;
-        const results = [];
-        
-        for (let i = 0; i < teamIds.length; i += BATCH_SIZE) {
-          const batch = teamIds.slice(i, i + BATCH_SIZE);
-          const batchPromises = batch.map(teamId => 
-            teamsService.getTeamSeason(teamId).catch(err => {
-              console.warn(`Failed to fetch team ${teamId}:`, err);
-              return null;
-            })
-          );
-          const batchResults = await Promise.all(batchPromises);
-          results.push(...batchResults);
-        }
-        
-        // Transform API data to carousel format
-        const transformedTeams = results
-          .filter(result => result?.team) // Filter out failed requests
-          .map(result => {
-            const team = result.team;
-            const abbr = team.team_abbreviation;
-            const metadata = TEAM_METADATA[abbr];
-            
-            // Skip teams without matching metadata (abbreviation mismatch)
-            if (!metadata || !metadata.urlName) {
-              console.warn(`No metadata found for team abbreviation: ${abbr}`);
-              return null;
-            }
-            
-            return {
-              id: abbr,
-              name: team.team_name,
-              city: team.team_location,
-              division: mapDivisionName(team.division_name),
-              color: TEAM_COLORS[abbr] || '#1976D2',
-              urlName: metadata.urlName, // Always use metadata urlName for consistency
-              venue: team.venue_name,
-              league: team.league_name,
-              mlbId: team.mlb_team_id,
-            };
-          })
-          .filter(Boolean) // Remove null entries from skipped teams
-          // Sort by division for better UX
-          .sort((a, b) => {
-            const divOrder = ['al-east', 'al-central', 'al-west', 'nl-east', 'nl-central', 'nl-west'];
-            return divOrder.indexOf(a.division) - divOrder.indexOf(b.division);
-          });
-        
-        setTeams(transformedTeams);
-      } catch (err) {
-        console.error('Error fetching teams:', err);
-        setError('Failed to load teams. Please try again.');
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchAllTeams();
-  }, []);
-
-  const filteredTeams = activeDiv === 'all' 
-    ? teams 
-    : teams.filter(team => team.division === activeDiv);
+  const filteredTeams = activeDiv === 'all'
+    ? ALL_TEAMS
+    : ALL_TEAMS.filter(team => team.division === activeDiv);
 
   const handleTeamClick = (team) => {
     navigate(`/team-analytics/${team.urlName}`);
@@ -189,11 +108,10 @@ function TeamsCarousel() {
 
         {/* Teams Scroll Container */}
         <div className="teams-scroll-wrapper">
-          <button 
+          <button
             className="scroll-btn scroll-left"
             onClick={() => scroll('left')}
             aria-label="Scroll left"
-            disabled={loading}
           >
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <polyline points="15 18 9 12 15 6"/>
@@ -201,23 +119,7 @@ function TeamsCarousel() {
           </button>
 
           <div className={`teams-scroll ${filteredTeams.length > 6 ? 'scrollable' : ''}`} ref={scrollRef}>
-            {loading ? (
-              // Loading skeleton
-              Array.from({ length: 6 }).map((_, i) => (
-                <div key={i} className="team-card skeleton">
-                  <div className="team-logo-wrapper skeleton-pulse"></div>
-                  <div className="team-info">
-                    <span className="skeleton-text"></span>
-                    <span className="skeleton-text wide"></span>
-                  </div>
-                </div>
-              ))
-            ) : error ? (
-              <div className="teams-error">
-                <span>⚠️ {error}</span>
-              </div>
-            ) : (
-              filteredTeams.map(team => (
+            {filteredTeams.map(team => (
                 <div 
                   key={team.id}
                   className="team-card"
@@ -248,15 +150,13 @@ function TeamsCarousel() {
                     </svg>
                   </div>
                 </div>
-              ))
-            )}
+            ))}
           </div>
 
-          <button 
+          <button
             className="scroll-btn scroll-right"
             onClick={() => scroll('right')}
             aria-label="Scroll right"
-            disabled={loading}
           >
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <polyline points="9 18 15 12 9 6"/>
@@ -267,7 +167,7 @@ function TeamsCarousel() {
         {/* Quick Stats */}
         <div className="carousel-footer">
           <div className="footer-stat">
-            <span className="footer-stat-value">{teams.length || 30}</span>
+            <span className="footer-stat-value">{ALL_TEAMS.length}</span>
             <span className="footer-stat-label">Teams</span>
           </div>
           <div className="footer-divider"></div>

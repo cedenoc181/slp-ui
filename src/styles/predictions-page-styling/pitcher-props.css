@@ -2,6 +2,187 @@
    PITCHER PROPS PAGE
    ============================================================ */
 
+/* ── Matchup filter bar ───────────────────────────────────── */
+.pp-matchup-bar {
+  display: flex;
+  align-items: center;
+  margin-bottom: 2rem;
+}
+
+.pp-matchup-scroll {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  overflow-x: auto;
+  flex: 1;
+  padding-bottom: 0.25rem;
+  scrollbar-width: none;
+}
+
+.pp-matchup-scroll::-webkit-scrollbar { display: none; }
+
+.pp-matchup-all {
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.09);
+  border-radius: 10px;
+  color: rgba(255,255,255,0.45);
+  font-size: 0.65rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 0.45rem 0.85rem;
+  cursor: pointer;
+  white-space: nowrap;
+  flex-shrink: 0;
+  transition: all 0.15s ease;
+}
+
+.pp-matchup-all:hover {
+  background: rgba(255,255,255,0.1);
+  color: #fff;
+}
+
+.pp-matchup-all.active {
+  background: rgba(74,222,128,0.14);
+  border-color: rgba(74,222,128,0.35);
+  color: #4ade80;
+}
+
+.pp-matchup-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 12px;
+  padding: 0.55rem 0.85rem;
+  cursor: pointer;
+  color: inherit;
+  font: inherit;
+  flex-shrink: 0;
+  transition: background 0.15s ease, border-color 0.15s ease, transform 0.15s ease;
+}
+
+.pp-matchup-card:hover {
+  background: rgba(255,255,255,0.09);
+  border-color: rgba(255,255,255,0.16);
+  transform: translateY(-1px);
+}
+
+.pp-matchup-card.active {
+  background: rgba(74,222,128,0.1);
+  border-color: rgba(74,222,128,0.35);
+  box-shadow: 0 0 0 1px rgba(74,222,128,0.15);
+}
+
+.pp-matchup-teams {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.pp-matchup-team {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.pp-matchup-logo {
+  width: 28px;
+  height: 28px;
+  object-fit: contain;
+  background: rgba(255,255,255,0.9);
+  border-radius: 6px;
+  padding: 2px;
+}
+
+.pp-matchup-logo-fallback {
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255,255,255,0.08);
+  border-radius: 6px;
+  font-size: 0.55rem;
+  font-weight: 800;
+  color: rgba(255,255,255,0.5);
+}
+
+.pp-matchup-abbr {
+  font-size: 0.58rem;
+  font-weight: 800;
+  color: rgba(255,255,255,0.55);
+  letter-spacing: 0.04em;
+}
+
+.pp-matchup-card.active .pp-matchup-abbr { color: #4ade80; }
+
+.pp-matchup-vs {
+  font-size: 0.55rem;
+  font-weight: 700;
+  color: rgba(255,255,255,0.25);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  padding-bottom: 0.9rem;
+}
+
+/* ── Active matchup label ─────────────────────────────────── */
+.pp-matchup-label {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin-bottom: 0.5rem;
+}
+
+.pp-matchup-label-logo {
+  width: 22px;
+  height: 22px;
+  object-fit: contain;
+  background: rgba(255,255,255,0.85);
+  border-radius: 5px;
+  padding: 2px;
+}
+
+.pp-matchup-label span:not(.pp-matchup-label-vs) {
+  font-size: 0.78rem;
+  font-weight: 800;
+  color: #fff;
+}
+
+.pp-matchup-label-vs {
+  font-size: 0.62rem;
+  color: rgba(255,255,255,0.3);
+  font-weight: 600;
+}
+
+.pp-matchup-label-link {
+  margin-left: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.3rem 0.7rem;
+  background: rgba(74, 222, 128, 0.08);
+  border: 1px solid rgba(74, 222, 128, 0.28);
+  border-radius: 8px;
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  color: #4ade80;
+  cursor: pointer;
+  text-decoration: none;
+  white-space: nowrap;
+  flex-shrink: 0;
+  transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+}
+
+.pp-matchup-label-link:hover {
+  background: rgba(74, 222, 128, 0.16);
+  border-color: rgba(74, 222, 128, 0.5);
+  color: #86efac;
+}
+
 /* ── Loading banner ───────────────────────────────────────── */
 .pp-loading-banner {
   display: flex;
