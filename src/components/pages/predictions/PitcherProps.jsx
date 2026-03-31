@@ -290,8 +290,11 @@ function getUnlockDate(pitchers) {
   const times = parseGameTimes(pitchers);
   if (!times.length) return null;
   const earliest = new Date(Math.min(...times.map(t => t.getTime())));
-  earliest.setHours(earliest.getHours() - 2);
-  return earliest;
+  earliest.setHours(earliest.getHours() - 2, earliest.getMinutes(), 0, 0);
+  // 4:00 PM ET is the absolute latest the user has to wait
+  const cap = new Date();
+  cap.setHours(16, 0, 0, 0);
+  return earliest.getTime() <= cap.getTime() ? earliest : cap;
 }
 
 function getPredictionReadyTime(pitchers) {
@@ -464,7 +467,7 @@ function NoPredictionBody({ pitcher, predictionTime }) {
           </div>
           <div className="pp-pending-banner-sub">
             Our model and Scout AI analysis for this start will be ready approximately 2 hours before first pitch.
-            {predictionTime ? ` Come back at ${predictionTime} for full prop predictions and analysis.` : ' Check back closer to game time.'}
+            {predictionTime ? ` Come back at ${predictionTime} for full game predictions and analysis.` : ' Check back closer to game time.'}
           </div>
         </div>
       </div>
@@ -1237,7 +1240,7 @@ export default function PitcherProps() {
                   </div>
                   <div className="pp-pending-banner-sub">
                     Our model and Scout AI analysis will be ready approximately 2 hours before first pitch.
-                    {predictionTime ? ` Come back at ${predictionTime} for full prop predictions and analysis.` : ' Check back closer to game time.'}
+                    {predictionTime ? ` Come back at ${predictionTime} for full game predictions and analysis.` : ' Check back closer to game time.'}
                   </div>
                 </div>
               </div>

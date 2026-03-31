@@ -74,11 +74,19 @@ function isReadyToShow(game, unlocked) {
   return unlocked && !!game.prediction && !!game.scout_ai;
 }
 
-// Computes the unlock time string ("6:10 PM ET") = earliest game − 2 h
-function getPredReadyLabel(games) {
+// Computes the unlock time in minutes from midnight — earliest game − 2 h, capped at 4:00 PM (960 min)
+const UNLOCK_CAP_MINS = 16 * 60; // 4:00 PM ET
+
+function getUnlockMins(games) {
   const mins = games.map(g => parseGameTimeMinutes(g)).filter(m => m < 9999);
   if (!mins.length) return null;
-  const unlockMins = Math.min(...mins) - 120;
+  return Math.min(Math.min(...mins) - 120, UNLOCK_CAP_MINS);
+}
+
+// Computes the unlock time label ("4:00 PM ET")
+function getPredReadyLabel(games) {
+  const unlockMins = getUnlockMins(games);
+  if (unlockMins === null) return null;
   const h   = Math.floor(((unlockMins % 1440) + 1440) % 1440 / 60);
   const min = String(unlockMins % 60).padStart(2, '0');
   const period   = h >= 12 ? 'PM' : 'AM';
@@ -88,9 +96,8 @@ function getPredReadyLabel(games) {
 
 // Returns true if current local time is at or past the unlock threshold
 function arePredictionsUnlocked(games) {
-  const mins = games.map(g => parseGameTimeMinutes(g)).filter(m => m < 9999);
-  if (!mins.length) return false;
-  const unlockMins = Math.min(...mins) - 120;
+  const unlockMins = getUnlockMins(games);
+  if (unlockMins === null) return false;
   const now = new Date();
   return (now.getHours() * 60 + now.getMinutes()) >= unlockMins;
 }
@@ -1083,8 +1090,6 @@ function GamePickCard({ game, isSelected, onSelect, unlocked, predReadyLabel }) 
       <div className="gp-card-footer">
         {ready ? (
           <ConfidenceBar pct={pick.confidence} />
-        ) : hasNoPredictions(game) ? (
-          <span className="gp-card-pred-loading">⏳ Predictions loading {predReadyTime(game)}</span>
         ) : (
           <span className="gp-card-pred-loading">
             ⏳ {predReadyLabel ? `Predictions by ${predReadyLabel}` : 'Predictions coming soon'}
@@ -1187,7 +1192,7 @@ export default function GameProps() {
               <span className="gp-no-preds-icon">⏳</span>
               <div className="gp-no-preds-text">
                 <span className="gp-no-preds-title">Predictions not yet available</span>
-                <span className="gp-no-preds-sub">Check back closer to game time · Ready around {predReadyTime(firstGame)}</span>
+                <span className="gp-no-preds-sub">Check back closer to game time · Ready around {predReadyLabel || predReadyTime(firstGame)}</span>
               </div>
             </div>
           );
