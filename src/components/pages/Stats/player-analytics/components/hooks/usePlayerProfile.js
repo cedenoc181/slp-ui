@@ -235,13 +235,15 @@ export const usePlayerProfile = (mlbIdFromSlug, selectedSeason, isPitcher, isTwo
   // ============================================================================
   useEffect(() => {
     if (!playerInfo?.id) return;
-    
+
+    const controller = new AbortController();
     const fetchId = ++statsFetchIdRef.current;
     const internalPlayerId = playerInfo.id;
-    
-    const isStillValid = () => 
-      isMountedRef.current && 
-      statsFetchIdRef.current === fetchId && 
+
+    const isStillValid = () =>
+      !controller.signal.aborted &&
+      isMountedRef.current &&
+      statsFetchIdRef.current === fetchId &&
       currentPlayerIdRef.current === internalPlayerId;
     
     const fetchPlayerStats = async () => {
@@ -333,8 +335,9 @@ export const usePlayerProfile = (mlbIdFromSlug, selectedSeason, isPitcher, isTwo
     };
     
     fetchPlayerStats();
-    
+
     return () => {
+      controller.abort();
       statsFetchIdRef.current++;
     };
   }, [playerInfo?.id, selectedSeason, selectedSeasonType]);

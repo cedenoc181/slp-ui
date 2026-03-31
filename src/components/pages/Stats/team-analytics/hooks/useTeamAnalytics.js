@@ -324,7 +324,11 @@ export function useTeamAnalytics() {
     // Mark that initial load is done
     isInitialLoadRef.current = false;
 
-    return () => controller.abort();
+    return () => {
+      controller.abort();
+      // Reset so the next effect run (e.g. StrictMode second-pass or dep change) can re-fetch
+      currentFetchRef.current = null;
+    };
   }, [selectedTeam, selectedSeason, fetchTeamData, fetchTeamGames, checkAvailableSeasonTypes]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Re-fetch game log when season type selector changes
