@@ -63,6 +63,20 @@
   opacity: 1;
 }
 
+/* Right-side tooltip variant */
+.scout-ai-btn--tooltip-right::after {
+  top: 50%;
+  left: calc(100% + 8px);
+  transform: translateY(-50%);
+}
+.scout-ai-btn--tooltip-right::before {
+  top: 50%;
+  left: calc(100% + 2px);
+  transform: translateY(-50%);
+  border-bottom-color: transparent;
+  border-right-color: rgba(100, 181, 246, 0.25);
+}
+
 .scout-ai-btn:hover:not(:disabled) {
   background: linear-gradient(135deg, rgba(100, 181, 246, 0.25) 0%, rgba(25, 118, 210, 0.3) 100%);
   border-color: rgba(100, 181, 246, 0.7);

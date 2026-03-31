@@ -19,7 +19,7 @@ import {
 import { getScoutAnalysis } from '../../../../data/services/scoutAiService';
 
 export default function MatchupDetail() {
-  const scoutUnlockLabel = useEarliestGameLabel();
+  const { label: scoutUnlockLabel, isUnlocked: scoutUnlocked } = useEarliestGameLabel();
   const [scoutAnalysis, setScoutAnalysis]   = useState(null);
   const [scoutLoading, setScoutLoading]     = useState(false);
   const [scoutError, setScoutError]         = useState(null);
@@ -151,7 +151,7 @@ export default function MatchupDetail() {
               loading={scoutLoading}
               onClick={handleScoutClick}
               isToday={game?.date === new Intl.DateTimeFormat('en-CA', { timeZone: 'America/New_York' }).format(new Date())}
-              scoutAiAvailable={!!prediction?.scout_ai}
+              scoutAiAvailable={scoutUnlocked}
               pendingLabel={scoutUnlockLabel}
             />
           </div>

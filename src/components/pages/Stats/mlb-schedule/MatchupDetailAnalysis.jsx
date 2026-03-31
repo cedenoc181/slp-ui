@@ -32,7 +32,7 @@ import {
 } from './matchup-analysis/utils/analysisUtils';
 
 export default function MatchupDetailComp() {
-  const scoutUnlockLabel = useEarliestGameLabel();
+  const { label: scoutUnlockLabel, isUnlocked: scoutUnlocked } = useEarliestGameLabel();
   const { gameId } = useParams();
   const { state }  = useLocation();
 
@@ -394,8 +394,9 @@ export default function MatchupDetailComp() {
             loading={scoutLoading}
             onClick={handleScoutClick}
             isToday={game?.date === new Intl.DateTimeFormat('en-CA', { timeZone: 'America/New_York' }).format(new Date())}
-            scoutAiAvailable={!!prediction?.scout_ai}
+            scoutAiAvailable={scoutUnlocked}
             pendingLabel={scoutUnlockLabel}
+            tooltipPosition="right"
           />
           <div className="matchup-detail-top-nav__right" />
         </div>

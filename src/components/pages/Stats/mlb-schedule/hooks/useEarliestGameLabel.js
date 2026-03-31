@@ -18,11 +18,13 @@ function parseToMins(timeStr) {
 }
 
 /**
- * Fetches today's games and returns a formatted unlock label like "2:10 PM ET"
- * (earliest first pitch − 2 hours). Returns null until resolved.
+ * Fetches today's games and returns an unlock label ("4:00 PM ET") and a boolean
+ * indicating whether that threshold has already passed.
+ * Unlock = earliest first pitch − 2 hours, capped at 4:00 PM ET.
  */
 export function useEarliestGameLabel() {
   const [label, setLabel] = useState(null);
+  const [isUnlocked, setIsUnlocked] = useState(false);
 
   useEffect(() => {
     predictionsService.getToday()
@@ -32,15 +34,17 @@ export function useEarliestGameLabel() {
           .map(g => parseToMins(g.game_time_et || g.game_time))
           .filter(m => m != null);
         if (!mins.length) return;
-        const unlockMins = ((Math.min(...mins) - 120) % 1440 + 1440) % 1440;
+        const unlockMins = Math.min(((Math.min(...mins) - 120) % 1440 + 1440) % 1440, 16 * 60);
         const h = Math.floor(unlockMins / 60);
         const min = String(unlockMins % 60).padStart(2, '0');
         const period = h >= 12 ? 'PM' : 'AM';
         const displayH = h % 12 || 12;
         setLabel(`${displayH}:${min} ${period} ET`);
+        const now = new Date();
+        setIsUnlocked((now.getHours() * 60 + now.getMinutes()) >= unlockMins);
       })
       .catch(() => {});
   }, []);
 
-  return label;
+  return { label, isUnlocked };
 }
