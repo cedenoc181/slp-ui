@@ -276,12 +276,90 @@
   align-items: center;
   gap: 0.75rem;
   color: #8b949e;
-  font-size: 0.95rem;
+  font-size: 0.85rem;
   font-weight: 500;
 }
 
 .lock-icon {
   color: #64B5F6;
+}
+
+/* CTA button used inside the teaser */
+.cta-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.85rem 1.75rem;
+  background: linear-gradient(135deg, #1976D2 0%, #1565C0 100%);
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  font-size: 0.95rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.cta-button:hover {
+  background: linear-gradient(135deg, #1e88e5 0%, #1976D2 100%);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 16px rgba(25, 118, 210, 0.3);
+}
+
+/* Waitlist CTA buttons with icons */
+.teaser-cta-buttons {
+  display: flex;
+  gap: 0.875rem;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.teaser-cta-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.75rem 1.4rem;
+  border-radius: 10px;
+  font-size: 0.9rem;
+  font-weight: 700;
+  text-decoration: none;
+  cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
+  white-space: nowrap;
+}
+
+.teaser-cta-btn--blue {
+  background: rgba(25, 118, 210, 0.12);
+  border: 1px solid rgba(100, 181, 246, 0.35);
+  color: #64b5f6;
+}
+
+.teaser-cta-btn--blue:hover {
+  background: rgba(25, 118, 210, 0.22);
+  border-color: rgba(100, 181, 246, 0.6);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 16px rgba(25, 118, 210, 0.2);
+}
+
+.teaser-cta-btn--green {
+  background: rgba(74, 222, 128, 0.08);
+  border: 1px solid rgba(74, 222, 128, 0.3);
+  color: #4ade80;
+}
+
+.teaser-cta-btn--green:hover {
+  background: rgba(74, 222, 128, 0.16);
+  border-color: rgba(74, 222, 128, 0.55);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 16px rgba(74, 222, 128, 0.15);
+}
+
+.teaser-cta-icon {
+  width: 20px;
+  height: 20px;
+  object-fit: contain;
+  flex-shrink: 0;
 }
 
 /* ============================================
@@ -314,6 +392,15 @@
 .feature-icon {
   font-size: 1.5rem;
   flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.feature-icon-img {
+  width: 32px;
+  height: 32px;
+  object-fit: contain;
 }
 
 .feature-text {

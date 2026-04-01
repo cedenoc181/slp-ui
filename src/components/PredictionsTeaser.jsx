@@ -1,66 +1,29 @@
-import { useState } from 'react';
+import { Link } from 'react-router-dom';
+import gamePropIcon   from '../assets/icons/game-prop.png';
+import batterPropIcon from '../assets/icons/batter-prop.png';
+import pitcherPropIcon from '../assets/icons/pitcher-prop.png';
+import analysisIcon   from '../assets/icons/analysis.png';
 import '../styles/home-page-styling/predictions-teaser.css';
 
 function PredictionsTeaser() {
-  const [email, setEmail] = useState('');
-  const [isSubmitted, setIsSubmitted] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [errorMessage, setErrorMessage] = useState('');
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    if (!email) return;
-
-    setIsSubmitting(true);
-    setErrorMessage('');
-    
-    try {
-      const apiBase = process.env.REACT_APP_API_BASE || '';
-      const res = await fetch(`${apiBase}/api/waitlist`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email })
-      });
-      
-      const data = await res.json();
-      
-      if (!res.ok) {
-        if (res.status === 409) {
-          setErrorMessage('This email is already on the waitlist!');
-        } else {
-          setErrorMessage(data.message || 'Something went wrong. Please try again.');
-        }
-        return;
-      }
-      
-      setIsSubmitted(true);
-      setEmail('');
-    } catch (err) {
-      setErrorMessage('Unable to connect. Please try again later.');
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
-  // Mock prediction data for preview
   const mockPredictions = [
+    {
+      player: 'Freddie Freeman',
+      team: 'LAD',
+      stat: 'Hits',
+      line: '1.5',
+      prediction: 'OVER',
+      confidence: 74,
+      projection: '1.9 H',
+    },
     {
       player: 'Aaron Judge',
       team: 'NYY',
       stat: 'Total Bases',
       line: '1.5',
       prediction: 'OVER',
-      confidence: 72,
-      projection: '2.3 TB',
-    },
-    {
-      player: 'Shohei Ohtani',
-      team: 'LAD',
-      stat: 'Hits',
-      line: '1.5',
-      prediction: 'OVER',
-      confidence: 68,
-      projection: '1.8 H',
+      confidence: 71,
+      projection: '2.4 TB',
     },
     {
       player: 'Tarik Skubal',
@@ -68,8 +31,8 @@ function PredictionsTeaser() {
       stat: 'Strikeouts',
       line: '6.5',
       prediction: 'OVER',
-      confidence: 75,
-      projection: '7.2 K',
+      confidence: 77,
+      projection: '7.4 K',
     },
   ];
 
@@ -79,27 +42,26 @@ function PredictionsTeaser() {
         {/* Section Header */}
         <div className="teaser-header">
           <span className="coming-soon-badge">
-            <span className="badge-icon">🚀</span>
-            COMING SOON
+            <span className="badge-icon">⚡</span>
+            NOW LIVE — 2026 SEASON
           </span>
-          <h2>Daily Player Predictions</h2>
+          <h2>AI-Powered Game &amp; Player Predictions</h2>
           <p>
-            AI-powered prop predictions backed by our machine learning models. 
-            Get projections for hits, home runs, strikeouts, and more.
+            Daily picks for game outcomes, batter props, and pitcher props — backed by our
+            machine learning model and Scout AI scouting reports. Available every game day.
           </p>
         </div>
 
         {/* Preview Cards */}
         <div className="predictions-preview">
           <div className="preview-header">
-            <span className="preview-date">Sample Predictions</span>
-            <span className="preview-badge blurred">Model v2.0</span>
+            <span className="preview-date">Today's Sample Picks</span>
+            <span className="preview-badge">Model v2.0</span>
           </div>
-          
+
           <div className="preview-grid">
             {mockPredictions.map((pred, idx) => (
               <div key={idx} className="prediction-card">
-                <div className="card-blur-overlay"></div>
                 <div className="prediction-header">
                   <div className="player-info">
                     <span className="player-name">{pred.player}</span>
@@ -109,28 +71,28 @@ function PredictionsTeaser() {
                     {pred.prediction}
                   </div>
                 </div>
-                
+
                 <div className="prediction-details">
                   <div className="stat-line">
                     <span className="stat-name">{pred.stat}</span>
                     <span className="stat-value">{pred.line}</span>
                   </div>
-                  
+
                   <div className="projection-row">
                     <span className="projection-label">Projected</span>
                     <span className="projection-value">{pred.projection}</span>
                   </div>
-                  
+
                   <div className="confidence-meter">
                     <div className="confidence-label">
                       <span>Confidence</span>
                       <span className="confidence-value">{pred.confidence}%</span>
                     </div>
                     <div className="confidence-bar">
-                      <div 
-                        className="confidence-fill" 
+                      <div
+                        className="confidence-fill"
                         style={{ width: `${pred.confidence}%` }}
-                      ></div>
+                      />
                     </div>
                   </div>
                 </div>
@@ -138,14 +100,19 @@ function PredictionsTeaser() {
             ))}
           </div>
 
-          {/* Blur overlay for "locked" effect */}
+          {/* CTA overlay instead of lock */}
           <div className="preview-lock-overlay">
             <div className="lock-content">
-              <svg className="lock-icon" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
-                <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
-              </svg>
-              <span>Join the waitlist for early access</span>
+              <span>Real picks drop daily — available by 4:00 PM ET</span>
+              <Link to="/predictions" className="form-wrapper" style={{ textDecoration: 'none' }}>
+                <button type="button" style={{ width: '100%' }}>
+                  View Today's Predictions
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <line x1="5" y1="12" x2="19" y2="12"/>
+                    <polyline points="12 5 19 12 12 19"/>
+                  </svg>
+                </button>
+              </Link>
             </div>
           </div>
         </div>
@@ -153,102 +120,71 @@ function PredictionsTeaser() {
         {/* Features List */}
         <div className="features-preview">
           <div className="feature-item">
-            <div className="feature-icon">📊</div>
+            <div className="feature-icon"><img src={gamePropIcon} alt="Game Predictions" className="feature-icon-img" /></div>
             <div className="feature-text">
-              <span className="feature-title">Daily Picks</span>
-              <span className="feature-desc">Fresh predictions every game day</span>
+              <span className="feature-title">Game Predictions</span>
+              <span className="feature-desc">ML, Run Line &amp; Totals with odds and EV for every game</span>
             </div>
           </div>
           <div className="feature-item">
-            <div className="feature-icon">🎯</div>
+            <div className="feature-icon"><img src={batterPropIcon} alt="Batter Props" className="feature-icon-img" /></div>
             <div className="feature-text">
-              <span className="feature-title">Confidence Scores</span>
-              <span className="feature-desc">Know how confident the model is</span>
+              <span className="feature-title">Batter Props</span>
+              <span className="feature-desc">Hits, HR, RBIs, Total Bases, and more with top picks surfaced</span>
             </div>
           </div>
           <div className="feature-item">
-            <div className="feature-icon">⚡</div>
+            <div className="feature-icon"><img src={pitcherPropIcon} alt="Pitcher Props" className="feature-icon-img" /></div>
             <div className="feature-text">
-              <span className="feature-title">Real-Time Updates</span>
-              <span className="feature-desc">Adjusted for lineup changes</span>
+              <span className="feature-title">Pitcher Props</span>
+              <span className="feature-desc">Strikeout and outs props with confidence scores and EV</span>
             </div>
           </div>
           <div className="feature-item">
-            <div className="feature-icon">📈</div>
+            <div className="feature-icon"><img src={analysisIcon} alt="Scout AI" className="feature-icon-img" /></div>
             <div className="feature-text">
-              <span className="feature-title">Track Record</span>
-              <span className="feature-desc">Transparent model performance</span>
+              <span className="feature-title">Scout AI Reports</span>
+              <span className="feature-desc">Deep-dive scouting reports generated by Scout AI for every matchup</span>
             </div>
           </div>
         </div>
 
-        {/* Waitlist Signup */}
+        {/* CTA Banner */}
         <div className="waitlist-section">
           <div className="waitlist-content">
-            <h3>Be the First to Know</h3>
-            <p>Join the waitlist and get notified when predictions go live for the 2026 season.</p>
-            
-            {!isSubmitted ? (
-              <form className="waitlist-form" onSubmit={handleSubmit}>
-                <div className="form-wrapper">
-                  <input
-                    type="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    placeholder="Enter your email address"
-                    required
-                    disabled={isSubmitting}
-                  />
-                  <button type="submit" disabled={isSubmitting}>
-                    {isSubmitting ? (
-                      <span className="submitting">
-                        <span className="spinner"></span>
-                        Joining...
-                      </span>
-                    ) : (
-                      <>
-                        Join Waitlist
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                          <line x1="5" y1="12" x2="19" y2="12"/>
-                          <polyline points="12 5 19 12 12 19"/>
-                        </svg>
-                      </>
-                    )}
-                  </button>
-                </div>
-                {errorMessage && (
-                  <span className="form-error">
-                    {errorMessage}
-                  </span>
-                )}
-                <span className="form-disclaimer">
-                  🔒 No spam, ever. Unsubscribe anytime.
-                </span>
-              </form>
-            ) : (
-              <div className="success-message">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
-                  <polyline points="22 4 12 14.01 9 11.01"/>
-                </svg>
-                <span>You're on the list! We'll notify you when predictions launch.</span>
-              </div>
-            )}
+            <h3>Everything You Need in One Place</h3>
+            <p>
+              Game predictions, player props, and Scout AI scouting reports — all updated daily
+              and available before first pitch.
+            </p>
+            <div className="teaser-cta-buttons">
+              <Link to="/predictions" className="teaser-cta-btn teaser-cta-btn--blue">
+                <img src={gamePropIcon} alt="" className="teaser-cta-icon" />
+                Game Predictions
+              </Link>
+              <Link to="/predictions/batters" className="teaser-cta-btn teaser-cta-btn--green">
+                <img src={batterPropIcon} alt="" className="teaser-cta-icon" />
+                Batter Props
+              </Link>
+              <Link to="/predictions/pitchers" className="teaser-cta-btn teaser-cta-btn--green">
+                <img src={pitcherPropIcon} alt="" className="teaser-cta-icon" />
+                Pitcher Props
+              </Link>
+            </div>
           </div>
 
-          {/* Stats teaser */}
           <div className="launch-stats">
             <div className="launch-stat">
-              <span className="launch-stat-value">750+</span>
-              <span className="launch-stat-label">Players Tracked</span>
+              <span className="launch-stat-value">3</span>
+              <span className="launch-stat-label">Prediction Types</span>
             </div>
             <div className="launch-stat">
               <span className="launch-stat-value">10+</span>
-              <span className="launch-stat-label">Prop Types</span>
+              <span className="launch-stat-label">Prop Markets</span>
             </div>
             <div className="launch-stat">
-              <span className="launch-stat-value">2026</span>
-              <span className="launch-stat-label">Season Launch</span>
+              <span className="launch-stat-value">Daily</span>
+              <span className="launch-stat-label">Scout AI Reports</span>
             </div>
           </div>
         </div>

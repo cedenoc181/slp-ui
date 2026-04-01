@@ -9,7 +9,7 @@ function StatsPreview() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  const currentSeason = '2025';
+  const currentSeason = '2026';
 
   useEffect(() => {
     const fetchLeaders = async () => {
