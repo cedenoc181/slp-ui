@@ -65,87 +65,40 @@ export function useMatchupData() {
         const gameStatusLower = (gameData.status || '').toLowerCase();
         const isFinalGame = gameStatusLower === 'final' || gameStatusLower === 'game over' || gameStatusLower === 'completed' || gameStatusLower === 'completed early';
         const isLiveGame  = gameStatusLower.includes('progress') || gameStatusLower === 'live' || gameStatusLower.includes('inning');
-        const needsTeamStats = true; // always fetch — fallback for live/final when no H2H lineup
 
+        const resolve = res => res.status === 'fulfilled' ? res.value : null;
 
+        // ── Wave 1: hero + pitchers section (fast, critical path) ────────────
         const [
-          awayL10Res, homeL10Res,
           awaySPTier1Res, awaySPTier2Res, awaySPTier3Res,
           homeSPTier1Res, homeSPTier2Res, homeSPTier3Res,
-          h2hRes,
           awaySPInfoRes, homeSPInfoRes,
           standingsRes,
-          awayL10FallbackRes, homeL10FallbackRes,
-          awayBattingRes, homeBattingRes,
-          awayPitchingRes, homePitchingRes,
-          boxscoreRes,
           predictionRes,
+          boxscoreRes,
         ] = await Promise.allSettled([
-          gamesService.getTeamLast10(awayId, season, seasonType),
-          gamesService.getTeamLast10(homeId, season, seasonType),
-          // Away SP — three tiers: current R → current S → prior year R
-          awaySPId ? playerStatsService.getPitcherCurrentStats(awaySPId, season, 'R')              : Promise.resolve(null),
-          awaySPId ? playerStatsService.getPitcherCurrentStats(awaySPId, season, 'S')              : Promise.resolve(null),
-          awaySPId ? playerStatsService.getPitcherCurrentStats(awaySPId, FALLBACK_SEASON, 'R')     : Promise.resolve(null),
-          // Home SP — three tiers: current R → current S → prior year R
-          homeSPId ? playerStatsService.getPitcherCurrentStats(homeSPId, season, 'R')              : Promise.resolve(null),
-          homeSPId ? playerStatsService.getPitcherCurrentStats(homeSPId, season, 'S')              : Promise.resolve(null),
-          homeSPId ? playerStatsService.getPitcherCurrentStats(homeSPId, FALLBACK_SEASON, 'R')     : Promise.resolve(null),
-          gamesService.getHeadToHead(awayId, homeId, { season: String(season), seasonType, limit: 10 }),
-          awaySPId
-            ? playerStatsService.getPlayerInfo(awaySPId)
-            : Promise.resolve(null),
-          homeSPId
-            ? playerStatsService.getPlayerInfo(homeSPId)
-            : Promise.resolve(null),
+          awaySPId ? playerStatsService.getPitcherCurrentStats(awaySPId, season, 'R')          : Promise.resolve(null),
+          awaySPId ? playerStatsService.getPitcherCurrentStats(awaySPId, season, 'S')          : Promise.resolve(null),
+          awaySPId ? playerStatsService.getPitcherCurrentStats(awaySPId, FALLBACK_SEASON, 'R') : Promise.resolve(null),
+          homeSPId ? playerStatsService.getPitcherCurrentStats(homeSPId, season, 'R')          : Promise.resolve(null),
+          homeSPId ? playerStatsService.getPitcherCurrentStats(homeSPId, season, 'S')          : Promise.resolve(null),
+          homeSPId ? playerStatsService.getPitcherCurrentStats(homeSPId, FALLBACK_SEASON, 'R') : Promise.resolve(null),
+          awaySPId ? playerStatsService.getPlayerInfo(awaySPId)                                : Promise.resolve(null),
+          homeSPId ? playerStatsService.getPlayerInfo(homeSPId)                                : Promise.resolve(null),
           seasonType === 'S'
             ? teamsService.getTeamSpringTrainingStandings(season)
             : teamsService.getTeamRegularSeasonStandings(season),
-          needsL10Fallback
-            ? gamesService.getTeamLast10(awayId, FALLBACK_SEASON, 'R')
-            : Promise.resolve(null),
-          needsL10Fallback
-            ? gamesService.getTeamLast10(homeId, FALLBACK_SEASON, 'R')
-            : Promise.resolve(null),
-          needsTeamStats
-            ? teamStatsService.getTeamBattingStats(awayId, season, seasonType)
-            : Promise.resolve(null),
-          needsTeamStats
-            ? teamStatsService.getTeamBattingStats(homeId, season, seasonType)
-            : Promise.resolve(null),
-          needsTeamStats
-            ? teamStatsService.getTeamPitchingStats(awayId, season, seasonType)
-            : Promise.resolve(null),
-          needsTeamStats
-            ? teamStatsService.getTeamPitchingStats(homeId, season, seasonType)
+          (gameData.game_pk ?? gameData.id)
+            ? predictionsService.getByGamePk(gameData.game_pk ?? gameData.id)
             : Promise.resolve(null),
           (isFinalGame || isLiveGame) && (gameData.game_pk ?? gameData.id)
             ? gamesService.getBoxscore(gameData.game_pk ?? gameData.id)
-            : Promise.resolve(null),
-          // Fetch prediction/odds for this game
-          (gameData.game_pk ?? gameData.id)
-            ? predictionsService.getByGamePk(gameData.game_pk ?? gameData.id, { signal: controller.signal })
             : Promise.resolve(null),
         ]);
 
         if (controller.signal.aborted) return;
 
-        // Last 10 — split summary from game objects; fall back to 2025 regular season for spring
-        const awayPrimary  = parseLast10(awayL10Res.status  === 'fulfilled' ? awayL10Res.value  : null);
-        const homePrimary  = parseLast10(homeL10Res.status  === 'fulfilled' ? homeL10Res.value  : null);
-        const awayFBParsed = parseLast10(awayL10FallbackRes.status === 'fulfilled' ? awayL10FallbackRes.value : null);
-        const homeFBParsed = parseLast10(homeL10FallbackRes.status === 'fulfilled' ? homeL10FallbackRes.value : null);
-
-        const awayHasCompleted = awayPrimary.games.some(g => g.winning_team_id != null);
-        const homeHasCompleted = homePrimary.games.some(g => g.winning_team_id != null);
-
-        setAwayLast10Summary(awayPrimary.summary ?? awayFBParsed.summary);
-        setHomeLast10Summary(homePrimary.summary ?? homeFBParsed.summary);
-        setAwayLast10(awayHasCompleted ? awayPrimary.games : awayFBParsed.games);
-        setHomeLast10(homeHasCompleted ? homePrimary.games : homeFBParsed.games);
-
-        // Starting pitcher stats — three-tier fallback: current R → current S → prior year R
-        const resolve = res => res.status === 'fulfilled' ? res.value : null;
+        // Commit wave-1 state and drop the loading screen
         const spTiers = [
           { stats: resolve(awaySPTier1Res), label: String(season) },
           { stats: resolve(awaySPTier2Res), label: `${String(season)} Spring` },
@@ -164,20 +117,59 @@ export function useMatchupData() {
         setHomeSP(homeTier?.stats ?? null);
         setHomeSPStatSeason(homeTier?.label ?? null);
 
-        setAwaySPInfo(awaySPInfoRes.status === 'fulfilled' ? awaySPInfoRes.value : null);
-        setHomeSPInfo(homeSPInfoRes.status === 'fulfilled' ? homeSPInfoRes.value : null);
+        setAwaySPInfo(resolve(awaySPInfoRes));
+        setHomeSPInfo(resolve(homeSPInfoRes));
 
-        // Season records from standings
-        const standings = standingsRes.status === 'fulfilled' ? standingsRes.value : null;
+        const standings = resolve(standingsRes);
         const isSpring  = seasonType === 'S';
         setAwaySeasonRecord(findTeamRecord(standings, awayId, isSpring));
         setHomeSeasonRecord(findTeamRecord(standings, homeId, isSpring));
 
-        // Head-to-head summary (used by HeadToHeadSection; lineup is fetched directly by LineupCard)
-        const h2hVal = h2hRes.status === 'fulfilled' ? h2hRes.value : null;
+        setPrediction(resolve(predictionRes));
+
+        const bsVal = resolve(boxscoreRes);
+        setBoxscore(bsVal?.innings?.length ? bsVal : null);
+
+        // ── Done: show page now ───────────────────────────────────────────────
+        setLoading(false);
+
+        // ── Wave 2: grid cards (last 10, H2H, team stats) — load in background
+        const [
+          awayL10Res, homeL10Res,
+          h2hRes,
+          awayL10FallbackRes, homeL10FallbackRes,
+          awayBattingRes, homeBattingRes,
+          awayPitchingRes, homePitchingRes,
+        ] = await Promise.allSettled([
+          gamesService.getTeamLast10(awayId, season, seasonType),
+          gamesService.getTeamLast10(homeId, season, seasonType),
+          gamesService.getHeadToHead(awayId, homeId, { season: String(season), seasonType, limit: 10 }),
+          needsL10Fallback ? gamesService.getTeamLast10(awayId, FALLBACK_SEASON, 'R') : Promise.resolve(null),
+          needsL10Fallback ? gamesService.getTeamLast10(homeId, FALLBACK_SEASON, 'R') : Promise.resolve(null),
+          teamStatsService.getTeamBattingStats(awayId, season, seasonType),
+          teamStatsService.getTeamBattingStats(homeId, season, seasonType),
+          teamStatsService.getTeamPitchingStats(awayId, season, seasonType),
+          teamStatsService.getTeamPitchingStats(homeId, season, seasonType),
+        ]);
+
+        if (controller.signal.aborted) return;
+
+        const awayPrimary  = parseLast10(resolve(awayL10Res));
+        const homePrimary  = parseLast10(resolve(homeL10Res));
+        const awayFBParsed = parseLast10(resolve(awayL10FallbackRes));
+        const homeFBParsed = parseLast10(resolve(homeL10FallbackRes));
+
+        const awayHasCompleted = awayPrimary.games.some(g => g.winning_team_id != null);
+        const homeHasCompleted = homePrimary.games.some(g => g.winning_team_id != null);
+
+        setAwayLast10Summary(awayPrimary.summary ?? awayFBParsed.summary);
+        setHomeLast10Summary(homePrimary.summary ?? homeFBParsed.summary);
+        setAwayLast10(awayHasCompleted ? awayPrimary.games : awayFBParsed.games);
+        setHomeLast10(homeHasCompleted ? homePrimary.games : homeFBParsed.games);
+
+        const h2hVal = resolve(h2hRes);
         setH2h(h2hVal?.summary ? h2hVal : null);
 
-        // Team season stats (batting / pitching) — API returns an array; extract first element
         const unwrap = res => {
           if (res.status !== 'fulfilled') return null;
           const val = res.value;
@@ -188,18 +180,10 @@ export function useMatchupData() {
         setAwayPitching(unwrap(awayPitchingRes));
         setHomePitching(unwrap(homePitchingRes));
 
-        // Boxscore (inning-by-inning)
-        const bsVal = boxscoreRes.status === 'fulfilled' ? boxscoreRes.value : null;
-        setBoxscore(bsVal?.innings?.length ? bsVal : null);
-
-        // Prediction/odds for this game
-        const predVal = predictionRes.status === 'fulfilled' ? predictionRes.value : null;
-        setPrediction(predVal);
       } catch (err) {
         if (controller.signal.aborted) return;
         setError(err?.message || 'Failed to load matchup details.');
-      } finally {
-        if (!controller.signal.aborted) setLoading(false);
+        setLoading(false); // ensure loading clears on error too
       }
     }
 

@@ -907,9 +907,9 @@ export default function BatterProps() {
       <div className="predictions-content">
 
         {gamesLoading ? (
-          <div className="bp-loading">
-            <div className="bp-loading-spinner" />
-            <p>Loading today's games…</p>
+          <div className="pp-loading-banner">
+            <div className="pp-loading-spinner" />
+            <div className="pp-loading-text">Loading today's games…</div>
           </div>
         ) : gamesError ? (
           <div className="bp-coming-soon">
@@ -972,9 +972,9 @@ export default function BatterProps() {
 
             {/* ── Per-game batter content ───────────────────────── */}
             {battersLoading ? (
-              <div className="bp-loading">
-                <div className="bp-loading-spinner" />
-                <p>Loading batter props…</p>
+              <div className="pp-loading-banner">
+                <div className="pp-loading-spinner" />
+                <div className="pp-loading-text">Loading batter props predictions</div>
               </div>
             ) : battersError ? (
               <div className="bp-coming-soon">

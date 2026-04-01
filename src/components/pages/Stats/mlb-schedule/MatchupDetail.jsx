@@ -42,16 +42,104 @@ export default function MatchupDetail() {
   } = useMatchupData();
 
   if (loading) {
+    const loadingAwayMlbId = game ? getMlbId(game.away_team_id) : null;
+    const loadingHomeMlbId = game ? getMlbId(game.home_team_id) : null;
+    const loadingAwayAbbr  = game ? (getAbbr(game.away_team_id) || game.away_team_name) : null;
+    const loadingHomeAbbr  = game ? (getAbbr(game.home_team_id) || game.home_team_name) : null;
+
     return (
       <div className="matchup-detail-page">
         <div className="container">
           <div className="matchup-detail-top-nav">
             <Link to="/mlb-schedule" className="back-link">‹ Back to Schedule</Link>
           </div>
-          <div className="detail-loading">
-            <div className="detail-loading-spinner" />
-            <p>Loading matchup…</p>
+
+          {/* Hero skeleton */}
+          <div className="detail-hero" style={{ marginBottom: '1rem' }}>
+            <div style={{ padding: '1.5rem 0 0.5rem', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1rem' }}>
+              <div className="detail-skeleton" style={{ width: 120, height: 12, borderRadius: 6 }} />
+              <div style={{ display: 'flex', alignItems: 'center', gap: '2.5rem', width: '100%', justifyContent: 'center' }}>
+                {/* Away team */}
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.5rem' }}>
+                  {loadingAwayMlbId
+                    ? <img src={`https://www.mlbstatic.com/team-logos/${loadingAwayMlbId}.svg`} alt={loadingAwayAbbr} style={{ width: 64, height: 64, objectFit: 'contain' }} />
+                    : <div className="detail-skeleton" style={{ width: 64, height: 64, borderRadius: '50%' }} />
+                  }
+                  {loadingAwayAbbr
+                    ? <span style={{ fontSize: '0.85rem', fontWeight: 700, color: 'rgba(255,255,255,0.75)', letterSpacing: '0.04em' }}>{loadingAwayAbbr}</span>
+                    : <div className="detail-skeleton" style={{ width: 56, height: 12, borderRadius: 6 }} />
+                  }
+                </div>
+                <div className="detail-skeleton" style={{ width: 40, height: 18, borderRadius: 6 }} />
+                {/* Home team */}
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.5rem' }}>
+                  {loadingHomeMlbId
+                    ? <img src={`https://www.mlbstatic.com/team-logos/${loadingHomeMlbId}.svg`} alt={loadingHomeAbbr} style={{ width: 64, height: 64, objectFit: 'contain' }} />
+                    : <div className="detail-skeleton" style={{ width: 64, height: 64, borderRadius: '50%' }} />
+                  }
+                  {loadingHomeAbbr
+                    ? <span style={{ fontSize: '0.85rem', fontWeight: 700, color: 'rgba(255,255,255,0.75)', letterSpacing: '0.04em' }}>{loadingHomeAbbr}</span>
+                    : <div className="detail-skeleton" style={{ width: 56, height: 12, borderRadius: 6 }} />
+                  }
+                </div>
+              </div>
+              <div style={{ display: 'flex', gap: '0.75rem', marginTop: '0.25rem' }}>
+                {[80, 60, 70].map((w, i) => (
+                  <div key={i} className="detail-skeleton" style={{ width: w, height: 10, borderRadius: 5 }} />
+                ))}
+              </div>
+            </div>
           </div>
+
+          {/* Grid skeletons */}
+          <div className="detail-grid">
+            {/* Pitchers card — full width */}
+            <div className="detail-card detail-card-full" style={{ padding: '1rem 1.25rem' }}>
+              <div className="detail-skeleton" style={{ width: 100, height: 11, borderRadius: 5, marginBottom: '1rem' }} />
+              <div style={{ display: 'flex', justifyContent: 'space-between', gap: '2rem' }}>
+                {[0, 1].map(i => (
+                  <div key={i} style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                    <div className="detail-skeleton" style={{ width: 48, height: 48, borderRadius: '50%', marginBottom: '0.25rem' }} />
+                    {[90, 70, 60, 75].map((w, j) => (
+                      <div key={j} className="detail-skeleton" style={{ width: `${w}%`, height: 10, borderRadius: 5 }} />
+                    ))}
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Team stats card */}
+            <div className="detail-card" style={{ padding: '1rem 1.25rem' }}>
+              <div className="detail-skeleton" style={{ width: 80, height: 11, borderRadius: 5, marginBottom: '1rem' }} />
+              {[100, 80, 90, 70, 85, 60].map((w, i) => (
+                <div key={i} className="detail-skeleton" style={{ width: `${w}%`, height: 10, borderRadius: 5, marginBottom: '0.5rem' }} />
+              ))}
+            </div>
+
+            {/* Recent form card */}
+            <div className="detail-card" style={{ padding: '1rem 1.25rem' }}>
+              <div className="detail-skeleton" style={{ width: 100, height: 11, borderRadius: 5, marginBottom: '1rem' }} />
+              {[0, 1].map(i => (
+                <div key={i} style={{ marginBottom: '1rem' }}>
+                  <div className="detail-skeleton" style={{ width: 60, height: 10, borderRadius: 5, marginBottom: '0.5rem' }} />
+                  <div style={{ display: 'flex', gap: '0.35rem' }}>
+                    {[...Array(5)].map((_, j) => (
+                      <div key={j} className="detail-skeleton" style={{ width: 24, height: 24, borderRadius: '50%' }} />
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Team stats card 2 */}
+            <div className="detail-card" style={{ padding: '1rem 1.25rem' }}>
+              <div className="detail-skeleton" style={{ width: 80, height: 11, borderRadius: 5, marginBottom: '1rem' }} />
+              {[100, 80, 90, 70, 85, 60].map((w, i) => (
+                <div key={i} className="detail-skeleton" style={{ width: `${w}%`, height: 10, borderRadius: 5, marginBottom: '0.5rem' }} />
+              ))}
+            </div>
+          </div>
+
         </div>
       </div>
     );

@@ -183,38 +183,7 @@
   color: #86efac;
 }
 
-/* ── Loading banner ───────────────────────────────────────── */
-.pp-loading-banner {
-  display: flex;
-  align-items: center;
-  gap: 0.9rem;
-  background: rgba(99, 102, 241, 0.07);
-  border: 1px solid rgba(99, 102, 241, 0.2);
-  border-left: 3px solid #6366f1;
-  border-radius: 12px;
-  padding: 1rem 1.25rem;
-  margin-bottom: 1.5rem;
-}
-
-.pp-loading-text {
-  font-size: 0.88rem;
-  font-weight: 600;
-  color: rgba(255, 255, 255, 0.75);
-}
-
-@keyframes pp-spin {
-  to { transform: rotate(360deg); }
-}
-
-.pp-loading-spinner {
-  width: 18px;
-  height: 18px;
-  border: 2px solid rgba(99, 102, 241, 0.3);
-  border-top-color: #6366f1;
-  border-radius: 50%;
-  flex-shrink: 0;
-  animation: pp-spin 0.8s linear infinite;
-}
+/* ── Loading banner — defined in predictions.css (shared) ───── */
 
 /* ── Comeback banner ──────────────────────────────────────── */
 .pp-comeback-banner {

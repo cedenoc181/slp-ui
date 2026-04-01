@@ -31,29 +31,22 @@
 
 .back-link:hover { opacity: 1; }
 
-/* ── Loading ─────────────────────────────────────────────────────────────── */
-.detail-loading {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 1rem;
-  padding: 6rem 0;
-  color: #ffffff;
-  font-size: 0.9rem;
+/* ── Skeleton shimmer ────────────────────────────────────────────────────── */
+@keyframes detail-shimmer {
+  0%   { background-position: -600px 0; }
+  100% { background-position:  600px 0; }
 }
 
-.detail-loading-spinner {
-  width: 32px;
-  height: 32px;
-  border: 3px solid rgba(25, 118, 210, 0.2);
-  border-top-color: #1976D2;
-  border-radius: 50%;
-  animation: spin 0.8s linear infinite;
-}
-
-@keyframes spin {
-  to { transform: rotate(360deg); }
+.detail-skeleton {
+  background: linear-gradient(90deg,
+    rgba(255,255,255,0.05) 25%,
+    rgba(255,255,255,0.10) 37%,
+    rgba(255,255,255,0.05) 63%
+  );
+  background-size: 600px 100%;
+  animation: detail-shimmer 1.4s infinite linear;
+  border-radius: 6px;
+  flex-shrink: 0;
 }
 
 /* ── Hero ────────────────────────────────────────────────────────────────── */
