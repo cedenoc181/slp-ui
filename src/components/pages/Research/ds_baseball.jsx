@@ -2,6 +2,44 @@ import { useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import dsData from '../../../data/staticData/ds_baseball.json';
 
+import iconDataScience       from '../../../assets/icons/data-science-and-baseball.png';
+import iconAnalysis          from '../../../assets/icons/analysis.png';
+import iconTrophy            from '../../../assets/icons/trophy.png';
+import iconPlayerProfile     from '../../../assets/icons/player-profile.png';
+import iconPlayerRoster      from '../../../assets/icons/player-roster.png';
+import iconPlayerAccolade    from '../../../assets/icons/player-accolade.png';
+import iconResponsibleGaming from '../../../assets/icons/responsible-gaming.png';
+import iconFaq               from '../../../assets/icons/faq.png';
+import iconStrategyBlog      from '../../../assets/icons/strategy-blog.png';
+import iconSabermetric       from '../../../assets/icons/sabermetric.png';
+import iconMoneyball         from '../../../assets/icons/moneyball.png';
+import iconStatcast          from '../../../assets/icons/statcast.png';
+import iconAiMl              from '../../../assets/icons/ai-ml.png';
+import iconPlayerInjury      from '../../../assets/icons/player-injury.png';
+
+const ICONS = {
+  'data-science-and-baseball': iconDataScience,
+  'analysis':                  iconAnalysis,
+  'trophy':                    iconTrophy,
+  'player-profile':            iconPlayerProfile,
+  'player-roster':             iconPlayerRoster,
+  'player-accolade':           iconPlayerAccolade,
+  'responsible-gaming':        iconResponsibleGaming,
+  'faq':                       iconFaq,
+  'strategy-blog':             iconStrategyBlog,
+  'sabermetric':               iconSabermetric,
+  'moneyball':                 iconMoneyball,
+  'statcast':                  iconStatcast,
+  'ai-ml':                     iconAiMl,
+  'player-injury':             iconPlayerInjury,
+};
+
+function renderIcon(key, className = 'ds-icon') {
+  const src = ICONS[key];
+  if (!src) return key;
+  return <img src={src} alt="" className={className} />;
+}
+
 function DataScienceBaseball() {
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -36,7 +74,7 @@ function DataScienceBaseball() {
                 <div className="timeline">
                   {section.events.map((event, idx) => (
                     <div key={idx} className="timeline-item">
-                      <span className="timeline-icon">{event.icon}</span>
+                      <span className="timeline-icon">{renderIcon(event.icon, 'ds-icon ds-icon--timeline')}</span>
                       <div className="timeline-content">
                         <span className="timeline-year">{event.year}</span>
                         <h3>{event.title}</h3>
@@ -58,7 +96,7 @@ function DataScienceBaseball() {
                 <div className="limitations-grid">
                   {section.limitations.map((item, idx) => (
                     <div key={idx} className="limitation-card">
-                      <span className="limitation-icon">{item.icon}</span>
+                      <span className="limitation-icon">{renderIcon(item.icon, 'ds-icon ds-icon--limitation')}</span>
                       <h3>{item.category}</h3>
                       <p className="description">{item.description}</p>
                       <p className="impact"><strong>Impact:</strong> {item.impact}</p>

@@ -88,7 +88,7 @@
           "items": [
             {
               "id": 1,
-              "icon": "📊",
+              "icon": "player-analytics",
               "question": "How do I find a specific player?",
               "subtitle": "Searching for player stats and analytics",
               "answer": "Navigate to Player Analytics and use the search bar at the top of the page. You can search by player name to instantly access their full statistical profile.",
@@ -96,7 +96,7 @@
             },
             {
               "id": 2,
-              "icon": "🏟️",
+              "icon": "team-analytics",
               "question": "How do I view team statistics?",
               "subtitle": "Accessing comprehensive team data",
               "answer": "Go to Team Analytics and select any of the 30 MLB teams. You'll see:",
@@ -110,7 +110,7 @@
             },
             {
               "id": 3,
-              "icon": "📈",
+              "icon": "data-science-and-baseball",
               "question": "What statistics are available?",
               "subtitle": "Understanding the depth of our data",
               "answer": "We provide both traditional and advanced statistics including:",
@@ -123,21 +123,21 @@
             },
             {
               "id": 4,
-              "icon": "📅",
+              "icon": "mlb-schedule",
               "question": "How often is the data updated?",
               "subtitle": "Staying current with the latest stats",
               "answer": "Our statistics are updated regularly throughout the MLB season to ensure you have access to the most current data for your analysis."
             },
             {
               "id": 5,
-              "icon": "🔍",
+              "icon": "player-analytics",
               "question": "Can I compare multiple players or teams?",
               "subtitle": "Making side-by-side comparisons",
               "answer": "Yes! Our analytics tools allow you to compare performance metrics across different players and teams to identify trends and make informed decisions."
             },
             {
               "id": 6,
-              "icon": "📚",
+              "icon": "glossary",
               "question": "What if I don't understand a statistic?",
               "subtitle": "Learning baseball analytics terminology",
               "answer": "Visit our Glossary page for detailed explanations of all statistics and metrics used throughout the platform. Each term includes definitions and context for how to interpret the data.",
@@ -229,7 +229,7 @@
           "type": "tips",
           "tips": [
             {
-              "icon": "🎯",
+              "icon": "how-to-use",
               "title": "Start with the Basics",
               "description": "Build your foundation before diving deep:",
               "items": [
@@ -240,7 +240,7 @@
               ]
             },
             {
-              "icon": "📊",
+              "icon": "team-analytics",
               "title": "Use Context",
               "description": "Numbers tell a story, but context is key:",
               "items": [
@@ -251,7 +251,7 @@
               ]
             },
             {
-              "icon": "📈",
+              "icon": "data-science-and-baseball",
               "title": "Identify Trends",
               "description": "Look for patterns in the data:",
               "items": [
@@ -262,7 +262,7 @@
               ]
             },
             {
-              "icon": "🔬",
+              "icon": "analysis",
               "title": "Advanced Analysis",
               "description": "Level up your research:",
               "items": [
@@ -276,7 +276,8 @@
         },
         {
           "type": "warning",
-          "title": "📝 Research Reminder",
+          "icon": "how-to-use",
+          "title": "Research Reminder",
           "content": "Baseball analytics provide valuable insights, but no statistic can predict the future with certainty. Use our tools as part of a comprehensive research approach, and always consider multiple factors when forming opinions about player and team performance."
         }
       ]

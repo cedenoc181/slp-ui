@@ -494,6 +494,21 @@
   margin-bottom: 1rem;
 }
 
+.how-to-use-icon {
+  width: 24px;
+  height: 24px;
+  object-fit: contain;
+  vertical-align: middle;
+  margin-right: 6px;
+  opacity: 0.85;
+}
+
+.tip-icon .how-to-use-icon {
+  width: 40px;
+  height: 40px;
+  margin-right: 0;
+}
+
 .tip-card h3 {
   font-size: 1.5rem;
   color: #041E42;

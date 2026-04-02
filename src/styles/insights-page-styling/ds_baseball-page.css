@@ -279,6 +279,21 @@
   margin-bottom: 1rem;
 }
 
+.ds-icon {
+  object-fit: contain;
+  opacity: 0.9;
+}
+
+.ds-icon--timeline {
+  width: 44px;
+  height: 44px;
+}
+
+.ds-icon--limitation {
+  width: 40px;
+  height: 40px;
+}
+
 .limitation-card h3 {
   font-size: 1.3rem;
   color: var(--ds-text-primary);

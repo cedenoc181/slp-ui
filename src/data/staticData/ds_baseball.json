@@ -19,25 +19,25 @@
             "year": "1970s-80s",
             "title": "Birth of Sabermetrics",
             "description": "Bill James pioneers statistical analysis, challenging traditional baseball wisdom with data.",
-            "icon": "📊"
+            "icon": "sabermetric"
           },
           {
             "year": "2003",
             "title": "Moneyball Era",
             "description": "Oakland A's prove small-market teams can compete using analytics. On-base percentage becomes king.",
-            "icon": "💰"
+            "icon": "moneyball"
           },
           {
             "year": "2015",
             "title": "StatCast Revolution",
             "description": "MLB introduces tracking technology measuring exit velocity, launch angle, and sprint speed in real-time.",
-            "icon": "🎯"
+            "icon": "statcast"
           },
           {
             "year": "2020s",
             "title": "AI & Machine Learning",
             "description": "Neural networks process millions of data points, predicting outcomes with unprecedented accuracy.",
-            "icon": "🤖"
+            "icon": "ai-ml"
           }
         ]
       },
@@ -50,42 +50,35 @@
         "limitations": [
           {
             "category": "In-Game Injuries",
-            "icon": "🏥",
+            "icon": "player-injury",
             "description": "A pitcher tears his hamstring in the 3rd inning",
             "impact": "Completely changes game outcome mid-contest",
             "our_approach": "Live betting models adjust, but can't predict freak injuries"
           },
           {
             "category": "Manager Decisions",
-            "icon": "👔",
+            "icon": "player-roster",
             "description": "Surprise lineup changes, early hooks, bullpen management",
             "impact": "Analytics say leave pitcher in, manager panics and pulls him",
             "our_approach": "Track tendencies, but humans are unpredictable"
           },
           {
             "category": "Player Personal Issues",
-            "icon": "😔",
+            "icon": "player-profile",
             "description": "Family emergencies, off-field distractions, contract disputes",
             "impact": "Mental state affects performance in unmeasurable ways",
             "our_approach": "Can't quantify head not in the game"
           },
           {
-            "category": "Umpire Randomness",
-            "icon": "👨‍⚖️",
-            "description": "Some umps have bad days, miss obvious calls",
-            "impact": "Strikeout becomes a walk, changes entire inning",
-            "our_approach": "Track tendencies, but can't predict blown calls"
-          },
-          {
             "category": "The Clutch Gene",
-            "icon": "🔥",
+            "icon": "player-accolade",
             "description": "Some believe certain players perform better in big moments",
             "impact": "Data shows clutch is mostly luck plus small sample noise",
             "our_approach": "Doesn't exist statistically - we ignore it"
           },
           {
             "category": "Momentum & Vibes",
-            "icon": "⚡",
+            "icon": "strategy-blog",
             "description": "Team has momentum or clubhouse chemistry",
             "impact": "Narratives humans love, but data doesn't support",
             "our_approach": "Winning streaks don't predict future performance better than talent"
