@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { createPortal } from 'react-dom';
+import { useNavigate } from 'react-router-dom';
 import predictionsService from '../../../data/services/predictionsService';
 import { getScoutAnalysis } from '../../../data/services/scoutAiService';
 import { getTeamById } from '../../../data/constants/apiConstants';
@@ -902,6 +903,7 @@ function DFSMatrix({ pick }) {
 // ─── Right-side drawer modal ──────────────────────────────────────────────────
 
 function OddsDrawer({ game, onClose, unlocked }) {
+  const navigate   = useNavigate();
   const pick       = buildPick(game);
   const ready      = isReadyToShow(game, unlocked);
   const awayAbbr   = getTeamById(game.away_team_id)?.id || game.away_team_name;
@@ -982,6 +984,12 @@ function OddsDrawer({ game, onClose, unlocked }) {
             />
           )}
           <div className="gp-view-toggle-right">
+            <button
+              className="gp-view-toggle-btn"
+              onClick={() => { onClose(); navigate(`/mlb-schedule/${game.game_pk}`); }}
+            >
+              Matchup Detail
+            </button>
             <button
               className={`gp-view-toggle-btn ${view === 'books' ? 'active' : ''}`}
               onClick={() => setView('books')}

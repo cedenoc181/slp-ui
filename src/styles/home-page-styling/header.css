@@ -134,6 +134,13 @@
   flex-shrink: 0;
 }
 
+.suggestion-icon-img {
+  width: 20px;
+  height: 20px;
+  object-fit: contain;
+  opacity: 0.9;
+}
+
 .suggestion-content {
   display: flex;
   flex-direction: column;
@@ -192,6 +199,15 @@
 .matchup-suggestion:hover {
   background: rgba(200, 16, 46, 0.12);
   border-left-color: var(--cta-color);
+}
+
+.prediction-suggestion {
+  border-left: 2px solid rgba(100, 181, 246, 0.5);
+}
+
+.prediction-suggestion:hover {
+  background: rgba(100, 181, 246, 0.08);
+  border-left-color: #64b5f6;
 }
 
 .search-loading {

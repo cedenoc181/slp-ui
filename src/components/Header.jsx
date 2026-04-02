@@ -22,6 +22,7 @@ import iconHowToUse from '../assets/icons/how-to-use.png';
 import iconGlossary from '../assets/icons/glossary.png';
 import iconFaq from '../assets/icons/faq.png';
 import iconResponsibleGaming from '../assets/icons/responsible-gaming.png';
+import iconPlayerProfile from '../assets/icons/player-profile.png';
 
 // Format a matchup time/date label for search suggestions
 function formatMatchupTime(game) {
@@ -194,6 +195,7 @@ function Header() {
           return {
             type: 'player',
             icon: '👤',
+            iconSrc: iconPlayerProfile,
             headshotUrl: headshotUrl,
             label: playerName,
             sublabel: teamName,
@@ -294,6 +296,7 @@ function Header() {
         matchupResults.push({
           type: 'matchup',
           icon: '⚔️',
+          iconSrc: iconMlbSchedule,
           label: `${awayLabel} vs ${homeLabel}`,
           sublabel: formatMatchupTime(game),
           onSelect: () => {
@@ -369,11 +372,58 @@ function Header() {
         }, 350);
       }
 
-      // Limit to top 2 team matches (reduced to make room for players)
-      teamMatches.slice(0, 2).forEach((team) => {
+      // Prediction shortcuts for the top matched team
+      teamMatches.slice(0, 1).forEach((team) => {
+        results.push({
+          type: 'prediction',
+          icon: '🎯',
+          iconSrc: iconGameProp,
+          label: `${team.name} Game Predictions`,
+          sublabel: 'Win/loss · Spread · Totals',
+          onSelect: () => {
+            closeMenu();
+            navigate(`/predictions/games?team=${encodeURIComponent(team.id)}`);
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+            setSearchQuery('');
+            setSearchSuggestions([]);
+          }
+        });
+        results.push({
+          type: 'prediction',
+          icon: '🏏',
+          iconSrc: iconBatterProp,
+          label: `${team.name} Batter Props`,
+          sublabel: 'Hits · HRs · RBIs · Total Bases',
+          onSelect: () => {
+            closeMenu();
+            navigate(`/predictions/batters?team=${encodeURIComponent(team.id)}`);
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+            setSearchQuery('');
+            setSearchSuggestions([]);
+          }
+        });
+        results.push({
+          type: 'prediction',
+          icon: '⚾',
+          iconSrc: iconPitcherProp,
+          label: `${team.name} Pitcher Props`,
+          sublabel: 'Strikeouts · Innings · ERA',
+          onSelect: () => {
+            closeMenu();
+            navigate(`/predictions/pitchers?team=${encodeURIComponent(team.id)}`);
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+            setSearchQuery('');
+            setSearchSuggestions([]);
+          }
+        });
+      });
+
+      // Team analytics + players for top matched team
+      teamMatches.slice(0, 1).forEach((team) => {
         results.push({
           type: 'team',
           icon: '📊',
+          iconSrc: iconTeamAnalytics,
           label: `${team.name} Analytics${year ? ` (${year})` : ''}`,
           onSelect: () => {
             closeMenu();
@@ -383,11 +433,10 @@ function Header() {
             setSearchSuggestions([]);
           }
         });
-
-        // Add player analytics for the team
         results.push({
           type: 'players',
           icon: '⚾',
+          iconSrc: iconPlayerAnalytics,
           label: `${team.name} Players${year ? ` (${year})` : ''}`,
           onSelect: () => {
             closeMenu();
@@ -413,7 +462,8 @@ function Header() {
       if (!results.some(r => r.label.includes(page.label))) {
         results.push({
           type: 'page',
-          icon: getPageIcon(page.path),
+          icon: '🔗',
+          iconSrc: getPageIconSrc(page.path),
           label: page.label,
           onSelect: () => {
             closeMenu();
@@ -438,6 +488,7 @@ function Header() {
       results.push({
         type: 'article',
         icon: '📰',
+        iconSrc: iconSandlotInsider,
         label: `Sandlot Insider: ${tag}`,
         onSelect: () => {
           closeMenu();
@@ -450,28 +501,25 @@ function Header() {
     });
 
     // Set local results immediately (player + matchup results will be added async)
-    setSearchSuggestions(results.slice(0, 6));
+    setSearchSuggestions(results.slice(0, 8));
   }, [teamOptions, pageOptions, articleTags, navigate, closeMenu, searchPlayersAsync, searchMatchupsAsync]);
 
-  // Helper function to get icon for page type
-  const getPageIcon = (path) => {
+  // Helper function to get PNG icon src for page type
+  const getPageIconSrc = (path) => {
     const icons = {
-      '/mlb-schedule': '📅',
-      '/mlb-standings': '🏅',
-      '/team-analytics': '📊',
-      '/player-analytics': '⚾',
-      '/sandlot-insider': '📰',
-      '/blogs': '✍️',
-      '/data-science': '👨‍🔬',
-      '/how-to-use': '🎯',
-      '/glossary': '📖',
-      '/faqs': '❓',
-      '/responsible-gaming': '🛡️',
-      '/features': '⚡',
-      '/about': 'ℹ️',
-      '/contact': '📧',
+      '/mlb-schedule':       iconMlbSchedule,
+      '/mlb-standings':      iconMlbStandings,
+      '/team-analytics':     iconTeamAnalytics,
+      '/player-analytics':   iconPlayerAnalytics,
+      '/sandlot-insider':    iconSandlotInsider,
+      '/blogs':              iconStrategyBlog,
+      '/data-science':       iconDataScience,
+      '/how-to-use':         iconHowToUse,
+      '/glossary':           iconGlossary,
+      '/faqs':               iconFaq,
+      '/responsible-gaming': iconResponsibleGaming,
     };
-    return icons[path] || '🔗';
+    return icons[path] || null;
   };
 
   const handleSearchChange = (e) => {
@@ -520,7 +568,7 @@ function Header() {
             onChange={handleSearchChange}
             onFocus={() => setIsSearchFocused(true)}
             onBlur={() => setTimeout(() => setIsSearchFocused(false), 150)}
-            placeholder="Search teams, players, matchups..."
+            placeholder="Search teams, predictions, players..."
             aria-label="Search"
           />
           {isSearchFocused && (searchSuggestions.length > 0 || isSearchingPlayers) && (
@@ -535,12 +583,12 @@ function Header() {
                 <button
                   key={`${item.type}-${item.playerId || idx}`}
                   type="button"
-                  className={`search-suggestion ${item.type === 'player' ? 'player-suggestion' : ''} ${item.type === 'matchup' ? 'matchup-suggestion' : ''}`}
+                  className={`search-suggestion ${item.type === 'player' ? 'player-suggestion' : ''} ${item.type === 'matchup' ? 'matchup-suggestion' : ''} ${item.type === 'prediction' ? 'prediction-suggestion' : ''}`}
                   onClick={item.onSelect}
                 >
                   {item.headshotUrl ? (
-                    <img 
-                      src={item.headshotUrl} 
+                    <img
+                      src={item.headshotUrl}
                       alt={item.label}
                       className="suggestion-headshot"
                       onError={(e) => {
@@ -549,11 +597,13 @@ function Header() {
                       }}
                     />
                   ) : null}
-                  <span 
-                    className="suggestion-icon" 
+                  <span
+                    className="suggestion-icon"
                     style={item.headshotUrl ? { display: 'none' } : {}}
                   >
-                    {item.icon}
+                    {item.iconSrc
+                      ? <img src={item.iconSrc} alt="" className="suggestion-icon-img" />
+                      : item.icon}
                   </span>
                   <div className="suggestion-content">
                     <span className="suggestion-label">{item.label}</span>
