@@ -223,7 +223,6 @@ function passes(market, riskFilter) {
 function getBattersForMarketKey(batters, marketKey, riskFilter = 'all') {
   const result = [];
   for (const batter of batters) {
-    if (!batter.scout_ai) continue;
     const market = buildBatterMarkets(batter).find(m => m.key === marketKey);
     if (!market || !passes(market, riskFilter)) continue;
     result.push({ batter, market });
@@ -234,7 +233,6 @@ function getBattersForMarketKey(batters, marketKey, riskFilter = 'all') {
 function getTopPicks(batters, riskFilter = 'all') {
   const all = [];
   for (const batter of batters) {
-    if (!batter.scout_ai) continue;
     for (const market of buildBatterMarkets(batter).filter(m => m.inRows)) {
       if (!passes(market, riskFilter)) continue;
       all.push({ batter, market, ev: parseFloat(market.ev) });

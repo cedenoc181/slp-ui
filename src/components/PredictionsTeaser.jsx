@@ -104,7 +104,7 @@ function PredictionsTeaser() {
           <div className="preview-lock-overlay">
             <div className="lock-content">
               <span>Real picks drop daily — available by 4:00 PM ET</span>
-              <Link to="/predictions" className="form-wrapper" style={{ textDecoration: 'none' }}>
+              <Link to="/predictions/games" className="form-wrapper" style={{ textDecoration: 'none' }}>
                 <button type="button" style={{ width: '100%' }}>
                   View Today's Predictions
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
