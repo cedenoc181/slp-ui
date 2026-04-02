@@ -161,21 +161,35 @@ function buildBatterMarkets(batter) {
     const sbProps  = sbByType[statType]  || [];
     const dfsProps = dfsByType[statType] || [];
 
-    // Most common line
-    const lineCounts = {};
-    for (const p of [...sbProps, ...dfsProps]) lineCounts[p.line] = (lineCounts[p.line] || 0) + 1;
-    const lineEntry = Object.entries(lineCounts).sort((a, b) => b[1] - a[1])[0];
-    if (!lineEntry) continue;
-    const lineNum = parseFloat(lineEntry[0]);
+    // Scout AI pick for this stat — drives line, direction, confidence, reasoning
+    const aiPick = batter.scout_ai?.[statType] ?? null;
 
+    // Use scout_ai line when available; fall back to consensus across sportsbook + DFS
+    let lineNum;
+    if (aiPick) {
+      lineNum = aiPick.line;
+    } else {
+      const lineCounts = {};
+      for (const p of [...sbProps, ...dfsProps]) lineCounts[p.line] = (lineCounts[p.line] || 0) + 1;
+      const lineEntry = Object.entries(lineCounts).sort((a, b) => b[1] - a[1])[0];
+      if (!lineEntry) continue;
+      lineNum = parseFloat(lineEntry[0]);
+    }
+
+    const side      = aiPick?.pick ?? 'Over';
     const predicted = batter[def.predicted] ?? 0;
-    const modelProb = Math.round(poissonProb(predicted, lineNum));
+    const overProb  = Math.round(poissonProb(predicted, lineNum));
+    const modelProb = side === 'Under' ? 100 - overProb : overProb;
 
-    // Best over odds from books at the consensus line
-    const atLine   = sbProps.filter(p => p.line === lineNum && p.over_price != null);
-    const bestOdds = atLine.length ? atLine.reduce((b, p) => p.over_price > b ? p.over_price : b, -Infinity) : null;
+    // Best odds for the picked side at the scout_ai line
+    const atLine   = sbProps.filter(p => p.line === lineNum);
+    const rawBest  = atLine.reduce((best, p) => {
+      const price = side === 'Under' ? p.under_price : p.over_price;
+      return price != null && price > best ? price : best;
+    }, -Infinity);
+    const bestOdds = rawBest === -Infinity ? null : rawBest;
 
-    // Build book rows — group by platform_title, prefer consensus line
+    // Build book rows — group by platform_title, prefer scout_ai line
     const bookMap = {};
     for (const p of sbProps) {
       const key = p.platform_title;
@@ -198,11 +212,13 @@ function buildBatterMarkets(batter) {
     markets.push({
       ...def,
       line: lineNum,
-      side: 'Over',
+      side,
       modelProb,
       predicted,
       bestOdds,
-      ev: calcEV(modelProb, bestOdds),
+      ev:         calcEV(modelProb, bestOdds),
+      confidence: aiPick?.confidence ?? null,
+      reasoning:  aiPick?.reasoning  ?? null,
       books,
       dfs,
     });
@@ -411,7 +427,7 @@ function TopPickCard({ batter, market, onClick }) {
         <div className="bp-top-card-matchup">{batter.teamAbbr} · vs {batter.opponent}</div>
         <div className="bp-top-card-market">
           <span className={`bp-market-chip accent-${market.accent}`}>{market.icon} {market.label}</span>
-          <span className="bp-top-card-line">Over {market.line} · {fmtOdds(market.bestOdds)}</span>
+          <span className="bp-top-card-line">{market.side} {market.line} · {fmtOdds(market.bestOdds)}</span>
         </div>
       </div>
       <div className="bp-top-card-right">
@@ -440,7 +456,7 @@ function BatterCard({ batter, market, onClick }) {
         <div className="bp-batter-card-info">
           <div className="bp-batter-card-name">{batter.name}</div>
           <div className="bp-batter-card-matchup">{batter.teamAbbr} · vs {batter.opponent}</div>
-          <div className="bp-batter-card-line">Over {market.line} · {fmtOdds(market.bestOdds)}</div>
+          <div className="bp-batter-card-line">{market.side} {market.line} · {fmtOdds(market.bestOdds)}</div>
         </div>
         {batter.teamMlbId && !logoErr && (
           <img src={teamLogoUrl(batter.teamMlbId)} alt={batter.teamAbbr} className="bp-batter-card-logo" onError={() => setLogoErr(true)} />
@@ -533,7 +549,7 @@ function PropDFSTable({ market }) {
       {market.dfs.map(d => (
         <div key={d.name} className="bp-odds-row">
           <div className="bp-odds-platform"><PlatformLogo name={d.name} metaMap={DFS_META} /><span>{d.name}</span></div>
-          <div className="bp-odds-val side-pick">{d.line != null ? `Over ${d.line}` : '—'}</div>
+          <div className="bp-odds-val side-pick">{d.line != null ? `${market.side} ${d.line}` : '—'}</div>
         </div>
       ))}
     </div>
@@ -551,7 +567,7 @@ function MarketPanel({ market, onClick }) {
         <span className="bp-market-panel-label">{market.label}</span>
       </div>
       <div className="bp-market-panel-line">
-        <span className="bp-market-panel-side">Over</span>
+        <span className="bp-market-panel-side">{market.side}</span>
         <span className="bp-market-panel-number">{market.line}</span>
       </div>
       <div className="bp-market-panel-stats">
