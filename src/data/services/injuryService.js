@@ -116,4 +116,5 @@ class InjuryService {
   }
 }
 
-export default new InjuryService();
+const injuryService = new InjuryService();
+export default injuryService;

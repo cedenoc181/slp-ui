@@ -2,7 +2,6 @@ import { useState, useEffect, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 import { useNavigate } from 'react-router-dom';
 import predictionsService from '../../../data/services/predictionsService';
-import { getScoutAnalysis } from '../../../data/services/scoutAiService';
 import { getTeamById } from '../../../data/constants/apiConstants';
 import ScoutAiButton from '../Stats/mlb-schedule/components/ScoutAiButton';
 import ScoutAiModal  from '../Stats/mlb-schedule/components/ScoutAiModal';
@@ -270,9 +269,6 @@ function buildPick(row) {
   const homeML = odds?.home_moneyline_game != null ? Math.round(odds.home_moneyline_game) : null;
 
   const totalLine  = odds?.over_under_line_game ?? pred?.blended_predicted_total ?? pred?.predicted_total ?? mock.totalLine;
-  const overOdds  = odds?.over_price  != null ? Math.round(odds.over_price)  : -110;
-  const underOdds = odds?.under_price != null ? Math.round(odds.under_price) : -110;
-
   // Lean toward the side the model predicts: if blended total > line → Over, else → Under
   const predTotal = pred?.blended_predicted_total ?? pred?.predicted_total ?? totalLine;
   const totalSide = predTotal >= totalLine ? 'Over' : 'Under';
@@ -368,14 +364,6 @@ function findBestBook(rows, colIndex) {
 
 // ─── Top Pick ─────────────────────────────────────────────────────────────────
 // Finds the single highest-edge bet across all games and all markets.
-
-const MARKET_LABELS = {
-  mlPick: 'ML',
-  rlPick: 'Run Line',
-  total:  'Total',
-  f5Pick: 'F5 ML',
-  nrfi:   'NRFI',
-};
 
 // Returns the top N picks across all games sorted by model probability (highest first).
 // Probabilities are derived directly from the prediction object, not mock fallbacks.
@@ -836,6 +824,7 @@ function ExchangeMatrix({ pick, pickName }) {
 // ─── DFS matrix ───────────────────────────────────────────────────────────────
 // DFS platforms offer Over/Under lines (not odds). null = market not available.
 
+// eslint-disable-next-line no-unused-vars
 function DFSMatrix({ pick }) {
   const columns = ALL_COLUMNS.filter(col =>
     pick.dfs.some(p => p[col.key] != null)
@@ -919,7 +908,7 @@ function OddsDrawer({ game, onClose, unlocked }) {
   const [view, setView] = useState('books'); // 'books' | 'exchange'
 
   const [scoutAnalysis,   setScoutAnalysis]   = useState(null);
-  const [scoutLoading,    setScoutLoading]     = useState(false);
+  const [scoutLoading]                         = useState(false);
   const [scoutError,      setScoutError]       = useState(null);
   const [showScoutModal,  setShowScoutModal]   = useState(false);
 
@@ -1139,7 +1128,6 @@ function SkeletonCard() {
 export default function GameProps() {
   const [games, setGames]           = useState([]);
   const [loading, setLoading]       = useState(true);
-  const [usingMock, setUsingMock]   = useState(false);
   const [selectedId, setSelectedId] = useState(null);
 
   useEffect(() => {
@@ -1153,12 +1141,10 @@ export default function GameProps() {
           setGames([...today].sort((a, b) => parseGameTimeMinutes(a) - parseGameTimeMinutes(b)));
         } else {
           setGames(MOCK_GAMES);
-          setUsingMock(true);
         }
       })
       .catch(() => {
         setGames(MOCK_GAMES);
-        setUsingMock(true);
       })
       .finally(() => setLoading(false));
   }, []);

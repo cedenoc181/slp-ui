@@ -93,4 +93,5 @@ class TeamLeadersService {
   }
 }
 
-export default new TeamLeadersService();
+const teamLeadersService = new TeamLeadersService();
+export default teamLeadersService;

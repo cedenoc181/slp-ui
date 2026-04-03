@@ -44,53 +44,53 @@ async function authFetch(endpoint, body = null, withAuth = false) {
 // ---------------------------------------------------------------------------
 const userAuthService = {
   /**
-   * POST /auth/register
+   * POST /api/v1/auth/register
    * Returns UserResponse { id, email, is_active, is_admin, created_at, ... }
    */
   register: (email, password) =>
-    authFetch('/auth/register', { email, password }),
+    authFetch('/api/v1/auth/register', { email, password }),
 
   /**
-   * POST /auth/login
+   * POST /api/v1/auth/login
    * Returns TokenResponse { access_token, refresh_token, token_type, expires_in }
    */
   login: (email, password) =>
-    authFetch('/auth/login', { email, password }),
+    authFetch('/api/v1/auth/login', { email, password }),
 
   /**
-   * POST /auth/refresh
+   * POST /api/v1/auth/refresh
    * Returns TokenResponse with new access_token (same refresh_token)
    */
   refreshToken: (refresh_token) =>
-    authFetch('/auth/refresh', { refresh_token }),
+    authFetch('/api/v1/auth/refresh', { refresh_token }),
 
   /**
-   * POST /auth/logout  → 204
+   * POST /api/v1/auth/logout  → 204
    * Revokes the refresh token session on the server.
    */
   logout: (refresh_token) =>
-    authFetch('/auth/logout', { refresh_token }),
+    authFetch('/api/v1/auth/logout', { refresh_token }),
 
   /**
-   * POST /auth/logout-all  → 204
+   * POST /api/v1/auth/logout-all  → 204
    * Revokes ALL sessions for the current user (requires valid access token).
    */
   logoutAll: () =>
-    authFetch('/auth/logout-all', {}, true),
+    authFetch('/api/v1/auth/logout-all', {}, true),
 
   /**
-   * POST /auth/password-reset-request
+   * POST /api/v1/auth/password-reset-request
    * Always returns 202 — safe against email enumeration.
    */
   requestPasswordReset: (email) =>
-    authFetch('/auth/password-reset-request', { email }),
+    authFetch('/api/v1/auth/password-reset-request', { email }),
 
   /**
-   * POST /auth/password-reset
+   * POST /api/v1/auth/password-reset
    * Completes the reset using the token from the email link.
    */
   resetPassword: (token, new_password) =>
-    authFetch('/auth/password-reset', { token, new_password }),
+    authFetch('/api/v1/auth/password-reset', { token, new_password }),
 };
 
 export default userAuthService;

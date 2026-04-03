@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link, useParams, useLocation } from 'react-router-dom';
-import { getMlbId, getAbbr, mapSeasonType } from './utils';
+import { getMlbId, getAbbr } from './utils';
 import scheduleService from '../../../../data/services/scheduleService';
 import teamStatsService from '../../../../data/services/teamStatsService';
 import teamLeadersService from '../../../../data/services/teamLeadersService';
@@ -37,7 +37,7 @@ export default function MatchupDetailComp() {
   const { state }  = useLocation();
 
   const [game, setGame]           = useState(state?.game ?? null);
-  const [prediction, setPrediction] = useState(state?.prediction ?? null);
+  const [prediction]              = useState(state?.prediction ?? null);
   const [loading, setLoading] = useState(!state?.game);
   const [error, setError]     = useState(null);
 
@@ -350,10 +350,6 @@ export default function MatchupDetailComp() {
   const homeMlbId = getMlbId(game.home_team_id);
 
   const statusLower  = (game.status || '').toLowerCase();
-  const isFinal      = statusLower === 'final' || statusLower === 'game over' || statusLower === 'completed' || statusLower === 'completed early';
-  const isLive       = statusLower.includes('progress') || statusLower === 'live' || statusLower.includes('inning');
-  const isScheduled  = !isFinal && !isLive;
-
   const handleScoutClick = async () => {
     if (scoutAnalysis) { setShowScoutModal(true); return; }
 

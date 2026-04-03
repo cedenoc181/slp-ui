@@ -50,4 +50,5 @@ class TeamsService {
   }
 }
 
-export default new TeamsService();
+const teamsService = new TeamsService();
+export default teamsService;

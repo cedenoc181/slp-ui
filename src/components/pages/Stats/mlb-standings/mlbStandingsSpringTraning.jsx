@@ -168,12 +168,6 @@ function MLBStandingsSpringTraining({ selectedSeason, selectedLeague }) {
     return TEAM_METADATA[teamAbbreviation]?.urlName || teamAbbreviation?.toLowerCase();
   };
 
-  // Format team display - just return team name or abbreviation for compact mode
-  const formatTeamDisplay = useCallback((teamName) => {
-    if (!teamName) return '';
-    return teamName;
-  }, []);
-
   // Handle team click navigation - includes season as query parameter
   const handleTeamClick = (teamAbbreviation) => {
     if (!teamAbbreviation) return;

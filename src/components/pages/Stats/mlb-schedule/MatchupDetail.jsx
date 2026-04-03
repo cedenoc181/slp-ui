@@ -4,7 +4,7 @@ import { DEFAULT_SEASON } from '../../../../data/constants/apiConstants';
 import { useMatchupData, useEarliestGameLabel } from './hooks';
 import '../../../../styles/stats-page-styling/matchup-analysis.css';
 import '../../../../styles/stats-page-styling/scout-ai.css';
-import { getMlbId, getAbbr, getUrlName, formGames, mapSeasonType } from './utils';
+import { getMlbId, getAbbr, getUrlName, formGames } from './utils';
 import {
   MatchupHero,
   BoxScoreCard,

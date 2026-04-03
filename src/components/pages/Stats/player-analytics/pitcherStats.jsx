@@ -7,7 +7,7 @@
 // Original: ~890 lines → Refactored: ~120 lines
 // ============================================================================
 
-import React, { useEffect, useState, useMemo } from 'react';
+import React, { useState, useMemo } from 'react';
 import { DEFAULT_SEASON } from '../../../../data/constants/apiConstants';
 import '../../../../styles/stats-page-styling/pitcher-stats.css';
 
@@ -29,7 +29,6 @@ import {
 function PitcherStats({ teamId = 'ALL', teamDbId = null, season = DEFAULT_SEASON, teamName = 'MLB' }) {
   // Local state for hot metric selection
   const [hotMetric, setHotMetric] = useState('strikeouts');
-  const [isMobile, setIsMobile] = useState(false);
 
   // Fetch all pitcher data using custom hook
   const {
@@ -45,16 +44,6 @@ function PitcherStats({ teamId = 'ALL', teamDbId = null, season = DEFAULT_SEASON
     splitsDisplayData,
     isTeamSelected,
   } = usePitcherStats({ teamId, teamDbId, season });
-
-  // Mobile detection
-  useEffect(() => {
-    const handleResize = () => {
-      setIsMobile(window.innerWidth <= 768);
-    };
-    handleResize();
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, []);
 
   // Get filtered hot pitchers for current metric
   const filteredHotPitchers = useMemo(

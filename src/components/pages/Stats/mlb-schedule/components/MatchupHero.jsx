@@ -40,6 +40,7 @@ function OddsStrip({ odds, awayAbbr, homeAbbr }) {
   );
 }
 
+// eslint-disable-next-line no-unused-vars
 function PredictionStrip({ publicFav, scoutFav }) {
   const hasPublic = publicFav?.abbr && publicFav?.pct != null;
   const hasScout  = scoutFav?.abbr  && scoutFav?.pct  != null;

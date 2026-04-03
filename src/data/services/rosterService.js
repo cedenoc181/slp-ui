@@ -148,4 +148,5 @@ class RosterService {
   }
 }
 
-export default new RosterService();
+const rosterService = new RosterService();
+export default rosterService;

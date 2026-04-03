@@ -7,7 +7,7 @@
 // Original: ~890 lines → Refactored: ~120 lines
 // ============================================================================
 
-import React, { useEffect, useState, useMemo } from 'react';
+import React, { useState, useMemo } from 'react';
 import { DEFAULT_SEASON } from '../../../../data/constants/apiConstants';
 import '../../../../styles/stats-page-styling/batter-stats.css';
 
@@ -29,7 +29,6 @@ import {
 function BatterStats({ teamId = 'ALL', teamDbId = null, season = DEFAULT_SEASON, teamName = 'MLB' }) {
   // Local state for hot metric selection
   const [hotMetric, setHotMetric] = useState('home_runs');
-  const [isMobile, setIsMobile] = useState(false);
 
   // Fetch all batter data using custom hook
   const {
@@ -45,16 +44,6 @@ function BatterStats({ teamId = 'ALL', teamDbId = null, season = DEFAULT_SEASON,
     splitsDisplayData,
     isTeamSelected,
   } = useBatterStats({ teamId, teamDbId, season });
-
-  // Mobile detection
-  useEffect(() => {
-    const updateIsMobile = () => {
-      setIsMobile(window.innerWidth <= 768);
-    };
-    updateIsMobile();
-    window.addEventListener('resize', updateIsMobile);
-    return () => window.removeEventListener('resize', updateIsMobile);
-  }, []);
 
   // Get filtered hot batters for current metric
   const filteredHotBatters = useMemo(

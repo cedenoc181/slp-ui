@@ -59,4 +59,5 @@ class TeamStatsService {
   }
 }
 
-export default new TeamStatsService();
+const teamStatsService = new TeamStatsService();
+export default teamStatsService;

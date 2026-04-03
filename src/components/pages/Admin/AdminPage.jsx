@@ -1,12 +1,11 @@
 import { useState, useEffect } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { useAuth } from '../../../context/AuthContext';
 import supabase from '../../../lib/supabaseClient';
 import '../../../styles/admin-page-styling/admin.css';
 
 function AdminPage() {
   const { isAuthenticated, loading, user } = useAuth();
-  const navigate = useNavigate();
 
   const [posts, setPosts] = useState([]);
   const [fetching, setFetching] = useState(true);

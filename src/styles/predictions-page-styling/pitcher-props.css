@@ -776,8 +776,9 @@
 }
 
 .pp-modal-info {
-  flex: 1;
+  flex: 0 0 auto;
   min-width: 0;
+  max-width: fit-content;
 }
 
 .pp-modal-name {
@@ -785,8 +786,6 @@
   font-weight: 800;
   color: #fff;
   white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
 }
 
 .pp-modal-meta {

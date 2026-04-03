@@ -12,7 +12,7 @@ export const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || REMOTE_URL;
 
 export { IS_DEV, LOCAL_URL, REMOTE_URL };
 
-export default {
+const apiConfig = {
   baseUrl: API_BASE_URL,
   localUrl: LOCAL_URL,
   timeout: 60000, // 60 seconds for cold starts
@@ -20,3 +20,5 @@ export default {
     'Content-Type': 'application/json',
   },
 };
+
+export default apiConfig;

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import '../../../../styles/stats-page-styling/mlb-standings.css';
 import teamsService from '../../../../data/services/teamsService';
@@ -19,6 +19,7 @@ function getInitialStandingsState() {
 }
 
 const initialStandingsState = getInitialStandingsState();
+const WEEK_IN_MS = 7 * 24 * 60 * 60 * 1000; // 7 days in milliseconds
 
 function MLBStandings() {
   const [selectedLeague, setSelectedLeague] = useState(initialStandingsState.league);
@@ -35,10 +36,9 @@ function MLBStandings() {
 
   // LocalStorage key for storing previous rankings
   const getStorageKey = (season) => `mlb-power-rankings-${season}`;
-  const WEEK_IN_MS = 7 * 24 * 60 * 60 * 1000; // 7 days in milliseconds
 
   // Load previous rankings from localStorage
-  const loadPreviousRankings = (season) => {
+  const loadPreviousRankings = useCallback((season) => {
     try {
       const stored = localStorage.getItem(getStorageKey(season));
       if (stored) {
@@ -54,10 +54,10 @@ function MLBStandings() {
       console.error('Error loading previous rankings:', error);
     }
     return null;
-  };
+  }, []);
 
   // Save current rankings to localStorage with timestamp
-  const saveCurrentRankings = (season, rankings) => {
+  const saveCurrentRankings = useCallback((season, rankings) => {
     try {
       const data = {
         rankings: rankings,
@@ -67,12 +67,12 @@ function MLBStandings() {
     } catch (error) {
       console.error('Error saving rankings:', error);
     }
-  };
+  }, []);
 
   // Check if stored rankings are older than a week
-  const isSnapshotExpired = (timestamp) => {
+  const isSnapshotExpired = useCallback((timestamp) => {
     return Date.now() - timestamp > WEEK_IN_MS;
-  };
+  }, []);
 
   // Check if API response has actual standings data
   const hasStandingsData = (data) => {
@@ -139,7 +139,7 @@ function MLBStandings() {
     };
 
     fetchStandings();
-  }, [selectedSeason, seasonType]);
+  }, [selectedSeason, seasonType, loadPreviousRankings, saveCurrentRankings, isSnapshotExpired]);
 
   // Transform API data to display format for a league
   const currentLeagueData = useMemo(() => {
@@ -234,7 +234,7 @@ function MLBStandings() {
       .slice(0, 10);
 
     return allTeams;
-  }, [standingsData, selectedSeason]);
+  }, [standingsData, selectedSeason, loadPreviousRankings]);
 
   // Filter power rankings by selected league and get top 5 with sequential 1-5 ranking
   // Uses league_rank from API which ranks teams within their respective league (AL or NL)
@@ -276,7 +276,7 @@ function MLBStandings() {
           runDifferential: team.run_differential,
         };
       });
-  }, [standingsData, selectedSeason, selectedLeague]);
+  }, [standingsData, selectedSeason, selectedLeague, loadPreviousRankings]);
 
   // Helper function to get URL-friendly team name from abbreviation
   const getTeamUrlFromAbbr = (teamAbbreviation) => {

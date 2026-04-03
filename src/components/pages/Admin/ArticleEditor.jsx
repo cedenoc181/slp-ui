@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { useNavigate, useParams, useSearchParams, Link } from 'react-router-dom';
+import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../../../context/AuthContext';
 import supabase from '../../../lib/supabaseClient';
 import '../../../styles/admin-page-styling/admin.css';

@@ -338,8 +338,9 @@ export const usePlayerProfile = (mlbIdFromSlug, selectedSeason, isPitcher, isTwo
 
     return () => {
       controller.abort();
-      statsFetchIdRef.current++;
+      statsFetchIdRef.current++; // eslint-disable-line react-hooks/exhaustive-deps
     };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [playerInfo?.id, selectedSeason, selectedSeasonType]);
 
   // ============================================================================

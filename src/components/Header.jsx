@@ -529,7 +529,7 @@ function Header() {
     // and Latin-extended chars (é, á, ó…) for international player names.
     const value = raw
       .slice(0, 60)
-      .replace(/[\x00-\x1F\x7F]/g, '')
+      .replace(/[\x00-\x1F\x7F]/g, '') // eslint-disable-line no-control-regex
       .replace(/[^a-zA-Z0-9\s\-'.()\u00C0-\u024F]/g, '');
     setSearchQuery(value);
     buildSuggestions(value);

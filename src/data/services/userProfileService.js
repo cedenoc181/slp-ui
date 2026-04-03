@@ -29,55 +29,55 @@ async function profileFetch(endpoint, method = 'GET', body = null) {
 // ---------------------------------------------------------------------------
 const userProfileService = {
   /**
-   * GET /users/me → UserResponse
+   * GET /api/v1/users/me → UserResponse
    * Full profile: display_name, favorite_team, is_verified, preferences, etc.
    */
   getProfile: () =>
-    profileFetch('/users/me'),
+    profileFetch('/api/v1/users/me'),
 
   /**
-   * PATCH /users/me → UserResponse
+   * PATCH /api/v1/users/me → UserResponse
    * Update display_name and/or favorite_team.
    * Body: { display_name?, favorite_team? }
    */
   updateProfile: (fields) =>
-    profileFetch('/users/me', 'PATCH', fields),
+    profileFetch('/api/v1/users/me', 'PATCH', fields),
 
   /**
-   * PATCH /users/me/preferences → UserResponse
+   * PATCH /api/v1/users/me/preferences → UserResponse
    * Update notification preferences.
    * Body: { email_updates?, weekly_digest?, breaking_news? }
    */
   updatePreferences: (prefs) =>
-    profileFetch('/users/me/preferences', 'PATCH', prefs),
+    profileFetch('/api/v1/users/me/preferences', 'PATCH', prefs),
 
   /**
-   * POST /users/me/change-password
+   * POST /api/v1/users/me/change-password
    * Body: { current_password, new_password }
    */
   changePassword: (current_password, new_password) =>
-    profileFetch('/users/me/change-password', 'POST', { current_password, new_password }),
+    profileFetch('/api/v1/users/me/change-password', 'POST', { current_password, new_password }),
 
   /**
-   * DELETE /users/me → 204
+   * DELETE /api/v1/users/me → 204
    * Soft-deletes the account and revokes all sessions.
    */
   deleteAccount: () =>
-    profileFetch('/users/me', 'DELETE'),
+    profileFetch('/api/v1/users/me', 'DELETE'),
 
   /**
-   * GET /users/me/sessions → SessionResponse[]
+   * GET /api/v1/users/me/sessions → SessionResponse[]
    * Lists all active sessions for the current user.
    */
   getSessions: () =>
-    profileFetch('/users/me/sessions'),
+    profileFetch('/api/v1/users/me/sessions'),
 
   /**
-   * DELETE /users/me/sessions/{sessionId} → 204
+   * DELETE /api/v1/users/me/sessions/{sessionId} → 204
    * Revokes a specific session by ID.
    */
   revokeSession: (sessionId) =>
-    profileFetch(`/users/me/sessions/${sessionId}`, 'DELETE'),
+    profileFetch(`/api/v1/users/me/sessions/${sessionId}`, 'DELETE'),
 };
 
 export default userProfileService;

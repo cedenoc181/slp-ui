@@ -154,7 +154,6 @@ function PlayerProfileStats() {
     statsLoading,
     careerTotalsLoading,
     careerSplitsLoading,
-    error,
     playerInfo,
     seasonStats,
     careerStats,

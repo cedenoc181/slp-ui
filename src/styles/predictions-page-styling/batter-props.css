@@ -714,6 +714,7 @@
   cursor: pointer;
   border-radius: 9px;
   flex-shrink: 0;
+  margin-left: auto;
   transition: transform 0.15s ease, box-shadow 0.15s ease;
 }
 
@@ -1284,4 +1285,120 @@
 
 @media (max-width: 600px) {
   .bp-pred-summary { grid-template-columns: repeat(2, 1fr); }
+}
+
+/* ── Scout AI panel (inside modal body) ───────────────────── */
+.bp-scout-panel {
+  margin-bottom: 1.5rem;
+  padding: 1rem 1.2rem;
+  background: rgba(139,92,246,0.06);
+  border: 1px solid rgba(139,92,246,0.25);
+  border-radius: 14px;
+}
+
+.bp-scout-panel-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #a78bfa;
+}
+
+.bp-scout-panel-header img {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+  object-fit: contain;
+}
+
+.bp-scout-panel-close {
+  margin-left: auto;
+  background: none;
+  border: none;
+  color: rgba(255,255,255,0.4);
+  cursor: pointer;
+  font-size: 0.85rem;
+  line-height: 1;
+  padding: 0.1rem 0.3rem;
+}
+.bp-scout-panel-close:hover { color: #fff; }
+
+.bp-scout-summary {
+  font-size: 0.8rem;
+  line-height: 1.5;
+  color: rgba(255,255,255,0.75);
+  margin: 0 0 1rem;
+}
+
+.bp-scout-props {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+}
+
+.bp-scout-prop-row {
+  padding: 0.75rem 0.9rem;
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.07);
+  border-radius: 10px;
+}
+
+.bp-scout-prop-top {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin-bottom: 0.4rem;
+}
+
+.bp-scout-prop-label {
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.55);
+  flex-shrink: 0;
+}
+
+.bp-scout-prop-pick {
+  font-size: 0.8rem;
+  font-weight: 800;
+  padding: 0.15rem 0.55rem;
+  border-radius: 6px;
+  flex-shrink: 0;
+}
+.bp-scout-prop-pick.accent-green  { background: rgba(74,222,128,0.15); color: #4ade80; }
+.bp-scout-prop-pick.accent-red    { background: rgba(248,113,113,0.15); color: #f87171; }
+.bp-scout-prop-pick.accent-blue   { background: rgba(96,165,250,0.15);  color: #60a5fa; }
+.bp-scout-prop-pick.accent-yellow { background: rgba(250,204,21,0.15);  color: #facc15; }
+.bp-scout-prop-pick.accent-purple { background: rgba(167,139,250,0.15); color: #a78bfa; }
+
+.bp-scout-prop-conf {
+  display: flex;
+  gap: 3px;
+  margin-left: auto;
+}
+
+.bp-scout-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.15);
+}
+.bp-scout-dot--on { background: #a78bfa; }
+
+.bp-scout-prop-reasoning {
+  font-size: 0.75rem;
+  line-height: 1.5;
+  color: rgba(255,255,255,0.65);
+  margin: 0 0 0.35rem;
+}
+
+.bp-scout-prop-book {
+  font-size: 0.68rem;
+  color: rgba(255,255,255,0.35);
+  margin: 0;
 }

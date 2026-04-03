@@ -8,6 +8,7 @@ import PredictionsNav from './PredictionsNav';
 import '../../../styles/predictions-page-styling/predictions.css';
 import '../../../styles/predictions-page-styling/batter-props.css';
 import '../../../styles/stats-page-styling/scout-ai.css';
+import analysisIcon from '../../../assets/icons/analysis.png';
 
 // ─── URL helpers ──────────────────────────────────────────────────────────────
 
@@ -622,11 +623,13 @@ function BatterModal({ batter, initialMarketKey, onClose }) {
     initialMarketKey ? (allMarkets.find(m => m.key === initialMarketKey) ?? null) : null
   );
   const [oddsView, setOddsView] = useState('books');
+  const [showScout, setShowScout] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
     const onKey = (e) => {
       if (e.key === 'Escape') {
+        if (showScout) { setShowScout(false); return; }
         if (selectedMarket) setSelectedMarket(null);
         else onClose();
       }
@@ -637,7 +640,7 @@ function BatterModal({ batter, initialMarketKey, onClose }) {
       document.removeEventListener('keydown', onKey);
       document.body.style.overflow = '';
     };
-  }, [onClose, selectedMarket]);
+  }, [onClose, selectedMarket, showScout]);
 
   const goToPlayer  = () => { onClose(); navigate(`/player/${batter.mlbId ?? batter.id}`); window.scrollTo(0, 0); };
   const goToMatchup = () => { onClose(); navigate(`/mlb-schedule/${batter.gameId ?? batter.gamePk}`); window.scrollTo(0, 0); };
@@ -717,11 +720,9 @@ function BatterModal({ batter, initialMarketKey, onClose }) {
                 disabled={!hasScoutAi}
                 aria-disabled={!hasScoutAi || undefined}
                 data-tooltip={hasScoutAi ? 'View Scouting Report' : 'Scouting report not yet available'}
+                onClick={() => hasScoutAi && setShowScout(true)}
               >
-                <svg className="scout-ai-btn__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                  <path d="M9.5 2A2.5 2.5 0 0 1 12 4.5v15a2.5 2.5 0 0 1-4.96-.46 2.5 2.5 0 0 1-2.96-3.08 3 3 0 0 1-.34-5.58 2.5 2.5 0 0 1 1.32-4.24 2.5 2.5 0 0 1 4.44-1.14Z"/>
-                  <path d="M14.5 2A2.5 2.5 0 0 0 12 4.5v15a2.5 2.5 0 0 0 4.96-.46 2.5 2.5 0 0 0 2.96-3.08 3 3 0 0 0 .34-5.58 2.5 2.5 0 0 0-1.32-4.24 2.5 2.5 0 0 0-4.44-1.14Z"/>
-                </svg>
+                <img src={analysisIcon} alt="" className="scout-ai-btn__icon" aria-hidden="true" />
                 <span>Scouting Report</span>
               </button>
 
@@ -733,6 +734,49 @@ function BatterModal({ batter, initialMarketKey, onClose }) {
 
             <div className="bp-modal-body">
               <PredSummary batter={batter} />
+
+              {showScout && batter.scout_ai && (
+                <div className="bp-scout-panel">
+                  <div className="bp-scout-panel-header">
+                    <img src={analysisIcon} alt="" aria-hidden="true" />
+                    <span>Scout AI Scouting Report</span>
+                    <button className="bp-scout-panel-close" onClick={() => setShowScout(false)} aria-label="Close scouting report">✕</button>
+                  </div>
+
+                  {batter.scout_ai.summary && (
+                    <p className="bp-scout-summary">{batter.scout_ai.summary}</p>
+                  )}
+
+                  {batter.scout_ai.props && (
+                    <div className="bp-scout-props">
+                      {Object.entries(batter.scout_ai.props).map(([statKey, data]) => {
+                        const def = STAT_KEY_MAP[statKey];
+                        if (!def || !data) return null;
+                        const confidence = data.confidence ?? 0;
+                        return (
+                          <div key={statKey} className="bp-scout-prop-row">
+                            <div className="bp-scout-prop-top">
+                              <span className="bp-scout-prop-label">{def.icon} {def.label}</span>
+                              <span className={`bp-scout-prop-pick accent-${def.accent}`}>{data.pick}</span>
+                              <span className="bp-scout-prop-conf">
+                                {Array.from({ length: 5 }, (_, i) => (
+                                  <span key={i} className={`bp-scout-dot${i < confidence ? ' bp-scout-dot--on' : ''}`} />
+                                ))}
+                              </span>
+                            </div>
+                            {data.reasoning && (
+                              <p className="bp-scout-prop-reasoning">{data.reasoning}</p>
+                            )}
+                            {data.recommended_book && (
+                              <p className="bp-scout-prop-book">Best line: {data.recommended_book}</p>
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+              )}
 
               {hasMarkets ? (
                 <div className="bp-markets-grid">

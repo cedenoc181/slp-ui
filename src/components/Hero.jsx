@@ -1,25 +1,12 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import ReactGA from 'react-ga4';
 import '../styles/home-page-styling/hero.css';
 
 
 function Hero() {
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
   const [isHovering, setIsHovering] = useState(false);
-  const [email, setEmail] = useState('');
   const navigate = useNavigate();
-
-  const handleTeamAnalyticsClick = () => {
-    // Track CTA click to team analytics page
-    ReactGA.event({
-      category: 'User Interaction',
-      action: 'Click',
-      label: 'Hero Team Analytics Button'
-    });
-
-    navigate('/team-analytics');
-  };
 
   const handleMouseMove = (e) => {
     const rect = e.currentTarget.getBoundingClientRect();
@@ -27,13 +14,6 @@ function Hero() {
       x: e.clientX - rect.left,
       y: e.clientY - rect.top
     });
-  };
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    // Handle email signup
-    console.log('Email submitted:', email);
-    setEmail('');
   };
 
   return (

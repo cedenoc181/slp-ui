@@ -82,4 +82,5 @@ class LeagueLeadersService {
   }
 }
 
-export default new LeagueLeadersService();
+const leagueLeadersService = new LeagueLeadersService();
+export default leagueLeadersService;
