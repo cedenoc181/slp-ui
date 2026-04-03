@@ -264,6 +264,28 @@
   }
 }
 
+@media (max-width: 425px) {
+  .predictions-nav {
+    overflow-x: auto;
+    overflow-y: hidden;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    flex-wrap: nowrap;
+    padding: 0 1rem;
+  }
+  .predictions-header-inner::-webkit-scrollbar {
+    display: none;
+  }
+  .predictions-nav {
+    flex-shrink: 0;
+    flex-wrap: nowrap;
+  }
+  .predictions-header-inner h1 {
+    flex-shrink: 0;
+    white-space: nowrap;
+  }
+}
+
 @media (max-width: 480px) {
 
   .predictions-content {

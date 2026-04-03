@@ -9,6 +9,7 @@ import PredictionsNav from './PredictionsNav';
 import '../../../styles/predictions-page-styling/predictions.css';
 import '../../../styles/predictions-page-styling/pitcher-props.css';
 import '../../../styles/stats-page-styling/scout-ai.css';
+import analysisIcon from '../../../assets/icons/analysis.png';
 
 // ─── URL helpers ──────────────────────────────────────────────────────────────
 
@@ -829,6 +830,7 @@ function PitcherModal({ pitcher, onClose, predictionTime, predictionsUnlocked })
           /* ── Full modal ── */
           <div className="pp-modal">
             <div className="pp-modal-header">
+              {/* Col 1 — identity */}
               <div className="pp-modal-identity">
                 {hsErr ? (
                   <div className="pp-modal-hs-fallback">
@@ -843,27 +845,29 @@ function PitcherModal({ pitcher, onClose, predictionTime, predictionsUnlocked })
                   />
                 )}
                 <div className="pp-modal-info">
-                  <button className="pp-modal-name pp-modal-link" onClick={goToPlayer}>{pitcher.name}</button>
+                  <button className="pp-modal-name pp-modal-link" onClick={goToPlayer}>
+                    <span className="pp-name-full">{pitcher.name}</span>
+                    <span className="pp-name-short">{pitcher.name.split(' ')[0][0]}. {pitcher.name.split(' ').slice(1).join(' ')}</span>
+                  </button>
                   <button className="pp-modal-meta pp-modal-link" onClick={goToMatchup}>
                     {pitcher.teamAbbr} · vs {pitcher.opponent}
                   </button>
                 </div>
               </div>
 
-              {scoutAi && (
-                <button className="pp-modal-scout-btn" onClick={() => setShowScoutModal(true)}>
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                    <path d="M9.5 2A2.5 2.5 0 0 1 12 4.5v15a2.5 2.5 0 0 1-4.96-.46 2.5 2.5 0 0 1-2.96-3.08 3 3 0 0 1-.34-5.58 2.5 2.5 0 0 1 1.32-4.24 2.5 2.5 0 0 1 4.44-1.14Z"/>
-                    <path d="M14.5 2A2.5 2.5 0 0 0 12 4.5v15a2.5 2.5 0 0 0 4.96-.46 2.5 2.5 0 0 0 2.96-3.08 3 3 0 0 0 .34-5.58 2.5 2.5 0 0 0-1.32-4.24 2.5 2.5 0 0 0-4.44-1.14Z"/>
-                  </svg>
-                  Scouting Report
+              {/* Col 2 — scout button + team logo + close */}
+              <div className="pp-modal-col-right">
+                {scoutAi && (
+                  <button className="pp-modal-scout-btn" onClick={() => setShowScoutModal(true)} data-tooltip="Scouting Report">
+                    <img src={analysisIcon} alt="" className="pp-modal-scout-icon" aria-hidden="true" />
+                    <span className="pp-scout-text">Scouting<span className="pp-scout-report"> Report</span></span>
+                  </button>
+                )}
+                <button className="pp-modal-team-logo-btn" onClick={goToTeam} aria-label={`${pitcher.teamAbbr} team analytics`}>
+                  <img src={teamLogoUrl(pitcher.teamMlbId)} alt={pitcher.teamAbbr} className="pp-modal-team-logo" />
                 </button>
-              )}
-
-              <button className="pp-modal-team-logo-btn" onClick={goToTeam} aria-label={`${pitcher.teamAbbr} team analytics`}>
-                <img src={teamLogoUrl(pitcher.teamMlbId)} alt={pitcher.teamAbbr} className="pp-modal-team-logo" />
-              </button>
-              <button className="pp-modal-close" onClick={onClose} aria-label="Close">✕</button>
+                <button className="pp-modal-close" onClick={onClose} aria-label="Close">✕</button>
+              </div>
             </div>
 
             <div className="pp-modal-body">

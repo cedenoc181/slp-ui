@@ -906,6 +906,49 @@
   }
 }
 
+@media (max-width: 600px) {
+  .gp-drawer-logo {
+    width: 26px;
+    height: 26px;
+    padding: 2px;
+  }
+
+  .gp-drawer-team-name {
+    font-size: 0.82rem;
+  }
+
+  .gp-drawer-vs {
+    font-size: 0.68rem;
+  }
+
+  .gp-view-toggle {
+    flex-wrap: wrap;
+    gap: 0.3rem;
+    padding: 0.5rem 0.9rem;
+  }
+
+  /* Scout AI button: icon only, no label */
+  .gp-view-toggle .scout-ai-btn {
+    padding: 0.3rem 0.5rem;
+    min-width: unset;
+  }
+
+  .gp-view-toggle .scout-ai-btn span:not(.scout-ai-btn__spinner) {
+    display: none;
+  }
+
+  .gp-view-toggle .scout-ai-btn__icon {
+    width: 18px;
+    height: 18px;
+    margin: 0;
+  }
+
+  .gp-view-toggle-btn {
+    font-size: 0.65rem;
+    padding: 0.3rem 0.6rem;
+  }
+}
+
 /* ── Muted card (no odds/prediction yet) ───────────────────────────────────── */
 .gp-card--muted {
   opacity: 0.5;

@@ -733,11 +733,11 @@
 
 /* Modal header */
 .pp-modal-header {
-  position: relative;
-  display: flex;
+  display: grid;
+  grid-template-columns: 1fr auto;
   align-items: center;
-  gap: 1rem;
-  padding: 1.25rem 3.5rem 1.1rem 1.25rem;
+  gap: 0.75rem;
+  padding: 1.1rem 1.25rem;
   border-bottom: 1px solid rgba(255, 255, 255, 0.07);
   background: rgba(255, 255, 255, 0.02);
   flex-shrink: 0;
@@ -747,8 +747,13 @@
   display: flex;
   align-items: center;
   gap: 0.85rem;
-  flex: 1;
   min-width: 0;
+}
+
+.pp-modal-col-right {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
 }
 
 .pp-modal-headshot {
@@ -848,9 +853,6 @@
 
 /* Centered Scout AI button in modal header */
 .pp-modal-scout-btn {
-  position: absolute;
-  left: 50%;
-  transform: translateX(-50%);
   display: inline-flex;
   align-items: center;
   gap: 0.4rem;
@@ -871,10 +873,11 @@
   border-color: rgba(167, 139, 250, 0.5);
 }
 
-.pp-modal-scout-btn svg {
+.pp-modal-scout-icon {
   width: 13px;
   height: 13px;
   flex-shrink: 0;
+  object-fit: contain;
 }
 
 /* Pick badge inside pitcher scout modal sections */
@@ -1528,4 +1531,51 @@
 .pp-empty-icon {
   font-size: 2.5rem;
   opacity: 0.5;
+}
+
+
+@media (max-width: 500px) {
+  .pp-scout-report {
+    display: none;
+  }
+}
+
+@media (max-width: 425px) {
+  .pp-scout-text {
+    display: none;
+  }
+
+  .pp-modal-scout-btn {
+    width: 40px;
+    height: 40px;
+    padding: 0;
+    justify-content: center;
+    border-radius: 9px;
+    position: relative;
+  }
+
+  .pp-modal-scout-btn[data-tooltip]:hover::after {
+    content: attr(data-tooltip);
+    position: absolute;
+    bottom: calc(100% + 6px);
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(20, 20, 30, 0.95);
+    border: 1px solid rgba(167, 139, 250, 0.3);
+    color: #e2e8f0;
+    font-size: 0.7rem;
+    font-weight: 600;
+    white-space: nowrap;
+    padding: 0.3rem 0.6rem;
+    border-radius: 6px;
+    pointer-events: none;
+    z-index: 10;
+  }
+}
+
+.pp-name-short { display: none; }
+
+@media (max-width: 375px) {
+  .pp-name-full  { display: none; }
+  .pp-name-short { display: inline; }
 }
