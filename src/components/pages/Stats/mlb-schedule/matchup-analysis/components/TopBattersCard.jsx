@@ -58,7 +58,7 @@ export default function TopBattersCard({ awayAbbr, homeAbbr, awayMlbId, homeMlbI
           {teamMlbId && <img src={logoUrl(teamMlbId)} alt="" className="top-batters-logo" />}
           Top Batters This Week
           {activeSeason && (
-            <span className="sp-fallback-season-badge">{activeSeason} Stats</span>
+            <span className="sp-fallback-season-badge">{activeSeason}</span>
           )}
         </div>
         <div className="split-toggle">

@@ -232,8 +232,8 @@ export default function MatchupDetail() {
     <div className="matchup-detail-page">
       <div className="container">
         <div className="matchup-detail-top-nav">
-          <Link to="/mlb-schedule" className="back-link">‹ Back to Schedule</Link>
-          <div className="matchup-detail-top-nav__center">
+          <Link to="/mlb-schedule" className="back-link">‹ <span className="nav-full">Back to Schedule</span><span className="nav-short">Back</span></Link>
+          <div className="matchup-detail-top-nav__center matchup-detail-top-nav__scout">
             <ScoutAiButton
               hasAnalysis={!!scoutAnalysis}
               loading={scoutLoading}
@@ -253,7 +253,7 @@ export default function MatchupDetail() {
                 <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
                 <line x1="11" y1="8" x2="11" y2="14"/><line x1="8" y1="11" x2="14" y2="11"/>
               </svg>
-              Advanced Analysis
+              <span className="nav-full">Advanced Analysis</span><span className="nav-short">Analysis</span>
             </Link>
           </div>
         </div>

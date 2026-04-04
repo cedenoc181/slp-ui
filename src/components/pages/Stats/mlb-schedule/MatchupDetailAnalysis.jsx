@@ -383,17 +383,19 @@ export default function MatchupDetailComp() {
 
         <div className="matchup-detail-top-nav">
           <Link to={`/mlb-schedule/${gameId}`} state={{ game, prediction }} className="analysis-back-btn">
-            ‹ Back to Matchup Detail
+            ‹ <span className="analysis-nav-full">Back to Matchup Detail</span><span className="analysis-nav-short">Back</span>
           </Link>
-          <ScoutAiButton
-            hasAnalysis={!!scoutAnalysis}
-            loading={scoutLoading}
-            onClick={handleScoutClick}
-            isToday={game?.date === new Intl.DateTimeFormat('en-CA', { timeZone: 'America/New_York' }).format(new Date())}
-            scoutAiAvailable={scoutUnlocked}
-            pendingLabel={scoutUnlockLabel}
-            tooltipPosition="right"
-          />
+          <div className="analysis-scout-wrap">
+            <ScoutAiButton
+              hasAnalysis={!!scoutAnalysis}
+              loading={scoutLoading}
+              onClick={handleScoutClick}
+              isToday={game?.date === new Intl.DateTimeFormat('en-CA', { timeZone: 'America/New_York' }).format(new Date())}
+              scoutAiAvailable={scoutUnlocked}
+              pendingLabel={scoutUnlockLabel}
+              tooltipPosition="right"
+            />
+          </div>
           <div className="matchup-detail-top-nav__right" />
         </div>
 
@@ -446,7 +448,7 @@ export default function MatchupDetailComp() {
           <div className="analysis-section-title">Key Matchup Insights</div>
           {insightsSeason && (
             <div className="analysis-insights-season">
-              <span className="sp-fallback-season-badge">{insightsSeason} Stats</span>
+              <span className="sp-fallback-season-badge">{insightsSeason}</span>
             </div>
           )}
           <InsightsPanel insights={insights} />

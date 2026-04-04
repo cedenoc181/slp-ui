@@ -609,6 +609,13 @@
   color: #ef9a9a;
 }
 
+/* ── Mobile: add side padding so modal doesn't fill edge-to-edge ─────────── */
+@media (max-width: 425px) {
+  .scout-modal-backdrop {
+    padding: 0 1rem;
+  }
+}
+
 /* ── Desktop: centered modal ─────────────────────────────────────────────── */
 @media (min-width: 768px) {
   .scout-modal-backdrop {

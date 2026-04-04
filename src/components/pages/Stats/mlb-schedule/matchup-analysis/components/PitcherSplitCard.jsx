@@ -123,7 +123,7 @@ export default function PitcherSplitCard({ abbr, mlbId, spPlayerId, side, spName
           </div>
         </div>
         {hasSP && activeSeason && (
-          <span className="sp-fallback-season-badge">{activeSeason} Stats</span>
+          <span className="sp-fallback-season-badge">{activeSeason}</span>
         )}
         {hasSP && activeBadges.length > 0 && (
           <div className="sp-warning-badges">

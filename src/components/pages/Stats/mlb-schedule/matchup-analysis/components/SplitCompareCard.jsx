@@ -50,7 +50,7 @@ export default function SplitCompareCard({ abbr, mlbId, side, opposingThrows, vs
             <div className="split-card-subtitle">
               {side} Offense
               {activeSeason && (
-                <span className="sp-fallback-season-badge" style={{ marginLeft: '0.4rem' }}>{activeSeason} Stats</span>
+                <span className="sp-fallback-season-badge" style={{ marginLeft: '0.4rem' }}>{activeSeason}</span>
               )}
             </div>
           </div>

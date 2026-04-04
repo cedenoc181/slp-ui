@@ -906,6 +906,12 @@
   }
 }
 
+@media (max-width: 425px) {
+  .gp-matrix-grid {
+    grid-template-columns: 20px repeat(5, 1fr);
+  }
+}
+
 @media (max-width: 600px) {
   .gp-drawer-logo {
     width: 26px;
