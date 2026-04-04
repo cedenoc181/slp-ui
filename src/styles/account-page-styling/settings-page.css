@@ -129,6 +129,14 @@
   stroke: #C8102E;
 }
 
+/* Wrapper that keeps both content blocks in grid column 2 */
+.settings-content-col {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+  min-width: 0;
+}
+
 /* Settings Content */
 .settings-content {
   display: flex;

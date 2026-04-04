@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../../context/AuthContext';
 import userProfileService from '../../../data/services/userProfileService';
+import { TEAMS } from '../../../data/constants/apiConstants';
 
 function SettingsPage() {
   const {
@@ -19,14 +20,14 @@ function SettingsPage() {
   // -------------------------------------------------------------------------
   // Profile + preferences form state (seeded from user object)
   // -------------------------------------------------------------------------
-  const [profile, setProfile] = useState({ displayName: '', favoriteTeam: '' });
+  const [profile, setProfile] = useState({ displayName: '', favoriteTeamId: '' });
   const [prefs, setPrefs] = useState({ emailUpdates: true, weeklyDigest: false, breakingNews: true });
 
   useEffect(() => {
     if (user) {
       setProfile({
         displayName: user.displayName || '',
-        favoriteTeam: user.favoriteTeam || '',
+        favoriteTeamId: user.favoriteTeamId ?? '',
       });
       setPrefs({
         emailUpdates: user.emailUpdates ?? true,
@@ -69,40 +70,14 @@ function SettingsPage() {
   }, [isAuthenticated]);
 
   // -------------------------------------------------------------------------
-  // MLB teams list
+  // MLB teams list — keyed by internal numeric teamId to match favorite_team_id
   // -------------------------------------------------------------------------
   const mlbTeams = [
     { id: '', name: 'Select a team...' },
-    { id: 'ARI', name: 'Arizona Diamondbacks' },
-    { id: 'ATL', name: 'Atlanta Braves' },
-    { id: 'BAL', name: 'Baltimore Orioles' },
-    { id: 'BOS', name: 'Boston Red Sox' },
-    { id: 'CHC', name: 'Chicago Cubs' },
-    { id: 'CWS', name: 'Chicago White Sox' },
-    { id: 'CIN', name: 'Cincinnati Reds' },
-    { id: 'CLE', name: 'Cleveland Guardians' },
-    { id: 'COL', name: 'Colorado Rockies' },
-    { id: 'DET', name: 'Detroit Tigers' },
-    { id: 'HOU', name: 'Houston Astros' },
-    { id: 'KC', name: 'Kansas City Royals' },
-    { id: 'LAA', name: 'Los Angeles Angels' },
-    { id: 'LAD', name: 'Los Angeles Dodgers' },
-    { id: 'MIA', name: 'Miami Marlins' },
-    { id: 'MIL', name: 'Milwaukee Brewers' },
-    { id: 'MIN', name: 'Minnesota Twins' },
-    { id: 'NYM', name: 'New York Mets' },
-    { id: 'NYY', name: 'New York Yankees' },
-    { id: 'OAK', name: 'Oakland Athletics' },
-    { id: 'PHI', name: 'Philadelphia Phillies' },
-    { id: 'PIT', name: 'Pittsburgh Pirates' },
-    { id: 'SD', name: 'San Diego Padres' },
-    { id: 'SF', name: 'San Francisco Giants' },
-    { id: 'SEA', name: 'Seattle Mariners' },
-    { id: 'STL', name: 'St. Louis Cardinals' },
-    { id: 'TB', name: 'Tampa Bay Rays' },
-    { id: 'TEX', name: 'Texas Rangers' },
-    { id: 'TOR', name: 'Toronto Blue Jays' },
-    { id: 'WSH', name: 'Washington Nationals' },
+    ...[...TEAMS].sort((a, b) => a.name.localeCompare(b.name)).map(t => ({
+      id: t.teamId,
+      name: t.name,
+    })),
   ];
 
   // -------------------------------------------------------------------------
@@ -114,7 +89,7 @@ function SettingsPage() {
     try {
       await updateProfile({
         display_name: profile.displayName.trim() || null,
-        favorite_team: profile.favoriteTeam || null,
+        favorite_team_id: profile.favoriteTeamId !== '' ? Number(profile.favoriteTeamId) : null,
       });
       await updatePreferences({
         email_updates: prefs.emailUpdates,
@@ -245,7 +220,8 @@ function SettingsPage() {
             </button>
           </nav>
 
-          {/* Settings content */}
+          {/* Settings content — both blocks wrapped so grid places them in column 2 */}
+          <div className="settings-content-col">
           <form className="settings-content" onSubmit={handleSaveSettings}>
 
             {/* Profile Section */}
@@ -271,8 +247,8 @@ function SettingsPage() {
                   <label htmlFor="favoriteTeam">Favorite Team</label>
                   <select
                     id="favoriteTeam"
-                    value={profile.favoriteTeam}
-                    onChange={(e) => setProfile(p => ({ ...p, favoriteTeam: e.target.value }))}
+                    value={profile.favoriteTeamId}
+                    onChange={(e) => setProfile(p => ({ ...p, favoriteTeamId: e.target.value }))}
                   >
                     {mlbTeams.map(team => (
                       <option key={team.id} value={team.id}>{team.name}</option>
@@ -474,6 +450,7 @@ function SettingsPage() {
             </section>
 
           </div>
+          </div>{/* end settings-content-col */}
         </div>
 
         <div className="settings-back">

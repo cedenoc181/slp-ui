@@ -901,9 +901,18 @@ function OddsDrawer({ game, onClose, unlocked }) {
   const homeMlbId  = getTeamMlbId(game.home_team_id);
   const awayName   = getTeamById(game.away_team_id)?.name || game.away_team_name;
   const homeName   = getTeamById(game.home_team_id)?.name || game.home_team_name;
-  const pickedName = pick.pick === 'away' ? awayName : homeName;
-  const pickAbbr   = pick.pick === 'away' ? awayAbbr : homeAbbr;
-  const oppAbbr    = pick.pick === 'away' ? homeAbbr : awayAbbr;
+
+  // Use Scout AI moneyline pick; fall back to model pick
+  const drawerScoutMlPick  = (game.scout_ai?.picks ?? []).find(p => p.type === 'Moneyline');
+  const drawerScoutPickSide = drawerScoutMlPick?.pick
+    ? (drawerScoutMlPick.pick.toLowerCase().includes((game.away_team_name ?? '').toLowerCase()) ||
+       (game.away_team_name ?? '').toLowerCase().includes(drawerScoutMlPick.pick.toLowerCase())
+        ? 'away' : 'home')
+    : null;
+  const drawerPickSide = drawerScoutPickSide ?? pick.pick;
+  const pickedName = drawerPickSide === 'away' ? awayName : homeName;
+  const pickAbbr   = drawerPickSide === 'away' ? awayAbbr : homeAbbr;
+  const oppAbbr    = drawerPickSide === 'away' ? homeAbbr : awayAbbr;
 
   const [view, setView] = useState('books'); // 'books' | 'exchange'
 
@@ -1037,13 +1046,21 @@ function GamePickCard({ game, isSelected, onSelect, unlocked, predReadyLabel }) 
   const homeMlbId  = getTeamMlbId(game.home_team_id);
   const awayAbbr   = getTeamById(game.away_team_id)?.id || game.away_team_name;
   const homeAbbr   = getTeamById(game.home_team_id)?.id || game.home_team_name;
-  const awayIsPick = ready && pick.pick === 'away';
-  const homeIsPick = ready && pick.pick === 'home';
+  // Drive is-pick from Scout AI moneyline recommendation; fall back to model pick
+  const scoutMlPick  = (game.scout_ai?.picks ?? []).find(p => p.type === 'Moneyline');
+  const scoutPickSide = scoutMlPick?.pick
+    ? (scoutMlPick.pick.toLowerCase().includes((game.away_team_name ?? '').toLowerCase()) ||
+       (game.away_team_name ?? '').toLowerCase().includes(scoutMlPick.pick.toLowerCase())
+        ? 'away' : 'home')
+    : null;
+  const pickSide   = scoutPickSide ?? pick.pick;
+  const awayIsPick = ready && pickSide === 'away';
+  const homeIsPick = ready && pickSide === 'home';
 
   return (
     <button
       className={`gp-card ${isSelected ? 'selected' : ''} ${!ready ? 'gp-card--muted' : ''}`}
-      data-pick={ready ? pick.pick : null}
+      data-pick={ready ? pickSide : null}
       onClick={onSelect}
       aria-pressed={isSelected}
     >
