@@ -7,6 +7,7 @@
 
 import { useCallback, useEffect, useMemo, useState, useRef } from 'react';
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
+import { useAuth } from '../../../../../context/AuthContext';
 
 // API Services
 import teamsService from '../../../../../data/services/teamsService';
@@ -24,6 +25,7 @@ import {
   PLAYER_ROLES,
   ACTIVE_SEASON,
   getTeamByAbbr,
+  getTeamById,
   getTeamByUrlName,
   getTeamIdFromAbbr,
 } from '../../../../../data/constants/apiConstants';
@@ -50,12 +52,17 @@ export function useTeamAnalytics() {
   const { teamName } = useParams();
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
+  const { user } = useAuth();
 
-  // Initialize selectedTeam from URL param
+  // Initialize selectedTeam: URL param → user's favorite team → LAD
   const getInitialTeam = () => {
     if (teamName) {
       const team = getTeamByUrlName(teamName);
       if (team) return team.id;
+    }
+    if (user?.favoriteTeamId) {
+      const favTeam = getTeamById(user.favoriteTeamId);
+      if (favTeam) return favTeam.id;
     }
     return 'LAD';
   };
@@ -278,12 +285,16 @@ export function useTeamAnalytics() {
           setSelectedTeam(team.id);
         }
       } else {
-        navigate('/team-analytics/los-angeles-dodgers', { replace: true });
+        // Invalid URL team — fall back to favorite or LAD
+        const fallback = (user?.favoriteTeamId && getTeamById(user.favoriteTeamId)) || getTeamByAbbr('LAD');
+        navigate(`/team-analytics/${fallback.urlName}`, { replace: true });
       }
     } else {
-      navigate('/team-analytics/los-angeles-dodgers', { replace: true });
+      // No team in URL — navigate to favorite team or LAD
+      const fallback = (user?.favoriteTeamId && getTeamById(user.favoriteTeamId)) || getTeamByAbbr('LAD');
+      navigate(`/team-analytics/${fallback.urlName}`, { replace: true });
     }
-  }, [teamName, navigate, selectedTeam, transitionLoading]);
+  }, [teamName, navigate, selectedTeam, transitionLoading, user?.favoriteTeamId]);
 
   // Sync selectedSeason when URL query param changes (e.g., from browser back/forward)
   // Skip if we're in the middle of a transition (setSelectedSeason already handled it)
