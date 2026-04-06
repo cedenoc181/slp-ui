@@ -232,7 +232,7 @@ function App() {
           {/* Stats routes */}
           <Route path="/mlb-schedule" element={<MLBSchedule />} />
           <Route path="/mlb-schedule/:gameId" element={<MatchupDetail />} />
-          <Route path="/mlb-schedule/:gameId/analysis" element={<MatchupDetailAnalysis />} />
+          <Route path="/mlb-schedule/:gameId/analysis" element={<ProtectedRoute><MatchupDetailAnalysis /></ProtectedRoute>} />
           <Route path="/mlb-standings" element={<MLBStandings />} />
           <Route path="/team-analytics" element={<TeamAnalytics />} />
           <Route path="/team-analytics/:teamName" element={<TeamAnalytics />} />

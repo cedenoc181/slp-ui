@@ -10,6 +10,7 @@ import playerStatsService from '../../../../../../data/services/playerStatsServi
 import injuryService from '../../../../../../data/services/injuryService';
 import rosterService from '../../../../../../data/services/rosterService';
 import { MIN_LOADING_DURATION } from '../utils/playerProfileUtils';
+import { useAuth } from '../../../../../../context/AuthContext';
 
 // ============================================================================
 // HELPER: Sort career stats by season (ascending order)
@@ -31,6 +32,8 @@ const limitCareerStats = (stats) => {
  * @returns {object} - Player data and loading states
  */
 export const usePlayerProfile = (mlbIdFromSlug, selectedSeason, isPitcher, isTwoWay, selectedSeasonType = 'R') => {
+  const { isAuthenticated } = useAuth();
+
   // ============================================================================
   // REFS FOR FETCH CONTROL
   // ============================================================================
@@ -260,8 +263,8 @@ export const usePlayerProfile = (mlbIdFromSlug, selectedSeason, isPitcher, isTwo
           const [current, career, vsHand, homeRoad, monthly] = await Promise.all([
             playerStatsService.getPitcherCurrentStats(internalPlayerId, selectedSeason, selectedSeasonType).catch(() => null),
             playerStatsService.getPitcherCareerStats(internalPlayerId).catch(() => []),
-            playerStatsService.getPitcherVsHandSplits(internalPlayerId, selectedSeason, selectedSeasonType).catch(() => []),
-            playerStatsService.getPitcherHomeRoadSplits(internalPlayerId, selectedSeason, selectedSeasonType).catch(() => []),
+            isAuthenticated ? playerStatsService.getPitcherVsHandSplits(internalPlayerId, selectedSeason, selectedSeasonType).catch(() => []) : Promise.resolve([]),
+            isAuthenticated ? playerStatsService.getPitcherHomeRoadSplits(internalPlayerId, selectedSeason, selectedSeasonType).catch(() => []) : Promise.resolve([]),
             playerStatsService.getPitcherMonthlyPerformance(internalPlayerId, selectedSeason).catch(() => null),
           ]);
 
@@ -277,13 +280,13 @@ export const usePlayerProfile = (mlbIdFromSlug, selectedSeason, isPitcher, isTwo
           const results = await Promise.all([
             playerStatsService.getBatterCurrentStats(internalPlayerId, selectedSeason, selectedSeasonType).catch(() => null),
             playerStatsService.getBatterCareerStats(internalPlayerId).catch(() => []),
-            playerStatsService.getBatterVsHandSplits(internalPlayerId, selectedSeason, selectedSeasonType).catch(() => []),
-            playerStatsService.getBatterHomeRoadSplits(internalPlayerId, selectedSeason, selectedSeasonType).catch(() => []),
+            isAuthenticated ? playerStatsService.getBatterVsHandSplits(internalPlayerId, selectedSeason, selectedSeasonType).catch(() => []) : Promise.resolve([]),
+            isAuthenticated ? playerStatsService.getBatterHomeRoadSplits(internalPlayerId, selectedSeason, selectedSeasonType).catch(() => []) : Promise.resolve([]),
             playerStatsService.getBatterMonthlyPerformance(internalPlayerId, selectedSeason).catch(() => null),
             playerStatsService.getPitcherCurrentStats(internalPlayerId, selectedSeason, selectedSeasonType).catch(() => null),
             playerStatsService.getPitcherCareerStats(internalPlayerId).catch(() => []),
-            playerStatsService.getPitcherVsHandSplits(internalPlayerId, selectedSeason, selectedSeasonType).catch(() => []),
-            playerStatsService.getPitcherHomeRoadSplits(internalPlayerId, selectedSeason, selectedSeasonType).catch(() => []),
+            isAuthenticated ? playerStatsService.getPitcherVsHandSplits(internalPlayerId, selectedSeason, selectedSeasonType).catch(() => []) : Promise.resolve([]),
+            isAuthenticated ? playerStatsService.getPitcherHomeRoadSplits(internalPlayerId, selectedSeason, selectedSeasonType).catch(() => []) : Promise.resolve([]),
             playerStatsService.getPitcherMonthlyPerformance(internalPlayerId, selectedSeason).catch(() => null),
           ]);
 
@@ -304,8 +307,8 @@ export const usePlayerProfile = (mlbIdFromSlug, selectedSeason, isPitcher, isTwo
           const [current, career, vsHand, homeRoad, monthly] = await Promise.all([
             playerStatsService.getBatterCurrentStats(internalPlayerId, selectedSeason, selectedSeasonType).catch(() => null),
             playerStatsService.getBatterCareerStats(internalPlayerId).catch(() => []),
-            playerStatsService.getBatterVsHandSplits(internalPlayerId, selectedSeason, selectedSeasonType).catch(() => []),
-            playerStatsService.getBatterHomeRoadSplits(internalPlayerId, selectedSeason, selectedSeasonType).catch(() => []),
+            isAuthenticated ? playerStatsService.getBatterVsHandSplits(internalPlayerId, selectedSeason, selectedSeasonType).catch(() => []) : Promise.resolve([]),
+            isAuthenticated ? playerStatsService.getBatterHomeRoadSplits(internalPlayerId, selectedSeason, selectedSeasonType).catch(() => []) : Promise.resolve([]),
             playerStatsService.getBatterMonthlyPerformance(internalPlayerId, selectedSeason).catch(() => null),
           ]);
           
@@ -416,13 +419,13 @@ export const usePlayerProfile = (mlbIdFromSlug, selectedSeason, isPitcher, isTwo
       let vsHandCareer, homeRoadCareer;
       if (isPlayerPitcher && !isPlayerTwoWay) {
         [vsHandCareer, homeRoadCareer] = await Promise.all([
-          fetchWithTimeout(playerStatsService.getPitcherVsHandSplitsCareerTotals(playerInfo.id)).catch(() => null),
-          fetchWithTimeout(playerStatsService.getPitcherHomeRoadSplitsCareerTotals(playerInfo.id)).catch(() => null),
+          isAuthenticated ? fetchWithTimeout(playerStatsService.getPitcherVsHandSplitsCareerTotals(playerInfo.id)).catch(() => null) : Promise.resolve(null),
+          isAuthenticated ? fetchWithTimeout(playerStatsService.getPitcherHomeRoadSplitsCareerTotals(playerInfo.id)).catch(() => null) : Promise.resolve(null),
         ]);
       } else {
         [vsHandCareer, homeRoadCareer] = await Promise.all([
-          fetchWithTimeout(playerStatsService.getBatterVsHandSplitsCareerTotals(playerInfo.id)).catch(() => null),
-          fetchWithTimeout(playerStatsService.getBatterHomeRoadSplitsCareerTotals(playerInfo.id)).catch(() => null),
+          isAuthenticated ? fetchWithTimeout(playerStatsService.getBatterVsHandSplitsCareerTotals(playerInfo.id)).catch(() => null) : Promise.resolve(null),
+          isAuthenticated ? fetchWithTimeout(playerStatsService.getBatterHomeRoadSplitsCareerTotals(playerInfo.id)).catch(() => null) : Promise.resolve(null),
         ]);
       }
       
@@ -435,8 +438,8 @@ export const usePlayerProfile = (mlbIdFromSlug, selectedSeason, isPitcher, isTwo
       // For TWP, fetch pitching career splits
       if (isPlayerTwoWay) {
         const [pitchingVsHandCareer, pitchingHomeRoadCareer] = await Promise.all([
-          fetchWithTimeout(playerStatsService.getPitcherVsHandSplitsCareerTotals(playerInfo.id)).catch(() => null),
-          fetchWithTimeout(playerStatsService.getPitcherHomeRoadSplitsCareerTotals(playerInfo.id)).catch(() => null),
+          isAuthenticated ? fetchWithTimeout(playerStatsService.getPitcherVsHandSplitsCareerTotals(playerInfo.id)).catch(() => null) : Promise.resolve(null),
+          isAuthenticated ? fetchWithTimeout(playerStatsService.getPitcherHomeRoadSplitsCareerTotals(playerInfo.id)).catch(() => null) : Promise.resolve(null),
         ]);
         
         if (!isStillCurrentPlayer()) return;
@@ -456,7 +459,7 @@ export const usePlayerProfile = (mlbIdFromSlug, selectedSeason, isPitcher, isTwo
     } finally {
       isFetchingCareerRef.current = false;
     }
-  }, [playerInfo]);
+  }, [playerInfo, isAuthenticated]);
 
   // ============================================================================
   // RETURN

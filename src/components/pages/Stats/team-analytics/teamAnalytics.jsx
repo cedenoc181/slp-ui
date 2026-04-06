@@ -6,6 +6,8 @@
 // ============================================================================
 
 import React from 'react';
+import { Link } from 'react-router-dom';
+import { useAuth } from '../../../../context/AuthContext';
 
 // Hook
 import { useTeamAnalytics } from './hooks';
@@ -32,6 +34,26 @@ import {
 // ============================================================================
 // Component
 // ============================================================================
+
+function AuthGate({ children }) {
+  const { isAuthenticated } = useAuth();
+  if (isAuthenticated) return children;
+  return (
+    <div className="auth-gate">
+      <div className="auth-gate__blur">{children}</div>
+      <div className="auth-gate__overlay">
+        <div className="auth-gate__overlay-inner">
+          <svg className="auth-gate__lock" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+            <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+          </svg>
+          <span className="auth-gate__text">Sign in to view</span>
+          <Link className="auth-gate__link" to="/account">Create a free account</Link>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 function TeamAnalytics() {
   const {
@@ -180,13 +202,15 @@ function TeamAnalytics() {
         />
 
         {/* Monthly Performance Trends Chart */}
-        <MonthlyPerformanceChart
-          teamMonthlyData={teamMonthlyData}
-          timeframe={timeframe}
-          chartFilter={chartFilter}
-          chartSectionRef={chartSectionRef}
-          selectedSeason={selectedSeason}
-        />
+        <AuthGate>
+          <MonthlyPerformanceChart
+            teamMonthlyData={teamMonthlyData}
+            timeframe={timeframe}
+            chartFilter={chartFilter}
+            chartSectionRef={chartSectionRef}
+            selectedSeason={selectedSeason}
+          />
+        </AuthGate>
 
         {/* Floating Chart Filter Remote */}
         <FloatingChartFilters
@@ -197,17 +221,19 @@ function TeamAnalytics() {
         />
 
         {/* Split Stats and Last 10 Games */}
-        <PerformanceSplitsSection
-          recordSplits={recordSplits}
-          chartFilter={chartFilter}
-          currentTeam={currentTeam}
-          teamSeasonData={teamSeasonData}
-          last10Games={last10Games}
-          last10Record={last10Record}
-          homeGames={homeGames}
-          awayGames={awayGames}
-          selectedSeason={selectedSeason}
-        />
+        <AuthGate>
+          <PerformanceSplitsSection
+            recordSplits={recordSplits}
+            chartFilter={chartFilter}
+            currentTeam={currentTeam}
+            teamSeasonData={teamSeasonData}
+            last10Games={last10Games}
+            last10Record={last10Record}
+            homeGames={homeGames}
+            awayGames={awayGames}
+            selectedSeason={selectedSeason}
+          />
+        </AuthGate>
 
         {/* Team Info Grid: Standings, Leaders, Stats */}
         <TeamInfoGrid

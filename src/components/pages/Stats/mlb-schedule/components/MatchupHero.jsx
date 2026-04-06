@@ -114,7 +114,7 @@ export default function MatchupHero({
           )}
           <div className="hero-team-info">
             <span className="hero-team-name">{game.away_team_name}</span>
-            {awaySeasonRecord && <span className="hero-record">{awaySeasonRecord}</span>}
+            {awaySeasonRecord && <span className="hero-team-record">{awaySeasonRecord}</span>}
             {isFinal && (
               <span className={`hero-score${awayWon ? ' score-win' : ' score-loss'}`}>
                 {game.away_runs_score}
@@ -137,7 +137,7 @@ export default function MatchupHero({
         <div className="hero-team home-team">
           <div className="hero-team-info home-info">
             <span className="hero-team-name">{game.home_team_name}</span>
-            {homeSeasonRecord && <span className="hero-record">{homeSeasonRecord}</span>}
+            {homeSeasonRecord && <span className="hero-team-record">{homeSeasonRecord}</span>}
             {isFinal && (
               <span className={`hero-score${homeWon ? ' score-win' : ' score-loss'}`}>
                 {game.home_runs_score}

@@ -1,6 +1,7 @@
 import { useState, useRef, useCallback } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { DEFAULT_SEASON } from '../../../../data/constants/apiConstants';
+import { useAuth } from '../../../../context/AuthContext';
 import { useMatchupData, useEarliestGameLabel, useScoutAiGate } from './hooks';
 import '../../../../styles/stats-page-styling/matchup-analysis.css';
 import '../../../../styles/stats-page-styling/scout-ai.css';
@@ -19,6 +20,9 @@ import {
 import { getScoutAnalysis } from '../../../../data/services/scoutAiService';
 
 export default function MatchupDetail() {
+  const { isAuthenticated } = useAuth();
+  const navigate = useNavigate();
+  const location = useLocation();
   const { label: scoutUnlockLabel, isUnlocked: scoutUnlocked } = useEarliestGameLabel();
   const [scoutAnalysis, setScoutAnalysis]   = useState(null);
   const [scoutLoading, setScoutLoading]     = useState(false);
@@ -251,17 +255,31 @@ export default function MatchupDetail() {
             />
           </div>
           <div className="matchup-detail-top-nav__right">
-            <Link
-              to={`/mlb-schedule/${currentGamePk}/analysis`}
-              state={{ game, prediction }}
-              className="deep-dive-btn"
-            >
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
-                <line x1="11" y1="8" x2="11" y2="14"/><line x1="8" y1="11" x2="14" y2="11"/>
-              </svg>
-              <span className="nav-full">Advanced Analysis</span><span className="nav-short">Analysis</span>
-            </Link>
+            {isAuthenticated ? (
+              <Link
+                to={`/mlb-schedule/${currentGamePk}/analysis`}
+                state={{ game, prediction }}
+                className="deep-dive-btn"
+              >
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+                  <line x1="11" y1="8" x2="11" y2="14"/><line x1="8" y1="11" x2="14" y2="11"/>
+                </svg>
+                <span className="nav-full">Advanced Analysis</span><span className="nav-short">Analysis</span>
+              </Link>
+            ) : (
+              <button
+                className="deep-dive-btn deep-dive-btn--locked"
+                onClick={() => navigate('/account', { state: { from: location } })}
+                data-tooltip="Sign in for access"
+              >
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                  <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                </svg>
+                <span className="nav-full">Advanced Analysis</span><span className="nav-short">Analysis</span>
+              </button>
+            )}
           </div>
         </div>
 

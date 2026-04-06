@@ -10,6 +10,7 @@ import teamLeadersService from '../../../../../../data/services/teamLeadersServi
 import leagueLeadersService from '../../../../../../data/services/leagueLeadersService';
 import { formatEra, formatWhip, formatOppAvg, formatIP } from '../../shared/utils';
 import { DEFAULT_SEASON } from '../../../../../../data/constants/apiConstants';
+import { useAuth } from '../../../../../../context/AuthContext';
 
 // ============================================================================
 // Constants
@@ -40,6 +41,7 @@ export const SPLITS_CATEGORIES = [
 // ============================================================================
 
 export function usePitcherStats({ teamId = 'ALL', teamDbId = null, season = DEFAULT_SEASON }) {
+  const { isAuthenticated } = useAuth();
   const isTeamSelected = teamId !== 'ALL';
 
   // ========== STATE FOR ALL DATA ==========
@@ -82,12 +84,16 @@ export function usePitcherStats({ teamId = 'ALL', teamDbId = null, season = DEFA
         isTeamSelected && teamDbId
           ? teamLeadersService.getTeamPitchingLeaders(teamDbId, season, 'R')
           : leagueLeadersService.getLeaguePitchingLeaders(season, 'R'),
-        isTeamSelected && teamDbId
-          ? teamLeadersService.getHotTeamPitchingLeaders(teamDbId, season, 'R')
-          : leagueLeadersService.getHotPitchingLeaders(season, 'R'),
-        isTeamSelected && teamDbId
-          ? teamLeadersService.getTeamSplits(teamDbId, season, 'R', 'pitcher')
-          : leagueLeadersService.getLeagueSplits(season, 'R', 'pitcher'),
+        isAuthenticated
+          ? (isTeamSelected && teamDbId
+              ? teamLeadersService.getHotTeamPitchingLeaders(teamDbId, season, 'R')
+              : leagueLeadersService.getHotPitchingLeaders(season, 'R'))
+          : Promise.resolve(null),
+        isAuthenticated
+          ? (isTeamSelected && teamDbId
+              ? teamLeadersService.getTeamSplits(teamDbId, season, 'R', 'pitcher')
+              : leagueLeadersService.getLeagueSplits(season, 'R', 'pitcher'))
+          : Promise.resolve(null),
       ]);
 
       if (signal.aborted) return;
@@ -122,7 +128,7 @@ export function usePitcherStats({ teamId = 'ALL', teamDbId = null, season = DEFA
     });
 
     return () => controller.abort();
-  }, [season, isTeamSelected, teamDbId]);
+  }, [season, isTeamSelected, teamDbId, isAuthenticated]);
 
   // ========== COMPUTED DATA ==========
 

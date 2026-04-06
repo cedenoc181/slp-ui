@@ -12,13 +12,10 @@
 // ============================================================================
 
 import React, { useState, useMemo, useEffect, useCallback, useRef } from 'react';
-import { useParams, useSearchParams, useNavigate } from 'react-router-dom';
+import { useParams, useSearchParams, useNavigate, Link } from 'react-router-dom';
+import { useAuth } from '../../../../context/AuthContext';
 import { SEASONS, DEFAULT_SEASON } from '../../../../data/constants/apiConstants';
 import '../../../../styles/stats-page-styling/player-profile.css';
-
-// ============================================================================
-// SUB-COMPONENTS
-// ============================================================================
 import {
   PlayerProfileHeader,
   RecentFormSection,
@@ -27,15 +24,7 @@ import {
   PlayerHistorySection,
   GameLogSection,
 } from './components';
-
-// ============================================================================
-// CUSTOM HOOKS
-// ============================================================================
 import { usePlayerProfile, useGameLogs } from './components/hooks';
-
-// ============================================================================
-// UTILITIES
-// ============================================================================
 import {
   extractMlbIdFromSlug,
   isNameOnlySlug,
@@ -58,12 +47,28 @@ import {
   transformYearlyChartData,
   calculateRecentFormStats,
 } from './components/utils';
-
-// ============================================================================
-// SERVICES
-// ============================================================================
 import playerStatsService from '../../../../data/services/playerStatsServices';
 import scheduleService from '../../../../data/services/scheduleService';
+
+function AuthGate({ children }) {
+  const { isAuthenticated } = useAuth();
+  if (isAuthenticated) return children;
+  return (
+    <div className="auth-gate">
+      <div className="auth-gate__blur">{children}</div>
+      <div className="auth-gate__overlay">
+        <div className="auth-gate__overlay-inner">
+          <svg className="auth-gate__lock" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+            <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+          </svg>
+          <span className="auth-gate__text">Sign in to view</span>
+          <Link className="auth-gate__link" to="/account">Create a free account</Link>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 // ============================================================================
 // CONSTANTS
@@ -585,15 +590,17 @@ function PlayerProfileStats() {
 
       <main className="pps-content">
         <div className="pps-container">
-          <RecentFormSection
-            selectedSeason={selectedSeason}
-            recentFormSeasonType={recentFormSeasonType}
-            setRecentFormSeasonType={setRecentFormSeasonType}
-            availableSeasonTypes={availableRecentFormSeasonTypes}
-            recentFormStats={recentFormStats}
-            recentFormLoading={recentFormLoading}
-            showPitchingStats={showPitchingStats}
-          />
+          <AuthGate>
+            <RecentFormSection
+              selectedSeason={selectedSeason}
+              recentFormSeasonType={recentFormSeasonType}
+              setRecentFormSeasonType={setRecentFormSeasonType}
+              availableSeasonTypes={availableRecentFormSeasonTypes}
+              recentFormStats={recentFormStats}
+              recentFormLoading={recentFormLoading}
+              showPitchingStats={showPitchingStats}
+            />
+          </AuthGate>
 
           <SeasonStatsSection
             selectedSeason={selectedSeason}
@@ -619,19 +626,21 @@ function PlayerProfileStats() {
             formatChartValue={formatChartValueFn}
           />
 
-          <SplitsSection
-            selectedSeason={selectedSeason}
-            activeStatsTab={activeStatsTab}
-            activeSplitsTab={activeSplitsTab}
-            setActiveSplitsTab={setActiveSplitsTab}
-            statsLoading={statsLoading}
-            careerSplitsLoading={careerSplitsLoading}
-            showPitchingStats={showPitchingStats}
-            activeVsHandSplits={activeVsHandSplits}
-            activeVsHandSplitsCareer={activeVsHandSplitsCareer}
-            activeHomeRoadSplits={activeHomeRoadSplits}
-            activeHomeRoadSplitsCareer={activeHomeRoadSplitsCareer}
-          />
+          <AuthGate>
+            <SplitsSection
+              selectedSeason={selectedSeason}
+              activeStatsTab={activeStatsTab}
+              activeSplitsTab={activeSplitsTab}
+              setActiveSplitsTab={setActiveSplitsTab}
+              statsLoading={statsLoading}
+              careerSplitsLoading={careerSplitsLoading}
+              showPitchingStats={showPitchingStats}
+              activeVsHandSplits={activeVsHandSplits}
+              activeVsHandSplitsCareer={activeVsHandSplitsCareer}
+              activeHomeRoadSplits={activeHomeRoadSplits}
+              activeHomeRoadSplitsCareer={activeHomeRoadSplitsCareer}
+            />
+          </AuthGate>
 
           <PlayerHistorySection
             teamHistory={teamHistory}

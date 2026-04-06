@@ -2,7 +2,7 @@ import { useCallback } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../../../../context/AuthContext';
 
-const FREE_USES_PER_DAY = 3;
+const FREE_USES_PER_DAY = 1;
 const STORAGE_KEY = 'scout_ai_usage';
 
 function getTodayET() {

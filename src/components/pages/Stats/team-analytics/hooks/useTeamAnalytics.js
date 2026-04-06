@@ -52,7 +52,7 @@ export function useTeamAnalytics() {
   const { teamName } = useParams();
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
-  const { user } = useAuth();
+  const { user, isAuthenticated } = useAuth();
 
   // Initialize selectedTeam: URL param → user's favorite team → LAD
   const getInitialTeam = () => {
@@ -141,7 +141,7 @@ export function useTeamAnalytics() {
   const isInitialLoadRef = useRef(true);
 
   // ========== Fetch All Team Data ==========
-  const fetchTeamData = useCallback(async (teamId, season, isTeamSwitch = false, signal = null) => {
+  const fetchTeamData = useCallback(async (teamId, season, isTeamSwitch = false, signal = null, authed = false) => {
     if (!isTeamSwitch) setLoading(true);
     setError(null);
 
@@ -153,7 +153,7 @@ export function useTeamAnalytics() {
       // ── Tier 1: 5 requests — render the page skeleton immediately ──────────
       const [seasonData, monthlyData, battingStatsData, pitchingStatsData, rosterData] = await Promise.all([
         teamsService.getTeamSeason(teamId, season).catch(() => null),
-        teamsService.getTeamMonthly(teamId, season).catch(() => null),
+        authed ? teamsService.getTeamMonthly(teamId, season).catch(() => null) : Promise.resolve(null),
         teamStatsService.getTeamBattingStats(teamId, season, sst).catch(() => null),
         teamStatsService.getTeamPitchingStats(teamId, season, sst).catch(() => null),
         rosterService.getTeamRoster(teamId, season).catch(() => null),
@@ -183,9 +183,9 @@ export function useTeamAnalytics() {
         season === currentYear
           ? teamLeadersService.getTeamPitchingLeaders(teamId, season, 'S').catch(() => null)
           : Promise.resolve(null),
-        gamesService.getTeamLast10(teamId, season, sst).catch(() => null),
-        gamesService.getTeamHomeGames(teamId, season, sst).catch(() => null),
-        gamesService.getTeamAwayGames(teamId, season, sst).catch(() => null),
+        authed ? gamesService.getTeamLast10(teamId, season, sst).catch(() => null) : Promise.resolve(null),
+        authed ? gamesService.getTeamHomeGames(teamId, season, sst).catch(() => null) : Promise.resolve(null),
+        authed ? gamesService.getTeamAwayGames(teamId, season, sst).catch(() => null) : Promise.resolve(null),
         teamLeadersService.getTeamSplits(teamId, season, sst, PLAYER_ROLES.BATTER).catch(() => null),
       ]);
 
@@ -328,7 +328,7 @@ export function useTeamAnalytics() {
 
     // After initial load, subsequent fetches are team switches
     const isTeamSwitch = !isInitialLoadRef.current;
-    fetchTeamData(teamId, selectedSeason, isTeamSwitch, controller.signal);
+    fetchTeamData(teamId, selectedSeason, isTeamSwitch, controller.signal, isAuthenticated);
     fetchTeamGames(teamId, selectedSeason, gameLogSeasonType);
     checkAvailableSeasonTypes(teamId, selectedSeason);
 
@@ -464,8 +464,8 @@ export function useTeamAnalytics() {
   }, [navigate, selectedSeason]);
 
   const retryFetch = useCallback(() => {
-    fetchTeamData(getTeamIdFromAbbr(selectedTeam), selectedSeason);
-  }, [fetchTeamData, selectedTeam, selectedSeason]);
+    fetchTeamData(getTeamIdFromAbbr(selectedTeam), selectedSeason, false, null, isAuthenticated);
+  }, [fetchTeamData, selectedTeam, selectedSeason, isAuthenticated]);
 
   // ========== Season Change Handler (updates state + URL) ==========
   const setSelectedSeason = useCallback((newSeason) => {

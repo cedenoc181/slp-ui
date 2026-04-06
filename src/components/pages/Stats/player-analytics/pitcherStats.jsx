@@ -8,19 +8,37 @@
 // ============================================================================
 
 import React, { useState, useMemo } from 'react';
+import { Link } from 'react-router-dom';
+import { useAuth } from '../../../../context/AuthContext';
 import { DEFAULT_SEASON } from '../../../../data/constants/apiConstants';
 import '../../../../styles/stats-page-styling/pitcher-stats.css';
-
-// Custom hook for data fetching
 import { usePitcherStats } from './pitcher-stats/hooks';
-
-// Sub-components
 import {
   PitcherLeaderCards,
   HotPitchersList,
   PitcherSplitsSection,
   TopPitchersList,
 } from './pitcher-stats/components';
+
+function AuthGate({ children }) {
+  const { isAuthenticated } = useAuth();
+  if (isAuthenticated) return children;
+  return (
+    <div className="auth-gate">
+      <div className="auth-gate__blur">{children}</div>
+      <div className="auth-gate__overlay">
+        <div className="auth-gate__overlay-inner">
+          <svg className="auth-gate__lock" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+            <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+          </svg>
+          <span className="auth-gate__text">Sign in to view</span>
+          <Link className="auth-gate__link" to="/account">Create a free account</Link>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 // ============================================================================
 // Component
@@ -74,26 +92,30 @@ function PitcherStats({ teamId = 'ALL', teamDbId = null, season = DEFAULT_SEASON
       />
 
       {/* Hot Arms Card */}
-      <HotPitchersList
-        hotArmsTitle={hotArmsTitle}
-        hotMetric={hotMetric}
-        setHotMetric={setHotMetric}
-        hotPitchersLoading={hotPitchersLoading}
-        filteredHotPitchers={filteredHotPitchers}
-        isTeamSelected={isTeamSelected}
-        season={season}
-      />
+      <AuthGate>
+        <HotPitchersList
+          hotArmsTitle={hotArmsTitle}
+          hotMetric={hotMetric}
+          setHotMetric={setHotMetric}
+          hotPitchersLoading={hotPitchersLoading}
+          filteredHotPitchers={filteredHotPitchers}
+          isTeamSelected={isTeamSelected}
+          season={season}
+        />
+      </AuthGate>
 
       {/* Splits Layout */}
       <div className="pitcher-splits-layout">
         {/* Performance Splits Card */}
-        <PitcherSplitsSection
-          isTeamSelected={isTeamSelected}
-          teamName={teamName}
-          splitsLoading={splitsLoading}
-          splitsDisplayData={splitsDisplayData}
-          season={season}
-        />
+        <AuthGate>
+          <PitcherSplitsSection
+            isTeamSelected={isTeamSelected}
+            teamName={teamName}
+            splitsLoading={splitsLoading}
+            splitsDisplayData={splitsDisplayData}
+            season={season}
+          />
+        </AuthGate>
 
         {/* Top Pitchers Card */}
         <TopPitchersList

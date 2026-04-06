@@ -8,6 +8,7 @@
 import { useState, useEffect, useRef } from 'react';
 import gamesService from '../../../../../../data/services/gamesService';
 import { MIN_LOADING_DURATION, getPlayerPosition } from '../utils/playerProfileUtils';
+import { useAuth } from '../../../../../../context/AuthContext';
 
 /**
  * Check if position indicates a pitcher
@@ -59,6 +60,8 @@ function getDefaultRecentFormSeasonType(season) {
  * @returns {object} - Game log data and controls
  */
 export const useGameLogs = ({ playerInfo, selectedSeason, twoWayViewMode }) => {
+  const { isAuthenticated } = useAuth();
+
   // ============================================================================
   // REFS FOR FETCH CONTROL
   // ============================================================================
@@ -222,15 +225,22 @@ export const useGameLogs = ({ playerInfo, selectedSeason, twoWayViewMode }) => {
     const fetchRecentFormGameLogs = async () => {
       const startTime = Date.now();
       setRecentFormLoading(true);
-      
+
+      if (!isAuthenticated) {
+        setRecentFormGameLog([]);
+        setPitchingRecentFormGameLog([]);
+        setRecentFormLoading(false);
+        return;
+      }
+
       try {
         const pos = getPlayerPosition(playerInfo);
         const isPitcherPos = isPitcherPosition(pos);
         const isTruelyTwoWay = isTwoWayPosition(pos);
-        
+
         let battingGames = [];
         let pitchingGames = [];
-        
+
         if (isTruelyTwoWay) {
           // For TWP, fetch BOTH batting and pitching
           const [battingResponse, pitchingResponse] = await Promise.all([
@@ -239,9 +249,9 @@ export const useGameLogs = ({ playerInfo, selectedSeason, twoWayViewMode }) => {
             gamesService.getPitcherGameLogs(internalPlayerId, selectedSeason, recentFormSeasonType)
               .catch(() => ({ games: [] })),
           ]);
-          
+
           if (!isStillValid()) return;
-          
+
           battingGames = battingResponse?.games || (Array.isArray(battingResponse) ? battingResponse : []);
           pitchingGames = pitchingResponse?.games || (Array.isArray(pitchingResponse) ? pitchingResponse : []);
         } else if (isPitcherPos) {
@@ -250,9 +260,9 @@ export const useGameLogs = ({ playerInfo, selectedSeason, twoWayViewMode }) => {
             selectedSeason,
             recentFormSeasonType
           );
-          
+
           if (!isStillValid()) return;
-          
+
           const games = response?.games || response || [];
           battingGames = Array.isArray(games) ? games : [];
         } else {
@@ -261,9 +271,9 @@ export const useGameLogs = ({ playerInfo, selectedSeason, twoWayViewMode }) => {
             selectedSeason,
             recentFormSeasonType
           );
-          
+
           if (!isStillValid()) return;
-          
+
           const games = response?.games || (Array.isArray(response) ? response : []);
           battingGames = Array.isArray(games) ? games : [];
         }
@@ -292,9 +302,9 @@ export const useGameLogs = ({ playerInfo, selectedSeason, twoWayViewMode }) => {
     };
     
     fetchRecentFormGameLogs();
-    
+
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [playerInfo?.id, selectedSeason, recentFormSeasonType]);
+  }, [playerInfo?.id, selectedSeason, recentFormSeasonType, isAuthenticated]);
 
   // ============================================================================
   // CHECK AVAILABLE SEASON TYPES FOR RECENT FORM

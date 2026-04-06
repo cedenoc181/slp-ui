@@ -4,6 +4,64 @@
   box-sizing: border-box;
 }
 
+/* ============================================================
+   Auth Gate — shared blur/lock overlay for gated sections
+   ============================================================ */
+.auth-gate {
+  position: relative;
+}
+
+.auth-gate__blur {
+  filter: blur(6px);
+  pointer-events: none;
+  user-select: none;
+}
+
+.auth-gate__overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+}
+
+.auth-gate__overlay-inner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.6rem;
+  background: rgba(18, 18, 18, 0.72);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 1.25rem 2rem;
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+}
+
+.auth-gate__lock {
+  color: rgba(255, 255, 255, 0.45);
+}
+
+.auth-gate__text {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.85);
+  letter-spacing: 0.01em;
+}
+
+.auth-gate__link {
+  font-size: 0.82rem;
+  color: #4a9eff;
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.auth-gate__link:hover {
+  text-decoration: underline;
+}
+
 body {
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }

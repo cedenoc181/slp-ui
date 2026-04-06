@@ -155,14 +155,15 @@ export function findTeamRecord(standings, teamId, isSpring) {
     const src = standings.divisions ?? standings.leagues ?? standings;
     const srcArr = Array.isArray(src) ? src : Object.values(src);
     for (const item of srcArr) {
-      if (item?.teams) teams.push(...item.teams);
+      if (Array.isArray(item)) teams.push(...item);
+      else if (item?.teams) teams.push(...item.teams);
       else if (item?.team_id != null || item?.id != null) teams.push(item);
     }
     const team = teams.find(t => (t.team_id ?? t.id) === teamId);
     if (!team) return null;
     const w = team.wins ?? team.w ?? null;
     const l = team.losses ?? team.l ?? null;
-    if (w != null && l != null) return `${w}-${l}`;
+    if (w != null && l != null) return `${w} - ${l}`;
     return team.record ?? null;
   }
 }

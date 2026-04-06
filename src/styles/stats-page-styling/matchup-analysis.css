@@ -1016,6 +1016,37 @@ a > .hero-team-logo:hover {
   width: 16px;
   height: 16px;
 }
+.deep-dive-btn--locked {
+  background: rgba(255,255,255,0.07);
+  border: 1px solid rgba(255,255,255,0.12);
+  box-shadow: none;
+  cursor: pointer;
+  position: relative;
+}
+.deep-dive-btn--locked:hover {
+  opacity: 1;
+  transform: none;
+  background: rgba(255,255,255,0.11);
+}
+.deep-dive-btn--locked::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  bottom: calc(100% + 6px);
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(20,20,20,0.95);
+  color: rgba(255,255,255,0.85);
+  font-size: 0.72rem;
+  white-space: nowrap;
+  padding: 0.3rem 0.65rem;
+  border-radius: 6px;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.15s;
+}
+.deep-dive-btn--locked:hover::after {
+  opacity: 1;
+}
 
 /* ── H2H Pitcher Cards ────────────────────────────────────── */
 .h2h-card {

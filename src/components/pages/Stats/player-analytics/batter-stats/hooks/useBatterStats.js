@@ -10,6 +10,7 @@ import teamLeadersService from '../../../../../../data/services/teamLeadersServi
 import leagueLeadersService from '../../../../../../data/services/leagueLeadersService';
 import { formatAvg, formatOps } from '../../shared/utils';
 import { DEFAULT_SEASON } from '../../../../../../data/constants/apiConstants';
+import { useAuth } from '../../../../../../context/AuthContext';
 
 // ============================================================================
 // Constants
@@ -40,6 +41,7 @@ export const SPLITS_CATEGORIES = [
 // ============================================================================
 
 export function useBatterStats({ teamId = 'ALL', teamDbId = null, season = DEFAULT_SEASON }) {
+  const { isAuthenticated } = useAuth();
   const isTeamSelected = teamId !== 'ALL';
 
   // ========== STATE FOR ALL DATA ==========
@@ -82,12 +84,16 @@ export function useBatterStats({ teamId = 'ALL', teamDbId = null, season = DEFAU
         isTeamSelected && teamDbId
           ? teamLeadersService.getTeamBattingLeaders(teamDbId, season, 'R')
           : leagueLeadersService.getLeagueBattingLeaders(season, 'R'),
-        isTeamSelected && teamDbId
-          ? teamLeadersService.getHotTeamBattingLeaders(teamDbId, season, 'R')
-          : leagueLeadersService.getHotBattingLeaders(season, 'R'),
-        isTeamSelected && teamDbId
-          ? teamLeadersService.getTeamSplits(teamDbId, season, 'R', 'batters')
-          : leagueLeadersService.getLeagueSplits(season, 'R', 'batters'),
+        isAuthenticated
+          ? (isTeamSelected && teamDbId
+              ? teamLeadersService.getHotTeamBattingLeaders(teamDbId, season, 'R')
+              : leagueLeadersService.getHotBattingLeaders(season, 'R'))
+          : Promise.resolve(null),
+        isAuthenticated
+          ? (isTeamSelected && teamDbId
+              ? teamLeadersService.getTeamSplits(teamDbId, season, 'R', 'batters')
+              : leagueLeadersService.getLeagueSplits(season, 'R', 'batters'))
+          : Promise.resolve(null),
       ]);
 
       if (signal.aborted) return;
@@ -122,7 +128,7 @@ export function useBatterStats({ teamId = 'ALL', teamDbId = null, season = DEFAU
     });
 
     return () => controller.abort();
-  }, [season, isTeamSelected, teamDbId]);
+  }, [season, isTeamSelected, teamDbId, isAuthenticated]);
 
   // ========== COMPUTED DATA ==========
 
