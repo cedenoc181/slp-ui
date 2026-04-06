@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { Link, useParams, useLocation } from 'react-router-dom';
 import { getMlbId, getAbbr } from './utils';
 import scheduleService from '../../../../data/services/scheduleService';
@@ -11,7 +11,7 @@ import '../../../../styles/stats-page-styling/matchup-analysis.css';
 import '../../../../styles/stats-page-styling/scout-ai.css';
 import { ScoutAiButton, ScoutAiModal } from './components';
 import { getScoutAnalysis } from '../../../../data/services/scoutAiService';
-import { useEarliestGameLabel } from './hooks';
+import { useEarliestGameLabel, useScoutAiGate } from './hooks';
 
 import {
   MiniHero,
@@ -310,6 +310,11 @@ export default function MatchupDetailComp() {
       .catch(() => setH2hBatters(false));
   }, [game?.away_team_id, game?.home_team_id]); // eslint-disable-line
 
+  // ── Scout AI gate (must be unconditional — before any early returns) ──
+  const scoutAllowedRef = useRef(null);
+  const stableScoutAllowed = useCallback(() => { scoutAllowedRef.current?.(); }, []);
+  const { usesRemaining, isLimitHit, gatedClick: handleScoutClick } = useScoutAiGate(stableScoutAllowed);
+
   // ── Loading state ──
   if (loading) {
     return (
@@ -349,8 +354,7 @@ export default function MatchupDetailComp() {
   const awayMlbId = getMlbId(game.away_team_id);
   const homeMlbId = getMlbId(game.home_team_id);
 
-  const statusLower  = (game.status || '').toLowerCase();
-  const handleScoutClick = async () => {
+  scoutAllowedRef.current = async () => {
     if (scoutAnalysis) { setShowScoutModal(true); return; }
 
     setScoutLoading(true);
@@ -394,6 +398,8 @@ export default function MatchupDetailComp() {
               scoutAiAvailable={scoutUnlocked}
               pendingLabel={scoutUnlockLabel}
               tooltipPosition="right"
+              usesRemaining={usesRemaining}
+              isLimitHit={isLimitHit}
             />
           </div>
           <div className="matchup-detail-top-nav__right" />

@@ -241,9 +241,9 @@ function App() {
 
           {/* Predictions routes */}
           <Route path="/predictions" element={<PredictionsOverview />} />
-          <Route path="/predictions/games" element={<GameProps />} />
-          <Route path="/predictions/pitchers" element={<PitcherProps />} />
-          <Route path="/predictions/batters" element={<BatterProps />} />
+          <Route path="/predictions/games" element={<ProtectedRoute><GameProps /></ProtectedRoute>} />
+          <Route path="/predictions/pitchers" element={<ProtectedRoute><PitcherProps /></ProtectedRoute>} />
+          <Route path="/predictions/batters" element={<ProtectedRoute><BatterProps /></ProtectedRoute>} />
 
           {/* Education routes */}
           <Route path="/glossary" element={<Glossary />} />

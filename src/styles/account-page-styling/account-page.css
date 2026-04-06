@@ -104,6 +104,26 @@
   stroke: #C8102E;
 }
 
+/* Redirect banner — shown when user lands from a protected route */
+.auth-redirect-banner {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  background: linear-gradient(135deg, rgba(100, 181, 246, 0.12) 0%, rgba(25, 118, 210, 0.15) 100%);
+  border: 1px solid rgba(100, 181, 246, 0.4);
+  border-radius: 10px;
+  padding: 0.85rem 1.1rem;
+  margin-bottom: 1.5rem;
+  color: #64b5f6;
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.auth-redirect-banner svg {
+  flex-shrink: 0;
+  stroke: #64b5f6;
+}
+
 /* Auth Container */
 .auth-container {
   display: grid;

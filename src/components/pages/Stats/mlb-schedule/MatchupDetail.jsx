@@ -1,7 +1,7 @@
-import { useState } from 'react';
+import { useState, useRef, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { DEFAULT_SEASON } from '../../../../data/constants/apiConstants';
-import { useMatchupData, useEarliestGameLabel } from './hooks';
+import { useMatchupData, useEarliestGameLabel, useScoutAiGate } from './hooks';
 import '../../../../styles/stats-page-styling/matchup-analysis.css';
 import '../../../../styles/stats-page-styling/scout-ai.css';
 import { getMlbId, getAbbr, getUrlName, formGames } from './utils';
@@ -25,6 +25,11 @@ export default function MatchupDetail() {
   const [scoutError, setScoutError]         = useState(null);
   const [showScoutModal, setShowScoutModal] = useState(false);
   const [scoutGeneratedAt, setScoutGeneratedAt] = useState(null);
+
+  // Stable ref so useScoutAiGate (called unconditionally at top) can invoke the real handler
+  const scoutAllowedRef = useRef(null);
+  const stableScoutAllowed = useCallback(() => { scoutAllowedRef.current?.(); }, []);
+  const { usesRemaining, isLimitHit, gatedClick: handleScoutClick } = useScoutAiGate(stableScoutAllowed);
 
   const {
     game, loading, error,
@@ -209,7 +214,7 @@ export default function MatchupDetail() {
   const homeLosses = homeLast10Summary?.last_ten_losses ?? homeForm.filter(r => r === 'L').length;
 
   // ── Scout AI ────────────────────────────────────────────────────────────
-  const handleScoutClick = async () => {
+  scoutAllowedRef.current = async () => {
     if (scoutAnalysis) { setShowScoutModal(true); return; }
 
     setScoutLoading(true);
@@ -241,6 +246,8 @@ export default function MatchupDetail() {
               isToday={game?.date === new Intl.DateTimeFormat('en-CA', { timeZone: 'America/New_York' }).format(new Date())}
               scoutAiAvailable={scoutUnlocked}
               pendingLabel={scoutUnlockLabel}
+              usesRemaining={usesRemaining}
+              isLimitHit={isLimitHit}
             />
           </div>
           <div className="matchup-detail-top-nav__right">
