@@ -1,5 +1,6 @@
 import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { useSearchParams } from 'react-router-dom';
+import { useAuth } from '../../../../context/AuthContext';
 import BatterStats from './batterStats';
 import PitcherStats from './pitcherStats';
 import {
@@ -7,12 +8,14 @@ import {
   SEASONS,
   ACTIVE_SEASON,
   getTeamByAbbr,
+  getTeamById,
   getTeamIdFromAbbr,
 } from '../../../../data/constants/apiConstants';
 import '../../../../styles/stats-page-styling/player-analytics.css';
 
 function PlayerAnalytics() {
   const [searchParams, setSearchParams] = useSearchParams();
+  const { user } = useAuth();
   const [metricType, setMetricType] = useState(() => {
     const tabParam = searchParams.get('tab');
     return tabParam === 'pitching' ? 'pitching' : 'batting';
@@ -47,6 +50,24 @@ function PlayerAnalytics() {
     }
     return ACTIVE_SEASON;
   });
+
+  // Once user profile loads, apply favorite team if no team param in URL
+  const favApplied = useRef(false);
+  useEffect(() => {
+    if (favApplied.current || searchParams.get('team')) return;
+    if (user?.favoriteTeamId) {
+      const favTeam = getTeamById(user.favoriteTeamId);
+      if (favTeam) {
+        favApplied.current = true;
+        setSelectedTeam(favTeam.id);
+        setSearchParams(prev => {
+          const next = new URLSearchParams(prev);
+          next.set('team', favTeam.id);
+          return next;
+        }, { replace: true });
+      }
+    }
+  }, [user?.favoriteTeamId]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Add "All Teams" option to the teams list
   const teamsWithAll = useMemo(() => {

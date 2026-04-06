@@ -94,12 +94,15 @@ function getPredReadyLabel(games) {
   return `${displayH}:${min} ${period} ET`;
 }
 
-// Returns true if current local time is at or past the unlock threshold
+// Returns true if current ET time is at or past the unlock threshold
+// Game times are in ET, so we must compare against ET — not local time.
 function arePredictionsUnlocked(games) {
   const unlockMins = getUnlockMins(games);
   if (unlockMins === null) return false;
   const now = new Date();
-  return (now.getHours() * 60 + now.getMinutes()) >= unlockMins;
+  const etParts = now.toLocaleString('en-US', { timeZone: 'America/New_York', hour: 'numeric', minute: 'numeric', hour12: false }).split(':');
+  const etMins  = parseInt(etParts[0], 10) * 60 + parseInt(etParts[1], 10);
+  return etMins >= unlockMins;
 }
 
 // Subtract 1 hour from a game time string and return display string e.g. "7:05 PM ET"
@@ -1151,9 +1154,37 @@ export default function GameProps() {
     window.scrollTo(0, 0);
     predictionsService.getToday()
       .then(rows => {
-        const today = Array.isArray(rows)
+        const filtered = Array.isArray(rows)
           ? rows.filter(r => r.season_type !== 'spring' && r.season_type !== 'S' && !isFinal(r))
           : [];
+        // Deduplicate true duplicate entries (same game rescheduled).
+        // Doubleheaders share team IDs but have distinct game_pks or game_num — preserve both.
+        // Composite key: game_pk + game_num (if present) distinguishes DH games while
+        // collapsing true dupes (same game_pk, same game_num, different stale API entry).
+        const seen = new Map();
+        for (const r of filtered) {
+          const gameNum = r.game_num ?? r.game_number ?? '';
+          const key = `${r.game_pk ?? r.id}_${gameNum}`;
+          const existing = seen.get(key);
+          // Prefer the entry with a prediction attached; otherwise keep the latest time
+          if (!existing || (!existing.prediction && r.prediction)) {
+            seen.set(key, r);
+          }
+        }
+        // Normalize scout_ai: new LLM wraps the analysis as { raw: "...JSON string..." }
+        // Parse raw into the object so all downstream code works unchanged.
+        const normalize = (r) => {
+          if (r.scout_ai?.raw && typeof r.scout_ai.raw === 'string') {
+            try {
+              return { ...r, scout_ai: JSON.parse(r.scout_ai.raw) };
+            } catch {
+              // Truncated/invalid JSON — keep raw string so modal can still render it
+              return { ...r, scout_ai: r.scout_ai.raw };
+            }
+          }
+          return r;
+        };
+        const today = [...seen.values()].map(normalize);
         if (today.length > 0) {
           setGames([...today].sort((a, b) => parseGameTimeMinutes(a) - parseGameTimeMinutes(b)));
         } else {
