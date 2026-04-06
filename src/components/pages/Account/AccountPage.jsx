@@ -150,6 +150,7 @@ function AccountPage() {
                   type="email"
                   id="login-email"
                   placeholder="your.email@example.com"
+                  autoComplete="new-password"
                   value={loginEmail}
                   onChange={(e) => setLoginEmail(e.target.value)}
                 />
@@ -160,6 +161,7 @@ function AccountPage() {
                   type="password"
                   id="login-password"
                   placeholder="••••••••"
+                  autoComplete="new-password"
                   value={loginPassword}
                   onChange={(e) => setLoginPassword(e.target.value)}
                 />
@@ -232,6 +234,7 @@ function AccountPage() {
                   type="email"
                   id="register-email"
                   placeholder="your.email@example.com"
+                  autoComplete="off"
                   value={registerEmail}
                   onChange={(e) => setRegisterEmail(e.target.value)}
                 />
@@ -243,6 +246,7 @@ function AccountPage() {
                     type={showRegPassword ? 'text' : 'password'}
                     id="register-password"
                     placeholder="••••••••"
+                    autoComplete="new-password"
                     value={registerPassword}
                     onChange={(e) => setRegisterPassword(e.target.value)}
                   />
@@ -274,6 +278,7 @@ function AccountPage() {
                     type={showRegConfirm ? 'text' : 'password'}
                     id="register-confirm"
                     placeholder="••••••••"
+                    autoComplete="new-password"
                     value={registerConfirm}
                     onChange={(e) => setRegisterConfirm(e.target.value)}
                   />

@@ -267,20 +267,21 @@ function SettingsPage() {
               </div>
               <div className="settings-group">
                 {[
-                  { key: 'emailUpdates', label: 'Email Updates', hint: 'Receive important platform updates and announcements' },
-                  { key: 'weeklyDigest', label: 'Weekly Digest', hint: 'Get a summary of top MLB stats and insights each week' },
-                  { key: 'breakingNews', label: 'Breaking News Alerts', hint: 'Instant notifications for major MLB news and updates' },
-                ].map(({ key, label, hint }) => (
-                  <div key={key} className="setting-item toggle">
+                  { key: 'emailUpdates', label: 'Email Updates', hint: 'Receive important platform updates and announcements', disabled: false },
+                  { key: 'weeklyDigest', label: 'Weekly Digest', hint: 'Get a summary of top MLB stats and insights each week', disabled: true },
+                  { key: 'breakingNews', label: 'Breaking News Alerts', hint: 'Instant notifications for major MLB news and updates', disabled: true },
+                ].map(({ key, label, hint, disabled }) => (
+                  <div key={key} className={`setting-item toggle${disabled ? ' setting-item--disabled' : ''}`}>
                     <div className="setting-info">
                       <label htmlFor={key}>{label}</label>
-                      <span className="setting-hint">{hint}</span>
+                      <span className="setting-hint">{disabled ? 'Coming soon' : hint}</span>
                     </div>
                     <label className="toggle-switch">
                       <input
                         type="checkbox"
                         id={key}
                         checked={prefs[key]}
+                        disabled={disabled}
                         onChange={(e) => setPrefs(p => ({ ...p, [key]: e.target.checked }))}
                       />
                       <span className="toggle-slider"></span>

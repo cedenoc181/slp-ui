@@ -249,6 +249,12 @@
   margin: 0;
 }
 
+/* Disabled toggle row */
+.setting-item--disabled {
+  opacity: 0.45;
+  pointer-events: none;
+}
+
 /* Toggle Switch */
 .toggle-switch {
   position: relative;
