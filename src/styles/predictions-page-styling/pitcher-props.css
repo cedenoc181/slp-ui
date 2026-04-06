@@ -526,8 +526,9 @@
 }
 
 .pp-pending-banner-icon {
-  font-size: 1.2rem;
-  line-height: 1;
+  width: 2.39rem;
+  height: 2.39rem;
+  object-fit: contain;
   margin-top: 0.1rem;
   flex-shrink: 0;
 }

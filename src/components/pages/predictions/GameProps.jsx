@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 import { useNavigate } from 'react-router-dom';
+import loadingPredictionsIcon from '../../../assets/icons/loading-predictions.png';
 import predictionsService from '../../../data/services/predictionsService';
 import { getTeamById } from '../../../data/constants/apiConstants';
 import ScoutAiButton from '../Stats/mlb-schedule/components/ScoutAiButton';
@@ -463,7 +464,7 @@ function TopPick({ games, unlocked, predReadyLabel }) {
   if (!eligibleGames.length) {
     return (
       <div className="gp-pending-banner">
-        <span className="gp-pending-banner-icon">⏳</span>
+        <img src={loadingPredictionsIcon} alt="" className="gp-pending-banner-icon" aria-hidden="true" />
         <div>
           <div className="gp-pending-banner-title">
             {predReadyLabel ? `Predictions available by ${predReadyLabel}` : 'Predictions Coming Soon'}

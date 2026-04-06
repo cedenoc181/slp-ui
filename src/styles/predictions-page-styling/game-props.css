@@ -52,7 +52,7 @@
   padding: 1.1rem 1.25rem;
   margin-bottom: 1.5rem;
 }
-.gp-pending-banner-icon  { font-size: 1.2rem; line-height: 1; margin-top: 0.1rem; flex-shrink: 0; }
+.gp-pending-banner-icon  { width: 2.39rem; height: 2.39rem; object-fit: contain; margin-top: 0.1rem; flex-shrink: 0; }
 .gp-pending-banner-title { font-size: 0.92rem; font-weight: 600; color: #fbbf24; margin-bottom: 0.25rem; }
 .gp-pending-banner-sub   { font-size: 0.8rem; color: #888; line-height: 1.5; }
 

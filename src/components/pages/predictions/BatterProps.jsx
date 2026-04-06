@@ -9,6 +9,7 @@ import '../../../styles/predictions-page-styling/predictions.css';
 import '../../../styles/predictions-page-styling/batter-props.css';
 import '../../../styles/stats-page-styling/scout-ai.css';
 import analysisIcon from '../../../assets/icons/analysis.png';
+import loadingPredictionsIcon from '../../../assets/icons/loading-predictions.png';
 
 // ─── URL helpers ──────────────────────────────────────────────────────────────
 
@@ -328,7 +329,7 @@ function arePredictionsUnlocked(games) {
 function PendingBanner({ predictionTime }) {
   return (
     <div className="bp-pending-banner">
-      <span className="bp-pending-banner-icon">⏳</span>
+      <img src={loadingPredictionsIcon} alt="" className="bp-pending-banner-icon" aria-hidden="true" />
       <div>
         <div className="bp-pending-banner-title">
           {predictionTime ? `Predictions available by ${predictionTime}` : 'Predictions Coming Soon'}

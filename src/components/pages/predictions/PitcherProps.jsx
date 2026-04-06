@@ -10,6 +10,7 @@ import '../../../styles/predictions-page-styling/predictions.css';
 import '../../../styles/predictions-page-styling/pitcher-props.css';
 import '../../../styles/stats-page-styling/scout-ai.css';
 import analysisIcon from '../../../assets/icons/analysis.png';
+import loadingPredictionsIcon from '../../../assets/icons/loading-predictions.png';
 
 // ─── URL helpers ──────────────────────────────────────────────────────────────
 
@@ -459,7 +460,7 @@ function NoPredictionBody({ pitcher, predictionTime }) {
   return (
     <div className="pp-pending-body">
       <div className="pp-pending-banner">
-        <span className="pp-pending-banner-icon">⏳</span>
+        <img src={loadingPredictionsIcon} alt="" className="pp-pending-banner-icon" aria-hidden="true" />
         <div>
           <div className="pp-pending-banner-title">
             {predictionTime
@@ -1237,7 +1238,7 @@ export default function PitcherProps() {
               </>
             ) : (
               <div className="pp-pending-banner pp-pending-banner--page">
-                <span className="pp-pending-banner-icon">⏳</span>
+                <img src={loadingPredictionsIcon} alt="" className="pp-pending-banner-icon" aria-hidden="true" />
                 <div>
                   <div className="pp-pending-banner-title">
                     {predictionTime ? `Predictions available by ${predictionTime}` : 'Predictions Coming Soon'}
