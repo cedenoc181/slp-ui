@@ -78,9 +78,7 @@ function AccountPage() {
     setSubmitting(true);
     try {
       await register(registerEmail, registerPassword);
-      // Auto-login immediately after successful registration
-      await login(registerEmail, registerPassword);
-      // Redirect handled by useEffect when isAuthenticated flips
+      navigate('/verify-email', { state: { email: registerEmail } });
     } catch (err) {
       setError(mapAuthError(err?.message));
     } finally {
@@ -108,6 +106,7 @@ function AccountPage() {
     if (msg.includes('Invalid email or password')) return 'Incorrect email or password. Please try again.';
     if (msg.includes('Email already registered')) return 'An account with this email already exists. Try signing in.';
     if (msg.includes('Account is deactivated')) return 'This account has been deactivated. Contact support for help.';
+    if (msg.includes('Email not verified')) return 'Please verify your email before signing in. Check your inbox for the verification link.';
     if (msg.includes('at least 6')) return 'Password must be at least 6 characters.';
     return msg;
   }

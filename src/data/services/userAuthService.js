@@ -79,6 +79,20 @@ const userAuthService = {
     authFetch('/api/v1/auth/logout-all', {}, true),
 
   /**
+   * POST /api/v1/auth/verify-email?token=xxx
+   * Verifies the email address using the token from the verification link.
+   */
+  verifyEmail: async (token) => {
+    const res = await fetch(`${API_BASE_URL}/api/v1/auth/verify-email?token=${encodeURIComponent(token)}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(data.detail || data.message || `Request failed (${res.status})`);
+    return data;
+  },
+
+  /**
    * POST /api/v1/auth/password-reset-request
    * Always returns 202 — safe against email enumeration.
    */

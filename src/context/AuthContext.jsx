@@ -153,6 +153,10 @@ export function AuthProvider({ children }) {
     await userAuthService.resetPassword(token, newPassword);
   };
 
+  const verifyEmail = async (token) => {
+    await userAuthService.verifyEmail(token);
+  };
+
   // ---------------------------------------------------------------------------
   // Public profile actions — backed by /users/me routes
   // ---------------------------------------------------------------------------
@@ -196,6 +200,7 @@ export function AuthProvider({ children }) {
       logoutAll,
       requestPasswordReset,
       resetPassword,
+      verifyEmail,
       // Profile actions
       updateProfile,
       updatePreferences,

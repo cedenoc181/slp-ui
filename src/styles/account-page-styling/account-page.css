@@ -282,6 +282,18 @@
   box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
 }
 
+/* Verify Email page */
+.verify-email-card .auth-btn {
+  width: 100%;
+}
+
+.verify-email-hint {
+  font-size: 0.85rem;
+  color: #8A9BB0;
+  margin-top: -0.5rem;
+  margin-bottom: 1.5rem;
+}
+
 /* Auth Note */
 .auth-note {
   margin-top: 1.5rem;

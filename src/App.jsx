@@ -30,6 +30,7 @@ import UnsubscribePage from './components/pages/About-Us/UnsubscribePage';
 import AccountPage from './components/pages/Account/AccountPage';
 import SettingsPage from './components/pages/Account/SettingsPage';
 import ResetPasswordPage from './components/pages/Account/ResetPasswordPage';
+import VerifyEmailPage from './components/pages/Account/VerifyEmailPage';
 
 // Admin page imports//
 import AdminPage from './components/pages/Admin/AdminPage';
@@ -163,6 +164,7 @@ const PAGE_TITLES = [
   { path: '/predictions/pitchers',    title: 'Pitcher Props' },
   { path: '/predictions/batters',     title: 'Batter Props' },
   { path: '/unsubscribe',             title: 'Unsubscribe' },
+  { path: '/verify-email',            title: 'Verify Email' },
 ];
 
 const SITE_NAME = 'Sandlot Picks';
@@ -228,6 +230,7 @@ function App() {
             <ProtectedRoute><SettingsPage /></ProtectedRoute>
           } />
           <Route path="/reset-password" element={<ResetPasswordPage />} />
+          <Route path="/verify-email" element={<VerifyEmailPage />} />
 
           {/* Stats routes */}
           <Route path="/mlb-schedule" element={<MLBSchedule />} />
@@ -241,9 +244,9 @@ function App() {
 
           {/* Predictions routes */}
           <Route path="/predictions" element={<PredictionsOverview />} />
-          <Route path="/predictions/games" element={<GameProps />} />
-          <Route path="/predictions/pitchers" element={<PitcherProps />} />
-          <Route path="/predictions/batters" element={<BatterProps />} />
+          <Route path="/predictions/games" element={<ProtectedRoute><GameProps /></ProtectedRoute>} />
+          <Route path="/predictions/pitchers" element={<ProtectedRoute><PitcherProps /></ProtectedRoute>} />
+          <Route path="/predictions/batters" element={<ProtectedRoute><BatterProps /></ProtectedRoute>} />
 
           {/* Education routes */}
           <Route path="/glossary" element={<Glossary />} />
