@@ -14,6 +14,35 @@ import loadingPredictionsIcon from '../../../assets/icons/loading-predictions.pn
 
 // ─── URL helpers ──────────────────────────────────────────────────────────────
 
+// Attempt to repair a truncated JSON string (LLM output cut off mid-stream)
+function repairTruncatedJson(str) {
+  const stack = [];
+  let inStr = false;
+  let esc = false;
+  for (const ch of str) {
+    if (esc)              { esc = false; continue; }
+    if (ch === '\\' && inStr) { esc = true;  continue; }
+    if (ch === '"')       { inStr = !inStr; continue; }
+    if (inStr)            continue;
+    if (ch === '{')       stack.push('}');
+    else if (ch === '[')  stack.push(']');
+    else if ((ch === '}' || ch === ']') && stack.length) stack.pop();
+  }
+  const suffix = (inStr ? '"' : '') + stack.reverse().join('');
+  return JSON.parse(str + suffix);
+}
+
+// Normalize a pitcher object: parse scout_ai.raw → scout_ai object
+function normalizePitcherScoutAi(pitcher) {
+  const raw = pitcher?.scout_ai?.raw;
+  if (!raw || typeof raw !== 'string') return pitcher;
+  let parsed = null;
+  try { parsed = JSON.parse(raw); } catch {
+    try { parsed = repairTruncatedJson(raw); } catch { /* ignore */ }
+  }
+  return parsed ? { ...pitcher, scout_ai: parsed } : pitcher;
+}
+
 function headshotUrl(mlbPlayerId) {
   return `https://img.mlbstatic.com/mlb-photos/image/upload/d_people:generic:headshot:67:current.png/w_213,q_auto:best/v1/people/${mlbPlayerId}/headshot/67/current`;
 }
@@ -1061,11 +1090,11 @@ export default function PitcherProps() {
         }
         if (realPitchers.length === 0) return;
 
-        // Attach predictions
+        // Attach predictions — normalize scout_ai.raw → parsed object
         const predMap = {};
         for (const game of (Array.isArray(pitcherPreds) ? pitcherPreds : [])) {
-          if (game.home_pitcher?.player_id) predMap[game.home_pitcher.player_id] = game.home_pitcher;
-          if (game.away_pitcher?.player_id) predMap[game.away_pitcher.player_id] = game.away_pitcher;
+          if (game.home_pitcher?.player_id) predMap[game.home_pitcher.player_id] = normalizePitcherScoutAi(game.home_pitcher);
+          if (game.away_pitcher?.player_id) predMap[game.away_pitcher.player_id] = normalizePitcherScoutAi(game.away_pitcher);
         }
         realPitchers.forEach(p => {
           if (p.id && predMap[p.id]) p.prediction = predMap[p.id];

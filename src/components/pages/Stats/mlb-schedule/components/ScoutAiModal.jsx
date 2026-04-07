@@ -175,6 +175,16 @@ function StructuredAnalysis({ analysis: raw }) {
         </div>
       )}
 
+      {/* Odds Edge */}
+      {a.oddsEdge && (
+        <div className="scout-section scout-section--odds">
+          <h4 className="scout-section-title scout-section-title--odds">
+            <span className="scout-section-icon">💲</span> Odds Edge
+          </h4>
+          <p className="scout-section-body">{a.oddsEdge}</p>
+        </div>
+      )}
+
       {/* Red Flags */}
       {Array.isArray(a.redFlags) && a.redFlags.length > 0 && (
         <div className="scout-section">

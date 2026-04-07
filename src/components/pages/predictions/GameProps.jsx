@@ -13,6 +13,25 @@ import '../../../styles/stats-page-styling/scout-ai.css';
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
+// Attempt to repair a truncated JSON string by closing any open strings,
+// arrays, and objects that were cut off mid-stream by the LLM.
+function repairTruncatedJson(str) {
+  const stack = [];
+  let inStr = false;
+  let esc = false;
+  for (const ch of str) {
+    if (esc)              { esc = false; continue; }
+    if (ch === '\\' && inStr) { esc = true;  continue; }
+    if (ch === '"')       { inStr = !inStr; continue; }
+    if (inStr)            continue;
+    if (ch === '{')       stack.push('}');
+    else if (ch === '[')  stack.push(']');
+    else if ((ch === '}' || ch === ']') && stack.length) stack.pop();
+  }
+  const suffix = (inStr ? '"' : '') + stack.reverse().join('');
+  return JSON.parse(str + suffix);
+}
+
 function logoUrl(mlbId) {
   return `https://www.mlbstatic.com/team-logos/${mlbId}.svg`;
 }
@@ -1174,13 +1193,17 @@ export default function GameProps() {
         }
         // Normalize scout_ai: new LLM wraps the analysis as { raw: "...JSON string..." }
         // Parse raw into the object so all downstream code works unchanged.
+        // If the LLM output was truncated, attempt to repair before giving up.
         const normalize = (r) => {
           if (r.scout_ai?.raw && typeof r.scout_ai.raw === 'string') {
             try {
               return { ...r, scout_ai: JSON.parse(r.scout_ai.raw) };
             } catch {
-              // Truncated/invalid JSON — keep raw string so modal can still render it
-              return { ...r, scout_ai: r.scout_ai.raw };
+              try {
+                return { ...r, scout_ai: repairTruncatedJson(r.scout_ai.raw) };
+              } catch {
+                return { ...r, scout_ai: r.scout_ai.raw };
+              }
             }
           }
           return r;
