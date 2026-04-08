@@ -202,6 +202,12 @@ function SettingsPage() {
               </svg>
               Account
             </a>
+            <a href="#subscription" className="settings-nav-item">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+              </svg>
+              Subscription
+            </a>
             <a href="#sessions" className="settings-nav-item">
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <rect x="2" y="3" width="20" height="14" rx="2"/>
@@ -300,6 +306,30 @@ function SettingsPage() {
               {saveStatus === 'error' && <span className="save-error">✗ Failed to save. Please try again.</span>}
             </div>
           </form>
+
+          {/* ----------------------------------------------------------------
+              Subscription — coming soon placeholder
+          ---------------------------------------------------------------- */}
+          <div className="settings-content settings-account-panel">
+            <section id="subscription" className="settings-section">
+              <div className="section-header">
+                <h2>Subscription</h2>
+                <p>Manage your plan and billing</p>
+              </div>
+              <div className="settings-coming-soon-card">
+                <div className="settings-coming-soon-icon">
+                  <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75">
+                    <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                  </svg>
+                </div>
+                <div className="settings-coming-soon-body">
+                  <h4>Premium Subscription</h4>
+                  <p>Billing, plan management, and upgrade options are coming soon. Stay tuned.</p>
+                </div>
+                <span className="settings-coming-soon-badge">Coming Soon</span>
+              </div>
+            </section>
+          </div>
 
           {/* ----------------------------------------------------------------
               Account Management — outside the main form so buttons don't
