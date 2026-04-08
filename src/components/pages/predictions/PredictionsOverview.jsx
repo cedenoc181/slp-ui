@@ -1,5 +1,14 @@
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../../context/AuthContext';
+import gamePropsImg from '../../../assets/images/game-prop-page.png';
+import pitcherPropsImg from '../../../assets/images/pitcher-prop-page.png';
+import batterPropsImg from '../../../assets/images/batter-prop-page.png';
+import aiMlIcon from '../../../assets/icons/ai-ml.png';
+import statcastIcon from '../../../assets/icons/predictive-analytics.png';
+import machineIcon from '../../../assets/icons/machine.png';
+import gamePropIcon from '../../../assets/icons/game-prop.png';
+import pitcherPropIcon from '../../../assets/icons/pitcher-prop.png';
+import batterPropIcon from '../../../assets/icons/batter-prop.png';
 import '../../../styles/predictions-page-styling/predictions.css';
 import '../../../styles/predictions-page-styling/predictions-overview.css';
 
@@ -32,11 +41,14 @@ function SamplePick({ label, pick, confidence, prob, accent }) {
 }
 
 // ── Section feature row ─────────────────────────────────────────────────────
-function FeatureSection({ accent, tag, title, description, bullets, picks, screenshotLabel, reverse }) {
+function FeatureSection({ accent, tag, tagIcon, title, description, bullets, picks, screenshotLabel, image, reverse }) {
   return (
     <div className={`pov-feature-section${reverse ? ' reverse' : ''}`}>
       <div className="pov-feature-copy">
-        <span className={`pov-feature-tag accent-${accent}`}>{tag}</span>
+        <span className={`pov-feature-tag accent-${accent}`}>
+          {tagIcon && <img src={tagIcon} alt="" className="pov-feature-tag-icon" />}
+          {tag}
+        </span>
         <h2 className="pov-feature-title">{title}</h2>
         <p className="pov-feature-desc">{description}</p>
         <ul className="pov-feature-bullets">
@@ -58,9 +70,14 @@ function FeatureSection({ accent, tag, title, description, bullets, picks, scree
           <div className="pov-screenshot-bar">
             <span /><span /><span />
           </div>
-          <div className="pov-screenshot-placeholder">
-            <span className="pov-screenshot-label">{screenshotLabel}</span>
-          </div>
+          {image
+            ? <img src={image} alt={screenshotLabel} className="pov-screenshot-img" />
+            : (
+              <div className="pov-screenshot-placeholder">
+                <span className="pov-screenshot-label">{screenshotLabel}</span>
+              </div>
+            )
+          }
         </div>
       </div>
     </div>
@@ -88,15 +105,16 @@ export default function PredictionsOverview() {
       {/* ── Hero ─────────────────────────────────────────────── */}
       <div className="pov-hero">
         <div className="pov-hero-inner">
-          <span className="pov-hero-eyebrow">🔮 Sandlot Predictions</span>
+          <span className="pov-hero-eyebrow">Sandlotpicks Predictions</span>
           <h1 className="pov-hero-title">
             ML models + AI analysis.<br />
             <span className="pov-hero-title--accent">Every MLB game, every day.</span>
           </h1>
           <p className="pov-hero-sub">
-            We run real machine learning models on pitcher splits, batter matchups, and
-            betting market data — then layer on Scout AI scouting reports to surface the
-            picks with the clearest edge.
+            A data-driven baseball analytics platform powered by AI and machine learning.
+            We forecast batter and pitcher props using historical data, rolling metrics, and
+            advanced ML algorithms — then layer on Scout AI scouting reports to surface the
+            clearest edges in player matchups and betting markets.
           </p>
           <div className="pov-hero-actions">
             {!isPremium && (
@@ -113,15 +131,15 @@ export default function PredictionsOverview() {
         {/* ── Method pills ── */}
         <div className="pov-method-strip">
           <div className="pov-method-pill">
-            <span className="pov-method-icon">🤖</span>
+            <img src={machineIcon} alt="ML Model" className="pov-method-icon-img" />
             <div>
               <div className="pov-method-pill__title">ML Model</div>
-              <div className="pov-method-pill__sub">Trained on 10+ seasons of MLB data</div>
+              <div className="pov-method-pill__sub">Trained on 20+ seasons of MLB data</div>
             </div>
           </div>
           <div className="pov-method-divider" />
           <div className="pov-method-pill">
-            <span className="pov-method-icon">🧠</span>
+            <img src={aiMlIcon} alt="Scout AI" className="pov-method-icon-img" />
             <div>
               <div className="pov-method-pill__title">Scout AI</div>
               <div className="pov-method-pill__sub">Per-game scouting reports with reasoning</div>
@@ -129,7 +147,7 @@ export default function PredictionsOverview() {
           </div>
           <div className="pov-method-divider" />
           <div className="pov-method-pill">
-            <span className="pov-method-icon">📊</span>
+            <img src={statcastIcon} alt="Confidence Scoring" className="pov-method-icon-img" />
             <div>
               <div className="pov-method-pill__title">Confidence Scoring</div>
               <div className="pov-method-pill__sub">Win probability + edge vs. the market</div>
@@ -143,7 +161,8 @@ export default function PredictionsOverview() {
 
         <FeatureSection
           accent="blue"
-          tag="⚾ Game Predictions"
+          tag="Game Predictions"
+          tagIcon={gamePropIcon}
           title="Full-game picks powered by real models"
           description="Our ML model generates win probability, run-line projections, and over/under totals for every scheduled game — then Scout AI writes a matchup-specific scouting report explaining the edge."
           bullets={[
@@ -157,11 +176,13 @@ export default function PredictionsOverview() {
             { label: 'Total', pick: 'Over 7.5', confidence: 5, prob: 71 },
           ]}
           screenshotLabel="Game Props Preview"
+          image={gamePropsImg}
         />
 
         <FeatureSection
           accent="green"
-          tag="🔥 Pitcher Props"
+          tag="Pitcher Props"
+          tagIcon={pitcherPropIcon}
           title="Strikeouts, outs, and ERA props with line edges"
           description="We model every starter's projected strikeouts, pitcher outs, earned runs, and hits allowed — then compare our projections against each sportsbook's posted line to find over/under edges, surfaced with EV and confidence scoring."
           bullets={[
@@ -175,12 +196,14 @@ export default function PredictionsOverview() {
             { label: 'Pitcher Outs', pick: 'Under 15.0', confidence: 4, prob: 68 },
           ]}
           screenshotLabel="Pitcher Props Preview"
+          image={pitcherPropsImg}
           reverse
         />
 
         <FeatureSection
           accent="yellow"
-          tag="🏏 Batter Props"
+          tag="Batter Props"
+          tagIcon={batterPropIcon}
           title="Hit, home run, and stolen base edges by matchup"
           description="Every batter in today's lineup gets a projection for hits, total bases, home runs, RBIs, and stolen bases — calibrated against the opposing pitcher's 2026 splits and park factors."
           bullets={[
@@ -194,6 +217,7 @@ export default function PredictionsOverview() {
             { label: 'Hits', pick: 'Over 0.5', confidence: 3, prob: 60 },
           ]}
           screenshotLabel="Batter Props Preview"
+          image={batterPropsImg}
         />
       </div>
 
