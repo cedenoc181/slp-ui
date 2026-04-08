@@ -119,6 +119,16 @@ function StructuredAnalysis({ analysis: raw }) {
                   </span>
                   <span className="scout-pick-value">{p.pick ?? '—'}</span>
                   <ConfidenceDots value={p.confidence ?? 0} />
+                  {p.best_odds && (
+                    <div className="scout-pick-odds">
+                      <span className={`scout-pick-odds-value ${String(p.best_odds).startsWith('-') ? 'neg' : 'pos'}`}>
+                        {String(p.best_odds).startsWith('-') || String(p.best_odds).startsWith('+') ? p.best_odds : `+${p.best_odds}`}
+                      </span>
+                      {p.best_odds_book && (
+                        <span className="scout-pick-odds-book">{p.best_odds_book}</span>
+                      )}
+                    </div>
+                  )}
                 </div>
               );
             })}
@@ -239,10 +249,6 @@ export default function ScoutAiModal({
 
   if (!isOpen) return null;
 
-  const formattedTime = generatedAt
-    ? new Date(generatedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-    : null;
-
   const responsibleGamingText = analysis?.responsibleGaming || null;
 
   return (
@@ -291,10 +297,7 @@ export default function ScoutAiModal({
         {/* Footer */}
         {!loading && (
           <div className="scout-modal__footer">
-            {formattedTime && (
-              <span className="scout-modal__timestamp">Analysis generated at {formattedTime}</span>
-            )}
-            <p className="scout-modal__disclaimer">
+<p className="scout-modal__disclaimer">
               {responsibleGamingText || '⚠ For entertainment purposes only. Scout AI does not guarantee outcomes. Please gamble responsibly. If you or someone you know has a gambling problem, call 1-800-GAMBLER.'}
             </p>
           </div>

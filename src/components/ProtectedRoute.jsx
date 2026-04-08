@@ -4,23 +4,29 @@ import { useAuth } from '../context/AuthContext';
 /**
  * ProtectedRoute
  *
- * Gates a route based on the three backend auth tiers:
+ * Gates a route based on auth / subscription tier:
  *
- *   <ProtectedRoute>                  — requires any authenticated user
- *   <ProtectedRoute require="verified"> — requires is_verified (get_current_active_verified_user)
- *   <ProtectedRoute require="admin">  — requires is_admin    (get_current_admin_user)
+ *   <ProtectedRoute>                   — requires any authenticated user
+ *   <ProtectedRoute require="premium"> — requires subscription_tier === 'premium' (or admin)
+ *   <ProtectedRoute require="verified"> — requires is_verified
+ *   <ProtectedRoute require="admin">   — requires is_admin
  *
  * Unauthenticated users are redirected to /account.
+ * Non-premium users hitting a premium route are redirected to /predictions.
  * Authenticated users without sufficient privilege are redirected to /account/settings.
  */
 function ProtectedRoute({ children, require: require_ = 'user' }) {
-  const { isAuthenticated, isVerified, isAdmin, loading } = useAuth();
+  const { isAuthenticated, isVerified, isAdmin, isPremium, loading } = useAuth();
   const location = useLocation();
 
   if (loading) return null;
 
   if (!isAuthenticated) {
     return <Navigate to="/account" state={{ from: location }} replace />;
+  }
+
+  if (require_ === 'premium' && !isPremium) {
+    return <Navigate to="/predictions" replace />;
   }
 
   if (require_ === 'verified' && !isVerified) {

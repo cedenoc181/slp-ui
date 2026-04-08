@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../../../context/AuthContext';
 import { TEAM_METADATA, getTeamById } from '../../../data/constants/apiConstants';
 import predictionsService from '../../../data/services/predictionsService';
 import playerStatsService from '../../../data/services/playerStatsServices';
@@ -802,6 +803,7 @@ function BatterModal({ batter, initialMarketKey, onClose }) {
 // ─── Main Component ───────────────────────────────────────────────────────────
 
 export default function BatterProps() {
+  const { isAdmin, profileLoading } = useAuth();
   const [gamesLoading,  setGamesLoading]  = useState(true);
   const [gamesError,    setGamesError]    = useState(null);
   const [games,         setGames]         = useState([]);
@@ -936,15 +938,15 @@ export default function BatterProps() {
   const battersError   = activeEntry?.error ?? null;
   const visibleBatters = activeEntry?.batters ?? [];
 
-  const predictionsUnlocked = arePredictionsUnlocked(games);
+  const predictionsUnlocked = isAdmin || arePredictionsUnlocked(games);
   const predictionTime      = getPredictionReadyTime(games);
 
   // Show pending state if: time gate hasn't passed, OR time passed but no batter
   // has both scout_ai and sportsbook_props (data not ready yet).
   const hasReadyBatters = predictionsUnlocked &&
     visibleBatters.some(b => b.scout_ai && b.sportsbook_props?.length > 0);
-  const showPending = !predictionsUnlocked ||
-    (visibleBatters.length > 0 && !hasReadyBatters);
+  const showPending = isAdmin ? false : (!predictionsUnlocked ||
+    (visibleBatters.length > 0 && !hasReadyBatters));
 
   const rowMarkets = Object.values(STAT_KEY_MAP).filter(m => m.inRows);
   const topPicks   = getTopPicks(visibleBatters, riskFilter);
@@ -965,7 +967,7 @@ export default function BatterProps() {
 
       <div className="predictions-content">
 
-        {gamesLoading ? (
+        {gamesLoading || profileLoading ? (
           <div className="pp-loading-banner">
             <div className="pp-loading-spinner" />
             <div className="pp-loading-text">Loading today's games…</div>

@@ -23,7 +23,7 @@ function decodeJwt(token) {
 // asynchronously by _fetchAndMergeProfile().
 function buildUserFromJwt(payload) {
   if (!payload) return null;
-  const isAdmin = payload.is_admin === true;
+  const isAdmin = payload.is_admin === true || payload.is_admin === 1;
   const isVerified = payload.is_verified ?? null;
   return {
     id: payload.sub,
@@ -42,12 +42,14 @@ function buildUserFromJwt(payload) {
 // Merge the full /users/me response on top of an existing user object.
 function mergeProfile(base, profile) {
   if (!profile) return base;
-  const isAdmin = profile.is_admin === true;
+  const isAdmin = profile.is_admin === true || profile.is_admin === 1;
   const isVerified = profile.is_verified === true;
+  const subscriptionTier = profile.subscription_tier ?? 'free';
   return {
     ...base,
     isAdmin,
     isVerified,
+    subscriptionTier,
     role: isAdmin ? 'admin' : isVerified ? 'verified' : 'user',
     displayName: profile.display_name || base.displayName,
     favoriteTeamId: profile.favorite_team_id ?? null,
@@ -63,15 +65,19 @@ function mergeProfile(base, profile) {
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [profileLoading, setProfileLoading] = useState(false);
   const refreshTimerRef = useRef(null);
 
   // Fetch full profile from /users/me and merge into user state.
   const _fetchAndMergeProfile = useCallback(async () => {
+    setProfileLoading(true);
     try {
       const profile = await userProfileService.getProfile();
       setUser(prev => prev ? mergeProfile(prev, profile) : null);
     } catch {
       // Profile fetch failed — JWT-only data remains; not fatal.
+    } finally {
+      setProfileLoading(false);
     }
   }, []);
 
@@ -189,9 +195,12 @@ export function AuthProvider({ children }) {
       isAuthenticated: !!getAccessToken() && !!user,
       user,
       loading,
+      profileLoading,
       // Role shortcuts mirroring backend dependency tiers
-      isAdmin: user?.isAdmin === true,
+      isAdmin: user?.isAdmin === true || user?.isAdmin === 1,
       isVerified: user?.isVerified === true,
+      isPremium: user?.isAdmin === true || user?.subscriptionTier === 'premium',
+      subscriptionTier: user?.subscriptionTier ?? null,
       userRole: user?.role ?? null,
       // Auth actions
       login,

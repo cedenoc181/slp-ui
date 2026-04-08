@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { createPortal } from 'react-dom';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../../../context/AuthContext';
 import { TEAM_METADATA, getTeamById } from '../../../data/constants/apiConstants';
 import predictionsService from '../../../data/services/predictionsService';
 import playerStatsService from '../../../data/services/playerStatsServices';
@@ -353,9 +354,9 @@ function compositeScore(prop) {
   return evNorm * 0.40 + probNorm * 0.35 + confNorm * 0.25;
 }
 
-function getTopPicks(pitchers, unlocked) {
+function getTopPicks(pitchers, unlocked, adminOverride = false) {
   const candidates = [];
-  for (const pitcher of pitchers.filter(p => unlocked && !!p.prediction && !!p.prediction.scout_ai)) {
+  for (const pitcher of pitchers.filter(p => unlocked && !!p.prediction && (adminOverride || !!p.prediction.scout_ai))) {
     const { props } = buildPitcherProps(pitcher);
     for (const prop of props) {
       candidates.push({ pitcher, bestProp: prop, score: compositeScore(prop) });
@@ -440,8 +441,8 @@ function TopPitcherCard({ pitcher, bestProp, onClick }) {
 
 // ─── Pitcher list card ────────────────────────────────────────────────────────
 
-function PitcherCard({ pitcher, isSelected, onClick, predictionsUnlocked }) {
-  const hasPred = predictionsUnlocked && !!pitcher.prediction && !!pitcher.prediction.scout_ai;
+function PitcherCard({ pitcher, isSelected, onClick, predictionsUnlocked, isAdmin }) {
+  const hasPred = predictionsUnlocked && !!pitcher.prediction && (!!pitcher.prediction.scout_ai || isAdmin);
   const { bestProp } = hasPred ? buildPitcherProps(pitcher) : { bestProp: null };
   return (
     <button
@@ -748,7 +749,7 @@ function PitcherScoutModal({ scoutAi, pitcherName, onClose }) {
 
 // ─── Pitcher modal ────────────────────────────────────────────────────────────
 
-function PitcherModal({ pitcher, onClose, predictionTime, predictionsUnlocked }) {
+function PitcherModal({ pitcher, onClose, predictionTime, predictionsUnlocked, isAdmin = false }) {
   const { props } = buildPitcherProps(pitcher);
   const [hsErr, setHsErr]               = useState(false);
   const [selectedProp, setSelectedProp] = useState(null);
@@ -901,7 +902,7 @@ function PitcherModal({ pitcher, onClose, predictionTime, predictionsUnlocked })
             </div>
 
             <div className="pp-modal-body">
-              {predictionsUnlocked && pitcher.prediction && pitcher.prediction.scout_ai ? (
+              {predictionsUnlocked && pitcher.prediction && (isAdmin || pitcher.prediction.scout_ai) ? (
                 <div className="pp-props-grid">
                   {props.map(prop => (
                     <PropPanel key={prop.key} prop={prop} onClick={() => handlePropClick(prop)} />
@@ -1020,6 +1021,7 @@ function ComebackBanner({ gameSlate }) {
 // ─── Main Component ───────────────────────────────────────────────────────────
 
 export default function PitcherProps() {
+  const { isAdmin, profileLoading } = useAuth();
   const navigate = useNavigate();
   const [pitchers,    setPitchers]    = useState([]);
   const [loading,     setLoading]     = useState(true);
@@ -1126,8 +1128,8 @@ export default function PitcherProps() {
   }, []);
 
   const predictionTime       = getPredictionReadyTime(pitchers);
-  const predictionsUnlocked  = arePredictionsUnlocked(pitchers);
-  const topPicks             = getTopPicks(pitchers, predictionsUnlocked);
+  const predictionsUnlocked  = isAdmin || arePredictionsUnlocked(pitchers);
+  const topPicks             = getTopPicks(pitchers, predictionsUnlocked, isAdmin);
 
   const games = useMemo(() => {
     const seen = new Set();
@@ -1181,7 +1183,7 @@ export default function PitcherProps() {
 
       <div className="predictions-content">
 
-        {loading ? (
+        {loading || profileLoading ? (
           <>
             <LoadingBanner />
             <div className="pp-divider">
@@ -1195,7 +1197,7 @@ export default function PitcherProps() {
               ))}
             </div>
           </>
-        ) : pitchers.length === 0 ? (
+        ) : pitchers.length === 0 && !isAdmin ? (
           <>
             <ComebackBanner gameSlate={gameSlate} />
             <div className="pp-divider">
@@ -1251,7 +1253,7 @@ export default function PitcherProps() {
             )}
 
             {/* ── Top picks ───────────────────────────────────────── */}
-            {visibleTopPicks.length > 0 ? (
+            {visibleTopPicks.length > 0 || isAdmin ? (
               <>
                 <div className="pp-section-label">Top Picks Today</div>
                 <div className="pp-top-grid">
@@ -1294,6 +1296,7 @@ export default function PitcherProps() {
                   isSelected={selectedKey === pitcherKey(pitcher)}
                   onClick={() => handleSelect(pitcherKey(pitcher))}
                   predictionsUnlocked={predictionsUnlocked}
+                  isAdmin={isAdmin}
                 />
               ))}
             </div>
@@ -1312,6 +1315,7 @@ export default function PitcherProps() {
           onClose={handleClose}
           predictionTime={predictionTime}
           predictionsUnlocked={predictionsUnlocked}
+          isAdmin={isAdmin}
         />
       )}
     </div>

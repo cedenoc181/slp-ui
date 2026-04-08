@@ -1,0 +1,654 @@
+/* ============================================================
+   PREDICTIONS OVERVIEW — Funnel / Conversion Page
+   ============================================================ */
+
+/* ── Accent token map ─────────────────────────────────────── */
+/* blue  = game props   #64b5f6 */
+/* green = pitcher      #81c784 */
+/* yellow= batter       #ffb74d */
+
+/* ── Hero ─────────────────────────────────────────────────── */
+.pov-page {
+  padding-bottom: 0;
+}
+
+.pov-hero {
+  background: linear-gradient(180deg, rgba(99,102,241,0.06) 0%, transparent 100%);
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+  padding: 3.5rem 1.5rem 0;
+}
+
+.pov-hero-inner {
+  max-width: 760px;
+  margin: 0 auto;
+  text-align: center;
+}
+
+.pov-hero-eyebrow {
+  display: inline-block;
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.35);
+  margin-bottom: 1.25rem;
+}
+
+.pov-hero-title {
+  font-size: clamp(1.75rem, 4vw, 2.75rem);
+  font-weight: 800;
+  color: #fff;
+  line-height: 1.15;
+  letter-spacing: -0.02em;
+  margin: 0 0 1rem;
+}
+
+.pov-hero-title--accent {
+  background: linear-gradient(90deg, #64b5f6 0%, #818cf8 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.pov-hero-sub {
+  font-size: 1rem;
+  color: rgba(255,255,255,0.55);
+  line-height: 1.65;
+  max-width: 580px;
+  margin: 0 auto 2rem;
+}
+
+.pov-hero-actions {
+  display: flex;
+  justify-content: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  margin-bottom: 3rem;
+}
+
+/* ── CTA buttons ──────────────────────────────────────────── */
+.pov-cta-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.7rem 1.6rem;
+  border-radius: 50px;
+  font-size: 0.9rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.2s ease, background 0.2s ease;
+  border: none;
+  white-space: nowrap;
+}
+
+.pov-cta-btn--primary {
+  background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+  color: #fff;
+  box-shadow: 0 4px 20px rgba(99,102,241,0.35);
+}
+
+.pov-cta-btn--primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 28px rgba(99,102,241,0.5);
+}
+
+.pov-cta-btn--ghost {
+  background: rgba(255,255,255,0.07);
+  color: rgba(255,255,255,0.7);
+  border: 1px solid rgba(255,255,255,0.12);
+}
+
+.pov-cta-btn--ghost:hover {
+  background: rgba(255,255,255,0.12);
+  color: #fff;
+}
+
+.pov-cta-btn--lg {
+  padding: 0.9rem 2.25rem;
+  font-size: 1rem;
+}
+
+/* ── Method strip ─────────────────────────────────────────── */
+.pov-method-strip {
+  max-width: 860px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 0;
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.07);
+  border-bottom: none;
+  border-radius: 16px 16px 0 0;
+  overflow: hidden;
+  padding: 0;
+}
+
+.pov-method-pill {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  padding: 1.25rem 1.5rem;
+}
+
+.pov-method-divider {
+  width: 1px;
+  height: 40px;
+  background: rgba(255,255,255,0.07);
+  flex-shrink: 0;
+}
+
+.pov-method-icon {
+  font-size: 1.5rem;
+  flex-shrink: 0;
+}
+
+.pov-method-pill__title {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: #fff;
+  margin-bottom: 0.15rem;
+}
+
+.pov-method-pill__sub {
+  font-size: 0.72rem;
+  color: rgba(255,255,255,0.4);
+  line-height: 1.4;
+}
+
+/* ── Feature sections wrapper ─────────────────────────────── */
+.pov-features-wrapper {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 5rem 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 6rem;
+}
+
+/* ── Individual feature section ───────────────────────────── */
+.pov-feature-section {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4rem;
+  align-items: center;
+}
+
+.pov-feature-section.reverse {
+  direction: rtl;
+}
+
+.pov-feature-section.reverse > * {
+  direction: ltr;
+}
+
+.pov-feature-tag {
+  display: inline-block;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  border-radius: 20px;
+  padding: 0.25rem 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.pov-feature-tag.accent-blue   { color: #64b5f6; background: rgba(100,181,246,0.12); border: 1px solid rgba(100,181,246,0.25); }
+.pov-feature-tag.accent-green  { color: #81c784; background: rgba(129,199,132,0.12); border: 1px solid rgba(129,199,132,0.25); }
+.pov-feature-tag.accent-yellow { color: #ffb74d; background: rgba(255,183,77,0.12);  border: 1px solid rgba(255,183,77,0.25);  }
+
+.pov-feature-title {
+  font-size: clamp(1.2rem, 2.5vw, 1.65rem);
+  font-weight: 800;
+  color: #fff;
+  line-height: 1.25;
+  letter-spacing: -0.02em;
+  margin: 0 0 0.85rem;
+}
+
+.pov-feature-desc {
+  font-size: 0.9rem;
+  color: rgba(255,255,255,0.55);
+  line-height: 1.7;
+  margin: 0 0 1.5rem;
+}
+
+.pov-feature-bullets {
+  list-style: none;
+  margin: 0 0 1.75rem;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+}
+
+.pov-feature-bullet {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.65rem;
+  font-size: 0.85rem;
+  color: rgba(255,255,255,0.65);
+  line-height: 1.5;
+}
+
+.pov-feature-bullet__dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  margin-top: 0.45em;
+}
+
+.pov-feature-bullet__dot.accent-blue   { background: #64b5f6; }
+.pov-feature-bullet__dot.accent-green  { background: #81c784; }
+.pov-feature-bullet__dot.accent-yellow { background: #ffb74d; }
+
+/* ── Sample picks ─────────────────────────────────────────── */
+.pov-sample-picks {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.pov-sample-pick {
+  flex: 1;
+  min-width: 130px;
+  padding: 0.85rem 1rem;
+  border-radius: 12px;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.08);
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.pov-sample-pick.accent-blue   { border-color: rgba(100,181,246,0.25); }
+.pov-sample-pick.accent-green  { border-color: rgba(129,199,132,0.25); }
+.pov-sample-pick.accent-yellow { border-color: rgba(255,183,77,0.25);  }
+
+.pov-sample-pick__top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.pov-sample-pick__label {
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.4);
+}
+
+.pov-sample-pick__prob {
+  font-size: 0.65rem;
+  font-weight: 700;
+}
+
+.pov-sample-pick__prob.accent-blue   { color: #64b5f6; }
+.pov-sample-pick__prob.accent-green  { color: #81c784; }
+.pov-sample-pick__prob.accent-yellow { color: #ffb74d; }
+
+.pov-sample-pick__pick {
+  font-size: 0.95rem;
+  font-weight: 800;
+  color: #fff;
+}
+
+.pov-sample-pick__bottom {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 0.1rem;
+}
+
+.pov-sample-pick__conf-label {
+  font-size: 0.62rem;
+  color: rgba(255,255,255,0.3);
+}
+
+/* Confidence dots */
+.pov-conf-dots {
+  display: flex;
+  gap: 3px;
+}
+
+.pov-conf-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.15);
+  border: 1px solid rgba(255,255,255,0.18);
+}
+
+.pov-conf-dot.filled {
+  background: #64b5f6;
+  border-color: #64b5f6;
+}
+
+/* ── Screenshot shell ─────────────────────────────────────── */
+.pov-feature-visual {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.pov-screenshot-shell {
+  width: 100%;
+  max-width: 480px;
+  border-radius: 16px;
+  overflow: hidden;
+  border: 1px solid rgba(255,255,255,0.1);
+  background: #1a1a1a;
+  box-shadow: 0 24px 60px rgba(0,0,0,0.5);
+}
+
+.pov-screenshot-shell.accent-blue   { border-color: rgba(100,181,246,0.2); box-shadow: 0 24px 60px rgba(100,181,246,0.08), 0 0 0 1px rgba(100,181,246,0.12); }
+.pov-screenshot-shell.accent-green  { border-color: rgba(129,199,132,0.2); box-shadow: 0 24px 60px rgba(129,199,132,0.08), 0 0 0 1px rgba(129,199,132,0.12); }
+.pov-screenshot-shell.accent-yellow { border-color: rgba(255,183,77,0.2);  box-shadow: 0 24px 60px rgba(255,183,77,0.08),  0 0 0 1px rgba(255,183,77,0.12);  }
+
+.pov-screenshot-bar {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 0.65rem 0.9rem;
+  background: rgba(255,255,255,0.03);
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+}
+
+.pov-screenshot-bar span {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.12);
+}
+
+.pov-screenshot-bar span:nth-child(1) { background: rgba(239,68,68,0.5); }
+.pov-screenshot-bar span:nth-child(2) { background: rgba(251,191,36,0.5); }
+.pov-screenshot-bar span:nth-child(3) { background: rgba(74,222,128,0.5); }
+
+.pov-screenshot-placeholder {
+  min-height: 260px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: repeating-linear-gradient(
+    45deg,
+    rgba(255,255,255,0.015) 0px,
+    rgba(255,255,255,0.015) 1px,
+    transparent 1px,
+    transparent 12px
+  );
+}
+
+.pov-screenshot-label {
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.2);
+  border: 1px dashed rgba(255,255,255,0.12);
+  border-radius: 8px;
+  padding: 0.5rem 1rem;
+}
+
+/* ── How it works strip ───────────────────────────────────── */
+.pov-how-strip {
+  background: rgba(255,255,255,0.025);
+  border-top: 1px solid rgba(255,255,255,0.07);
+  border-bottom: 1px solid rgba(255,255,255,0.07);
+  padding: 4rem 1.5rem;
+}
+
+.pov-how-strip__inner {
+  max-width: 1000px;
+  margin: 0 auto;
+}
+
+.pov-how-strip__title {
+  font-size: 1.35rem;
+  font-weight: 800;
+  color: #fff;
+  margin: 0 0 2.5rem;
+  letter-spacing: -0.02em;
+}
+
+.pov-how-steps {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 2rem;
+}
+
+.pov-how-step {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.pov-how-step__num {
+  font-size: 1.75rem;
+  font-weight: 900;
+  color: rgba(99,102,241,0.3);
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+
+.pov-how-step__text {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.pov-how-step__text strong {
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: #fff;
+}
+
+.pov-how-step__text span {
+  font-size: 0.8rem;
+  color: rgba(255,255,255,0.45);
+  line-height: 1.6;
+}
+
+/* ── Final CTA section ─────────────────────────────────────── */
+.pov-cta-section {
+  background: linear-gradient(135deg, rgba(99,102,241,0.12) 0%, rgba(79,70,229,0.08) 100%);
+  border-top: 1px solid rgba(99,102,241,0.2);
+  padding: 5rem 1.5rem;
+}
+
+.pov-cta-inner {
+  max-width: 600px;
+  margin: 0 auto;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+}
+
+.pov-cta-eyebrow {
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #818cf8;
+}
+
+.pov-cta-title {
+  font-size: clamp(1.5rem, 3vw, 2.25rem);
+  font-weight: 800;
+  color: #fff;
+  letter-spacing: -0.02em;
+  margin: 0;
+  line-height: 1.2;
+}
+
+.pov-cta-sub {
+  font-size: 0.9rem;
+  color: rgba(255,255,255,0.5);
+  line-height: 1.65;
+  max-width: 480px;
+  margin: 0;
+}
+
+.pov-cta-perks {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.5rem 1.25rem;
+  margin: 0.5rem 0;
+}
+
+.pov-cta-perk {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: rgba(255,255,255,0.65);
+}
+
+/* ── Premium nav cards (shown to existing premium users) ───── */
+.pov-nav-cards {
+  padding: 4rem 1.5rem 5rem;
+}
+
+.pov-nav-cards__inner {
+  max-width: 860px;
+  margin: 0 auto;
+}
+
+.pov-nav-cards__title {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #fff;
+  margin: 0 0 1.5rem;
+  letter-spacing: -0.01em;
+}
+
+.pov-nav-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+}
+
+.pov-nav-card {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  padding: 1.25rem 1.5rem;
+  border-radius: 14px;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.08);
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease, transform 0.15s ease;
+  text-align: left;
+}
+
+.pov-nav-card:hover {
+  background: rgba(255,255,255,0.07);
+  transform: translateY(-2px);
+}
+
+.pov-nav-card.accent-blue:hover   { border-color: rgba(100,181,246,0.4); }
+.pov-nav-card.accent-green:hover  { border-color: rgba(129,199,132,0.4); }
+.pov-nav-card.accent-yellow:hover { border-color: rgba(255,183,77,0.4); }
+
+.pov-nav-card__icon {
+  font-size: 1.5rem;
+  flex-shrink: 0;
+}
+
+.pov-nav-card__label {
+  flex: 1;
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: #fff;
+}
+
+.pov-nav-card__arrow {
+  font-size: 1rem;
+  color: rgba(255,255,255,0.25);
+  transition: color 0.15s ease, transform 0.15s ease;
+}
+
+.pov-nav-card:hover .pov-nav-card__arrow {
+  color: rgba(255,255,255,0.7);
+  transform: translateX(3px);
+}
+
+/* ── Responsive ────────────────────────────────────────────── */
+@media (max-width: 900px) {
+  .pov-feature-section,
+  .pov-feature-section.reverse {
+    grid-template-columns: 1fr;
+    direction: ltr;
+    gap: 2.5rem;
+  }
+
+  .pov-feature-section.reverse > * {
+    direction: ltr;
+  }
+
+  .pov-features-wrapper {
+    gap: 4rem;
+    padding: 3.5rem 1.5rem;
+  }
+
+  .pov-how-steps {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 640px) {
+  .pov-hero {
+    padding: 2.5rem 1.25rem 0;
+  }
+
+  .pov-hero-inner {
+    text-align: left;
+  }
+
+  .pov-hero-actions {
+    justify-content: flex-start;
+  }
+
+  .pov-method-strip {
+    flex-direction: column;
+    border-radius: 12px;
+    border-bottom: 1px solid rgba(255,255,255,0.07);
+  }
+
+  .pov-method-divider {
+    width: 100%;
+    height: 1px;
+  }
+
+  .pov-method-pill {
+    padding: 1rem 1.25rem;
+  }
+
+  .pov-how-steps {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+  }
+
+  .pov-nav-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .pov-how-strip {
+    padding: 3rem 1.25rem;
+  }
+
+  .pov-cta-section {
+    padding: 3.5rem 1.25rem;
+  }
+
+  .pov-cta-perks {
+    flex-direction: column;
+    align-items: center;
+    gap: 0.35rem;
+  }
+}
