@@ -725,7 +725,8 @@ function BatterModal({ batter, initialMarketKey, onClose }) {
                 onClick={() => hasScoutAi && setShowScout(true)}
               >
                 <img src={analysisIcon} alt="" className="scout-ai-btn__icon" aria-hidden="true" />
-                <span>Scouting Report</span>
+                <span className="scout-label-full">Scouting Report</span>
+                <span className="scout-label-short">Scouting</span>
               </button>
 
               <button className="bp-modal-team-logo-btn" onClick={goToTeam} aria-label={`${batter.teamAbbr} team analytics`}>

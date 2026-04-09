@@ -1196,11 +1196,18 @@
   .bp-markets-grid { grid-template-columns: 1fr 1fr; }
 }
 
+.scout-label-short { display: none; }
+
 @media (max-width: 425px) {
   .bp-markets-grid { grid-template-columns: 1fr; }
   .bp-odds-table-head,
   .bp-odds-row { grid-template-columns: 1fr 60px 60px; }
   .bp-top-card-prob { font-size: 1.1rem; }
+
+  /* Modal header — declutter at small sizes */
+  .bp-modal-meta { display: none; }
+  .scout-label-full { display: none; }
+  .scout-label-short { display: inline; }
 }
 
 /* ── Loading state ────────────────────────────────────────── */
