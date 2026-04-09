@@ -306,6 +306,8 @@
   color: inherit;
   font: inherit;
   transition: background 0.15s ease, transform 0.15s ease;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .bp-top-card:hover { background: #242424; transform: translateY(-1px); }
@@ -504,6 +506,8 @@
   gap: 0.6rem;
   padding: 0.8rem 0.8rem 0.5rem;
   flex: 1;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .bp-batter-card-headshot {
@@ -569,6 +573,8 @@
   align-items: center;
   justify-content: space-between;
   padding: 0.4rem 0.8rem 0.35rem;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .bp-batter-card-prob {
@@ -793,6 +799,8 @@
   display: flex;
   align-items: center;
   gap: 0.4rem;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .bp-market-panel-icon { font-size: 0.9rem; }
@@ -809,6 +817,8 @@
   display: flex;
   align-items: baseline;
   gap: 0.5rem;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .bp-market-panel-side {
@@ -832,6 +842,8 @@
 .bp-market-panel-stats {
   display: flex;
   gap: 0.4rem;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .bp-market-panel-stat {
@@ -1182,6 +1194,13 @@
 
 @media (max-width: 480px) {
   .bp-markets-grid { grid-template-columns: 1fr 1fr; }
+}
+
+@media (max-width: 425px) {
+  .bp-markets-grid { grid-template-columns: 1fr; }
+  .bp-odds-table-head,
+  .bp-odds-row { grid-template-columns: 1fr 60px 60px; }
+  .bp-top-card-prob { font-size: 1.1rem; }
 }
 
 /* ── Loading state ────────────────────────────────────────── */
