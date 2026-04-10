@@ -21,12 +21,12 @@ function ProtectedRoute({ children, require: require_ = 'user' }) {
 
   if (loading) return null;
 
-  if (!isAuthenticated) {
-    return <Navigate to="/account" state={{ from: location }} replace />;
+  if (require_ === 'premium' && (!isAuthenticated || !isPremium)) {
+    return <Navigate to="/predictions" replace />;
   }
 
-  if (require_ === 'premium' && !isPremium) {
-    return <Navigate to="/predictions" replace />;
+  if (!isAuthenticated) {
+    return <Navigate to="/account" state={{ from: location }} replace />;
   }
 
   if (require_ === 'verified' && !isVerified) {
