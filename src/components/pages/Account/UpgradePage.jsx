@@ -4,42 +4,69 @@ import { useAuth } from '../../../context/AuthContext';
 import stripeService from '../../../data/services/stripeService';
 import './upgrade-page.css';
 
-const PREMIUM_PRICE = process.env.REACT_APP_PREMIUM_PRICE || '—';
+const PRICES = {
+  day_pass: process.env.REACT_APP_PREMIUM_PRICE_DAILY  || '—',
+  weekly:   process.env.REACT_APP_PREMIUM_PRICE_WEEKLY || '—',
+  monthly:  process.env.REACT_APP_PREMIUM_PRICE        || '—',
+};
+
+const PLANS = [
+  {
+    key: 'day_pass',
+    name: 'Day Pass',
+    period: '/day',
+    desc: 'Full access for 24 hours. Perfect for a single game day.',
+    badge: null,
+  },
+  {
+    key: 'weekly',
+    name: 'Weekly',
+    period: '/week',
+    desc: 'Seven days of full access. Great for a week of MLB action.',
+    badge: null,
+  },
+  {
+    key: 'monthly',
+    name: 'Monthly',
+    period: '/month',
+    desc: 'Best value. Full access all month, cancel anytime.',
+    badge: 'Best Value',
+  },
+];
 
 const FEATURES = [
-  { icon: '⚾', label: 'Full Game Predictions',   desc: 'Win probability, run totals, and spread projections for every MLB game.' },
-  { icon: '🔥', label: 'Pitcher Props',            desc: 'Strikeouts, outs, earned runs, and hits allowed with sportsbook line edges.' },
-  { icon: '🏏', label: 'Batter Props',             desc: 'Hit, total bases, HR, RBI, and stolen base edges by matchup.' },
+  { icon: '⚾', label: 'Full Game Predictions',    desc: 'Win probability, run totals, and spread projections for every MLB game.' },
+  { icon: '🔥', label: 'Pitcher Props',             desc: 'Strikeouts, outs, earned runs, and hits allowed with sportsbook line edges.' },
+  { icon: '🏏', label: 'Batter Props',              desc: 'Hit, total bases, HR, RBI, and stolen base edges by matchup.' },
   { icon: '🧠', label: 'Scout AI Scouting Reports', desc: 'Per-game AI analysis — pitching matchup, splits edge, key factors, red flags.' },
-  { icon: '📊', label: 'Odds Across 7+ Books',     desc: 'Best available lines from DraftKings, FanDuel, BetMGM, Caesars, and more.' },
-  { icon: '🎯', label: 'Confidence Scoring',        desc: 'Every pick rated 1–5 with win probability and EV vs. the market.' },
+  { icon: '📊', label: 'Odds Across 7+ Books',      desc: 'Best available lines from DraftKings, FanDuel, BetMGM, Caesars, and more.' },
+  { icon: '🎯', label: 'Confidence Scoring',         desc: 'Every pick rated 1–5 with win probability and EV vs. the market.' },
 ];
 
 export default function UpgradePage() {
-  const navigate  = useNavigate();
+  const navigate = useNavigate();
   const { isAuthenticated, isPremium } = useAuth();
-  const [loading, setLoading] = useState(false);
-  const [error,   setError]   = useState('');
+  const [loading, setLoading] = useState(null); // null | plan key
+  const [error, setError]     = useState('');
 
-  // Already premium — send to predictions
   if (isPremium) {
     navigate('/predictions', { replace: true });
     return null;
   }
 
-  const handleStripe = async () => {
+  const handleStripe = async (plan) => {
     if (!isAuthenticated) {
       navigate('/account', { state: { from: { pathname: '/upgrade' } } });
       return;
     }
-    setLoading('stripe');
+    setLoading(plan);
     setError('');
     try {
-      const { checkout_url } = await stripeService.createCheckoutSession();
+      const { checkout_url } = await stripeService.createCheckoutSession({ plan });
       window.location.href = checkout_url;
     } catch (err) {
       setError(err.message || 'Something went wrong. Please try again.');
-      setLoading(false);
+      setLoading(null);
     }
   };
 
@@ -48,19 +75,18 @@ export default function UpgradePage() {
       navigate('/account', { state: { from: { pathname: '/upgrade' } } });
       return;
     }
-    // External Whop product page — no API call needed
     window.open('https://whop.com/sandlot-picks/', '_blank', 'noopener,noreferrer');
   };
 
   return (
     <div className="upgrade-page">
 
-      {/* Header */}
+      {/* Hero */}
       <div className="upgrade-hero">
         <span className="upgrade-eyebrow">Premium Access</span>
         <h1 className="upgrade-title">
           The full predictions suite.<br />
-          <span className="upgrade-title--accent">One flat monthly price.</span>
+          <span className="upgrade-title--accent">Pick your plan.</span>
         </h1>
         <p className="upgrade-sub">
           Unlock every game, pitcher, and batter prop — plus Scout AI scouting reports and live
@@ -68,62 +94,70 @@ export default function UpgradePage() {
         </p>
       </div>
 
-      {/* Pricing card + features */}
-      <div className="upgrade-body">
-
-        {/* Pricing card */}
-        <div className="upgrade-card">
-          <div className="upgrade-card__badge">Most Popular</div>
-          <div className="upgrade-card__name">Premium</div>
-          <div className="upgrade-card__price">
-            <span className="upgrade-card__amount">${PREMIUM_PRICE}</span>
-            <span className="upgrade-card__period">/month</span>
-          </div>
-          <p className="upgrade-card__desc">
-            Full access to all predictions, props, and AI analysis. Cancel anytime.
-          </p>
-
-          {/* Stripe CTA */}
-          <button
-            className="upgrade-card__cta"
-            onClick={handleStripe}
-            disabled={!!loading}
+      {/* Plan cards */}
+      <div className="upgrade-plans">
+        {PLANS.map((plan) => (
+          <div
+            key={plan.key}
+            className={`upgrade-plan-card${plan.badge ? ' upgrade-plan-card--featured' : ''}`}
           >
-            {loading === 'stripe' ? (
-              <span className="upgrade-spinner" />
-            ) : (
-              <>
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                  <rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/>
-                </svg>
-                {isAuthenticated ? 'Subscribe with Card' : 'Sign Up & Subscribe with Card'}
-              </>
+            {plan.badge && (
+              <div className="upgrade-card__badge">{plan.badge}</div>
             )}
-          </button>
-
-          {/* Whop CTA */}
-          <button
-            className="upgrade-card__cta upgrade-card__cta--whop"
-            onClick={handleWhop}
-            disabled={!!loading}
-          >
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-              <path d="M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm0 18a8 8 0 1 1 0-16 8 8 0 0 1 0 16zm-1-11h2v6h-2zm0-4h2v2h-2z"/>
-            </svg>
-            Subscribe via Whop
-          </button>
-
-          <div className="upgrade-card__divider">
-            <span>Choose your preferred platform</span>
+            <div className="upgrade-card__name">{plan.name}</div>
+            <div className="upgrade-card__price">
+              <span className="upgrade-card__amount">${PRICES[plan.key]}</span>
+              <span className="upgrade-card__period">{plan.period}</span>
+            </div>
+            <p className="upgrade-card__desc">{plan.desc}</p>
+            <button
+              className="upgrade-card__cta"
+              onClick={() => handleStripe(plan.key)}
+              disabled={!!loading}
+            >
+              {loading === plan.key ? (
+                <span className="upgrade-spinner" />
+              ) : (
+                <>
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                    <rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/>
+                  </svg>
+                  {isAuthenticated ? `Get ${plan.name}` : `Sign Up & Get ${plan.name}`}
+                </>
+              )}
+            </button>
           </div>
+        ))}
+      </div>
 
-          {error && <p className="upgrade-card__error">{error}</p>}
+      {error && <p className="upgrade-card__error" style={{ marginTop: '0.75rem' }}>{error}</p>}
 
-          <p className="upgrade-card__legal">
-            Stripe: pay by card, cancel anytime from account settings.<br />
-            Whop: manage via the Whop app or website.
-          </p>
+      {/* Whop option */}
+      <div className="upgrade-whop-row">
+        <div className="upgrade-card__divider" style={{ flex: 1 }}>
+          <span>or subscribe via</span>
+        </div>
+        <button
+          className="upgrade-card__cta upgrade-card__cta--whop"
+          style={{ maxWidth: 260 }}
+          onClick={handleWhop}
+          disabled={!!loading}
+        >
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm0 18a8 8 0 1 1 0-16 8 8 0 0 1 0 16zm-1-11h2v6h-2zm0-4h2v2h-2z"/>
+          </svg>
+          Subscribe via Whop
+        </button>
+        <p className="upgrade-card__legal" style={{ textAlign: 'center' }}>
+          Stripe: pay by card, cancel anytime from account settings.<br />
+          Whop: manage via the Whop app or website.
+        </p>
+      </div>
 
+      {/* Feature list */}
+      <div className="upgrade-body" style={{ marginTop: '2.5rem' }}>
+        <div className="upgrade-card" style={{ border: '1px solid rgba(255,255,255,0.07)' }}>
+          <div className="upgrade-card__name" style={{ marginTop: 0 }}>Everything included</div>
           <ul className="upgrade-card__features">
             {FEATURES.map((f, i) => (
               <li key={i} className="upgrade-card__feature">
@@ -160,10 +194,8 @@ export default function UpgradePage() {
             <span>Updated daily during MLB season</span>
           </div>
         </div>
-
       </div>
 
-      {/* Disclaimer */}
       <p className="upgrade-disclaimer">
         ⚠ Predictions are for informational and entertainment purposes only and do not constitute financial or betting advice.
         Please gamble responsibly. If you or someone you know has a gambling problem, call 1-800-GAMBLER.

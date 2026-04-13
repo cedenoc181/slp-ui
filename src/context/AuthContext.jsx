@@ -47,6 +47,7 @@ function mergeProfile(base, profile) {
   const subscriptionTier   = profile.subscription_tier   ?? 'free';
   const subscriptionStatus = profile.subscription_status ?? null;
   const paymentSource      = profile.payment_source      ?? null;
+  const subscriptionPlan   = profile.subscription_plan   ?? null;
   return {
     ...base,
     isAdmin,
@@ -54,6 +55,7 @@ function mergeProfile(base, profile) {
     subscriptionTier,
     subscriptionStatus,
     paymentSource,
+    subscriptionPlan,
     role: isAdmin ? 'admin' : isVerified ? 'verified' : 'user',
     displayName: profile.display_name || base.displayName,
     favoriteTeamId: profile.favorite_team_id ?? null,
@@ -194,6 +196,13 @@ export function AuthProvider({ children }) {
     _clearSession();
   };
 
+  /** Re-fetch /users/me, merge into state, and return the raw profile. */
+  const refreshUser = async () => {
+    const profile = await userProfileService.getProfile();
+    setUser(prev => prev ? mergeProfile(prev, profile) : null);
+    return profile;
+  };
+
   return (
     <AuthContext.Provider value={{
       isAuthenticated: !!getAccessToken() && !!user,
@@ -207,6 +216,7 @@ export function AuthProvider({ children }) {
       subscriptionTier:   user?.subscriptionTier   ?? null,
       subscriptionStatus: user?.subscriptionStatus ?? null,
       paymentSource:      user?.paymentSource      ?? null,
+      subscriptionPlan:   user?.subscriptionPlan   ?? null,
       userRole: user?.role ?? null,
       // Auth actions
       login,
@@ -221,6 +231,7 @@ export function AuthProvider({ children }) {
       updatePreferences,
       changePassword,
       deleteAccount,
+      refreshUser,
     }}>
       {children}
     </AuthContext.Provider>

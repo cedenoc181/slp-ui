@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../../context/AuthContext';
 
-const PREMIUM_PRICE = process.env.REACT_APP_PREMIUM_PRICE || '—';
+const PREMIUM_PRICE_DAILY = process.env.REACT_APP_PREMIUM_PRICE_DAILY || '—';
 
 function AccountPage() {
   const { isAuthenticated, loading, login, register, requestPasswordReset } = useAuth();
@@ -374,7 +374,7 @@ function AccountPage() {
             </div>
             <div className="tier-card premium">
               <h4>Premium</h4>
-              <p>${PREMIUM_PRICE}/month</p>
+              <p>Starting at ${PREMIUM_PRICE_DAILY}/day</p>
               <ul>
                 <li>✓ Everything in Free</li>
                 <li>✓ Game Predictions</li>

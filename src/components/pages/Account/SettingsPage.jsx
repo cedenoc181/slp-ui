@@ -10,7 +10,8 @@ function SettingsPage() {
     isAuthenticated, loading, user,
     logout, logoutAll,
     updateProfile, updatePreferences, changePassword, deleteAccount,
-    subscriptionTier, subscriptionStatus, paymentSource,
+    subscriptionTier, subscriptionStatus, paymentSource, subscriptionPlan,
+    refreshUser,
   } = useAuth();
   const navigate = useNavigate();
 
@@ -60,6 +61,16 @@ function SettingsPage() {
   // -------------------------------------------------------------------------
   const [billingLoading, setBillingLoading] = useState(false);
   const [billingError,   setBillingError]   = useState('');
+  const [changingPlan,   setChangingPlan]   = useState(null); // null | plan key
+  const [changeSuccess,  setChangeSuccess]  = useState('');
+
+  const PLAN_LABELS = { day_pass: 'Day Pass', weekly: 'Weekly', monthly: 'Monthly' };
+  const PLAN_PRICES = {
+    day_pass: process.env.REACT_APP_PREMIUM_PRICE_DAILY  || '—',
+    weekly:   process.env.REACT_APP_PREMIUM_PRICE_WEEKLY || '—',
+    monthly:  process.env.REACT_APP_PREMIUM_PRICE        || '—',
+  };
+  const PLAN_PERIODS = { day_pass: '/day', weekly: '/week', monthly: '/month' };
 
   const handleManageBilling = async () => {
     setBillingLoading(true);
@@ -70,6 +81,22 @@ function SettingsPage() {
     } catch (err) {
       setBillingError(err.message || 'Unable to open billing portal. Please try again.');
       setBillingLoading(false);
+    }
+  };
+
+  const handleChangePlan = async (plan) => {
+    setChangingPlan(plan);
+    setBillingError('');
+    setChangeSuccess('');
+    try {
+      await stripeService.changePlan(plan);
+      await refreshUser();
+      setChangeSuccess(`Switched to ${PLAN_LABELS[plan]}. Changes take effect immediately.`);
+      setTimeout(() => setChangeSuccess(''), 5000);
+    } catch (err) {
+      setBillingError(err.message || 'Unable to change plan. Please try again.');
+    } finally {
+      setChangingPlan(null);
     }
   };
 
@@ -352,7 +379,9 @@ function SettingsPage() {
                         </svg>
                         Premium
                       </span>
-                      <h3 className="sub-card__plan-name">Premium Plan</h3>
+                      <h3 className="sub-card__plan-name">
+                        {PLAN_LABELS[subscriptionPlan] || 'Premium'} Plan
+                      </h3>
                       <div className="sub-card__meta">
                         {subscriptionStatus && (
                           <span className={`sub-card__status sub-card__status--${subscriptionStatus.toLowerCase()}`}>
@@ -366,6 +395,12 @@ function SettingsPage() {
                         )}
                       </div>
                     </div>
+                    {subscriptionPlan && (
+                      <div className="sub-card__price-display">
+                        <span className="sub-card__price-amount">${PLAN_PRICES[subscriptionPlan]}</span>
+                        <span className="sub-card__price-period">{PLAN_PERIODS[subscriptionPlan]}</span>
+                      </div>
+                    )}
                   </div>
 
                   <div className="sub-card__features">
@@ -385,36 +420,75 @@ function SettingsPage() {
                   </div>
 
                   <div className="sub-card__actions">
+
+                    {/* ── Plan switcher (Stripe only, non-cancelled) ── */}
+                    {paymentSource === 'stripe' && subscriptionStatus !== 'canceled' && subscriptionStatus !== 'cancelled' && (
+                      <div className="sub-plan-switcher">
+                        <p className="sub-plan-switcher__label">Your plan</p>
+                        <div className="sub-plan-switcher__options">
+                          {['day_pass', 'weekly', 'monthly'].map(plan => {
+                            const isCurrent = plan === subscriptionPlan;
+                            return (
+                              <button
+                                key={plan}
+                                type="button"
+                                className={`sub-plan-option${isCurrent ? ' sub-plan-option--current' : ''}`}
+                                onClick={() => !isCurrent && handleChangePlan(plan)}
+                                disabled={isCurrent || !!changingPlan || billingLoading}
+                              >
+                                {changingPlan === plan ? (
+                                  <span className="sub-card__spinner" />
+                                ) : (
+                                  <>
+                                    {isCurrent && <span className="sub-plan-option__tag">Current</span>}
+                                    <span className="sub-plan-option__name">{PLAN_LABELS[plan]}</span>
+                                    <span className="sub-plan-option__price">${PLAN_PRICES[plan]}{PLAN_PERIODS[plan]}</span>
+                                  </>
+                                )}
+                              </button>
+                            );
+                          })}
+                        </div>
+                        {changeSuccess && <p className="sub-card__success">{changeSuccess}</p>}
+                        <p className="sub-card__hint">Switching plans is prorated — you'll only pay the difference.</p>
+                      </div>
+                    )}
+
+                    {/* ── Billing buttons ── */}
                     <div className="sub-card__btn-row">
-                      <button
-                        type="button"
-                        className="sub-card__btn sub-card__btn--primary"
-                        onClick={handleManageBilling}
-                        disabled={billingLoading}
-                      >
-                        {billingLoading ? (
-                          <span className="sub-card__spinner" />
-                        ) : (
-                          <>
-                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                              <rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/>
-                            </svg>
-                            Manage Billing
-                          </>
-                        )}
-                      </button>
-                      <a
-                        href="https://whop.com/sandlot-picks/"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="sub-card__btn sub-card__btn--secondary"
-                      >
-                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                          <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/>
-                        </svg>
-                        Manage on Whop
-                      </a>
+                      {paymentSource === 'stripe' ? (
+                        <button
+                          type="button"
+                          className="sub-card__btn sub-card__btn--primary"
+                          onClick={handleManageBilling}
+                          disabled={billingLoading || !!changingPlan}
+                        >
+                          {billingLoading ? (
+                            <span className="sub-card__spinner" />
+                          ) : (
+                            <>
+                              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                <rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/>
+                              </svg>
+                              Manage Billing
+                            </>
+                          )}
+                        </button>
+                      ) : paymentSource === 'whop' ? (
+                        <a
+                          href="https://whop.com/sandlot-picks/"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="sub-card__btn sub-card__btn--primary"
+                        >
+                          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/>
+                          </svg>
+                          Manage on Whop
+                        </a>
+                      ) : null}
                     </div>
+
                     <p className="sub-card__hint">
                       {paymentSource === 'whop'
                         ? 'Subscribed via Whop — manage billing and cancellation on the Whop platform.'

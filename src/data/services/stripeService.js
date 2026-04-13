@@ -23,13 +23,15 @@ async function subFetch(endpoint, { method = 'GET', body = null } = {}) {
 const stripeService = {
   /**
    * POST /api/v1/subscriptions/checkout/stripe
+   * plan: 'monthly' | 'weekly' | 'day_pass'
    * Returns { checkout_url } — redirect user to Stripe Checkout.
    */
-  createCheckoutSession({ successUrl, cancelUrl } = {}) {
+  createCheckoutSession({ plan = 'monthly', successUrl, cancelUrl } = {}) {
     return subFetch('/api/v1/subscriptions/checkout/stripe', {
       method: 'POST',
       body: {
-        success_url: successUrl || 'https://www.sandlotpicks.com/subscription/success?session_id={CHECKOUT_SESSION_ID}',
+        plan,
+        success_url: successUrl || `https://www.sandlotpicks.com/subscription/success?session_id={CHECKOUT_SESSION_ID}&plan=${plan}`,
         cancel_url:  cancelUrl  || `${window.location.origin}/upgrade`,
       },
     });
@@ -41,6 +43,18 @@ const stripeService = {
    */
   getPortalUrl() {
     return subFetch('/api/v1/subscriptions/portal');
+  },
+
+  /**
+   * POST /api/v1/subscriptions/change-plan
+   * plan: 'monthly' | 'weekly'
+   * Prorates immediately on Stripe. Blocked for Whop users and cancelled subs.
+   */
+  changePlan(plan) {
+    return subFetch('/api/v1/subscriptions/change-plan', {
+      method: 'POST',
+      body: { plan },
+    });
   },
 
   /**
