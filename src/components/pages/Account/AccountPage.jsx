@@ -2,6 +2,8 @@ import { useEffect, useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../../context/AuthContext';
 
+const PREMIUM_PRICE = process.env.REACT_APP_PREMIUM_PRICE || '—';
+
 function AccountPage() {
   const { isAuthenticated, loading, login, register, requestPasswordReset } = useAuth();
   const navigate = useNavigate();
@@ -372,14 +374,22 @@ function AccountPage() {
             </div>
             <div className="tier-card premium">
               <h4>Premium</h4>
-              <p>Coming soon</p>
+              <p>${PREMIUM_PRICE}/month</p>
               <ul>
                 <li>✓ Everything in Free</li>
                 <li>✓ Game Predictions</li>
-                <li>✓ Advanced Analytics Tools</li>
-                <li>✓ Personalized Experience</li>
-                <li>✓ Priority Support</li>
+                <li>✓ Pitcher &amp; Batter Props</li>
+                <li>✓ Scout AI Scouting Reports</li>
+                <li>✓ Odds Across 7+ Books</li>
               </ul>
+              <Link
+                to="/upgrade"
+                className="auth-btn primary"
+                onClick={() => window.scrollTo(0, 0)}
+                style={{ display: 'block', marginTop: '1rem', textAlign: 'center', textDecoration: 'none' }}
+              >
+                Get Premium
+              </Link>
             </div>
           </div>
         </div>

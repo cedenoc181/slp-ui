@@ -44,12 +44,16 @@ function mergeProfile(base, profile) {
   if (!profile) return base;
   const isAdmin = profile.is_admin === true || profile.is_admin === 1;
   const isVerified = profile.is_verified === true;
-  const subscriptionTier = profile.subscription_tier ?? 'free';
+  const subscriptionTier   = profile.subscription_tier   ?? 'free';
+  const subscriptionStatus = profile.subscription_status ?? null;
+  const paymentSource      = profile.payment_source      ?? null;
   return {
     ...base,
     isAdmin,
     isVerified,
     subscriptionTier,
+    subscriptionStatus,
+    paymentSource,
     role: isAdmin ? 'admin' : isVerified ? 'verified' : 'user',
     displayName: profile.display_name || base.displayName,
     favoriteTeamId: profile.favorite_team_id ?? null,
@@ -200,7 +204,9 @@ export function AuthProvider({ children }) {
       isAdmin: user?.isAdmin === true || user?.isAdmin === 1,
       isVerified: user?.isVerified === true,
       isPremium: user?.isAdmin === true || user?.subscriptionTier === 'premium',
-      subscriptionTier: user?.subscriptionTier ?? null,
+      subscriptionTier:   user?.subscriptionTier   ?? null,
+      subscriptionStatus: user?.subscriptionStatus ?? null,
+      paymentSource:      user?.paymentSource      ?? null,
       userRole: user?.role ?? null,
       // Auth actions
       login,

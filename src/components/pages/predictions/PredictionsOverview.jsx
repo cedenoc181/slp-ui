@@ -90,7 +90,7 @@ export default function PredictionsOverview() {
   const { isAuthenticated, isPremium } = useAuth();
 
   const handleUpgrade = () => {
-    navigate(isAuthenticated ? '/account/settings' : '/account');
+    navigate('/upgrade');
     window.scrollTo(0, 0);
   };
 

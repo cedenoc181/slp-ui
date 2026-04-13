@@ -1,0 +1,311 @@
+/* ============================================================
+   UPGRADE / PRICING PAGE
+   ============================================================ */
+
+.upgrade-page {
+  min-height: 100vh;
+  background: #121212;
+  color: #fff;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 4rem 1.5rem 3rem;
+}
+
+/* ── Hero ─────────────────────────────────────────────────── */
+.upgrade-hero {
+  max-width: 640px;
+  text-align: center;
+  margin-bottom: 3rem;
+}
+
+.upgrade-eyebrow {
+  display: inline-block;
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #818cf8;
+  margin-bottom: 1rem;
+}
+
+.upgrade-title {
+  font-size: clamp(1.75rem, 4vw, 2.5rem);
+  font-weight: 800;
+  line-height: 1.15;
+  letter-spacing: -0.02em;
+  margin: 0 0 1rem;
+  color: #fff;
+}
+
+.upgrade-title--accent {
+  background: linear-gradient(90deg, #6366f1 0%, #818cf8 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.upgrade-sub {
+  font-size: 0.95rem;
+  color: rgba(255, 255, 255, 0.55);
+  line-height: 1.7;
+  margin: 0;
+}
+
+/* ── Body layout ──────────────────────────────────────────── */
+.upgrade-body {
+  width: 100%;
+  max-width: 480px;
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+/* ── Pricing card ─────────────────────────────────────────── */
+.upgrade-card {
+  background: #1e1e1e;
+  border: 1px solid rgba(99, 102, 241, 0.35);
+  border-radius: 20px;
+  padding: 2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  position: relative;
+  box-shadow: 0 0 0 1px rgba(99, 102, 241, 0.1), 0 20px 50px rgba(0, 0, 0, 0.4);
+}
+
+.upgrade-card__badge {
+  position: absolute;
+  top: -12px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+  color: #fff;
+  font-size: 0.65rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 0.25rem 0.9rem;
+  border-radius: 20px;
+  white-space: nowrap;
+}
+
+.upgrade-card__name {
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #818cf8;
+  margin-top: 0.5rem;
+}
+
+.upgrade-card__price {
+  display: flex;
+  align-items: baseline;
+  gap: 0.25rem;
+}
+
+.upgrade-card__amount {
+  font-size: 3rem;
+  font-weight: 900;
+  line-height: 1;
+  color: #fff;
+  letter-spacing: -0.03em;
+}
+
+.upgrade-card__period {
+  font-size: 1rem;
+  color: rgba(255, 255, 255, 0.45);
+  font-weight: 500;
+}
+
+.upgrade-card__desc {
+  font-size: 0.85rem;
+  color: rgba(255, 255, 255, 0.5);
+  line-height: 1.55;
+  margin: 0;
+}
+
+.upgrade-card__cta {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  width: 100%;
+  padding: 0.9rem 1.5rem;
+  background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+  color: #fff;
+  font-size: 0.95rem;
+  font-weight: 700;
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+  box-shadow: 0 4px 20px rgba(99, 102, 241, 0.4);
+  transition: transform 0.15s ease, box-shadow 0.2s ease;
+  margin-top: 0.25rem;
+}
+
+.upgrade-card__cta:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 28px rgba(99, 102, 241, 0.55);
+}
+
+.upgrade-card__cta:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.upgrade-spinner {
+  width: 18px;
+  height: 18px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: upgrade-spin 0.7s linear infinite;
+}
+
+@keyframes upgrade-spin {
+  to { transform: rotate(360deg); }
+}
+
+.upgrade-card__error {
+  font-size: 0.82rem;
+  color: #ef9a9a;
+  text-align: center;
+  margin: 0;
+}
+
+.upgrade-card__cta--whop {
+  background: linear-gradient(135deg, #7c3aed 0%, #5b21b6 100%);
+  box-shadow: 0 4px 20px rgba(124, 58, 237, 0.35);
+}
+
+.upgrade-card__cta--whop:hover:not(:disabled) {
+  box-shadow: 0 6px 28px rgba(124, 58, 237, 0.5);
+}
+
+.upgrade-card__divider {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin: 0.25rem 0;
+}
+
+.upgrade-card__divider::before,
+.upgrade-card__divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.upgrade-card__divider span {
+  font-size: 0.65rem;
+  color: rgba(255, 255, 255, 0.25);
+  white-space: nowrap;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+}
+
+.upgrade-card__legal {
+  font-size: 0.72rem;
+  color: rgba(255, 255, 255, 0.3);
+  text-align: center;
+  margin: 0;
+  line-height: 1.6;
+}
+
+/* ── Feature list inside card ─────────────────────────────── */
+.upgrade-card__features {
+  list-style: none;
+  margin: 0.5rem 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  border-top: 1px solid rgba(255, 255, 255, 0.07);
+  padding-top: 1.25rem;
+}
+
+.upgrade-card__feature {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.85rem;
+  padding: 0.65rem 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.upgrade-card__feature:last-child {
+  border-bottom: none;
+}
+
+.upgrade-card__feature-icon {
+  font-size: 1.1rem;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+.upgrade-card__feature div {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.upgrade-card__feature strong {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #fff;
+}
+
+.upgrade-card__feature span {
+  font-size: 0.78rem;
+  color: rgba(255, 255, 255, 0.45);
+  line-height: 1.45;
+}
+
+/* ── Trust signals ────────────────────────────────────────── */
+.upgrade-trust {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+}
+
+.upgrade-trust__item {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  font-size: 0.82rem;
+  color: rgba(255, 255, 255, 0.45);
+}
+
+.upgrade-trust__item svg {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+  color: #6366f1;
+}
+
+/* ── Disclaimer ───────────────────────────────────────────── */
+.upgrade-disclaimer {
+  max-width: 480px;
+  text-align: center;
+  font-size: 0.7rem;
+  color: rgba(255, 255, 255, 0.25);
+  line-height: 1.6;
+  margin-top: 2rem;
+}
+
+/* ── Responsive ────────────────────────────────────────────── */
+@media (max-width: 480px) {
+  .upgrade-page {
+    padding: 2.5rem 1rem 2rem;
+  }
+
+  .upgrade-card {
+    padding: 1.5rem;
+  }
+
+  .upgrade-card__amount {
+    font-size: 2.5rem;
+  }
+}

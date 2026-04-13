@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../../context/AuthContext';
 import userProfileService from '../../../data/services/userProfileService';
+import stripeService from '../../../data/services/stripeService';
 import { TEAMS } from '../../../data/constants/apiConstants';
 
 function SettingsPage() {
@@ -9,6 +10,7 @@ function SettingsPage() {
     isAuthenticated, loading, user,
     logout, logoutAll,
     updateProfile, updatePreferences, changePassword, deleteAccount,
+    subscriptionTier, subscriptionStatus, paymentSource,
   } = useAuth();
   const navigate = useNavigate();
 
@@ -52,6 +54,29 @@ function SettingsPage() {
   // -------------------------------------------------------------------------
   const [deleteConfirm, setDeleteConfirm] = useState(false);
   const [deleting, setDeleting] = useState(false);
+
+  // -------------------------------------------------------------------------
+  // Billing / subscription
+  // -------------------------------------------------------------------------
+  const [billingLoading, setBillingLoading] = useState(false);
+  const [billingError,   setBillingError]   = useState('');
+
+  const handleManageBilling = async () => {
+    setBillingLoading(true);
+    setBillingError('');
+    try {
+      const { portal_url } = await stripeService.getPortalUrl();
+      window.location.href = portal_url;
+    } catch (err) {
+      setBillingError(err.message || 'Unable to open billing portal. Please try again.');
+      setBillingLoading(false);
+    }
+  };
+
+  const handleUpgrade = () => {
+    navigate('/upgrade');
+    window.scrollTo(0, 0);
+  };
 
   // -------------------------------------------------------------------------
   // Sessions
@@ -308,7 +333,7 @@ function SettingsPage() {
           </form>
 
           {/* ----------------------------------------------------------------
-              Subscription — coming soon placeholder
+              Subscription
           ---------------------------------------------------------------- */}
           <div className="settings-content settings-account-panel">
             <section id="subscription" className="settings-section">
@@ -316,18 +341,109 @@ function SettingsPage() {
                 <h2>Subscription</h2>
                 <p>Manage your plan and billing</p>
               </div>
-              <div className="settings-coming-soon-card">
-                <div className="settings-coming-soon-icon">
-                  <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75">
-                    <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
-                  </svg>
+
+              {subscriptionTier === 'premium' ? (
+                <div className="sub-card sub-card--premium">
+                  <div className="sub-card__header">
+                    <div className="sub-card__plan-info">
+                      <span className="sub-card__badge">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
+                          <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                        </svg>
+                        Premium
+                      </span>
+                      <h3 className="sub-card__plan-name">Premium Plan</h3>
+                      <div className="sub-card__meta">
+                        {subscriptionStatus && (
+                          <span className={`sub-card__status sub-card__status--${subscriptionStatus.toLowerCase()}`}>
+                            {subscriptionStatus.charAt(0).toUpperCase() + subscriptionStatus.slice(1)}
+                          </span>
+                        )}
+                        {paymentSource && (
+                          <span className="sub-card__source">
+                            via {paymentSource === 'stripe' ? 'Stripe' : paymentSource === 'whop' ? 'Whop' : paymentSource}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="sub-card__features">
+                    {[
+                      'Game Predictions',
+                      'Pitcher & Batter Props',
+                      'Scout AI Scouting Reports',
+                      'Odds Across 7+ Books',
+                    ].map(f => (
+                      <div key={f} className="sub-card__feature">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                          <polyline points="20 6 9 17 4 12"/>
+                        </svg>
+                        {f}
+                      </div>
+                    ))}
+                  </div>
+
+                  <div className="sub-card__actions">
+                    <div className="sub-card__btn-row">
+                      <button
+                        type="button"
+                        className="sub-card__btn sub-card__btn--primary"
+                        onClick={handleManageBilling}
+                        disabled={billingLoading}
+                      >
+                        {billingLoading ? (
+                          <span className="sub-card__spinner" />
+                        ) : (
+                          <>
+                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                              <rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/>
+                            </svg>
+                            Manage Billing
+                          </>
+                        )}
+                      </button>
+                      <a
+                        href="https://whop.com/sandlot-picks/"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="sub-card__btn sub-card__btn--secondary"
+                      >
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                          <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/>
+                        </svg>
+                        Manage on Whop
+                      </a>
+                    </div>
+                    <p className="sub-card__hint">
+                      {paymentSource === 'whop'
+                        ? 'Subscribed via Whop — manage billing and cancellation on the Whop platform.'
+                        : 'Update payment method, download invoices, or cancel via the Stripe billing portal.'}
+                    </p>
+                    {billingError && <p className="sub-card__error">{billingError}</p>}
+                  </div>
                 </div>
-                <div className="settings-coming-soon-body">
-                  <h4>Premium Subscription</h4>
-                  <p>Billing, plan management, and upgrade options are coming soon. Stay tuned.</p>
+              ) : (
+                <div className="sub-card sub-card--free">
+                  <div className="sub-card__header">
+                    <div className="sub-card__plan-info">
+                      <span className="sub-card__badge sub-card__badge--free">Free</span>
+                      <h3 className="sub-card__plan-name">Free Plan</h3>
+                      <p className="sub-card__free-desc">Upgrade to unlock game predictions, pitcher props, batter props, and Scout AI scouting reports.</p>
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    className="sub-card__btn sub-card__btn--upgrade"
+                    onClick={handleUpgrade}
+                  >
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                    </svg>
+                    Upgrade to Premium
+                  </button>
                 </div>
-                <span className="settings-coming-soon-badge">Coming Soon</span>
-              </div>
+              )}
             </section>
           </div>
 

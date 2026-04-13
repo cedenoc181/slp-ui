@@ -68,6 +68,8 @@ import PredictionsOverview from './components/pages/predictions/PredictionsOverv
 import GameProps from './components/pages/predictions/GameProps';
 import PitcherProps from './components/pages/predictions/PitcherProps';
 import BatterProps from './components/pages/predictions/BatterProps';
+import UpgradePage from './components/pages/Account/UpgradePage';
+import CheckoutSuccessPage from './components/pages/Account/CheckoutSuccessPage';
 
 // styling imports
 import './styles/chalkboard.css';
@@ -229,6 +231,9 @@ function App() {
           <Route path="/account/settings" element={
             <ProtectedRoute><SettingsPage /></ProtectedRoute>
           } />
+          <Route path="/upgrade" element={<UpgradePage />} />
+          <Route path="/upgrade/success" element={<ProtectedRoute><CheckoutSuccessPage /></ProtectedRoute>} />
+          <Route path="/subscription/success" element={<ProtectedRoute><CheckoutSuccessPage /></ProtectedRoute>} />
           <Route path="/reset-password" element={<ResetPasswordPage />} />
           <Route path="/verify-email" element={<VerifyEmailPage />} />
 

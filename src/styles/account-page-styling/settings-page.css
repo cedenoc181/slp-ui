@@ -596,6 +596,229 @@
   }
 }
 
+/* ── Subscription card ──────────────────────────────────────── */
+.sub-card {
+  border-radius: 12px;
+  border: 1px solid #E2E8F0;
+  overflow: hidden;
+}
+
+.sub-card--premium {
+  background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+  border-color: rgba(99, 102, 241, 0.35);
+}
+
+.sub-card--free {
+  background: #F7F9FC;
+  border-color: #E2E8F0;
+}
+
+.sub-card__header {
+  padding: 1.5rem;
+}
+
+.sub-card__badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  background: linear-gradient(135deg, #6366f1, #4f46e5);
+  color: #fff;
+  border-radius: 20px;
+  padding: 0.25rem 0.7rem;
+  margin-bottom: 0.75rem;
+}
+
+.sub-card__badge--free {
+  background: #E2E8F0;
+  color: #4A5568;
+}
+
+.sub-card__plan-name {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #fff;
+  margin: 0 0 0.5rem;
+}
+
+.sub-card--free .sub-card__plan-name {
+  color: #1A202C;
+}
+
+.sub-card__meta {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.sub-card__status {
+  font-size: 0.8rem;
+  font-weight: 600;
+  padding: 0.2rem 0.6rem;
+  border-radius: 20px;
+}
+
+.sub-card__status--active {
+  background: rgba(52, 211, 153, 0.15);
+  color: #34d399;
+}
+
+.sub-card__status--canceled,
+.sub-card__status--cancelled {
+  background: rgba(239, 68, 68, 0.15);
+  color: #f87171;
+}
+
+.sub-card__status--past_due,
+.sub-card__status--trialing {
+  background: rgba(251, 191, 36, 0.15);
+  color: #fbbf24;
+}
+
+.sub-card__source {
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.4);
+}
+
+.sub-card__free-desc {
+  font-size: 0.875rem;
+  color: #718096;
+  margin: 0.25rem 0 0;
+  line-height: 1.5;
+}
+
+/* Feature checklist */
+.sub-card__features {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.5rem 1rem;
+  padding: 0 1.5rem 1.5rem;
+}
+
+.sub-card__feature {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.82rem;
+  color: rgba(255, 255, 255, 0.65);
+}
+
+.sub-card__feature svg {
+  flex-shrink: 0;
+  stroke: #34d399;
+}
+
+/* Actions area */
+.sub-card__actions {
+  padding: 1.25rem 1.5rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.07);
+  background: rgba(0, 0, 0, 0.15);
+}
+
+.sub-card--free .sub-card__actions {
+  background: transparent;
+  border-top: none;
+  padding-top: 0;
+  padding: 0 1.5rem 1.5rem;
+}
+
+.sub-card__btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.7rem 1.4rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  text-decoration: none;
+  transition: all 0.2s ease;
+  font-family: inherit;
+}
+
+.sub-card__btn-row {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.sub-card__btn--primary {
+  background: rgba(255, 255, 255, 0.12);
+  color: #fff;
+  border: 1px solid rgba(255, 255, 255, 0.22);
+}
+
+.sub-card__btn--primary:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.2);
+  border-color: rgba(255, 255, 255, 0.35);
+}
+
+.sub-card__btn--primary:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.sub-card__btn--secondary {
+  background: transparent;
+  color: rgba(255, 255, 255, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.sub-card__btn--secondary:hover {
+  background: rgba(255, 255, 255, 0.07);
+  color: #fff;
+  border-color: rgba(255, 255, 255, 0.22);
+}
+
+.sub-card__btn--upgrade {
+  background: linear-gradient(135deg, #6366f1, #4f46e5);
+  color: #fff;
+  box-shadow: 0 4px 14px rgba(99, 102, 241, 0.35);
+}
+
+.sub-card__btn--upgrade:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(99, 102, 241, 0.45);
+}
+
+.sub-card__hint {
+  font-size: 0.78rem;
+  color: rgba(255, 255, 255, 0.35);
+  margin: 0.6rem 0 0;
+  line-height: 1.5;
+}
+
+.sub-card__error {
+  font-size: 0.82rem;
+  color: #f87171;
+  margin: 0.5rem 0 0;
+}
+
+.sub-card__spinner {
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  border: 2px solid rgba(255,255,255,0.3);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: sub-spin 0.7s linear infinite;
+}
+
+@keyframes sub-spin {
+  to { transform: rotate(360deg); }
+}
+
+@media (max-width: 600px) {
+  .sub-card__features {
+    grid-template-columns: 1fr;
+  }
+}
+
 /* Logout Link */
 .logout-link {
   background: none;
