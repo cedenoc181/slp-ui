@@ -164,6 +164,14 @@
   margin: 0;
 }
 
+.upgrade-plan-card__billing {
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.35);
+  margin: -0.25rem 0 0;
+  letter-spacing: 0.01em;
+}
+
 .upgrade-card__cta {
   display: flex;
   align-items: center;

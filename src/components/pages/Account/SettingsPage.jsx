@@ -11,7 +11,6 @@ function SettingsPage() {
     logout, logoutAll,
     updateProfile, updatePreferences, changePassword, deleteAccount,
     subscriptionTier, subscriptionStatus, paymentSource, subscriptionPlan,
-    refreshUser,
   } = useAuth();
   const navigate = useNavigate();
 
@@ -61,16 +60,15 @@ function SettingsPage() {
   // -------------------------------------------------------------------------
   const [billingLoading, setBillingLoading] = useState(false);
   const [billingError,   setBillingError]   = useState('');
-  const [changingPlan,   setChangingPlan]   = useState(null); // null | plan key
-  const [changeSuccess,  setChangeSuccess]  = useState('');
+  const [changeSuccess] = useState('');
 
-  const PLAN_LABELS = { day_pass: 'Day Pass', weekly: 'Weekly', monthly: 'Monthly' };
-  const PLAN_PRICES = {
-    day_pass: process.env.REACT_APP_PREMIUM_PRICE_DAILY  || '—',
-    weekly:   process.env.REACT_APP_PREMIUM_PRICE_WEEKLY || '—',
-    monthly:  process.env.REACT_APP_PREMIUM_PRICE        || '—',
+  const PLAN_LABELS  = { weekly: 'Weekly', monthly: 'Monthly', annual: 'Annual' };
+  const PLAN_PRICES  = {
+    weekly:  process.env.REACT_APP_PREMIUM_PRICE_WEEKLY || '—',
+    monthly: process.env.REACT_APP_PREMIUM_PRICE        || '—',
+    annual:  process.env.REACT_APP_PREMIUM_PRICE_ANNUAL || '—',
   };
-  const PLAN_PERIODS = { day_pass: '/day', weekly: '/week', monthly: '/month' };
+  const PLAN_PERIODS = { weekly: '/week', monthly: '/month', annual: '/year' };
 
   const handleManageBilling = async () => {
     setBillingLoading(true);
@@ -81,22 +79,6 @@ function SettingsPage() {
     } catch (err) {
       setBillingError(err.message || 'Unable to open billing portal. Please try again.');
       setBillingLoading(false);
-    }
-  };
-
-  const handleChangePlan = async (plan) => {
-    setChangingPlan(plan);
-    setBillingError('');
-    setChangeSuccess('');
-    try {
-      await stripeService.changePlan(plan);
-      await refreshUser();
-      setChangeSuccess(`Switched to ${PLAN_LABELS[plan]}. Changes take effect immediately.`);
-      setTimeout(() => setChangeSuccess(''), 5000);
-    } catch (err) {
-      setBillingError(err.message || 'Unable to change plan. Please try again.');
-    } finally {
-      setChangingPlan(null);
     }
   };
 
@@ -421,47 +403,94 @@ function SettingsPage() {
 
                   <div className="sub-card__actions">
 
-                    {/* ── Plan switcher (Stripe only, non-cancelled) ── */}
-                    {paymentSource === 'stripe' && subscriptionStatus !== 'canceled' && subscriptionStatus !== 'cancelled' && (
+                    {/* ── Plan options — weekly subscribers ── */}
+                    {paymentSource === 'stripe' && subscriptionPlan === 'weekly' && (
                       <div className="sub-plan-switcher">
-                        <p className="sub-plan-switcher__label">Your plan</p>
+                        <p className="sub-plan-switcher__label">Upgrade your plan</p>
                         <div className="sub-plan-switcher__options">
-                          {['day_pass', 'weekly', 'monthly'].map(plan => {
-                            const isCurrent = plan === subscriptionPlan;
-                            return (
-                              <button
-                                key={plan}
-                                type="button"
-                                className={`sub-plan-option${isCurrent ? ' sub-plan-option--current' : ''}`}
-                                onClick={() => !isCurrent && handleChangePlan(plan)}
-                                disabled={isCurrent || !!changingPlan || billingLoading}
-                              >
-                                {changingPlan === plan ? (
-                                  <span className="sub-card__spinner" />
-                                ) : (
-                                  <>
-                                    {isCurrent && <span className="sub-plan-option__tag">Current</span>}
-                                    <span className="sub-plan-option__name">{PLAN_LABELS[plan]}</span>
-                                    <span className="sub-plan-option__price">${PLAN_PRICES[plan]}{PLAN_PERIODS[plan]}</span>
-                                  </>
-                                )}
-                              </button>
-                            );
-                          })}
+                          <button type="button" className="sub-plan-option sub-plan-option--current" disabled>
+                            <span className="sub-plan-option__tag">Current</span>
+                            <span className="sub-plan-option__name">Weekly</span>
+                            <span className="sub-plan-option__price">${PLAN_PRICES.weekly}/week</span>
+                            <span className="sub-plan-option__one-time">One-time</span>
+                          </button>
+                          <button
+                            type="button"
+                            className="sub-plan-option"
+                            onClick={() => { navigate('/upgrade'); window.scrollTo(0, 0); }}
+                          >
+                            <span className="sub-plan-option__name">Monthly</span>
+                            <span className="sub-plan-option__price">${PLAN_PRICES.monthly}/month</span>
+                            <span className="sub-plan-option__one-time">Recurring</span>
+                          </button>
+                          <button
+                            type="button"
+                            className="sub-plan-option"
+                            onClick={() => { navigate('/upgrade'); window.scrollTo(0, 0); }}
+                          >
+                            <span className="sub-plan-option__name">Annual</span>
+                            <span className="sub-plan-option__price">${PLAN_PRICES.annual}/year</span>
+                            <span className="sub-plan-option__one-time">One-time</span>
+                          </button>
                         </div>
-                        {changeSuccess && <p className="sub-card__success">{changeSuccess}</p>}
-                        <p className="sub-card__hint">Switching plans is prorated — you'll only pay the difference.</p>
+                        <p className="sub-card__hint">
+                          Your weekly access expires automatically. Purchase a monthly or annual plan anytime to extend your access.
+                        </p>
                       </div>
                     )}
 
+                    {/* ── Plan switcher — monthly subscribers only ── */}
+                    {paymentSource === 'stripe' && subscriptionPlan === 'monthly' && (
+                      <div className="sub-plan-switcher">
+                        <p className="sub-plan-switcher__label">Switch plan</p>
+                        <div className="sub-plan-switcher__options">
+                          {/* Current plan — disabled */}
+                          <button type="button" className="sub-plan-option sub-plan-option--current" disabled>
+                            <span className="sub-plan-option__tag">Current</span>
+                            <span className="sub-plan-option__name">Monthly</span>
+                            <span className="sub-plan-option__price">${PLAN_PRICES.monthly}/month</span>
+                          </button>
+
+                          {/* Weekly — one-time, send to upgrade page */}
+                          <button
+                            type="button"
+                            className="sub-plan-option"
+                            onClick={() => { navigate('/upgrade'); window.scrollTo(0, 0); }}
+                            disabled={billingLoading}
+                          >
+                            <span className="sub-plan-option__name">Weekly</span>
+                            <span className="sub-plan-option__price">${PLAN_PRICES.weekly}/week</span>
+                            <span className="sub-plan-option__one-time">One-time</span>
+                          </button>
+
+                          {/* Annual — one-time, send to upgrade page */}
+                          <button
+                            type="button"
+                            className="sub-plan-option"
+                            onClick={() => { navigate('/upgrade'); window.scrollTo(0, 0); }}
+                            disabled={billingLoading}
+                          >
+                            <span className="sub-plan-option__name">Annual</span>
+                            <span className="sub-plan-option__price">${PLAN_PRICES.annual}/year</span>
+                            <span className="sub-plan-option__one-time">One-time</span>
+                          </button>
+                        </div>
+                        <p className="sub-card__hint">
+                          To switch to a one-time plan, cancel your monthly subscription first via Manage Billing, then purchase the new plan.
+                        </p>
+                      </div>
+                    )}
+
+                    {changeSuccess && <p className="sub-card__success">{changeSuccess}</p>}
+
                     {/* ── Billing buttons ── */}
                     <div className="sub-card__btn-row">
-                      {paymentSource === 'stripe' ? (
+                      {paymentSource === 'stripe' && subscriptionPlan === 'monthly' ? (
                         <button
                           type="button"
                           className="sub-card__btn sub-card__btn--primary"
                           onClick={handleManageBilling}
-                          disabled={billingLoading || !!changingPlan}
+                          disabled={billingLoading}
                         >
                           {billingLoading ? (
                             <span className="sub-card__spinner" />
@@ -492,7 +521,9 @@ function SettingsPage() {
                     <p className="sub-card__hint">
                       {paymentSource === 'whop'
                         ? 'Subscribed via Whop — manage billing and cancellation on the Whop platform.'
-                        : 'Update payment method, download invoices, or cancel via the Stripe billing portal.'}
+                        : subscriptionPlan === 'monthly'
+                          ? 'Update payment method, download invoices, or cancel via the Stripe billing portal.'
+                          : 'This is a one-time purchase — no recurring charges. Your access expires automatically.'}
                     </p>
                     {billingError && <p className="sub-card__error">{billingError}</p>}
                   </div>

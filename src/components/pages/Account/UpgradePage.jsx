@@ -5,32 +5,35 @@ import stripeService from '../../../data/services/stripeService';
 import './upgrade-page.css';
 
 const PRICES = {
-  day_pass: process.env.REACT_APP_PREMIUM_PRICE_DAILY  || '—',
-  weekly:   process.env.REACT_APP_PREMIUM_PRICE_WEEKLY || '—',
-  monthly:  process.env.REACT_APP_PREMIUM_PRICE        || '—',
+  weekly:  process.env.REACT_APP_PREMIUM_PRICE_WEEKLY || '—',
+  monthly: process.env.REACT_APP_PREMIUM_PRICE        || '—',
+  annual:  process.env.REACT_APP_PREMIUM_PRICE_ANNUAL || '—',
 };
 
 const PLANS = [
   {
-    key: 'day_pass',
-    name: 'Day Pass',
-    period: '/day',
-    desc: 'Full access for 24 hours. Perfect for a single game day.',
-    badge: null,
-  },
-  {
     key: 'weekly',
     name: 'Weekly',
     period: '/week',
-    desc: 'Seven days of full access. Great for a week of MLB action.',
+    desc: 'Full access for 7 days. No subscription, no renewal.',
     badge: null,
+    recurring: false,
   },
   {
     key: 'monthly',
     name: 'Monthly',
     period: '/month',
-    desc: 'Best value. Full access all month, cancel anytime.',
+    desc: 'Full access, billed monthly. Cancel anytime.',
+    badge: 'Most Popular',
+    recurring: true,
+  },
+  {
+    key: 'annual',
+    name: 'Annual',
+    period: '/year',
+    desc: 'Full season access in one payment. No subscription.',
     badge: 'Best Value',
+    recurring: false,
   },
 ];
 
@@ -70,14 +73,6 @@ export default function UpgradePage() {
     }
   };
 
-  const handleWhop = () => {
-    if (!isAuthenticated) {
-      navigate('/account', { state: { from: { pathname: '/upgrade' } } });
-      return;
-    }
-    window.open('https://whop.com/sandlot-picks/', '_blank', 'noopener,noreferrer');
-  };
-
   return (
     <div className="upgrade-page">
 
@@ -109,6 +104,9 @@ export default function UpgradePage() {
               <span className="upgrade-card__amount">${PRICES[plan.key]}</span>
               <span className="upgrade-card__period">{plan.period}</span>
             </div>
+            <p className="upgrade-plan-card__billing">
+              {plan.recurring ? '↻ Renews monthly' : '✕ One-time, no renewal'}
+            </p>
             <p className="upgrade-card__desc">{plan.desc}</p>
             <button
               className="upgrade-card__cta"
@@ -131,28 +129,6 @@ export default function UpgradePage() {
       </div>
 
       {error && <p className="upgrade-card__error" style={{ marginTop: '0.75rem' }}>{error}</p>}
-
-      {/* Whop option */}
-      <div className="upgrade-whop-row">
-        <div className="upgrade-card__divider" style={{ flex: 1 }}>
-          <span>or subscribe via</span>
-        </div>
-        <button
-          className="upgrade-card__cta upgrade-card__cta--whop"
-          style={{ maxWidth: 260 }}
-          onClick={handleWhop}
-          disabled={!!loading}
-        >
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-            <path d="M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm0 18a8 8 0 1 1 0-16 8 8 0 0 1 0 16zm-1-11h2v6h-2zm0-4h2v2h-2z"/>
-          </svg>
-          Subscribe via Whop
-        </button>
-        <p className="upgrade-card__legal" style={{ textAlign: 'center' }}>
-          Stripe: pay by card, cancel anytime from account settings.<br />
-          Whop: manage via the Whop app or website.
-        </p>
-      </div>
 
       {/* Feature list */}
       <div className="upgrade-body" style={{ marginTop: '2.5rem' }}>

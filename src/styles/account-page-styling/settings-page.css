@@ -883,6 +883,15 @@
   margin-bottom: 0.1rem;
 }
 
+.sub-plan-option__one-time {
+  font-size: 0.6rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.3);
+  margin-top: 0.1rem;
+}
+
 .sub-plan-option__name {
   font-size: 0.82rem;
   font-weight: 700;
