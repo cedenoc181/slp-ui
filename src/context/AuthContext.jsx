@@ -47,7 +47,8 @@ function mergeProfile(base, profile) {
   const subscriptionTier   = profile.subscription_tier   ?? 'free';
   const subscriptionStatus = profile.subscription_status ?? null;
   const paymentSource      = profile.payment_source      ?? null;
-  const subscriptionPlan   = profile.subscription_plan   ?? null;
+  const subscriptionPlan      = profile.subscription_plan ? profile.subscription_plan.toLowerCase() : null;
+  const subscriptionExpiresAt = profile.subscription_expires_at ?? null;
   return {
     ...base,
     isAdmin,
@@ -56,6 +57,7 @@ function mergeProfile(base, profile) {
     subscriptionStatus,
     paymentSource,
     subscriptionPlan,
+    subscriptionExpiresAt,
     role: isAdmin ? 'admin' : isVerified ? 'verified' : 'user',
     displayName: profile.display_name || base.displayName,
     favoriteTeamId: profile.favorite_team_id ?? null,
@@ -216,7 +218,8 @@ export function AuthProvider({ children }) {
       subscriptionTier:   user?.subscriptionTier   ?? null,
       subscriptionStatus: user?.subscriptionStatus ?? null,
       paymentSource:      user?.paymentSource      ?? null,
-      subscriptionPlan:   user?.subscriptionPlan   ?? null,
+      subscriptionPlan:      user?.subscriptionPlan      ?? null,
+      subscriptionExpiresAt: user?.subscriptionExpiresAt ?? null,
       userRole: user?.role ?? null,
       // Auth actions
       login,

@@ -10,7 +10,7 @@ function SettingsPage() {
     isAuthenticated, loading, user,
     logout, logoutAll,
     updateProfile, updatePreferences, changePassword, deleteAccount,
-    subscriptionTier, subscriptionStatus, paymentSource, subscriptionPlan,
+    subscriptionTier, subscriptionStatus, paymentSource, subscriptionPlan, subscriptionExpiresAt,
   } = useAuth();
   const navigate = useNavigate();
 
@@ -61,14 +61,24 @@ function SettingsPage() {
   const [billingLoading, setBillingLoading] = useState(false);
   const [billingError,   setBillingError]   = useState('');
   const [changeSuccess] = useState('');
+  const [planModal, setPlanModal] = useState(null); // null | 'weekly' | 'annual'
 
-  const PLAN_LABELS  = { weekly: 'Weekly', monthly: 'Monthly', annual: 'Annual' };
+  const PLAN_LABELS  = { weekly: 'Weekly', monthly: 'Monthly', annual: 'Annual', gifted: 'VIP Access' };
+  const isVip = subscriptionPlan === 'gifted';
   const PLAN_PRICES  = {
     weekly:  process.env.REACT_APP_PREMIUM_PRICE_WEEKLY || '—',
     monthly: process.env.REACT_APP_PREMIUM_PRICE        || '—',
     annual:  process.env.REACT_APP_PREMIUM_PRICE_ANNUAL || '—',
   };
   const PLAN_PERIODS = { weekly: '/week', monthly: '/month', annual: '/year' };
+
+  const isCancelled = subscriptionStatus === 'canceled' || subscriptionStatus === 'cancelled';
+  const expiresDate = subscriptionExpiresAt ? new Date(subscriptionExpiresAt) : null;
+  const isExpired   = expiresDate ? expiresDate < new Date() : false;
+  const canSwitch   = !isCancelled || isExpired; // locked while cancelled-but-still-active
+  const expiryLabel = expiresDate
+    ? expiresDate.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })
+    : null;
 
   const handleManageBilling = async () => {
     setBillingLoading(true);
@@ -355,29 +365,43 @@ function SettingsPage() {
                 <div className="sub-card sub-card--premium">
                   <div className="sub-card__header">
                     <div className="sub-card__plan-info">
-                      <span className="sub-card__badge">
-                        <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
-                          <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
-                        </svg>
-                        Premium
+                      <span className={`sub-card__badge${isVip ? ' sub-card__badge--vip' : ''}`}>
+                        {isVip ? (
+                          <>
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
+                              <path d="M5 3l3 6.5L12 4l4 5.5L19 3l2 9H3L5 3zm-2 11h18v2H3v-2zm2 4h14v2H5v-2z"/>
+                            </svg>
+                            VIP
+                          </>
+                        ) : (
+                          <>
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
+                              <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                            </svg>
+                            Premium
+                          </>
+                        )}
                       </span>
                       <h3 className="sub-card__plan-name">
-                        {PLAN_LABELS[subscriptionPlan] || 'Premium'} Plan
+                        {PLAN_LABELS[subscriptionPlan] || 'Premium'}
                       </h3>
+                      {isVip && (
+                        <p className="sub-card__vip-desc">Complimentary access — enjoy everything Premium has to offer.</p>
+                      )}
                       <div className="sub-card__meta">
                         {subscriptionStatus && (
                           <span className={`sub-card__status sub-card__status--${subscriptionStatus.toLowerCase()}`}>
                             {subscriptionStatus.charAt(0).toUpperCase() + subscriptionStatus.slice(1)}
                           </span>
                         )}
-                        {paymentSource && (
+                        {!isVip && paymentSource && (
                           <span className="sub-card__source">
                             via {paymentSource === 'stripe' ? 'Stripe' : paymentSource === 'whop' ? 'Whop' : paymentSource}
                           </span>
                         )}
                       </div>
                     </div>
-                    {subscriptionPlan && (
+                    {!isVip && subscriptionPlan && PLAN_PRICES[subscriptionPlan] && (
                       <div className="sub-card__price-display">
                         <span className="sub-card__price-amount">${PLAN_PRICES[subscriptionPlan]}</span>
                         <span className="sub-card__price-period">{PLAN_PERIODS[subscriptionPlan]}</span>
@@ -391,6 +415,7 @@ function SettingsPage() {
                       'Pitcher & Batter Props',
                       'Scout AI Scouting Reports',
                       'Odds Across 7+ Books',
+                      ...(['monthly', 'annual'].includes(subscriptionPlan) ? ['Beta Access to New Features', 'Model Performance Dashboard'] : []),
                     ].map(f => (
                       <div key={f} className="sub-card__feature">
                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
@@ -401,7 +426,7 @@ function SettingsPage() {
                     ))}
                   </div>
 
-                  <div className="sub-card__actions">
+                  {!isVip && <div className="sub-card__actions">
 
                     {/* ── Plan options — weekly subscribers ── */}
                     {paymentSource === 'stripe' && subscriptionPlan === 'weekly' && (
@@ -417,7 +442,7 @@ function SettingsPage() {
                           <button
                             type="button"
                             className="sub-plan-option"
-                            onClick={() => { navigate('/upgrade'); window.scrollTo(0, 0); }}
+                            onClick={() => setPlanModal('monthly')}
                           >
                             <span className="sub-plan-option__name">Monthly</span>
                             <span className="sub-plan-option__price">${PLAN_PRICES.monthly}/month</span>
@@ -426,7 +451,7 @@ function SettingsPage() {
                           <button
                             type="button"
                             className="sub-plan-option"
-                            onClick={() => { navigate('/upgrade'); window.scrollTo(0, 0); }}
+                            onClick={() => setPlanModal('annual')}
                           >
                             <span className="sub-plan-option__name">Annual</span>
                             <span className="sub-plan-option__price">${PLAN_PRICES.annual}/year</span>
@@ -443,41 +468,55 @@ function SettingsPage() {
                     {paymentSource === 'stripe' && subscriptionPlan === 'monthly' && (
                       <div className="sub-plan-switcher">
                         <p className="sub-plan-switcher__label">Switch plan</p>
+
+                        {/* Cancelled — show expiry lock notice */}
+                        {isCancelled && !isExpired && expiryLabel && (
+                          <div className="sub-plan-expiry-notice">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                              <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
+                            </svg>
+                            Your access continues until <strong>{expiryLabel}</strong>. You can purchase a new plan after that date.
+                          </div>
+                        )}
+
                         <div className="sub-plan-switcher__options">
-                          {/* Current plan — disabled */}
+                          {/* Current plan — always disabled */}
                           <button type="button" className="sub-plan-option sub-plan-option--current" disabled>
                             <span className="sub-plan-option__tag">Current</span>
                             <span className="sub-plan-option__name">Monthly</span>
                             <span className="sub-plan-option__price">${PLAN_PRICES.monthly}/month</span>
                           </button>
 
-                          {/* Weekly — one-time, send to upgrade page */}
+                          {/* Weekly */}
                           <button
                             type="button"
                             className="sub-plan-option"
-                            onClick={() => { navigate('/upgrade'); window.scrollTo(0, 0); }}
-                            disabled={billingLoading}
+                            onClick={canSwitch ? () => setPlanModal('weekly') : undefined}
+                            disabled={!canSwitch || billingLoading}
                           >
                             <span className="sub-plan-option__name">Weekly</span>
                             <span className="sub-plan-option__price">${PLAN_PRICES.weekly}/week</span>
                             <span className="sub-plan-option__one-time">One-time</span>
                           </button>
 
-                          {/* Annual — one-time, send to upgrade page */}
+                          {/* Annual */}
                           <button
                             type="button"
                             className="sub-plan-option"
-                            onClick={() => { navigate('/upgrade'); window.scrollTo(0, 0); }}
-                            disabled={billingLoading}
+                            onClick={canSwitch ? () => setPlanModal('annual') : undefined}
+                            disabled={!canSwitch || billingLoading}
                           >
                             <span className="sub-plan-option__name">Annual</span>
                             <span className="sub-plan-option__price">${PLAN_PRICES.annual}/year</span>
                             <span className="sub-plan-option__one-time">One-time</span>
                           </button>
                         </div>
-                        <p className="sub-card__hint">
-                          To switch to a one-time plan, cancel your monthly subscription first via Manage Billing, then purchase the new plan.
-                        </p>
+
+                        {!isCancelled && (
+                          <p className="sub-card__hint">
+                            To switch plans, cancel your monthly subscription via the Stripe billing portal. Once your current access expires, you'll be able to purchase any new plan.
+                          </p>
+                        )}
                       </div>
                     )}
 
@@ -526,7 +565,7 @@ function SettingsPage() {
                           : 'This is a one-time purchase — no recurring charges. Your access expires automatically.'}
                     </p>
                     {billingError && <p className="sub-card__error">{billingError}</p>}
-                  </div>
+                  </div>}
                 </div>
               ) : (
                 <div className="sub-card sub-card--free">
@@ -551,6 +590,107 @@ function SettingsPage() {
               )}
             </section>
           </div>
+
+          {/* ── Plan info modal ────────────────────────────────────────── */}
+          {planModal && (() => {
+            const MODAL_CONTENT = {
+              weekly: {
+                name: 'Weekly Access',
+                price: `$${PLAN_PRICES.weekly}`,
+                period: 'one-time',
+                tag: 'One-time purchase · No renewal',
+                desc: 'Get full access to every prediction, prop, and Scout AI scouting report for 7 days.',
+                details: [
+                  'Access begins immediately upon payment.',
+                  'Expires exactly 7 days after purchase — no auto-renewal.',
+                  'Includes game predictions, pitcher props, batter props, and Scout AI.',
+                  'Odds updated daily across 7+ sportsbooks.',
+                  'No subscription, no cancellation needed.',
+                ],
+                cta: 'Get Weekly Access',
+                plan: 'weekly',
+              },
+              monthly: {
+                name: 'Monthly Subscription',
+                price: `$${PLAN_PRICES.monthly}`,
+                period: '/month',
+                tag: 'Recurring · Cancel anytime',
+                desc: 'Full access every day of the month, automatically renewed until you cancel.',
+                details: [
+                  'Access begins immediately upon payment.',
+                  'Renews automatically each month — cancel anytime from Account Settings.',
+                  'Includes game predictions, pitcher props, batter props, and Scout AI.',
+                  'Odds updated daily across 7+ sportsbooks.',
+                  'Cancel before your next billing date and you keep access until the period ends.',
+                  'Early beta access to new features as they are developed.',
+                  'Model Performance Dashboard — see how our AI & ML models are performing to sharpen your decision making.',
+                ],
+                cta: 'Get Monthly Access',
+                plan: 'monthly',
+              },
+              annual: {
+                name: 'Annual Access',
+                price: `$${PLAN_PRICES.annual}`,
+                period: 'one-time',
+                tag: 'One-time purchase · Full season',
+                desc: 'Lock in a full year of access with a single payment — no subscription, no renewals.',
+                details: [
+                  'Access begins immediately upon payment.',
+                  'Expires 365 days after purchase — no auto-renewal.',
+                  'Includes game predictions, pitcher props, batter props, and Scout AI.',
+                  'Odds updated daily across 7+ sportsbooks.',
+                  'Best value for the full MLB season and beyond.',
+                  'Early beta access to new features as they are developed.',
+                  'Model Performance Dashboard — see how our AI & ML models are performing to sharpen your decision making.',
+                ],
+                cta: 'Get Annual Access',
+                plan: 'annual',
+              },
+            };
+            const m = MODAL_CONTENT[planModal];
+            return (
+              <div className="plan-modal-overlay" onClick={() => setPlanModal(null)}>
+                <div className="plan-modal" onClick={e => e.stopPropagation()}>
+                  <button className="plan-modal__close" onClick={() => setPlanModal(null)} aria-label="Close">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                      <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+                    </svg>
+                  </button>
+
+                  <div className="plan-modal__header">
+                    <span className="plan-modal__tag">{m.tag}</span>
+                    <h3 className="plan-modal__name">{m.name}</h3>
+                    <div className="plan-modal__price">
+                      <span className="plan-modal__amount">{m.price}</span>
+                      <span className="plan-modal__period">{m.period}</span>
+                    </div>
+                    <p className="plan-modal__desc">{m.desc}</p>
+                  </div>
+
+                  <ul className="plan-modal__details">
+                    {m.details.map((d, i) => (
+                      <li key={i} className="plan-modal__detail">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                          <polyline points="20 6 9 17 4 12"/>
+                        </svg>
+                        {d}
+                      </li>
+                    ))}
+                  </ul>
+
+                  <button
+                    className="plan-modal__cta"
+                    onClick={() => { setPlanModal(null); navigate('/upgrade'); window.scrollTo(0, 0); }}
+                  >
+                    {m.cta}
+                  </button>
+                  <p className="plan-modal__footnote">
+                    You'll be taken to the checkout page to complete your purchase.
+                  </p>
+                </div>
+              </div>
+            );
+          })()}
 
           {/* ----------------------------------------------------------------
               Account Management — outside the main form so buttons don't
