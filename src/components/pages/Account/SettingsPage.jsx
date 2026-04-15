@@ -63,14 +63,14 @@ function SettingsPage() {
   const [changeSuccess] = useState('');
   const [planModal, setPlanModal] = useState(null); // null | 'weekly' | 'annual'
 
-  const PLAN_LABELS  = { weekly: 'Weekly', monthly: 'Monthly', annual: 'Annual', gifted: 'VIP Access' };
+  const PLAN_LABELS  = { weekly: 'Weekly', monthly: 'Monthly', annual: 'Seasonal', gifted: 'VIP Access' };
   const isVip = subscriptionPlan === 'gifted';
   const PLAN_PRICES  = {
     weekly:  process.env.REACT_APP_PREMIUM_PRICE_WEEKLY || '—',
     monthly: process.env.REACT_APP_PREMIUM_PRICE        || '—',
     annual:  process.env.REACT_APP_PREMIUM_PRICE_ANNUAL || '—',
   };
-  const PLAN_PERIODS = { weekly: '/week', monthly: '/month', annual: '/year' };
+  const PLAN_PERIODS = { weekly: '/week', monthly: '/month', annual: '/season' };
 
   const isCancelled = subscriptionStatus === 'canceled' || subscriptionStatus === 'cancelled';
   const expiresDate = subscriptionExpiresAt ? new Date(subscriptionExpiresAt) : null;
@@ -453,7 +453,7 @@ function SettingsPage() {
                             className="sub-plan-option"
                             onClick={() => setPlanModal('annual')}
                           >
-                            <span className="sub-plan-option__name">Annual</span>
+                            <span className="sub-plan-option__name">Seasonal</span>
                             <span className="sub-plan-option__price">${PLAN_PRICES.annual}/year</span>
                             <span className="sub-plan-option__one-time">One-time</span>
                           </button>
@@ -506,7 +506,7 @@ function SettingsPage() {
                             onClick={canSwitch ? () => setPlanModal('annual') : undefined}
                             disabled={!canSwitch || billingLoading}
                           >
-                            <span className="sub-plan-option__name">Annual</span>
+                            <span className="sub-plan-option__name">Seasonal</span>
                             <span className="sub-plan-option__price">${PLAN_PRICES.annual}/year</span>
                             <span className="sub-plan-option__one-time">One-time</span>
                           </button>
@@ -629,9 +629,9 @@ function SettingsPage() {
                 plan: 'monthly',
               },
               annual: {
-                name: 'Annual Access',
+                name: 'Seasonal Access',
                 price: `$${PLAN_PRICES.annual}`,
-                period: 'one-time',
+                period: '/season',
                 tag: 'One-time purchase · Full season',
                 desc: 'Lock in a full year of access with a single payment — no subscription, no renewals.',
                 details: [
@@ -643,7 +643,7 @@ function SettingsPage() {
                   'Early beta access to new features as they are developed.',
                   'Model Performance Dashboard — see how our AI & ML models are performing to sharpen your decision making.',
                 ],
-                cta: 'Get Annual Access',
+                cta: 'Get Seasonal Access',
                 plan: 'annual',
               },
             };
@@ -678,15 +678,13 @@ function SettingsPage() {
                     ))}
                   </ul>
 
-                  <button
-                    className="plan-modal__cta"
-                    onClick={() => { setPlanModal(null); navigate('/upgrade'); window.scrollTo(0, 0); }}
-                  >
-                    {m.cta}
-                  </button>
-                  <p className="plan-modal__footnote">
-                    You'll be taken to the checkout page to complete your purchase.
-                  </p>
+                  <div className="plan-modal__locked">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                      <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                    </svg>
+                    Your current plan is still active. Once your membership expires you'll be able to select a new plan.
+                  </div>
                 </div>
               </div>
             );

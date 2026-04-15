@@ -121,7 +121,7 @@ function AboutPage() {
               </div>
               <div className="tier-card premium">
                 <h4>Premium</h4>
-                <p>Coming soon: predictions, advanced analytical tools, and exclusive features for serious researchers.</p>
+                <p>Full access to game predictions, pitcher and batter props, Scout AI scouting reports, and live odds across 7+ sportsbooks — powered by our machine learning and AI models. Monthly and annual members also get early beta access to new features and the Model Performance Dashboard.</p>
               </div>
             </div>
           </div>

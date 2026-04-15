@@ -29,8 +29,8 @@ const PLANS = [
   },
   {
     key: 'annual',
-    name: 'Annual',
-    period: '/year',
+    name: 'Seasonal',
+    period: '/season',
     desc: 'Full season access in one payment. No subscription.',
     badge: 'Best Value',
     recurring: false,
@@ -45,6 +45,12 @@ const FEATURES = [
   { icon: '📊', label: 'Odds Across 7+ Books',      desc: 'Best available lines from DraftKings, FanDuel, BetMGM, Caesars, and more.' },
   { icon: '🎯', label: 'Confidence Scoring',         desc: 'Every pick rated 1–5 with win probability and EV vs. the market.' },
 ];
+
+const ANNUAL_CUTOFF = new Date('2026-06-01');
+const isAnnualExpired = new Date() >= ANNUAL_CUTOFF;
+
+// Days remaining until annual is pulled
+const daysUntilCutoff = Math.max(0, Math.ceil((ANNUAL_CUTOFF - new Date()) / (1000 * 60 * 60 * 24)));
 
 export default function UpgradePage() {
   const navigate = useNavigate();
@@ -91,41 +97,65 @@ export default function UpgradePage() {
 
       {/* Plan cards */}
       <div className="upgrade-plans">
-        {PLANS.map((plan) => (
-          <div
-            key={plan.key}
-            className={`upgrade-plan-card${plan.badge ? ' upgrade-plan-card--featured' : ''}`}
-          >
-            {plan.badge && (
-              <div className="upgrade-card__badge">{plan.badge}</div>
-            )}
-            <div className="upgrade-card__name">{plan.name}</div>
-            <div className="upgrade-card__price">
-              <span className="upgrade-card__amount">${PRICES[plan.key]}</span>
-              <span className="upgrade-card__period">{plan.period}</span>
-            </div>
-            <p className="upgrade-plan-card__billing">
-              {plan.recurring ? '↻ Renews monthly' : '✕ One-time, no renewal'}
-            </p>
-            <p className="upgrade-card__desc">{plan.desc}</p>
-            <button
-              className="upgrade-card__cta"
-              onClick={() => handleStripe(plan.key)}
-              disabled={!!loading}
+        {PLANS.map((plan) => {
+          const isAnnual = plan.key === 'annual';
+          const muted = isAnnual && isAnnualExpired;
+          return (
+            <div
+              key={plan.key}
+              className={[
+                'upgrade-plan-card',
+                plan.badge && !muted ? 'upgrade-plan-card--featured' : '',
+                muted ? 'upgrade-plan-card--muted' : '',
+              ].filter(Boolean).join(' ')}
             >
-              {loading === plan.key ? (
-                <span className="upgrade-spinner" />
-              ) : (
-                <>
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                    <rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/>
-                  </svg>
-                  {isAuthenticated ? `Get ${plan.name}` : `Sign Up & Get ${plan.name}`}
-                </>
+              {/* Limited time banner for annual */}
+              {isAnnual && !isAnnualExpired && (
+                <div className="upgrade-plan-card__limited">
+                  ⏳ Available for {daysUntilCutoff} more day{daysUntilCutoff !== 1 ? 's' : ''}
+                </div>
               )}
-            </button>
-          </div>
-        ))}
+
+              {muted ? (
+                <div className="upgrade-card__badge upgrade-card__badge--muted">Unavailable</div>
+              ) : plan.badge ? (
+                <div className="upgrade-card__badge">{plan.badge}</div>
+              ) : null}
+
+              <div className="upgrade-card__name">{plan.name}</div>
+              <div className="upgrade-card__price">
+                <span className="upgrade-card__amount">${PRICES[plan.key]}</span>
+                <span className="upgrade-card__period">{plan.period}</span>
+              </div>
+              <p className="upgrade-plan-card__billing">
+                {plan.recurring ? '↻ Renews monthly' : '✕ One-time, no renewal'}
+              </p>
+              <p className="upgrade-card__desc">
+                {muted
+                  ? 'The season pass is no longer available mid-season. Check back next season.'
+                  : plan.desc}
+              </p>
+              {!muted && (
+                <button
+                  className="upgrade-card__cta"
+                  onClick={() => handleStripe(plan.key)}
+                  disabled={!!loading}
+                >
+                  {loading === plan.key ? (
+                    <span className="upgrade-spinner" />
+                  ) : (
+                    <>
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                        <rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/>
+                      </svg>
+                      {isAuthenticated ? `Get ${plan.name}` : `Sign Up & Get ${plan.name}`}
+                    </>
+                  )}
+                </button>
+              )}
+            </div>
+          );
+        })}
       </div>
 
       {error && <p className="upgrade-card__error" style={{ marginTop: '0.75rem' }}>{error}</p>}
