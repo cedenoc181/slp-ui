@@ -7,7 +7,7 @@ import { TEAMS } from '../../../data/constants/apiConstants';
 
 function SettingsPage() {
   const {
-    isAuthenticated, loading, user,
+    isAuthenticated, loading, user, isAdmin,
     logout, logoutAll,
     updateProfile, updatePreferences, changePassword, deleteAccount,
     subscriptionTier, subscriptionStatus, paymentSource, subscriptionPlan, subscriptionExpiresAt,
@@ -260,6 +260,14 @@ function SettingsPage() {
               </svg>
               Sessions
             </a>
+            {isAdmin && (
+              <a href="#admin-tools" className="settings-nav-item">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M12 2L3 7v6c0 5 3.8 9.5 9 11 5.2-1.5 9-6 9-11V7l-9-5z"/>
+                </svg>
+                Admin Tools
+              </a>
+            )}
             <button type="button" className="settings-nav-item logout" onClick={handleLogout}>
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
@@ -689,6 +697,58 @@ function SettingsPage() {
               </div>
             );
           })()}
+
+          {/* ----------------------------------------------------------------
+              Admin Tools — admin accounts only
+          ---------------------------------------------------------------- */}
+          {isAdmin && (
+            <div className="settings-content settings-account-panel">
+              <section id="admin-tools" className="settings-section">
+                <div className="section-header">
+                  <h2>Admin Tools</h2>
+                  <p>Internal tools for content and model management</p>
+                </div>
+                <div className="settings-admin-grid">
+                  <button
+                    type="button"
+                    className="settings-admin-card"
+                    onClick={() => navigate('/admin')}
+                  >
+                    <div className="settings-admin-card__icon">
+                      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <rect x="3"  y="3"  width="7" height="7" />
+                        <rect x="14" y="3"  width="7" height="7" />
+                        <rect x="14" y="14" width="7" height="7" />
+                        <rect x="3"  y="14" width="7" height="7" />
+                      </svg>
+                    </div>
+                    <div className="settings-admin-card__body">
+                      <h4>Command Center</h4>
+                      <p>Daily hit rate, prediction countdown, and content manager</p>
+                    </div>
+                  </button>
+
+                  <button
+                    type="button"
+                    className="settings-admin-card"
+                    onClick={() => navigate('/admin/model-performance')}
+                  >
+                    <div className="settings-admin-card__icon">
+                      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <line x1="18" y1="20" x2="18" y2="10" />
+                        <line x1="12" y1="20" x2="12" y2="4" />
+                        <line x1="6"  y1="20" x2="6"  y2="14" />
+                      </svg>
+                    </div>
+                    <div className="settings-admin-card__body">
+                      <h4>Model Performance</h4>
+                      <p>Scout AI accuracy, probability calibration, and EV tracking</p>
+                    </div>
+                  </button>
+                </div>
+              </section>
+            </div>
+          )}
 
           {/* ----------------------------------------------------------------
               Account Management — outside the main form so buttons don't

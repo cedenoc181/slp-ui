@@ -311,8 +311,15 @@ function ArticleEditor() {
     <div className="article-editor-page">
       <div className="container">
         {/* Back + Header */}
-        <button type="button" className="editor-back-link" onClick={() => navigate('/admin')}>
-          ‹ Back to Content Manager
+        <button
+          type="button"
+          className="editor-back-link"
+          onClick={() => navigate('/admin')}
+          aria-label="Back to command center"
+        >
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.25" strokeLinecap="round" strokeLinejoin="round">
+            <polyline points="15 18 9 12 15 6" />
+          </svg>
         </button>
 
         <div className="editor-header">

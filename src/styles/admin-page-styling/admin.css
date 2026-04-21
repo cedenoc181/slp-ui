@@ -50,7 +50,298 @@
   margin: 0;
 }
 
-.admin-header-actions { display: flex; gap: 0.75rem; }
+.admin-header-title {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+}
+
+.admin-back-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.7);
+  text-decoration: none;
+  flex-shrink: 0;
+  transition: background 0.15s, border-color 0.15s, color 0.15s, transform 0.15s;
+}
+
+.admin-back-link:hover {
+  background: rgba(100, 181, 246, 0.1);
+  border-color: rgba(100, 181, 246, 0.35);
+  color: #64b5f6;
+  transform: translateX(-2px);
+}
+
+.admin-header-actions {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.admin-action-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  padding: 0.55rem 0.95rem;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  color: rgba(255, 255, 255, 0.82);
+  font-size: 0.82rem;
+  font-weight: 600;
+  text-decoration: none;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s, color 0.15s, transform 0.15s;
+}
+
+.admin-action-btn:hover {
+  background: rgba(100, 181, 246, 0.1);
+  border-color: rgba(100, 181, 246, 0.4);
+  color: #64b5f6;
+  transform: translateY(-1px);
+}
+
+.admin-action-btn__icon {
+  flex-shrink: 0;
+  opacity: 0.8;
+}
+
+.admin-action-btn:hover .admin-action-btn__icon {
+  opacity: 1;
+}
+
+/* ── Command Center Dashboard ─────────────────────────────── */
+.admin-hero-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.admin-wedge {
+  background: #1a1a1a;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 14px;
+  padding: 1.15rem 1.3rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+  position: relative;
+  min-height: 130px;
+  transition: border-color 0.18s ease, transform 0.15s ease, box-shadow 0.18s ease;
+}
+
+.admin-wedge__label {
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.admin-wedge__date {
+  font-size: 0.62rem;
+  color: rgba(255, 255, 255, 0.3);
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: none;
+}
+
+.admin-wedge__value {
+  font-size: 1.65rem;
+  font-weight: 800;
+  color: #fff;
+  letter-spacing: -0.01em;
+  line-height: 1.1;
+}
+
+.admin-wedge__sub {
+  font-size: 0.78rem;
+  color: rgba(255, 255, 255, 0.45);
+  line-height: 1.4;
+}
+
+/* ── Countdown wedge states ── */
+.admin-wedge--countdown .admin-wedge__value.live {
+  color: #4ade80;
+}
+
+.admin-wedge--countdown .admin-wedge__value.countdown {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.15rem;
+  font-variant-numeric: tabular-nums;
+  color: #fbbf24;
+}
+
+.admin-wedge--countdown .admin-wedge__value.countdown .sep {
+  color: rgba(251, 191, 36, 0.4);
+  padding: 0 0.1rem;
+}
+
+.admin-wedge--countdown.state-live {
+  border-color: rgba(74, 222, 128, 0.3);
+  background: linear-gradient(135deg, rgba(74, 222, 128, 0.06), transparent 70%);
+}
+
+.admin-wedge--countdown.state-countdown {
+  border-color: rgba(251, 191, 36, 0.25);
+  background: linear-gradient(135deg, rgba(251, 191, 36, 0.04), transparent 70%);
+}
+
+/* ── Performer wedges (clickable) ── */
+.admin-wedge--performer {
+  cursor: pointer;
+  text-align: left;
+  color: inherit;
+  font: inherit;
+}
+
+.admin-wedge--performer:hover {
+  border-color: rgba(100, 181, 246, 0.4);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+}
+
+.admin-wedge--best {
+  border-left: 3px solid rgba(74, 222, 128, 0.6);
+}
+
+.admin-wedge--worst {
+  border-left: 3px solid rgba(248, 113, 113, 0.6);
+}
+
+.admin-wedge__arrow {
+  position: absolute;
+  top: 1.15rem;
+  right: 1.2rem;
+  color: rgba(255, 255, 255, 0.25);
+  font-size: 1.1rem;
+  transition: color 0.15s, transform 0.15s;
+}
+
+.admin-wedge--performer:hover .admin-wedge__arrow {
+  color: #64b5f6;
+  transform: translateX(3px);
+}
+
+/* ── Hit rate grid (today + yesterday side by side) ── */
+.admin-hitrate-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+.admin-hitrate-grid .admin-wedge--hitrate {
+  margin-bottom: 0;
+}
+
+/* ── Hit rate wedge ── */
+.admin-wedge--hitrate {
+  margin-bottom: 2rem;
+}
+
+.admin-hitrate__grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.25rem;
+  margin-top: 0.25rem;
+}
+
+.admin-hitrate__stat {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  padding: 0.75rem 0;
+  border-left: 1px solid rgba(255, 255, 255, 0.06);
+  padding-left: 1.1rem;
+}
+
+.admin-hitrate__stat:first-child {
+  border-left: none;
+  padding-left: 0;
+}
+
+.admin-hitrate__stat-label {
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.4);
+}
+
+.admin-hitrate__stat-value {
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: #fff;
+  line-height: 1;
+}
+
+.admin-hitrate__stat-sub {
+  font-size: 0.72rem;
+  color: rgba(255, 255, 255, 0.35);
+}
+
+/* ── Content Manager section ── */
+.admin-section {
+  margin-top: 1rem;
+}
+
+.admin-section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1.25rem;
+  gap: 1rem;
+}
+
+.admin-section-header h2 {
+  font-size: 1.15rem;
+  font-weight: 700;
+  margin: 0;
+  color: #fff;
+}
+
+.admin-section-count {
+  font-size: 0.78rem;
+  color: rgba(255, 255, 255, 0.4);
+}
+
+@media (max-width: 880px) {
+  .admin-hero-grid {
+    grid-template-columns: 1fr;
+  }
+  .admin-hitrate-grid {
+    grid-template-columns: 1fr;
+  }
+  .admin-hitrate__grid {
+    grid-template-columns: 1fr;
+    gap: 0.5rem;
+  }
+  .admin-hitrate__stat {
+    border-left: none;
+    padding-left: 0;
+    border-top: 1px solid rgba(255, 255, 255, 0.06);
+    padding-top: 0.85rem;
+  }
+  .admin-hitrate__stat:first-child {
+    border-top: none;
+    padding-top: 0;
+  }
+}
 
 /* ── Buttons ─────────────────────────────────────────────── */
 .btn-primary {
@@ -71,19 +362,27 @@
 .btn-primary:hover { background: #1565C0; }
 
 .btn-secondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  height: 38px;
+  margin: 0;
   background: rgba(255,255,255,0.08);
   color: #ffffff;
   border: 1px solid rgba(255,255,255,0.15);
   border-radius: 8px;
-  padding: 0.6rem 1.2rem;
+  padding: 0 1.2rem;
+  font-family: inherit;
   font-size: 0.88rem;
   font-weight: 600;
+  line-height: 1;
+  text-align: center;
   cursor: pointer;
   transition: background 0.15s;
   text-decoration: none;
-  display: inline-flex;
-  align-items: center;
-  gap: 0.4rem;
+  box-sizing: border-box;
+  vertical-align: middle;
 }
 .btn-secondary:hover { background: rgba(255,255,255,0.14); }
 
@@ -101,15 +400,27 @@
 .btn-danger:hover { background: rgba(244,67,54,0.25); }
 
 .btn-success {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  height: 38px;
+  margin: 0;
   background: #388e3c;
   color: #fff;
-  border: none;
+  border: 1px solid transparent;
   border-radius: 8px;
-  padding: 0.6rem 1.2rem;
+  padding: 0 1.2rem;
+  font-family: inherit;
   font-size: 0.88rem;
   font-weight: 600;
+  line-height: 1;
+  text-align: center;
   cursor: pointer;
   transition: background 0.15s;
+  text-decoration: none;
+  box-sizing: border-box;
+  vertical-align: middle;
 }
 .btn-success:hover { background: #2e7d32; }
 
@@ -213,17 +524,28 @@ button:disabled,
 
 /* ── Article Editor ──────────────────────────────────────── */
 .editor-back-link {
-  display: inline-block;
-  color: #1976D2;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.7);
   text-decoration: none;
-  font-size: 0.88rem;
-  font-weight: 600;
+  flex-shrink: 0;
   margin-bottom: 1.5rem;
   cursor: pointer;
-  background: none;
-  border: none;
+  padding: 0;
+  transition: background 0.15s, border-color 0.15s, color 0.15s, transform 0.15s;
 }
-.editor-back-link:hover { opacity: 0.8; }
+.editor-back-link:hover {
+  background: rgba(100, 181, 246, 0.1);
+  border-color: rgba(100, 181, 246, 0.35);
+  color: #64b5f6;
+  transform: translateX(-2px);
+}
 
 .editor-header {
   display: flex;
