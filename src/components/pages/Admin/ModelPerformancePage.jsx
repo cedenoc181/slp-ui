@@ -1,18 +1,16 @@
 import { useState, useMemo, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import predictionsPerformanceService from '../../../data/services/predictionsPerformanceService';
 import '../../../styles/admin-page-styling/model-performance.css';
 
-// ─── Mock data (replace with real API hook when endpoint is ready) ────────────
+const CATEGORY_LABELS = {
+  all:     'All metrics',
+  game:    'Game Props',
+  batter:  'Batter Props',
+  pitcher: 'Pitcher Props',
+};
 
-const MOCK_METRICS = [
-  { key: 'strikeouts',   label: 'Strikeouts',   model: 'Scout AI', accuracy: 72, prob: 68, ev: 4.2,  picks: 89,  hits: 64 },
-  { key: 'earned_runs',  label: 'Earned Runs',  model: 'Scout AI', accuracy: 58, prob: 56, ev: -1.8, picks: 84,  hits: 49 },
-  { key: 'hits_allowed', label: 'Hits Allowed', model: 'Scout AI', accuracy: 65, prob: 63, ev: 2.1,  picks: 76,  hits: 49 },
-  { key: 'outs',         label: 'Pitcher Outs', model: 'Scout AI', accuracy: 70, prob: 67, ev: 3.5,  picks: 63,  hits: 44 },
-  { key: 'moneyline',    label: 'Moneyline',    model: 'ML',       accuracy: 64, prob: 62, ev: 1.9,  picks: 142, hits: 91 },
-  { key: 'run_line',     label: 'Run Line',     model: 'ML',       accuracy: 61, prob: 59, ev: 0.8,  picks: 138, hits: 84 },
-  { key: 'totals',       label: 'Totals',       model: 'ML',       accuracy: 68, prob: 65, ev: 3.2,  picks: 126, hits: 86 },
-];
+const AVAILABLE_SEASONS = [2026];
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -91,18 +89,18 @@ function MetricBar({ metric, view, allMetrics, onSelect, selected }) {
   );
 }
 
-function WorstTable({ metrics, view }) {
+function BestTable({ metrics, view }) {
   const sorted = [...metrics].sort((a, b) => {
     const av = view === 'accuracy' ? a.accuracy : view === 'prob' ? a.prob : a.ev;
     const bv = view === 'accuracy' ? b.accuracy : view === 'prob' ? b.prob : b.ev;
-    return av - bv;
+    return bv - av;
   });
 
   const viewLabel = view === 'accuracy' ? 'Accuracy' : view === 'prob' ? 'Prob' : 'EV';
 
   return (
     <div className="mp-worst-table">
-      <div className="mp-worst-header">Worst Performers</div>
+      <div className="mp-worst-header">Best Performers</div>
       <div className="mp-worst-head-row">
         <span>Metric</span>
         <span>Model</span>
@@ -168,18 +166,43 @@ export default function ModelPerformancePage() {
     return () => { document.body.style.background = ''; };
   }, []);
 
-  const [modelFilter, setModelFilter] = useState('all');
+  const [seasonFilter, setSeasonFilter] = useState(AVAILABLE_SEASONS[0]);
   const [metricFilter, setMetricFilter] = useState('all');
   const [view, setView] = useState('accuracy');  // accuracy | prob | ev
-  const [selected, setSelected] = useState(MOCK_METRICS[0].key);
+  const [selected, setSelected] = useState(null);
+
+  // ── Live data from /admin/model-performance ──
+  const [metrics, setMetrics] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError]     = useState(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    setLoading(true);
+    setError(null);
+    predictionsPerformanceService.getBySeason(seasonFilter)
+      .then(data => {
+        if (cancelled) return;
+        const arr = Array.isArray(data) ? data : [];
+        setMetrics(arr);
+        setSelected(prev => prev ?? arr[0]?.key ?? null);
+      })
+      .catch(err => {
+        if (cancelled) return;
+        console.error('Failed to load model performance:', err);
+        setError(err?.message || 'Failed to load performance data.');
+        setMetrics([]);
+      })
+      .finally(() => { if (!cancelled) setLoading(false); });
+    return () => { cancelled = true; };
+  }, [seasonFilter]);
 
   const filtered = useMemo(() => {
-    return MOCK_METRICS.filter(m => {
-      if (modelFilter !== 'all' && m.model !== modelFilter) return false;
-      if (metricFilter !== 'all' && m.key !== metricFilter) return false;
+    return metrics.filter(m => {
+      if (metricFilter !== 'all' && m.category !== metricFilter) return false;
       return true;
     });
-  }, [modelFilter, metricFilter]);
+  }, [metrics, metricFilter]);
 
   // If the selected metric is filtered out, fall back to the first visible one
   const activeKey = filtered.find(m => m.key === selected)
@@ -204,10 +227,11 @@ export default function ModelPerformancePage() {
           <Link to="/admin" className="mp-back-link">← Admin</Link>
           <div>
             <h1 className="mp-page-title">Model Performance</h1>
-            <p className="mp-page-sub">Scout AI &amp; ML model accuracy, probability calibration, and EV tracking</p>
+            <p className="mp-page-sub">Scout AI accuracy, probability calibration, and EV tracking</p>
           </div>
         </div>
-        <span className="mp-data-badge">Mock Data — wire to API</span>
+        {loading && <span className="mp-data-badge">Loading…</span>}
+        {error   && <span className="mp-data-badge mp-data-badge--error">Error: {error}</span>}
       </div>
 
       {/* ── Overview cards ── */}
@@ -221,15 +245,15 @@ export default function ModelPerformancePage() {
       {/* ── Filters + view toggle ── */}
       <div className="mp-filter-bar">
         <div className="mp-filter-group">
-          <label>Model</label>
+          <label>Season</label>
           <div className="mp-filter-pills">
-            {['all', 'Scout AI', 'ML'].map(v => (
+            {AVAILABLE_SEASONS.map(s => (
               <button
-                key={v}
-                className={`mp-pill${modelFilter === v ? ' active' : ''}`}
-                onClick={() => setModelFilter(v)}
+                key={s}
+                className={`mp-pill${seasonFilter === s ? ' active' : ''}`}
+                onClick={() => setSeasonFilter(s)}
               >
-                {v === 'all' ? 'All' : v}
+                {s}
               </button>
             ))}
           </div>
@@ -238,9 +262,8 @@ export default function ModelPerformancePage() {
         <div className="mp-filter-group">
           <label>Metric</label>
           <select className="mp-select" value={metricFilter} onChange={e => setMetricFilter(e.target.value)}>
-            <option value="all">All metrics</option>
-            {MOCK_METRICS.map(m => (
-              <option key={m.key} value={m.key}>{m.label}</option>
+            {Object.entries(CATEGORY_LABELS).map(([value, label]) => (
+              <option key={value} value={value}>{label}</option>
             ))}
           </select>
         </div>
@@ -292,7 +315,11 @@ export default function ModelPerformancePage() {
           </div>
 
           <div className="mp-chart-bars">
-            {filtered.length === 0 ? (
+            {loading ? (
+              <div className="mp-chart-empty">Loading performance data…</div>
+            ) : error ? (
+              <div className="mp-chart-empty">Unable to load performance data.</div>
+            ) : filtered.length === 0 ? (
               <div className="mp-chart-empty">No metrics match the selected filters</div>
             ) : (
               filtered.map(m => (
@@ -319,7 +346,7 @@ export default function ModelPerformancePage() {
         {/* Right sidebar: hover detail + worst table */}
         <div className="mp-sidebar">
           <HoverDetail metric={selectedMetric} view={view} />
-          <WorstTable metrics={filtered} view={view} />
+          <BestTable metrics={filtered} view={view} />
         </div>
 
       </div>

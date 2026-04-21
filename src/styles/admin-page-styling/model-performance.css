@@ -64,6 +64,12 @@
   margin-top: 0.3rem;
 }
 
+.mp-data-badge--error {
+  background: rgba(248, 113, 113, 0.1);
+  border-color: rgba(248, 113, 113, 0.3);
+  color: #f87171;
+}
+
 /* ── Overview cards ──────────────────────────────────────── */
 
 .mp-overview-grid {

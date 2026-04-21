@@ -1,7 +1,28 @@
+import { useNavigate } from 'react-router-dom';
 import analysisIcon from '../../../../../assets/icons/analysis.png';
+import { useAuth } from '../../../../../context/AuthContext';
 
 export default function ScoutAiButton({ hasAnalysis, loading, onClick, isToday = false, scoutAiAvailable = true, pendingLabel = null, tooltipPosition = 'bottom', usesRemaining = null, isLimitHit = false }) {
+  const { hasScoutAiAccess } = useAuth();
+  const navigate = useNavigate();
+
   if (!isToday) return null;
+
+  // Subscription gate — non-premium users see a locked variant that routes to the upgrade page
+  if (!hasScoutAiAccess) {
+    return (
+      <button
+        className={`scout-ai-btn scout-ai-btn--locked${tooltipPosition === 'right' ? ' scout-ai-btn--tooltip-right' : ''}`}
+        onClick={() => navigate('/predictions')}
+        aria-label="Upgrade to unlock Scout AI scouting reports"
+        data-tooltip="Upgrade to unlock Scout AI"
+      >
+        <img src={analysisIcon} alt="" className="scout-ai-btn__icon" aria-hidden="true" />
+        <span>Unlock Scouting</span>
+      </button>
+    );
+  }
+
   const isPending   = !scoutAiAvailable;
   const isDisabled  = isPending || isLimitHit;
 

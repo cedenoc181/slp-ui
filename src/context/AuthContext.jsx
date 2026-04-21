@@ -215,6 +215,10 @@ export function AuthProvider({ children }) {
       isAdmin: user?.isAdmin === true || user?.isAdmin === 1,
       isVerified: user?.isVerified === true,
       isPremium: user?.isAdmin === true || user?.subscriptionTier === 'premium',
+      hasScoutAiAccess:
+        user?.isAdmin === true
+        || user?.subscriptionTier === 'premium'
+        || ['gifted', 'weekly', 'monthly', 'annual'].includes(user?.subscriptionPlan),
       subscriptionTier:   user?.subscriptionTier   ?? null,
       subscriptionStatus: user?.subscriptionStatus ?? null,
       paymentSource:      user?.paymentSource      ?? null,
