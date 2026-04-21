@@ -29,15 +29,25 @@
 }
 
 .mp-back-link {
-  color: #64b5f6;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.7);
   text-decoration: none;
-  font-size: 0.85rem;
-  white-space: nowrap;
-  padding-top: 0.25rem;
-  opacity: 0.8;
-  transition: opacity 0.15s;
+  flex-shrink: 0;
+  transition: background 0.15s, border-color 0.15s, color 0.15s, transform 0.15s;
 }
-.mp-back-link:hover { opacity: 1; }
+.mp-back-link:hover {
+  background: rgba(100, 181, 246, 0.1);
+  border-color: rgba(100, 181, 246, 0.35);
+  color: #64b5f6;
+  transform: translateX(-2px);
+}
 
 .mp-page-title {
   font-size: 1.6rem;
