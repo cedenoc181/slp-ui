@@ -80,6 +80,79 @@
   color: #f87171;
 }
 
+.mp-data-badges {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+  margin-top: 0.3rem;
+}
+
+.mp-data-badge--period {
+  background: rgba(100, 181, 246, 0.1);
+  border-color: rgba(100, 181, 246, 0.3);
+  color: #64b5f6;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  margin-top: 0;
+}
+
+/* ── Custom date range row ──────────────────────────────── */
+.mp-daterange {
+  display: flex;
+  align-items: flex-end;
+  gap: 1rem;
+  margin: 0 0 1.5rem;
+  padding: 0.9rem 1.1rem;
+  background: rgba(100, 181, 246, 0.04);
+  border: 1px solid rgba(100, 181, 246, 0.15);
+  border-radius: 10px;
+  flex-wrap: wrap;
+}
+
+.mp-daterange-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.mp-daterange-field label {
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.45);
+}
+
+.mp-date-input {
+  background: #1a1a1a;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 8px;
+  color: #fff;
+  font-family: inherit;
+  font-size: 0.85rem;
+  padding: 0.5rem 0.7rem;
+  color-scheme: dark;
+  outline: none;
+  transition: border-color 0.15s;
+}
+
+.mp-date-input:focus {
+  border-color: #64b5f6;
+}
+
+.mp-daterange-preview {
+  margin-left: auto;
+  padding: 0.4rem 0.75rem;
+  background: rgba(100, 181, 246, 0.1);
+  border: 1px solid rgba(100, 181, 246, 0.3);
+  border-radius: 20px;
+  color: #64b5f6;
+  font-size: 0.78rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
 /* ── Overview cards ──────────────────────────────────────── */
 
 .mp-overview-grid {
@@ -553,5 +626,23 @@
   }
   .mp-sidebar {
     flex-direction: column;
+  }
+}
+
+@media (max-width: 425px) {
+  .mp-filter-group {
+    width: 100%;
+  }
+  .mp-select {
+    width: 100%;
+    font-size: 0.78rem;
+  }
+  .mp-filter-pills {
+    flex-wrap: wrap;
+    gap: 0.25rem;
+  }
+  .mp-pill {
+    font-size: 0.72rem;
+    padding: 0.22rem 0.6rem;
   }
 }

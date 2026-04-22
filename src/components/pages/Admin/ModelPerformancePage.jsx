@@ -12,6 +12,27 @@ const CATEGORY_LABELS = {
 
 const AVAILABLE_SEASONS = [2026];
 
+// ─── Period presets ──────────────────────────────────────────────────────────
+// `key` = UI state. `apiRange` = value sent as `range=` (null = omit, full season).
+const PERIOD_PRESETS = [
+  { key: 'season',       label: 'Season',       apiRange: null },
+  { key: 'this_week',    label: 'This Week',    apiRange: 'this_week' },
+  { key: 'last_7_days',  label: 'Last 7 Days',  apiRange: 'last_7_days' },
+  { key: 'last_month',   label: 'Last Month',   apiRange: 'last_month' },
+  { key: 'custom',       label: 'Custom',       apiRange: null },
+];
+
+// Today in ET as "YYYY-MM-DD" — used as default end date for custom range
+const todayEtISO = () =>
+  new Date().toLocaleDateString('en-CA', { timeZone: 'America/New_York' });
+
+// "YYYY-MM-DD" → "Apr 15"
+const shortDate = (iso) => {
+  if (!iso) return '';
+  const [y, m, d] = iso.split('-').map(Number);
+  return new Date(y, m - 1, d).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+};
+
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
 function perfColor(value, view) {
@@ -162,6 +183,7 @@ function HoverDetail({ metric, view }) {
 
 export default function ModelPerformancePage() {
   useEffect(() => {
+    window.scrollTo(0, 0);
     document.body.style.background = '#111';
     return () => { document.body.style.background = ''; };
   }, []);
@@ -171,16 +193,34 @@ export default function ModelPerformancePage() {
   const [view, setView] = useState('accuracy');  // accuracy | prob | ev
   const [selected, setSelected] = useState(null);
 
+  // ── Period state ──
+  const [periodKey, setPeriodKey] = useState('season');   // see PERIOD_PRESETS
+  const [customStart, setCustomStart] = useState('');
+  const [customEnd, setCustomEnd] = useState(todayEtISO());
+
   // ── Live data from /admin/model-performance ──
   const [metrics, setMetrics] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError]     = useState(null);
 
   useEffect(() => {
+    // For Custom, skip fetch until both dates are set
+    if (periodKey === 'custom' && (!customStart || !customEnd)) return;
+
     let cancelled = false;
     setLoading(true);
     setError(null);
-    predictionsPerformanceService.getBySeason(seasonFilter)
+
+    const preset = PERIOD_PRESETS.find(p => p.key === periodKey);
+    const params = { season: seasonFilter };
+    if (periodKey === 'custom') {
+      params.startDate = customStart;
+      params.endDate   = customEnd;
+    } else if (preset?.apiRange) {
+      params.range = preset.apiRange;
+    }
+
+    predictionsPerformanceService.getPerformance(params)
       .then(data => {
         if (cancelled) return;
         const arr = Array.isArray(data) ? data : [];
@@ -195,7 +235,7 @@ export default function ModelPerformancePage() {
       })
       .finally(() => { if (!cancelled) setLoading(false); });
     return () => { cancelled = true; };
-  }, [seasonFilter]);
+  }, [seasonFilter, periodKey, customStart, customEnd]);
 
   const filtered = useMemo(() => {
     return metrics.filter(m => {
@@ -234,8 +274,15 @@ export default function ModelPerformancePage() {
             <p className="mp-page-sub">Scout AI accuracy, probability calibration, and EV tracking</p>
           </div>
         </div>
-        {loading && <span className="mp-data-badge">Loading…</span>}
-        {error   && <span className="mp-data-badge mp-data-badge--error">Error: {error}</span>}
+        <div className="mp-data-badges">
+          <span className="mp-data-badge mp-data-badge--period">
+            {periodKey === 'custom' && customStart && customEnd
+              ? `${shortDate(customStart)} – ${shortDate(customEnd)}`
+              : PERIOD_PRESETS.find(p => p.key === periodKey)?.label}
+          </span>
+          {loading && <span className="mp-data-badge">Loading…</span>}
+          {error   && <span className="mp-data-badge mp-data-badge--error">Error: {error}</span>}
+        </div>
       </div>
 
       {/* ── Overview cards ── */}
@@ -249,23 +296,55 @@ export default function ModelPerformancePage() {
       {/* ── Filters + view toggle ── */}
       <div className="mp-filter-bar">
         <div className="mp-filter-group">
-          <label>Season</label>
-          <div className="mp-filter-pills">
-            {AVAILABLE_SEASONS.map(s => (
-              <button
-                key={s}
-                className={`mp-pill${seasonFilter === s ? ' active' : ''}`}
-                onClick={() => setSeasonFilter(s)}
-              >
-                {s}
-              </button>
-            ))}
-          </div>
+          <label htmlFor={AVAILABLE_SEASONS.length > 2 ? 'mp-season-select' : undefined}>Season</label>
+          {AVAILABLE_SEASONS.length > 2 ? (
+            <select
+              id="mp-season-select"
+              className="mp-select"
+              value={seasonFilter}
+              onChange={e => setSeasonFilter(Number(e.target.value))}
+            >
+              {AVAILABLE_SEASONS.map(s => (
+                <option key={s} value={s}>{s}</option>
+              ))}
+            </select>
+          ) : (
+            <div className="mp-filter-pills">
+              {AVAILABLE_SEASONS.map(s => (
+                <button
+                  key={s}
+                  className={`mp-pill${seasonFilter === s ? ' active' : ''}`}
+                  onClick={() => setSeasonFilter(s)}
+                >
+                  {s}
+                </button>
+              ))}
+            </div>
+          )}
         </div>
 
         <div className="mp-filter-group">
-          <label>Metric</label>
-          <select className="mp-select" value={metricFilter} onChange={e => setMetricFilter(e.target.value)}>
+          <label htmlFor="mp-period-select">Period</label>
+          <select
+            id="mp-period-select"
+            className="mp-select"
+            value={periodKey}
+            onChange={e => setPeriodKey(e.target.value)}
+          >
+            {PERIOD_PRESETS.map(p => (
+              <option key={p.key} value={p.key}>{p.label}</option>
+            ))}
+          </select>
+        </div>
+
+        <div className="mp-filter-group">
+          <label htmlFor="mp-metric-select">Metric</label>
+          <select
+            id="mp-metric-select"
+            className="mp-select"
+            value={metricFilter}
+            onChange={e => setMetricFilter(e.target.value)}
+          >
             {Object.entries(CATEGORY_LABELS).map(([value, label]) => (
               <option key={value} value={value}>{label}</option>
             ))}
@@ -291,6 +370,40 @@ export default function ModelPerformancePage() {
           </div>
         </div>
       </div>
+
+      {/* ── Custom date range (shown only when Period = Custom) ── */}
+      {periodKey === 'custom' && (
+        <div className="mp-daterange">
+          <div className="mp-daterange-field">
+            <label htmlFor="mp-start">Start</label>
+            <input
+              id="mp-start"
+              type="date"
+              className="mp-date-input"
+              value={customStart}
+              max={customEnd || undefined}
+              onChange={e => setCustomStart(e.target.value)}
+            />
+          </div>
+          <div className="mp-daterange-field">
+            <label htmlFor="mp-end">End</label>
+            <input
+              id="mp-end"
+              type="date"
+              className="mp-date-input"
+              value={customEnd}
+              min={customStart || undefined}
+              max={todayEtISO()}
+              onChange={e => setCustomEnd(e.target.value)}
+            />
+          </div>
+          {customStart && customEnd && (
+            <div className="mp-daterange-preview">
+              {shortDate(customStart)} – {shortDate(customEnd)}
+            </div>
+          )}
+        </div>
+      )}
 
       {/* ── Chart + sidebar ── */}
       <div className="mp-content-grid">

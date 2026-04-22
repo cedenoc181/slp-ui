@@ -24,13 +24,38 @@ import api from './apiService';
  */
 class PredictionsPerformanceService {
   /**
-   * Per-market performance metrics for a given season.
-   * GET /api/v1/admin/model-performance?season={season}
+   * Per-market performance metrics, optionally filtered by a named time range
+   * or an explicit custom date window.
+   *
+   * GET /api/v1/admin/model-performance?season=...&range=...
+   * GET /api/v1/admin/model-performance?season=...&start_date=YYYY-MM-DD&end_date=YYYY-MM-DD
+   *
+   * Accepted `range` values: 'this_week', 'last_7_days', 'last_month'.
+   * Omit `range` (and dates) to get the full season.
+   *
+   * @param {Object} params
+   * @param {number} params.season
+   * @param {string} [params.range]      — preset range key
+   * @param {string} [params.startDate]  — ISO date "YYYY-MM-DD" (custom window)
+   * @param {string} [params.endDate]    — ISO date "YYYY-MM-DD" (custom window)
+   * @returns {Promise<Array>}
+   */
+  async getPerformance({ season, range, startDate, endDate }) {
+    const qs = new URLSearchParams();
+    if (season != null)  qs.set('season', String(season));
+    if (range)           qs.set('range', range);
+    if (startDate)       qs.set('start_date', startDate);
+    if (endDate)         qs.set('end_date', endDate);
+    return api.get(`/api/v1/admin/model-performance?${qs.toString()}`);
+  }
+
+  /**
+   * Convenience wrapper: full-season performance.
    * @param {number} season
    * @returns {Promise<Array>}
    */
   async getBySeason(season) {
-    return api.get(`/api/v1/admin/model-performance?season=${season}`);
+    return this.getPerformance({ season });
   }
 
   /**
