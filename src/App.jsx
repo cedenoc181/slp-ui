@@ -9,6 +9,7 @@ import ProtectedRoute from './components/ProtectedRoute';
 
 // Home page component imports//
 import Header from './components/Header';
+import FreeWeekBanner from './components/FreeWeekBanner';
 import Hero from './components/Hero';
 import StatsPreview from './components/StatsPreview';
 import PredictionsTeaser from './components/PredictionsTeaser';
@@ -124,9 +125,9 @@ function HomePage() {
   return (
     <>
       <Hero />
-      <StatsPreview />
       <PredictionsTeaser />
       <HowItWorks />
+      <StatsPreview />
       <TeamsCarousel />
     </>
   );
@@ -217,6 +218,7 @@ function App() {
         <div className="App">
           <AnalyticsTracker />
           <Header />
+          <FreeWeekBanner />
           <Routes>
             <Route path="/" element={<HomePage />} />
           {/* test route */}

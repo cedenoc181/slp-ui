@@ -88,6 +88,26 @@ class PredictionsPerformanceService {
   async getDailyGameReport(date) {
     return api.get(`/api/v1/admin/daily-game-report?date=${date}`);
   }
+
+  /**
+   * Player prop hit-rate comparison for today vs. yesterday, grouped by
+   * pitcher and batter markets.
+   * GET /api/v1/admin/player-props-today-vs-yesterday
+   *
+   * Response shape:
+   * {
+   *   today:     { date, pitcher: Metric[], batter: Metric[] },
+   *   yesterday: { date, pitcher: Metric[], batter: Metric[] }
+   * }
+   *
+   * Metric: { key, label, model, category, season, accuracy, prob, ev,
+   *           edge, calibration_gap, picks, hits }
+   *
+   * @returns {Promise<Object>}
+   */
+  async getPlayerPropsTodayVsYesterday() {
+    return api.get('/api/v1/admin/player-props-today-vs-yesterday');
+  }
 }
 
 const predictionsPerformanceService = new PredictionsPerformanceService();

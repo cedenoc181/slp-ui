@@ -62,6 +62,10 @@ function SettingsPage() {
   const [billingError,   setBillingError]   = useState('');
   const [changeSuccess] = useState('');
   const [planModal, setPlanModal] = useState(null); // null | 'weekly' | 'annual'
+  const [codeCopied, setCodeCopied] = useState(false);
+  const [freeWeekLoading, setFreeWeekLoading] = useState(false);
+
+  const FREE_WEEK_CODE = process.env.REACT_APP_FREE_WEEK_CODE || 'FREE7';
 
   const PLAN_LABELS  = { weekly: 'Weekly', monthly: 'Monthly', annual: 'Seasonal', gifted: 'VIP Access' };
   const isVip = subscriptionPlan === 'gifted';
@@ -95,6 +99,38 @@ function SettingsPage() {
   const handleUpgrade = () => {
     navigate('/upgrade');
     window.scrollTo(0, 0);
+  };
+
+  const handleCopyCode = async () => {
+    try {
+      await navigator.clipboard.writeText(FREE_WEEK_CODE);
+      setCodeCopied(true);
+      setTimeout(() => setCodeCopied(false), 2500);
+    } catch {
+      // clipboard blocked — select/copy manually
+    }
+  };
+
+  const [promoInput, setPromoInput] = useState('');
+  const [promoError, setPromoError] = useState('');
+
+  const handleRedeemPromo = async () => {
+    const code = (promoInput || FREE_WEEK_CODE).trim().toUpperCase();
+    if (!code) {
+      setPromoError('Please enter a promo code.');
+      return;
+    }
+    setFreeWeekLoading(true);
+    setPromoError('');
+    try {
+      const { checkout_url } = await stripeService.redeemPromo(code);
+      window.location.href = checkout_url;
+    } catch (err) {
+      // Backend returns { detail: "..." } on 400 — most fetch wrappers copy
+      // detail onto err.message. Fall back to a generic message otherwise.
+      setPromoError(err?.message || 'Unable to redeem code. Please try again.');
+      setFreeWeekLoading(false);
+    }
   };
 
   // -------------------------------------------------------------------------
@@ -576,25 +612,106 @@ function SettingsPage() {
                   </div>}
                 </div>
               ) : (
-                <div className="sub-card sub-card--free">
-                  <div className="sub-card__header">
-                    <div className="sub-card__plan-info">
-                      <span className="sub-card__badge sub-card__badge--free">Free</span>
-                      <h3 className="sub-card__plan-name">Free Plan</h3>
-                      <p className="sub-card__free-desc">Upgrade to unlock game predictions, pitcher props, batter props, and Scout AI scouting reports.</p>
+                <>
+                  {/* Free week trial card — only visible for never-subscribed users */}
+                  {!subscriptionPlan && (
+                    <div className="free-week-card">
+                      <div className="free-week-card__header">
+                        <span className="free-week-card__badge">🎁 Welcome Gift</span>
+                        <h3 className="free-week-card__title">Your first week is on us</h3>
+                        <p className="free-week-card__desc">
+                          Redeem this code at checkout to unlock 7 days of full premium access — free.
+                          Game predictions, pitcher &amp; batter props, Scout AI reports, and odds across 7+ books.
+                        </p>
+                      </div>
+
+                      <div className="free-week-card__code-block">
+                        <div className="free-week-card__code-label">Your promo code</div>
+                        <div className="free-week-card__code-hint-row">
+                          <button
+                            type="button"
+                            className="free-week-card__code free-week-card__code--display"
+                            onClick={handleCopyCode}
+                            aria-label="Copy code"
+                          >
+                            <span>{FREE_WEEK_CODE}</span>
+                            {codeCopied ? (
+                              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                                <polyline points="20 6 9 17 4 12"/>
+                              </svg>
+                            ) : (
+                              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
+                                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+                              </svg>
+                            )}
+                          </button>
+                        </div>
+                        <span className="free-week-card__hint">
+                          {codeCopied ? 'Copied — paste below and click Redeem.' : 'Tap code to copy, then paste in the box below.'}
+                        </span>
+                      </div>
+
+                      <div className="free-week-card__redeem-row">
+                        <input
+                          type="text"
+                          className="free-week-card__input"
+                          placeholder="Enter promo code"
+                          value={promoInput}
+                          onChange={(e) => { setPromoInput(e.target.value); setPromoError(''); }}
+                          onKeyDown={(e) => { if (e.key === 'Enter') handleRedeemPromo(); }}
+                          disabled={freeWeekLoading}
+                          maxLength={40}
+                          autoCapitalize="characters"
+                          spellCheck={false}
+                        />
+                        <button
+                          type="button"
+                          className="free-week-card__cta"
+                          onClick={handleRedeemPromo}
+                          disabled={freeWeekLoading}
+                        >
+                          {freeWeekLoading ? (
+                            <span className="sub-card__spinner" />
+                          ) : (
+                            <>
+                              Redeem
+                              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                                <line x1="5" y1="12" x2="19" y2="12"/>
+                                <polyline points="12 5 19 12 12 19"/>
+                              </svg>
+                            </>
+                          )}
+                        </button>
+                      </div>
+
+                      <p className="free-week-card__footnote">
+                        You'll be redirected to Stripe to confirm — no charge for the trial week.
+                      </p>
+                      {promoError && <p className="sub-card__error">{promoError}</p>}
                     </div>
+                  )}
+
+                  <div className="sub-card sub-card--free">
+                    <div className="sub-card__header">
+                      <div className="sub-card__plan-info">
+                        <span className="sub-card__badge sub-card__badge--free">Free</span>
+                        <h3 className="sub-card__plan-name">Free Plan</h3>
+                        <p className="sub-card__free-desc">Upgrade to unlock game predictions, pitcher props, batter props, and Scout AI scouting reports.</p>
+                      </div>
+                    </div>
+                    <button
+                      type="button"
+                      className="sub-card__btn sub-card__btn--upgrade"
+                      onClick={handleUpgrade}
+                    >
+                      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                      </svg>
+                      See All Plans
+                    </button>
                   </div>
-                  <button
-                    type="button"
-                    className="sub-card__btn sub-card__btn--upgrade"
-                    onClick={handleUpgrade}
-                  >
-                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                      <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
-                    </svg>
-                    Upgrade to Premium
-                  </button>
-                </div>
+                </>
               )}
             </section>
           </div>

@@ -1,0 +1,106 @@
+/* ═══════════════════════════════════════════════════════════
+   Free Week Trial Banner (stats pages only, dismissible)
+   ═══════════════════════════════════════════════════════════ */
+
+.free-week-banner {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  padding: 0.65rem 3rem 0.65rem 1.25rem;
+  background: linear-gradient(90deg, #ff6a00 0%, #ff8c2b 50%, #ffae4d 100%);
+  color: #1a0a00;
+  font-size: 0.88rem;
+  box-shadow: 0 2px 14px rgba(255, 106, 0, 0.35), inset 0 -1px 0 rgba(0, 0, 0, 0.15);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.25);
+  animation: free-week-glow 3.5s ease-in-out infinite;
+}
+
+@keyframes free-week-glow {
+  0%, 100% { box-shadow: 0 2px 14px rgba(255, 106, 0, 0.35), inset 0 -1px 0 rgba(0, 0, 0, 0.15); }
+  50%      { box-shadow: 0 2px 22px rgba(255, 140, 43, 0.55), inset 0 -1px 0 rgba(0, 0, 0, 0.15); }
+}
+
+.free-week-banner__inner {
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
+  max-width: 1200px;
+  width: 100%;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.free-week-banner__icon {
+  font-size: 1.1rem;
+  line-height: 1;
+}
+
+.free-week-banner__text {
+  display: inline;
+  line-height: 1.4;
+}
+
+.free-week-banner__text strong {
+  font-weight: 800;
+  letter-spacing: 0.01em;
+}
+
+.free-week-banner__cta {
+  display: inline-block;
+  padding: 0.4rem 0.95rem;
+  background: rgba(26, 10, 0, 0.85);
+  color: #fff;
+  font-size: 0.82rem;
+  font-weight: 700;
+  text-decoration: none;
+  border-radius: 999px;
+  white-space: nowrap;
+  transition: transform 0.15s ease, background 0.2s ease;
+}
+
+.free-week-banner__cta:hover {
+  background: #1a0a00;
+  transform: translateY(-1px);
+}
+
+.free-week-banner__close {
+  position: absolute;
+  top: 50%;
+  right: 0.85rem;
+  transform: translateY(-50%);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: rgba(26, 10, 0, 0.12);
+  border: 1px solid rgba(26, 10, 0, 0.25);
+  color: #1a0a00;
+  cursor: pointer;
+  transition: background 0.15s ease;
+  padding: 0;
+}
+
+.free-week-banner__close:hover {
+  background: rgba(26, 10, 0, 0.22);
+}
+
+@media (max-width: 640px) {
+  .free-week-banner {
+    padding: 0.6rem 2.5rem 0.6rem 0.85rem;
+    font-size: 0.78rem;
+  }
+  .free-week-banner__inner {
+    gap: 0.5rem;
+  }
+  .free-week-banner__text span {
+    display: none;
+  }
+  .free-week-banner__cta {
+    padding: 0.35rem 0.75rem;
+    font-size: 0.75rem;
+  }
+}

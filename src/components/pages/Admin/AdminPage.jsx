@@ -191,6 +191,97 @@ function HitRateWedge({ title, data, loading, error }) {
   );
 }
 
+// ─── Wedge: Player prop hit rate (pitcher / batter, today / yesterday) ────────
+
+function PlayerPropRow({ row }) {
+  const { label, accuracy, picks, hits } = row;
+  const hasData = picks > 0;
+  const color = !hasData
+    ? 'rgba(255,255,255,0.35)'
+    : accuracy >= 60 ? '#4ade80'
+    : accuracy >= 50 ? '#fbbf24'
+    : '#f87171';
+
+  return (
+    <div className="admin-prop-row">
+      <span className="admin-prop-row__label">{label}</span>
+      <span className="admin-prop-row__value" style={{ color }}>
+        {hasData ? `${accuracy}%` : '—'}
+      </span>
+      <span className="admin-prop-row__sub">
+        {hasData ? `${hits} / ${picks} correct` : 'No graded picks yet'}
+      </span>
+    </div>
+  );
+}
+
+function PlayerPropsWedge({ data, loading, error }) {
+  const [day, setDay] = useState('yesterday');       // 'today' | 'yesterday'
+  const [category, setCategory] = useState('pitcher'); // 'pitcher' | 'batter'
+
+  const dayData = data?.[day] ?? null;
+  const rows    = dayData?.[category] ?? [];
+
+  return (
+    <div className="admin-wedge admin-wedge--player-props">
+      <div className="admin-wedge__label">
+        Player Prop Hit Rate
+        {dayData?.date && (
+          <span className="admin-wedge__date">{dayData.date}</span>
+        )}
+      </div>
+
+      {/* Day toggle */}
+      <div className="admin-prop-toggle admin-prop-toggle--day">
+        <button
+          type="button"
+          className={`admin-prop-toggle__btn${day === 'yesterday' ? ' is-active' : ''}`}
+          onClick={() => setDay('yesterday')}
+        >
+          Yesterday
+        </button>
+        <button
+          type="button"
+          className={`admin-prop-toggle__btn${day === 'today' ? ' is-active' : ''}`}
+          onClick={() => setDay('today')}
+        >
+          Today
+        </button>
+      </div>
+
+      {/* Category toggle */}
+      <div className="admin-prop-toggle admin-prop-toggle--category">
+        <button
+          type="button"
+          className={`admin-prop-toggle__btn${category === 'pitcher' ? ' is-active' : ''}`}
+          onClick={() => setCategory('pitcher')}
+        >
+          Pitcher
+        </button>
+        <button
+          type="button"
+          className={`admin-prop-toggle__btn${category === 'batter' ? ' is-active' : ''}`}
+          onClick={() => setCategory('batter')}
+        >
+          Batter
+        </button>
+      </div>
+
+      {loading ? (
+        <div className="admin-wedge__value">Loading…</div>
+      ) : error ? (
+        <div className="admin-wedge__sub">Player prop endpoint not yet live</div>
+      ) : rows.length === 0 ? (
+        <div className="admin-wedge__sub">No data available</div>
+      ) : (
+        <div className="admin-prop-list">
+          {rows.map(row => <PlayerPropRow key={row.key} row={row} />)}
+        </div>
+      )}
+    </div>
+  );
+}
+
 // ─── Main page ────────────────────────────────────────────────────────────────
 
 function AdminPage() {
@@ -218,6 +309,10 @@ function AdminPage() {
   const [hitRateYesterday, setHitRateYesterday] = useState(null);
   const [hitRateYesterdayLoading, setHitRateYesterdayLoading] = useState(true);
   const [hitRateYesterdayError, setHitRateYesterdayError] = useState(null);
+
+  const [playerProps, setPlayerProps] = useState(null);
+  const [playerPropsLoading, setPlayerPropsLoading] = useState(true);
+  const [playerPropsError, setPlayerPropsError] = useState(null);
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -266,6 +361,11 @@ function AdminPage() {
       .then(data => { if (!cancelled) setHitRateYesterday(data || null); })
       .catch(err => { if (!cancelled) setHitRateYesterdayError(err?.message || 'unavailable'); })
       .finally(() => { if (!cancelled) setHitRateYesterdayLoading(false); });
+
+    predictionsPerformanceService.getPlayerPropsTodayVsYesterday()
+      .then(data => { if (!cancelled) setPlayerProps(data || null); })
+      .catch(err => { if (!cancelled) setPlayerPropsError(err?.message || 'unavailable'); })
+      .finally(() => { if (!cancelled) setPlayerPropsLoading(false); });
 
     return () => { cancelled = true; };
   }, []);
@@ -362,7 +462,16 @@ function AdminPage() {
           />
         </div>
 
-        {/* ── Row 3: Content Manager ── */}
+        {/* ── Row 3: Player prop hit rate ── */}
+        <div className="admin-player-props-row">
+          <PlayerPropsWedge
+            data={playerProps}
+            loading={playerPropsLoading}
+            error={playerPropsError}
+          />
+        </div>
+
+        {/* ── Row 4: Content Manager ── */}
         <div className="admin-section">
           <div className="admin-section-header">
             <h2>Content Manager</h2>

@@ -20,6 +20,20 @@ function headshotUrl(id) {
 function teamLogoUrl(id) {
   return `https://www.mlbstatic.com/team-logos/${id}.svg`;
 }
+// Parse "7:05 PM" / "7:05 PM ET" style game-time strings into minutes-since-midnight.
+// Games without a parseable time return Infinity so they sort to the bottom.
+function gameTimeMinutes(raw) {
+  if (!raw) return Infinity;
+  const m = String(raw).match(/(\d+):(\d+)\s*(AM|PM)/i);
+  if (!m) return Infinity;
+  let h = parseInt(m[1], 10);
+  const mins = parseInt(m[2], 10);
+  const mer  = m[3].toUpperCase();
+  if (mer === 'PM' && h !== 12) h += 12;
+  if (mer === 'AM' && h === 12) h = 0;
+  return h * 60 + mins;
+}
+
 function fmtOdds(n) {
   if (n == null) return '—';
   return n > 0 ? `+${n}` : String(n);
@@ -889,6 +903,11 @@ export default function BatterProps() {
           homeMlbId:   getTeamById(r.home_team_id)?.mlbId ?? null,
           game_time_et: r.game_time_et ?? r.game_time ?? null,
         }));
+
+        // Sort by scheduled game time (earliest first). Games without a parseable
+        // time drop to the end so they don't disrupt the timeline.
+        mapped.sort((a, b) => gameTimeMinutes(a.game_time_et) - gameTimeMinutes(b.game_time_et));
+
         setGames(mapped);
         if (mapped.length) setActiveGamePk(mapped[0].gamePk);
       })

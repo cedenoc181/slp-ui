@@ -58,6 +58,27 @@ const stripeService = {
   },
 
   /**
+   * POST /api/v1/subscriptions/redeem-promo
+   * Redeem a promo code (e.g. 'FREE7'). Backend validates the code, checks
+   * the user hasn't already redeemed, and returns a Stripe checkout URL
+   * with the discount pre-applied. Redirect the browser to checkout_url.
+   *
+   * 400 detail strings to surface to the user:
+   *   - "Promo code is invalid or no longer active."
+   *   - "You've already redeemed a promotional code."
+   *   - "You already have an active premium subscription."
+   *
+   * @param {string} code
+   * @returns {Promise<{ checkout_url: string }>}
+   */
+  redeemPromo(code) {
+    return subFetch('/api/v1/subscriptions/redeem-promo', {
+      method: 'POST',
+      body: { code },
+    });
+  },
+
+  /**
    * GET /api/v1/subscriptions/me
    * Returns { subscription_tier, subscription_status, payment_source,
    *           subscription_expires_at, is_premium }

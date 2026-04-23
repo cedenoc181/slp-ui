@@ -4,8 +4,8 @@
 
 .mp-page {
   min-height: 100vh;
-  background: #111;
-  color: #e8e8e8;
+  background: linear-gradient(180deg, #0f172a 0%, #111a33 100%);
+  color: #e2e8f0;
   padding: 2rem 2.5rem 4rem;
   font-family: inherit;
   width: 100%;
@@ -43,9 +43,9 @@
   transition: background 0.15s, border-color 0.15s, color 0.15s, transform 0.15s;
 }
 .mp-back-link:hover {
-  background: rgba(100, 181, 246, 0.1);
-  border-color: rgba(100, 181, 246, 0.35);
-  color: #64b5f6;
+  background: rgba(45, 212, 191, 0.1);
+  border-color: rgba(45, 212, 191, 0.4);
+  color: #2dd4bf;
   transform: translateX(-2px);
 }
 
@@ -89,9 +89,9 @@
 }
 
 .mp-data-badge--period {
-  background: rgba(100, 181, 246, 0.1);
-  border-color: rgba(100, 181, 246, 0.3);
-  color: #64b5f6;
+  background: rgba(45, 212, 191, 0.1);
+  border-color: rgba(45, 212, 191, 0.3);
+  color: #2dd4bf;
   font-weight: 600;
   letter-spacing: 0.02em;
   margin-top: 0;
@@ -104,8 +104,8 @@
   gap: 1rem;
   margin: 0 0 1.5rem;
   padding: 0.9rem 1.1rem;
-  background: rgba(100, 181, 246, 0.04);
-  border: 1px solid rgba(100, 181, 246, 0.15);
+  background: rgba(45, 212, 191, 0.04);
+  border: 1px solid rgba(45, 212, 191, 0.15);
   border-radius: 10px;
   flex-wrap: wrap;
 }
@@ -125,7 +125,7 @@
 }
 
 .mp-date-input {
-  background: #1a1a1a;
+  background: #1e293b;
   border: 1px solid rgba(255, 255, 255, 0.12);
   border-radius: 8px;
   color: #fff;
@@ -138,16 +138,16 @@
 }
 
 .mp-date-input:focus {
-  border-color: #64b5f6;
+  border-color: #2dd4bf;
 }
 
 .mp-daterange-preview {
   margin-left: auto;
   padding: 0.4rem 0.75rem;
-  background: rgba(100, 181, 246, 0.1);
-  border: 1px solid rgba(100, 181, 246, 0.3);
+  background: rgba(45, 212, 191, 0.1);
+  border: 1px solid rgba(45, 212, 191, 0.3);
   border-radius: 20px;
-  color: #64b5f6;
+  color: #2dd4bf;
   font-size: 0.78rem;
   font-weight: 600;
   white-space: nowrap;
@@ -163,8 +163,8 @@
 }
 
 .mp-overview-card {
-  background: #1a1a1a;
-  border: 1px solid #2a2a2a;
+  background: #1e293b;
+  border: 1px solid rgba(148, 163, 184, 0.12);
   border-radius: 10px;
   padding: 1.1rem 1.25rem;
   display: flex;
@@ -202,8 +202,8 @@
   display: flex;
   align-items: center;
   gap: 2rem;
-  background: #1a1a1a;
-  border: 1px solid #2a2a2a;
+  background: #1e293b;
+  border: 1px solid rgba(148, 163, 184, 0.12);
   border-radius: 10px;
   padding: 0.85rem 1.25rem;
   margin-bottom: 1.5rem;
@@ -237,30 +237,30 @@
   font-size: 0.8rem;
   padding: 0.28rem 0.7rem;
   border-radius: 20px;
-  border: 1px solid #333;
+  border: 1px solid rgba(148, 163, 184, 0.2);
   background: transparent;
   color: #aaa;
   cursor: pointer;
   transition: all 0.15s;
 }
-.mp-pill:hover { border-color: #555; color: #ddd; }
+.mp-pill:hover { border-color: rgba(148, 163, 184, 0.4); color: #cbd5e1; }
 .mp-pill.active {
-  background: rgba(100, 181, 246, 0.12);
-  border-color: rgba(100, 181, 246, 0.5);
-  color: #64b5f6;
+  background: rgba(45, 212, 191, 0.15);
+  border-color: rgba(45, 212, 191, 0.5);
+  color: #2dd4bf;
 }
 
 .mp-select {
   font-size: 0.82rem;
   padding: 0.3rem 0.65rem;
   border-radius: 6px;
-  border: 1px solid #333;
-  background: #222;
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  background: #273548;
   color: #ccc;
   cursor: pointer;
   outline: none;
 }
-.mp-select:focus { border-color: #64b5f6; }
+.mp-select:focus { border-color: #2dd4bf; }
 
 /* ── Main content grid ───────────────────────────────────── */
 
@@ -274,8 +274,8 @@
 /* ── Chart panel ─────────────────────────────────────────── */
 
 .mp-chart-panel {
-  background: #1a1a1a;
-  border: 1px solid #2a2a2a;
+  background: #1e293b;
+  border: 1px solid rgba(148, 163, 184, 0.12);
   border-radius: 12px;
   padding: 1.5rem;
 }
@@ -302,7 +302,7 @@
   display: flex;
   justify-content: space-between;
   padding: 0 0 0.5rem 140px;
-  border-bottom: 1px solid #222;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.08);
   margin-bottom: 0.75rem;
 }
 
@@ -404,7 +404,7 @@
   gap: 1rem;
   margin-top: 1.25rem;
   padding-top: 1rem;
-  border-top: 1px solid #222;
+  border-top: 1px solid rgba(148, 163, 184, 0.08);
   font-size: 0.72rem;
   color: #666;
 }
@@ -428,8 +428,8 @@
 /* Hover detail card */
 
 .mp-hover-detail {
-  background: #1a1a1a;
-  border: 1px solid #2a2a2a;
+  background: #1e293b;
+  border: 1px solid rgba(148, 163, 184, 0.12);
   border-radius: 12px;
   padding: 1.1rem 1.25rem;
   min-height: 140px;
@@ -513,8 +513,8 @@
 /* Worst performers table */
 
 .mp-worst-table {
-  background: #1a1a1a;
-  border: 1px solid #2a2a2a;
+  background: #1e293b;
+  border: 1px solid rgba(148, 163, 184, 0.12);
   border-radius: 12px;
   overflow: hidden;
 }
@@ -524,7 +524,7 @@
   font-size: 0.8rem;
   font-weight: 600;
   color: #ccc;
-  border-bottom: 1px solid #252525;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.1);
 }
 
 .mp-worst-head-row {
@@ -536,7 +536,7 @@
   text-transform: uppercase;
   letter-spacing: 0.06em;
   color: #555;
-  border-bottom: 1px solid #222;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.08);
 }
 
 .mp-worst-row {
@@ -544,7 +544,7 @@
   grid-template-columns: 1fr auto auto auto;
   gap: 0.5rem;
   padding: 0.55rem 1.1rem;
-  border-bottom: 1px solid #1e1e1e;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.06);
   align-items: center;
   transition: background 0.12s;
 }
