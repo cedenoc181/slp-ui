@@ -354,6 +354,17 @@ function compositeScore(prop) {
   return evNorm * 0.40 + probNorm * 0.35 + confNorm * 0.25;
 }
 
+// Filter helper: classify a prop by its best price.
+//   Favs  = heavy favorite at -120 or shorter (e.g. -120, -150, -200)
+//   Dawgs = any positive (plus) odds
+// Props between -119 and +99 fall into neither bucket, so they're hidden under
+// the Favs / Dawgs filters. 'All' keeps everything.
+function propPassesRisk(prop, riskFilter) {
+  if (riskFilter === 'fav') return prop?.bestOdds != null && prop.bestOdds <= -120;
+  if (riskFilter === 'dog') return prop?.bestOdds != null && prop.bestOdds > 0;
+  return true;
+}
+
 function getTopPicks(pitchers, unlocked, adminOverride = false) {
   const candidates = [];
   for (const pitcher of pitchers.filter(p => unlocked && !!p.prediction && (adminOverride || !!p.prediction.scout_ai))) {
@@ -362,9 +373,20 @@ function getTopPicks(pitchers, unlocked, adminOverride = false) {
       candidates.push({ pitcher, bestProp: prop, score: compositeScore(prop) });
     }
   }
-  return candidates
-    .sort((a, b) => b.score - a.score)
-    .slice(0, 4);
+
+  // Sort by score, then keep only the best-scoring prop per pitcher so the
+  // top-picks row never shows the same pitcher twice.
+  candidates.sort((a, b) => b.score - a.score);
+  const seen = new Set();
+  const unique = [];
+  for (const c of candidates) {
+    const key = pitcherKey(c.pitcher);
+    if (seen.has(key)) continue;
+    seen.add(key);
+    unique.push(c);
+    if (unique.length === 4) break;
+  }
+  return unique;
 }
 
 // ─── Shared sub-components ────────────────────────────────────────────────────
@@ -1028,6 +1050,7 @@ export default function PitcherProps() {
   const [gameSlate,   setGameSlate]   = useState([]);
   const [selectedKey, setSelectedKey] = useState(null);
   const [activeGamePk, setActiveGamePk] = useState(null);
+  const [riskFilter, setRiskFilter] = useState('all'); // 'all' | 'fav' | 'dog'
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -1152,13 +1175,22 @@ export default function PitcherProps() {
     return result;
   }, [pitchers]);
 
-  const visiblePitchers = activeGamePk
-    ? pitchers.filter(p => p.gamePk === activeGamePk)
-    : pitchers;
+  const pitcherHasMatchingProp = (pitcher) => {
+    if (riskFilter === 'all') return true;
+    if (!pitcher?.prediction) return false;
+    const { props } = buildPitcherProps(pitcher);
+    return Array.isArray(props) && props.some(p => propPassesRisk(p, riskFilter));
+  };
 
-  const visibleTopPicks = activeGamePk
+  const visiblePitchers = (activeGamePk
+    ? pitchers.filter(p => p.gamePk === activeGamePk)
+    : pitchers
+  ).filter(pitcherHasMatchingProp);
+
+  const visibleTopPicks = (activeGamePk
     ? topPicks.filter(({ pitcher }) => pitcher.gamePk === activeGamePk)
-    : topPicks;
+    : topPicks
+  ).filter(({ bestProp }) => propPassesRisk(bestProp, riskFilter));
 
   const activeMatchup = activeGamePk ? games.find(m => m.gamePk === activeGamePk) : null;
 
@@ -1230,6 +1262,23 @@ export default function PitcherProps() {
                       isActive={activeGamePk === m.gamePk}
                       onClick={() => setActiveGamePk(m.gamePk)}
                     />
+                  ))}
+                </div>
+
+                {/* Risk filter — favs vs dawgs by best odds */}
+                <div className="pp-filter-hand">
+                  {[
+                    { key: 'all', label: 'All'   },
+                    { key: 'fav', label: 'Favs'  },
+                    { key: 'dog', label: 'Dawgs' },
+                  ].map(({ key, label }) => (
+                    <button
+                      key={key}
+                      className={`pp-hand-btn ${riskFilter === key ? 'active' : ''} ${key !== 'all' ? `risk-${key}` : ''}`}
+                      onClick={() => setRiskFilter(key)}
+                    >
+                      {label}
+                    </button>
                   ))}
                 </div>
               </div>

@@ -4,7 +4,19 @@ import { useAuth } from '../../../context/AuthContext';
 import supabase from '../../../lib/supabaseClient';
 import predictionsService from '../../../data/services/predictionsService';
 import predictionsPerformanceService from '../../../data/services/predictionsPerformanceService';
+import { TEAM_METADATA } from '../../../data/constants/apiConstants';
 import '../../../styles/admin-page-styling/admin.css';
+
+// Lookup mlbId from team abbreviation for logo rendering
+function teamMlbId(abbr) {
+  if (!abbr) return null;
+  const meta = TEAM_METADATA[String(abbr).toUpperCase()];
+  return meta?.mlbId ?? null;
+}
+
+function teamLogoUrl(mlbId) {
+  return `https://www.mlbstatic.com/team-logos/${mlbId}.svg`;
+}
 
 // ─── Prediction unlock helpers (mirrors GameProps.jsx) ────────────────────────
 
@@ -162,12 +174,18 @@ function HitRateStat({ label, data }) {
   );
 }
 
-function HitRateWedge({ title, data, loading, error }) {
+function HitRateWedge({ title, data, loading, error, onClick }) {
   const summary = data?.summary ?? null;
   const gameCount = Array.isArray(data?.games) ? data.games.length : null;
+  const clickable = !loading && !error && summary && gameCount;
+
+  const Wrapper = clickable ? 'button' : 'div';
+  const wrapperProps = clickable
+    ? { type: 'button', onClick, 'aria-label': `${title} — open game report` }
+    : {};
 
   return (
-    <div className="admin-wedge admin-wedge--hitrate">
+    <Wrapper className={`admin-wedge admin-wedge--hitrate${clickable ? ' admin-wedge--clickable' : ''}`} {...wrapperProps}>
       <div className="admin-wedge__label">
         {title}
         {data?.date && (
@@ -187,6 +205,244 @@ function HitRateWedge({ title, data, loading, error }) {
           <HitRateStat label="Totals"    data={summary?.totals} />
         </div>
       )}
+      {clickable && <span className="admin-wedge__arrow" aria-hidden="true">→</span>}
+    </Wrapper>
+  );
+}
+
+// ─── Modal: Daily game report ─────────────────────────────────────────────────
+
+function OutcomeDot({ hit, pushed, label }) {
+  const className = pushed ? 'mod-dot mod-dot--push'
+    : hit             ? 'mod-dot mod-dot--hit'
+    : hit === false   ? 'mod-dot mod-dot--miss'
+    : 'mod-dot mod-dot--empty';
+  return (
+    <span className={className} aria-label={`${label}: ${pushed ? 'push' : hit ? 'hit' : 'miss'}`}>
+      {pushed ? '–' : hit ? (
+        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+          <polyline points="20 6 9 17 4 12"/>
+        </svg>
+      ) : null}
+    </span>
+  );
+}
+
+// ─── Side drawer: Scout AI picks for a single game ────────────────────────────
+
+const PICK_TYPE_META = {
+  'Moneyline': { icon: '💰', color: '#64b5f6', borderColor: 'rgba(100,181,246,0.4)' },
+  'Run Line':  { icon: '📏', color: '#4ade80', borderColor: 'rgba(74,222,128,0.4)'  },
+  'Total':     { icon: '📈', color: '#fbbf24', borderColor: 'rgba(251,191,36,0.4)'  },
+};
+
+function ResultBadge({ result }) {
+  if (!result) return null;
+  const className = result === 'win' ? 'admin-pick__result admin-pick__result--win'
+    : result === 'loss'  ? 'admin-pick__result admin-pick__result--loss'
+    : result === 'push'  ? 'admin-pick__result admin-pick__result--push'
+    : 'admin-pick__result';
+  return <span className={className}>{result.toUpperCase()}</span>;
+}
+
+function PickCard({ type, pick }) {
+  if (!pick || pick.pick == null) return null;
+  const meta = PICK_TYPE_META[type];
+  const prob = pick.model_prob != null ? Math.round(pick.model_prob * 100) : null;
+  const price = pick.line_price != null ? (pick.line_price > 0 ? `+${Math.round(pick.line_price)}` : String(Math.round(pick.line_price))) : null;
+
+  return (
+    <div className="admin-pick" style={{ borderColor: meta.borderColor }}>
+      <div className="admin-pick__header">
+        <span className="admin-pick__type" style={{ color: meta.color }}>
+          {meta.icon} {type}
+        </span>
+        <ResultBadge result={pick.result} />
+      </div>
+      <div className="admin-pick__value">{pick.pick}</div>
+      <div className="admin-pick__meta">
+        {prob !== null && (
+          <div className="admin-pick__meta-item">
+            <span>Model Prob</span>
+            <strong>{prob}%</strong>
+          </div>
+        )}
+        {price !== null && (
+          <div className="admin-pick__meta-item">
+            <span>Price</span>
+            <strong>{price}</strong>
+          </div>
+        )}
+        {pick.line != null && type !== 'Moneyline' && (
+          <div className="admin-pick__meta-item">
+            <span>Line</span>
+            <strong>{pick.line > 0 ? `+${pick.line}` : pick.line}</strong>
+          </div>
+        )}
+        {pick.actual_total != null && type === 'Total' && (
+          <div className="admin-pick__meta-item">
+            <span>Actual</span>
+            <strong>{pick.actual_total}</strong>
+          </div>
+        )}
+        {pick.actual_margin != null && type === 'Run Line' && (
+          <div className="admin-pick__meta-item">
+            <span>Actual Margin</span>
+            <strong>{pick.actual_margin > 0 ? `+${pick.actual_margin}` : pick.actual_margin}</strong>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function GamePicksSideModal({ game, date, onClose }) {
+  useEffect(() => {
+    const handleKey = (e) => { if (e.key === 'Escape') onClose(); };
+    document.addEventListener('keydown', handleKey);
+    return () => document.removeEventListener('keydown', handleKey);
+  }, [onClose]);
+
+  if (!game) return null;
+
+  const awayId = teamMlbId(game.away_team);
+  const homeId = teamMlbId(game.home_team);
+  const awayWon = game.away_score > game.home_score;
+
+  return (
+    <div className="admin-side-overlay" onClick={onClose}>
+      <aside className="admin-side" onClick={e => e.stopPropagation()} role="dialog" aria-label="Game Scout AI picks">
+        <button className="admin-side__close" onClick={onClose} aria-label="Close">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <line x1="18" y1="6" x2="6" y2="18"/>
+            <line x1="6" y1="6" x2="18" y2="18"/>
+          </svg>
+        </button>
+
+        <div className="admin-side__header">
+          <span className="admin-side__eyebrow">Scout AI Picks</span>
+          <div className="admin-side__matchup">
+            <div className={`admin-side__team${awayWon ? ' admin-side__team--winner' : ''}`}>
+              {awayId && <img src={teamLogoUrl(awayId)} alt={game.away_team} />}
+              <div>
+                <div className="admin-side__team-name">{game.away_team_name || game.away_team}</div>
+                <div className="admin-side__team-abbr">{game.away_team}</div>
+              </div>
+              <div className="admin-side__team-score">{game.away_score ?? '–'}</div>
+            </div>
+            <div className={`admin-side__team${!awayWon ? ' admin-side__team--winner' : ''}`}>
+              {homeId && <img src={teamLogoUrl(homeId)} alt={game.home_team} />}
+              <div>
+                <div className="admin-side__team-name">{game.home_team_name || game.home_team}</div>
+                <div className="admin-side__team-abbr">{game.home_team}</div>
+              </div>
+              <div className="admin-side__team-score">{game.home_score ?? '–'}</div>
+            </div>
+          </div>
+          <div className="admin-side__meta">
+            <span>{date}</span>
+            {game.status && <><span className="admin-side__meta-sep">·</span><span>{game.status}</span></>}
+          </div>
+        </div>
+
+        <div className="admin-side__body">
+          <PickCard type="Moneyline" pick={game.moneyline} />
+          <PickCard type="Run Line"  pick={game.run_line}  />
+          <PickCard type="Total"     pick={game.totals}    />
+        </div>
+      </aside>
+    </div>
+  );
+}
+
+function DailyGameReportModal({ data, title, onClose, onSelectGame }) {
+  if (!data) return null;
+  const games = Array.isArray(data.games) ? data.games : [];
+
+  return (
+    <div className="admin-modal-overlay" onClick={onClose}>
+      <div className="admin-modal" onClick={e => e.stopPropagation()}>
+        <button className="admin-modal__close" onClick={onClose} aria-label="Close">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <line x1="18" y1="6" x2="6" y2="18"/>
+            <line x1="6" y1="6" x2="18" y2="18"/>
+          </svg>
+        </button>
+
+        <div className="admin-modal__header">
+          <h3 className="admin-modal__title">{title}</h3>
+          <p className="admin-modal__sub">
+            {data.date} · {games.length} game{games.length !== 1 ? 's' : ''}
+          </p>
+          {data.summary && (
+            <div className="admin-modal__summary">
+              {['moneyline','run_line','totals'].map(k => {
+                const s = data.summary[k];
+                if (!s) return null;
+                const label = k === 'moneyline' ? 'ML' : k === 'run_line' ? 'RL' : 'TOT';
+                return (
+                  <div key={k} className="admin-modal__summary-item">
+                    <span className="admin-modal__summary-label">{label}</span>
+                    <strong>{s.accuracy}%</strong>
+                    <span className="admin-modal__summary-sub">{s.hits}/{s.picks}</span>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
+
+        {games.length === 0 ? (
+          <div className="admin-modal__empty">No games found for this date.</div>
+        ) : (
+          <div className="admin-modal__table">
+            <div className="admin-modal__table-head">
+              <span>Matchup</span>
+              <span>Score</span>
+              <span className="admin-modal__head-dots">
+                <em>ML</em><em>RL</em><em>TOT</em>
+              </span>
+            </div>
+            {games.map(g => {
+              const awayId = teamMlbId(g.away_team);
+              const homeId = teamMlbId(g.home_team);
+              return (
+                <button
+                  key={g.game_pk}
+                  type="button"
+                  className="admin-modal__row admin-modal__row--clickable"
+                  onClick={() => onSelectGame && onSelectGame(g)}
+                  aria-label={`View Scout AI picks for ${g.away_team} at ${g.home_team}`}
+                >
+                  <div className="admin-modal__matchup">
+                    <div className="admin-modal__team">
+                      {awayId ? <img src={teamLogoUrl(awayId)} alt={g.away_team} /> : <span className="admin-modal__team-fallback">{g.away_team}</span>}
+                      <span className="admin-modal__abbr">{g.away_team}</span>
+                    </div>
+                    <span className="admin-modal__at">@</span>
+                    <div className="admin-modal__team">
+                      {homeId ? <img src={teamLogoUrl(homeId)} alt={g.home_team} /> : <span className="admin-modal__team-fallback">{g.home_team}</span>}
+                      <span className="admin-modal__abbr">{g.home_team}</span>
+                    </div>
+                  </div>
+
+                  <div className="admin-modal__score">
+                    <span className={g.away_score > g.home_score ? 'admin-modal__score-winner' : ''}>{g.away_score ?? '–'}</span>
+                    <span className="admin-modal__score-sep">–</span>
+                    <span className={g.home_score > g.away_score ? 'admin-modal__score-winner' : ''}>{g.home_score ?? '–'}</span>
+                  </div>
+
+                  <div className="admin-modal__dots">
+                    <OutcomeDot hit={g.moneyline?.hit} pushed={g.moneyline?.result === 'push'} label="Moneyline" />
+                    <OutcomeDot hit={g.run_line?.hit}  pushed={g.run_line?.result === 'push'}  label="Run Line" />
+                    <OutcomeDot hit={g.totals?.hit}    pushed={g.totals?.result === 'push'}    label="Totals" />
+                  </div>
+                </button>
+              );
+            })}
+          </div>
+        )}
+      </div>
     </div>
   );
 }
@@ -313,6 +569,9 @@ function AdminPage() {
   const [playerProps, setPlayerProps] = useState(null);
   const [playerPropsLoading, setPlayerPropsLoading] = useState(true);
   const [playerPropsError, setPlayerPropsError] = useState(null);
+
+  const [reportModal, setReportModal] = useState(null); // null | 'today' | 'yesterday'
+  const [selectedGame, setSelectedGame] = useState(null); // { game, date } | null
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -453,12 +712,14 @@ function AdminPage() {
             data={hitRateYesterday}
             loading={hitRateYesterdayLoading}
             error={hitRateYesterdayError}
+            onClick={() => setReportModal('yesterday')}
           />
           <HitRateWedge
             title="Today's Hit Rate"
             data={hitRateToday}
             loading={hitRateTodayLoading}
             error={hitRateTodayError}
+            onClick={() => setReportModal('today')}
           />
         </div>
 
@@ -557,6 +818,26 @@ function AdminPage() {
           )}
         </div>
       </div>
+
+      {reportModal && (
+        <DailyGameReportModal
+          data={reportModal === 'today' ? hitRateToday : hitRateYesterday}
+          title={reportModal === 'today' ? "Today's Game Report" : "Yesterday's Game Report"}
+          onClose={() => setReportModal(null)}
+          onSelectGame={(g) => setSelectedGame({
+            game: g,
+            date: (reportModal === 'today' ? hitRateToday : hitRateYesterday)?.date || '',
+          })}
+        />
+      )}
+
+      {selectedGame && (
+        <GamePicksSideModal
+          game={selectedGame.game}
+          date={selectedGame.date}
+          onClose={() => setSelectedGame(null)}
+        />
+      )}
     </div>
   );
 }

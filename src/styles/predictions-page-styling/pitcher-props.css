@@ -48,6 +48,46 @@
   color: #4ade80;
 }
 
+/* ── Risk filter (All / Favs / Dawgs) ─────────────────────── */
+.pp-filter-hand {
+  display: flex;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 8px;
+  overflow: hidden;
+  flex-shrink: 0;
+  margin-left: 0.75rem;
+}
+
+.pp-hand-btn {
+  background: none;
+  border: none;
+  color: rgba(255,255,255,0.38);
+  font-size: 0.65rem;
+  font-weight: 700;
+  padding: 0.35rem 0.75rem;
+  cursor: pointer;
+  transition: background 0.12s ease, color 0.12s ease;
+  font-family: inherit;
+}
+
+.pp-hand-btn.active {
+  background: rgba(255,255,255,0.1);
+  color: #fff;
+}
+
+.pp-hand-btn.risk-fav.active {
+  background: rgba(74, 222, 128, 0.15);
+  color: #4ade80;
+}
+
+.pp-hand-btn.risk-dog.active {
+  background: rgba(251, 146, 60, 0.15);
+  color: #fb923c;
+}
+
+.pp-hand-btn:not(.active):hover { color: rgba(255,255,255,0.65); }
+
 .pp-matchup-card {
   display: flex;
   flex-direction: column;

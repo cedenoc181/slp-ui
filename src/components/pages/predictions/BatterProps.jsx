@@ -247,8 +247,11 @@ function buildBatterMarkets(batter) {
 
 // ─── Row / top-pick helpers ───────────────────────────────────────────────────
 
+// Favs  = heavy favorite at -120 or shorter
+// Dawgs = any positive (plus) odds
+// Markets between -119 and +99 fall into neither bucket under a strict filter.
 function passes(market, riskFilter) {
-  if (riskFilter === 'fav') return market.bestOdds != null && market.bestOdds < 0;
+  if (riskFilter === 'fav') return market.bestOdds != null && market.bestOdds <= -120;
   if (riskFilter === 'dog') return market.bestOdds != null && market.bestOdds > 0;
   return true;
 }
