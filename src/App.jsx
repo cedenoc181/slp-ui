@@ -71,6 +71,7 @@ import PredictionsOverview from './components/pages/predictions/PredictionsOverv
 import GameProps from './components/pages/predictions/GameProps';
 import PitcherProps from './components/pages/predictions/PitcherProps';
 import BatterProps from './components/pages/predictions/BatterProps';
+import ScoutAIChat from './components/pages/predictions/ScoutAIChat';
 import UpgradePage from './components/pages/Account/UpgradePage';
 import CheckoutSuccessPage from './components/pages/Account/CheckoutSuccessPage';
 
@@ -168,6 +169,7 @@ const PAGE_TITLES = [
   { path: '/predictions/games',       title: 'Game Props' },
   { path: '/predictions/pitchers',    title: 'Pitcher Props' },
   { path: '/predictions/batters',     title: 'Batter Props' },
+  { path: '/predictions/scout-ai',    title: 'Scout AI' },
   { path: '/unsubscribe',             title: 'Unsubscribe' },
   { path: '/verify-email',            title: 'Verify Email' },
 ];
@@ -257,6 +259,7 @@ function App() {
           <Route path="/predictions/games" element={<ProtectedRoute require="premium"><GameProps /></ProtectedRoute>} />
           <Route path="/predictions/pitchers" element={<ProtectedRoute require="premium"><PitcherProps /></ProtectedRoute>} />
           <Route path="/predictions/batters" element={<ProtectedRoute require="premium"><BatterProps /></ProtectedRoute>} />
+          <Route path="/predictions/scout-ai" element={<ProtectedRoute require="premium"><ScoutAIChat /></ProtectedRoute>} />
 
           {/* Education routes */}
           <Route path="/glossary" element={<Glossary />} />

@@ -384,11 +384,35 @@
   font-weight: 600;
   color: #E6EDF5;
   margin-bottom: 0.25rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
 }
 
 .dropdown-desc {
   font-size: 0.8rem;
   color: #B8C5D6;
+}
+
+/* Scout AI badge inside the predictions dropdown */
+.dropdown-badge {
+  display: inline-block;
+  font-size: 0.55rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #4ade80;
+  background: rgba(74, 222, 128, 0.12);
+  border: 1px solid rgba(74, 222, 128, 0.35);
+  border-radius: 20px;
+  padding: 0.12rem 0.5rem;
+  line-height: 1;
+}
+
+.dropdown-item--scout:hover .dropdown-badge {
+  color: #86efac;
+  background: rgba(74, 222, 128, 0.2);
+  border-color: rgba(74, 222, 128, 0.55);
 }
 
 /* Account Icon */

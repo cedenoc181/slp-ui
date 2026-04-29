@@ -849,7 +849,7 @@ function SettingsPage() {
                       </svg>
                     </div>
                     <div className="settings-admin-card__body">
-                      <h4>Command Center</h4>
+                      <h4>Admin Dashboard</h4>
                       <p>Daily hit rate, prediction countdown, and content manager</p>
                     </div>
                   </button>

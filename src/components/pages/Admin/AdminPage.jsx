@@ -664,7 +664,7 @@ function AdminPage() {
                 <polyline points="15 18 9 12 15 6" />
               </svg>
             </Link>
-            <h1>Command Center</h1>
+            <h1>Admin Dashboard</h1>
           </div>
           <div className="admin-header-actions">
             <Link to="/admin/model-performance" className="admin-action-btn">
