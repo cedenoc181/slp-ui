@@ -4,6 +4,7 @@ import { useAuth } from '../../../context/AuthContext';
 import userProfileService from '../../../data/services/userProfileService';
 import stripeService from '../../../data/services/stripeService';
 import { TEAMS } from '../../../data/constants/apiConstants';
+import AlertInbox from '../../AlertInbox';
 
 function SettingsPage() {
   const {
@@ -261,6 +262,13 @@ function SettingsPage() {
         <div className="settings-layout">
           {/* Sidebar nav */}
           <nav className="settings-nav">
+            <a href="#inbox" className="settings-nav-item">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M22 12h-6l-2 3h-4l-2-3H2"/>
+                <path d="M5.45 5.11L2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/>
+              </svg>
+              Inbox
+            </a>
             <a href="#profile" className="settings-nav-item active">
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <circle cx="12" cy="8" r="4"/>
@@ -316,6 +324,7 @@ function SettingsPage() {
 
           {/* Settings content — both blocks wrapped so grid places them in column 2 */}
           <div className="settings-content-col">
+          <AlertInbox />
           <form className="settings-content" onSubmit={handleSaveSettings}>
 
             {/* Profile Section */}
@@ -862,6 +871,23 @@ function SettingsPage() {
                       <p>Scout AI accuracy, probability calibration, and EV tracking</p>
                     </div>
                   </button>
+
+                  <button
+                    type="button"
+                    className="settings-admin-card"
+                    onClick={() => navigate('/admin/campaigns')}
+                  >
+                    <div className="settings-admin-card__icon">
+                      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
+                        <polyline points="22,6 12,13 2,6" />
+                      </svg>
+                    </div>
+                    <div className="settings-admin-card__body">
+                      <h4>Campaigns</h4>
+                      <p>Send updates, features, and promotions to user segments</p>
+                    </div>
+                  </button>
                 </div>
               </section>
             </div>
@@ -983,7 +1009,16 @@ function SettingsPage() {
             <section id="sessions" className="settings-section">
               <div className="section-header">
                 <h2>Active Sessions</h2>
-                <p>Devices currently signed in to your account</p>
+                <p>
+                  Devices currently signed in to your account.{' '}
+                  <strong>Max 5 active sessions per user</strong> — signing in on a 6th device will
+                  automatically end your oldest session.
+                </p>
+                {!sessionsLoading && sessions.length > 0 && (
+                  <span className="setting-hint" style={{ display: 'inline-block', marginTop: '0.5rem' }}>
+                    {sessions.length} of 5 sessions in use
+                  </span>
+                )}
               </div>
               <div className="settings-group">
                 {sessionsLoading ? (
@@ -991,27 +1026,35 @@ function SettingsPage() {
                 ) : sessions.length === 0 ? (
                   <p className="setting-hint">No active sessions found.</p>
                 ) : (
-                  sessions.map((session) => (
-                    <div key={session.id} className="account-action">
-                      <div className="action-info">
-                        <h4 style={{ fontSize: '0.9rem' }}>{session.device_info || 'Unknown device'}</h4>
-                        <p>
-                          {session.ip_address && `IP: ${session.ip_address} · `}
-                          {session.last_active_at
-                            ? `Last active: ${new Date(session.last_active_at).toLocaleString()}`
-                            : `Started: ${new Date(session.created_at).toLocaleString()}`}
-                        </p>
+                  // Sort newest-first so users see their most recent session at the top.
+                  // The oldest session at the bottom is the next one auto-pruned on a 6th login.
+                  [...sessions]
+                    .sort((a, b) => {
+                      const aTs = new Date(a.last_active_at || a.created_at).getTime();
+                      const bTs = new Date(b.last_active_at || b.created_at).getTime();
+                      return bTs - aTs;
+                    })
+                    .map((session) => (
+                      <div key={session.id} className="account-action">
+                        <div className="action-info">
+                          <h4 style={{ fontSize: '0.9rem' }}>{session.device_info || 'Unknown device'}</h4>
+                          <p>
+                            {session.ip_address && `IP: ${session.ip_address} · `}
+                            {session.last_active_at
+                              ? `Last active: ${new Date(session.last_active_at).toLocaleString()}`
+                              : `Started: ${new Date(session.created_at).toLocaleString()}`}
+                          </p>
+                        </div>
+                        <button
+                          type="button"
+                          className="action-btn danger"
+                          onClick={() => handleRevokeSession(session.id)}
+                          disabled={revokingId === session.id}
+                        >
+                          {revokingId === session.id ? 'Revoking…' : 'Revoke'}
+                        </button>
                       </div>
-                      <button
-                        type="button"
-                        className="action-btn danger"
-                        onClick={() => handleRevokeSession(session.id)}
-                        disabled={revokingId === session.id}
-                      >
-                        {revokingId === session.id ? 'Revoking…' : 'Revoke'}
-                      </button>
-                    </div>
-                  ))
+                    ))
                 )}
               </div>
             </section>

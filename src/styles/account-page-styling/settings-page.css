@@ -1399,17 +1399,26 @@
 
 /* Logout Link */
 .logout-link {
-  background: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  padding: 0.75rem 1.75rem;
+  background: linear-gradient(135deg, #C8102E 0%, #E31837 100%);
   border: none;
-  color: #C8102E;
-  font-weight: 600;
-  font-size: 1rem;
-  cursor: pointer;
+  color: #fff;
+  font-weight: 700;
+  font-size: 0.95rem;
   font-family: inherit;
-  transition: color 0.3s ease;
+  border-radius: 10px;
+  cursor: pointer;
+  box-shadow: 0 4px 14px rgba(200, 16, 46, 0.3);
+  transition: transform 0.15s ease, box-shadow 0.2s ease;
 }
 
 .logout-link:hover {
-  color: #E31837;
-  text-decoration: underline;
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(200, 16, 46, 0.45);
+  color: #fff;
+  text-decoration: none;
 }

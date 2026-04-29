@@ -10,6 +10,7 @@ import ProtectedRoute from './components/ProtectedRoute';
 // Home page component imports//
 import Header from './components/Header';
 import FreeWeekBanner from './components/FreeWeekBanner';
+import AlertSignInModal from './components/AlertSignInModal';
 import Hero from './components/Hero';
 import StatsPreview from './components/StatsPreview';
 import PredictionsTeaser from './components/PredictionsTeaser';
@@ -37,6 +38,7 @@ import VerifyEmailPage from './components/pages/Account/VerifyEmailPage';
 import AdminPage from './components/pages/Admin/AdminPage';
 import ArticleEditor from './components/pages/Admin/ArticleEditor';
 import ModelPerformancePage from './components/pages/Admin/ModelPerformancePage';
+import CampaignsPage from './components/pages/Admin/CampaignsPage';
 
 // Education page imports//
 import Glossary from './components/pages/Education/GlossaryPage';
@@ -219,6 +221,7 @@ function App() {
           <AnalyticsTracker />
           <Header />
           <FreeWeekBanner />
+          <AlertSignInModal />
           <Routes>
             <Route path="/" element={<HomePage />} />
           {/* test route */}
@@ -277,6 +280,7 @@ function App() {
           <Route path="/admin/new" element={<ArticleEditor />} />
           <Route path="/admin/edit/:id" element={<ArticleEditor />} />
           <Route path="/admin/model-performance" element={<ModelPerformancePage />} />
+          <Route path="/admin/campaigns" element={<CampaignsPage />} />
 
           {/* Unsubscribe route */}
           <Route path="/unsubscribe" element={<UnsubscribePage />} />

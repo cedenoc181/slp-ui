@@ -1,0 +1,593 @@
+============================================================
+SANDLOT PICKS — SERVER-SIDE WIRING REQUIREMENTS
+============================================================
+
+This document describes the frontend features that are currently
+running on mock data / localStorage and need real backend support.
+Each section is self-contained — copy any one section into a
+server-side chat to scope and build that feature in isolation.
+
+Existing API conventions (already in use by the app):
+  - Base URL prefix: /api/v1
+  - Auth: JWT Bearer token in Authorization header
+  - Error responses: { "detail": "<human-readable string>" }
+    Frontend reads err.message (mapped from response.detail)
+  - User profile lives at GET /api/v1/users/me
+  - Subscriptions namespace: /api/v1/subscriptions/...
+  - Admin namespace: /api/v1/admin/...
+
+Project: React 18 + Create React App, Supabase as content DB,
+Stripe for billing. Server is Python/FastAPI based on existing
+endpoint shape.
+
+
+============================================================
+FEATURE 1 — ALERTS / NOTIFICATIONS SYSTEM
+============================================================
+
+WHAT IT IS
+----------
+Admins can publish alerts that either (a) pop up as a modal the
+next time the targeted user signs in, or (b) silently land in
+the user's inbox on their settings page. Alerts can be sent to
+all users or to a specific list of email addresses.
+
+CURRENT STATE
+-------------
+All alert data lives in browser localStorage under keys
+`spa_admin_alerts_v1` and `spa_admin_alerts_read_v1`. This means
+targeted-email alerts don't actually reach the right user since
+the data never crosses browsers. Needs a real backend.
+
+FRONTEND FILES THAT WILL CONSUME THIS API
+-----------------------------------------
+- src/data/constants/alertsMockData.js   (swap helpers for fetch calls)
+- src/components/AlertSignInModal.jsx     (auto-pops on login)
+- src/components/AlertInbox.jsx           (settings page inbox card)
+- src/components/pages/Admin/AlertComposerModal.jsx (admin composer)
+
+DATA MODEL
+----------
+Table: alerts
+  id              uuid PRIMARY KEY DEFAULT gen_random_uuid()
+  subject         text NOT NULL
+  body            text NOT NULL
+  display_type    text NOT NULL CHECK (display_type IN ('modal', 'general'))
+  target_type     text NOT NULL CHECK (target_type IN ('all', 'specific'))
+  target_emails   text[] NOT NULL DEFAULT '{}'
+                  -- only populated when target_type = 'specific'
+  created_at      timestamptz NOT NULL DEFAULT now()
+  created_by      uuid REFERENCES users(id)
+  expires_at      timestamptz NULL  -- optional; treat NULL as "no expiry"
+
+Table: alert_reads
+  alert_id        uuid REFERENCES alerts(id) ON DELETE CASCADE
+  user_id         uuid REFERENCES users(id)  ON DELETE CASCADE
+  read_at         timestamptz NOT NULL DEFAULT now()
+  PRIMARY KEY (alert_id, user_id)
+
+Index: alert_reads(user_id) for fast per-user lookups.
+
+ENDPOINTS
+---------
+
+(1) POST /api/v1/admin/alerts
+    Auth: admin only (403 otherwise)
+    Body:
+      {
+        "subject": "Brief outage tonight",
+        "body": "We're pushing a deploy at 11pm ET. ~30 min downtime.",
+        "display_type": "modal",                  // 'modal' | 'general'
+        "target_type": "all",                     // 'all'   | 'specific'
+        "target_emails": ["a@b.com", "c@d.com"]   // empty array when target_type='all'
+      }
+    Validation:
+      - subject and body required, both non-empty
+      - if target_type = 'specific', target_emails must have ≥1 valid email
+    Response 201:
+      {
+        "id": "uuid",
+        "subject": "...",
+        "body": "...",
+        "display_type": "modal",
+        "target_type": "all",
+        "target_emails": [],
+        "created_at": "2026-04-28T15:00:00Z",
+        "created_by": "uuid"
+      }
+    Errors:
+      400 { "detail": "Subject is required." }
+      400 { "detail": "At least one recipient email is required." }
+      403 { "detail": "Admin access required." }
+
+(2) GET /api/v1/admin/alerts
+    Auth: admin only
+    Returns: array of all alerts (full objects, newest first), most recent 100.
+    Used for: future admin "manage existing alerts" view.
+
+(3) DELETE /api/v1/admin/alerts/:id
+    Auth: admin only
+    Returns: 204 No Content on success
+    Errors: 404 { "detail": "Alert not found." }
+
+(4) GET /api/v1/users/me/alerts
+    Auth: any authenticated user
+    Server-side filtering — NEVER return alerts not targeted at the user.
+    SQL pattern:
+      SELECT a.*, ar.read_at IS NOT NULL AS is_read
+      FROM alerts a
+      LEFT JOIN alert_reads ar ON ar.alert_id = a.id AND ar.user_id = :user_id
+      WHERE (a.target_type = 'all'
+             OR :user_email = ANY(a.target_emails))
+        AND (a.expires_at IS NULL OR a.expires_at > now())
+      ORDER BY a.created_at DESC
+    Response:
+      [
+        {
+          "id": "uuid",
+          "subject": "...",
+          "body": "...",
+          "display_type": "modal",
+          "created_at": "2026-04-25T16:30:00Z",
+          "is_read": false
+        },
+        ...
+      ]
+    Note: do NOT return target_type or target_emails to non-admin users.
+    The is_read flag drives the unread badge + sign-in modal queue.
+
+(5) POST /api/v1/users/me/alerts/:id/read
+    Auth: any authenticated user
+    Marks a single alert as read by the current user.
+    Response: 204 No Content
+    Idempotent — second call is a no-op.
+    Errors: 404 if alert not visible to this user (don't leak existence).
+
+CLIENT BEHAVIOR TO BE AWARE OF
+------------------------------
+- On every successful login, the client immediately calls (4) and
+  filters for `display_type === 'modal' && !is_read`. Those pop as
+  a queued modal sequence; user clicks "Got it" → call (5).
+- The settings inbox calls (4) on mount and re-renders unread badge
+  off the `is_read` flag.
+
+OPEN QUESTIONS
+--------------
+- Soft delete for compliance? (recommended: add `deleted_at`)
+- Rate limit (5)? Probably not needed — but add basic auth-protection.
+
+
+============================================================
+FEATURE 2 — EMAIL CAMPAIGNS
+============================================================
+
+WHAT IT IS
+----------
+Admin composes an email (subject, body, optional CTA), picks an
+audience segment (all / free / premium / weekly / monthly / annual /
+lapsed), and sends. The frontend shows a recipient count, supports
+test sends to the admin's own email, and displays a history of
+past campaigns.
+
+CURRENT STATE
+-------------
+Frontend is fully built — composer, audience picker, live preview,
+test-send button, confirmation modal, recent-campaigns history.
+All using mock counts and `MOCK_CAMPAIGN_HISTORY` from
+src/data/constants/campaignsMockData.js. No emails actually sent.
+
+FRONTEND FILES THAT WILL CONSUME THIS API
+-----------------------------------------
+- src/components/pages/Admin/CampaignsPage.jsx
+- src/components/pages/Admin/AdminPage.jsx       (recent campaigns row)
+- src/data/constants/campaignsMockData.js        (will be replaced)
+
+EMAIL PROVIDER RECOMMENDATION
+-----------------------------
+Use Resend (https://resend.com). Free tier covers low volume,
+modern API, simple webhooks. Postmark, SendGrid, AWS SES also fine.
+
+DATA MODEL
+----------
+Table: campaigns
+  id              uuid PRIMARY KEY DEFAULT gen_random_uuid()
+  subject         text NOT NULL
+  body            text NOT NULL
+  cta_label       text NULL
+  cta_url         text NULL
+  audience        text NOT NULL
+                  CHECK (audience IN ('all','free','premium','weekly',
+                                      'monthly','annual','lapsed'))
+  recipient_count int NOT NULL DEFAULT 0  -- snapshotted at send time
+  status          text NOT NULL DEFAULT 'sent'
+                  CHECK (status IN ('sent','failed','draft'))
+  sent_at         timestamptz NULL
+  created_at      timestamptz NOT NULL DEFAULT now()
+  created_by      uuid REFERENCES users(id)
+
+Optional: campaign_recipients table if you want per-recipient
+tracking (open/click/bounce) — Resend stores this on their side,
+so for v1 you can skip it.
+
+AUDIENCE RESOLUTION
+-------------------
+Map each `audience` key to a SQL filter:
+  all      → users WHERE email_updates = TRUE
+  free     → users WHERE email_updates = TRUE AND subscription_tier = 'free'
+  premium  → users WHERE email_updates = TRUE AND subscription_tier = 'premium'
+  weekly   → users WHERE email_updates = TRUE AND subscription_plan  = 'weekly'
+  monthly  → users WHERE email_updates = TRUE AND subscription_plan  = 'monthly'
+  annual   → users WHERE email_updates = TRUE AND subscription_plan  = 'annual'
+  lapsed   → users WHERE email_updates = TRUE
+                    AND subscription_status IN ('canceled','cancelled')
+
+ALWAYS exclude users with `email_updates = FALSE` regardless of
+audience selection. This is a hard CAN-SPAM/GDPR requirement.
+
+ENDPOINTS
+---------
+
+(1) GET /api/v1/admin/campaigns
+    Auth: admin only
+    Returns: [{ id, subject, audience, recipient_count, sent_at, status }, ...]
+    Sorted by sent_at DESC. Last 50 entries.
+    Used by: AdminPage Campaign Manager row + CampaignsPage history.
+
+(2) GET /api/v1/admin/campaigns/audience-counts
+    Auth: admin only
+    Returns:
+      {
+        "all":     412,
+        "free":    287,
+        "premium": 98,
+        "weekly":  22,
+        "monthly": 64,
+        "annual":  12,
+        "lapsed":  27
+      }
+    Used to populate the audience picker live counts.
+
+(3) POST /api/v1/admin/campaigns/test
+    Auth: admin only
+    Body:
+      {
+        "subject": "...",
+        "body": "...",
+        "cta_label": "View Predictions",  // nullable
+        "cta_url": "https://...",          // nullable
+        "to_email": "admin@sandlotpicks.com"
+      }
+    Sends a single email to to_email. Does NOT create a campaign row.
+    Response 200: { "ok": true }
+    Errors:
+      400 { "detail": "Subject is required." }
+      502 { "detail": "Email provider unavailable. Try again." }
+
+(4) POST /api/v1/admin/campaigns/send
+    Auth: admin only
+    Body:
+      {
+        "subject": "...",
+        "body": "...",
+        "cta_label": "View Predictions",
+        "cta_url": "https://...",
+        "audience": "free"
+      }
+    Behavior:
+      a. Resolve audience to recipient list (filter by email_updates).
+      b. Insert campaigns row with status='sent', sent_at=now(),
+         recipient_count = len(recipients).
+      c. Send to provider in batched calls (Resend: up to 100 per call).
+      d. Use BCC or per-message send — never put all addresses in To.
+      e. Append unsubscribe link automatically:
+         https://www.sandlotpicks.com/unsubscribe?token=<jwt-or-uuid>
+    Response 201:
+      {
+        "id": "uuid",
+        "recipient_count": 287,
+        "sent_at": "2026-04-28T15:00:00Z",
+        "status": "sent"
+      }
+    Errors:
+      400 { "detail": "Audience has no recipients." }
+      400 { "detail": "Subject and body are required." }
+      502 { "detail": "Email provider error: <provider message>" }
+
+EMAIL TEMPLATE
+--------------
+Server should wrap user-supplied body in a branded HTML template:
+  - Header: "⚾ Sandlot Picks" wordmark
+  - Body: rendered with line breaks as <p> tags
+  - CTA button (if provided): teal gradient, full-width, links to cta_url
+  - Footer: small grey text with manage-preferences and unsubscribe links
+The frontend preview at CampaignsPage.jsx uses this exact structure
+as a reference — replicate it server-side.
+
+UNSUBSCRIBE FLOW
+----------------
+Already exists at /unsubscribe in the frontend. Backend should
+accept a one-click unsubscribe token from the email and set
+users.email_updates = FALSE.
+
+
+============================================================
+FEATURE 3 — AI ASSIST (LLM PROXY)
+============================================================
+
+WHAT IT IS
+----------
+The article editor and campaign composer have ✨ AI Assist
+buttons that should call an LLM (Claude or GPT) to generate or
+refine content. The frontend calls a single proxy endpoint —
+the server holds the API key and tracks usage.
+
+CURRENT STATE
+-------------
+Frontend uses pre-canned mock generators in:
+  - src/components/pages/Admin/CampaignsPage.jsx
+      → mockGenerateBody, mockSubjectIdeas
+  - src/components/pages/Admin/ArticleEditor.jsx
+      → mockTitleIdeas, mockSummaryDraft, mockBlockRefine
+
+Each function returns hardcoded sample text after a 1.1s setTimeout.
+
+WHY A PROXY (instead of frontend calling LLM directly)
+------------------------------------------------------
+- API keys must never live in the browser bundle.
+- Lets you rate-limit per admin user.
+- Lets you log usage / cost per admin.
+- Lets you swap providers without redeploying frontend.
+
+ENDPOINT
+--------
+POST /api/v1/admin/ai/generate
+Auth: admin only
+Body:
+  {
+    "task": "campaign_subject" | "campaign_body" |
+            "article_title"    | "article_summary" |
+            "article_block_refine",
+    "context": {
+      // task-specific fields below
+    }
+  }
+
+Task-specific contexts:
+
+  campaign_subject:
+    { "audience": "free", "count": 5 }
+    → returns array of 5 subject line strings
+
+  campaign_body:
+    {
+      "audience": "premium",
+      "current_body": "<existing draft or empty>",
+      "instruction": "Announce that pitcher props are live"
+    }
+    → returns a single markdown body string
+
+  article_title:
+    {
+      "summary": "<post.summary>",
+      "content_text": "<flat-text version of all blocks>",
+      "type": "article" | "blog",
+      "count": 5
+    }
+    → returns array of 5 title strings
+
+  article_summary:
+    { "content_text": "<flat-text>" }
+    → returns a single summary string
+
+  article_block_refine:
+    {
+      "block_text": "<original text>",
+      "block_type": "paragraph" | "heading" | "subheading" | "quote",
+      "action": "improve" | "shorter" | "expand" | "casual" | "sharper",
+      "instruction": "<optional custom prompt>"
+    }
+    → returns a single refined text string
+
+Response shapes:
+  Single string:  { "text": "..." }
+  List of strings: { "texts": ["...", "...", "..."] }
+
+Errors:
+  400 { "detail": "Unknown task: <task>" }
+  429 { "detail": "AI usage limit reached. Try again in 1 hour." }
+  502 { "detail": "AI provider error." }
+
+PROVIDER RECOMMENDATION
+-----------------------
+Anthropic Claude (claude-haiku-4-5 for speed/cost on the refine
+tasks; claude-sonnet-4-6 for higher-quality summary/title work).
+Pass the existing brand voice in a system prompt — punchy, data-
+driven, baseball-fluent, no hype.
+
+USAGE TRACKING (optional v1)
+----------------------------
+Log every call to ai_usage_log table:
+  user_id, task, prompt_tokens, completion_tokens, cost_usd,
+  created_at. Lets you see who's spending what over time.
+
+
+============================================================
+FEATURE 4 — FREE WEEK PROMO ENFORCEMENT (FREE7)
+============================================================
+
+WHAT IT IS
+----------
+Free-tier users can claim one free week of premium access by
+redeeming the FREE7 promo code on the Settings page. The flow
+calls POST /api/v1/subscriptions/redeem-promo, redirects through
+Stripe, and the user lands on /subscription/success as premium.
+
+CURRENT STATE
+-------------
+The redemption flow itself is wired (you said you implemented
+the endpoint server-side already). The remaining piece is making
+sure each user can only claim ONCE.
+
+WHAT THE CLIENT NEEDS
+---------------------
+The /api/v1/users/me response should include a new field:
+
+  free_week_claimed_at: timestamptz | null
+
+Frontend uses this to:
+  - Hide the Free Week card on Settings once it's been claimed
+  - Show "Free week already redeemed" state if they try again
+
+CLIENT FILES THAT WILL CONSUME THIS
+-----------------------------------
+- src/context/AuthContext.jsx (mergeProfile reads it)
+- src/components/pages/Account/SettingsPage.jsx (gates the card)
+
+WHERE THE FIELD GETS SET
+------------------------
+Stripe webhook on `checkout.session.completed`:
+  IF the redeemed coupon was the FREE7 code AND
+     user.free_week_claimed_at IS NULL
+  THEN UPDATE users SET free_week_claimed_at = NOW()
+
+Defense-in-depth (don't rely only on the frontend hiding the card):
+The /api/v1/subscriptions/redeem-promo endpoint should reject the
+request with 400 { "detail": "You've already redeemed a promotional
+code." } when free_week_claimed_at IS NOT NULL.
+
+ALSO ON STRIPE'S SIDE
+---------------------
+Set on the FREE7 coupon:
+  - max_redemptions_per_customer: 1
+  - applies_to: weekly price only
+
+This blocks the easy abuse of the same Stripe customer
+re-redeeming the code.
+
+
+============================================================
+FEATURE 5 — ACTIVE SESSION LIMIT (5 PER USER)
+============================================================
+
+WHAT IT IS
+----------
+Cap each user at a maximum of 5 active sessions. When a 6th login
+happens (any device, any auth flow — login, refresh, OAuth, etc.),
+the oldest session is automatically revoked so the new session
+takes its slot.
+
+CURRENT STATE
+-------------
+The Settings page already lists active sessions (Active Sessions
+section) and lets users manually revoke any session via
+`userProfileService.revokeSession(id)`. There is currently no cap.
+The frontend now displays the message "Max 5 active sessions per
+user — signing in on a 6th device will automatically end your
+oldest session" and renders sessions sorted newest-first, but the
+actual enforcement must happen server-side because:
+  - Sessions are minted server-side at login/refresh; the client
+    can't preempt the create.
+  - Two near-simultaneous logins can both think they're #5.
+  - Revoking client-side after the fact races with refresh-token
+    requests already in flight from older sessions.
+
+FRONTEND FILES THAT WILL CONSUME THIS
+-------------------------------------
+- src/components/pages/Account/SettingsPage.jsx (Active Sessions
+  section — already mentions the 5-session cap to the user)
+- src/data/services/userProfileService.js → getSessions(), revokeSession()
+- src/data/services/userAuthService.js     → login(), refreshToken()
+
+WHERE TO ENFORCE
+----------------
+Inside the function(s) that INSERT into the `sessions` table —
+typically the login handler and any social/SSO callback. After
+inserting the new session row, run:
+
+  WITH ranked AS (
+    SELECT id,
+           ROW_NUMBER() OVER (ORDER BY last_active_at DESC, created_at DESC) AS rn
+    FROM sessions
+    WHERE user_id = :user_id AND revoked_at IS NULL
+  )
+  UPDATE sessions
+  SET revoked_at = now(),
+      revoked_reason = 'session_limit_exceeded'
+  WHERE id IN (SELECT id FROM ranked WHERE rn > 5);
+
+This keeps the 5 most recently active sessions and revokes the rest
+in a single statement. Run this transactionally with the new
+session insert so a race can't push the count over 5.
+
+REFRESH-TOKEN BEHAVIOR
+----------------------
+When a refresh-token request comes in for a session that was
+revoked by the cap, return 401 with:
+  { "detail": "Session ended — too many active devices. Please sign in again." }
+The frontend's AuthContext will catch the 401 from refreshToken,
+clear local state, and redirect to /account.
+
+OPTIONAL UX TOUCH
+-----------------
+On a successful login that triggered a cap-eviction, include a
+small flag in the response:
+  {
+    "access_token": "...",
+    "refresh_token": "...",
+    "expires_in": 3600,
+    "evicted_session": {
+      "device_info": "Chrome on Mac",
+      "last_active_at": "2026-04-22T11:14:00Z"
+    }
+  }
+The frontend can display a toast: "Signed out your oldest session
+(Chrome on Mac) — you've reached the 5-device limit."
+(Not required for v1; the silent eviction is fine.)
+
+CONFIGURATION
+-------------
+Make the cap a constant in the backend (e.g. SESSION_LIMIT = 5).
+Future tier-based tweaks (e.g. premium users get 10) become a
+one-line change.
+
+
+============================================================
+SHARED CONVENTIONS / GOTCHAS
+============================================================
+
+ERROR FORMAT
+------------
+All 4xx responses must be: { "detail": "<human readable string>" }
+The frontend's apiService maps `response.detail` onto `err.message`,
+so anything you put in `detail` shows up in the UI.
+
+ADMIN AUTH CHECK
+----------------
+The frontend reads `user.is_admin` from the JWT and from
+/api/v1/users/me. Server should reject all admin-only endpoints
+with 403 { "detail": "Admin access required." } when the caller
+is not flagged as admin.
+
+EMAIL OPT-OUT
+-------------
+For both Alerts (modal/general) and Campaigns, ALWAYS exclude
+users with email_updates = FALSE if the alert/campaign would
+otherwise reach them by email. (Modal alerts are in-app only,
+so they're exempt from that filter — but general inbox alerts
+that ALSO trigger an email notification, if you add that, must
+respect the flag.)
+
+DATE/TIME FORMAT
+----------------
+All timestamps in responses should be ISO-8601 UTC with a 'Z'
+suffix. Frontend parses with `new Date(iso)`.
+
+PAGINATION
+----------
+For list endpoints (alerts, campaigns) v1 can return last 50–100
+records inline. Add cursor pagination later if any list grows
+beyond a few hundred entries.
+
+============================================================
+END OF DOCUMENT
+============================================================

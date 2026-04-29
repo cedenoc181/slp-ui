@@ -5,7 +5,10 @@ import supabase from '../../../lib/supabaseClient';
 import predictionsService from '../../../data/services/predictionsService';
 import predictionsPerformanceService from '../../../data/services/predictionsPerformanceService';
 import { TEAM_METADATA } from '../../../data/constants/apiConstants';
+import { MOCK_CAMPAIGN_HISTORY, audienceMeta, formatCampaignSentAt } from '../../../data/constants/campaignsMockData';
+import AlertComposerModal from './AlertComposerModal';
 import '../../../styles/admin-page-styling/admin.css';
+import '../../../styles/alert-modal.css';
 
 // Lookup mlbId from team abbreviation for logo rendering
 function teamMlbId(abbr) {
@@ -572,6 +575,7 @@ function AdminPage() {
 
   const [reportModal, setReportModal] = useState(null); // null | 'today' | 'yesterday'
   const [selectedGame, setSelectedGame] = useState(null); // { game, date } | null
+  const [alertComposerOpen, setAlertComposerOpen] = useState(false);
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -671,19 +675,30 @@ function AdminPage() {
               </svg>
               Model Performance
             </Link>
-            <Link to="/admin/new?type=article" className="admin-action-btn">
+            <Link to="/admin/campaigns" className="admin-action-btn">
               <svg className="admin-action-btn__icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                <line x1="12" y1="5" x2="12" y2="19" />
-                <line x1="5"  y1="12" x2="19" y2="12" />
+                <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
+                <polyline points="22,6 12,13 2,6" />
               </svg>
-              New Article
+              Campaigns
             </Link>
-            <Link to="/admin/new?type=blog" className="admin-action-btn">
+            <button
+              type="button"
+              className="admin-action-btn admin-action-btn--accent"
+              onClick={() => setAlertComposerOpen(true)}
+            >
+              <svg className="admin-action-btn__icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
+                <path d="M13.73 21a2 2 0 0 1-3.46 0" />
+              </svg>
+              New Alert
+            </button>
+            <Link to="/admin/new" className="admin-action-btn">
               <svg className="admin-action-btn__icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                 <line x1="12" y1="5" x2="12" y2="19" />
                 <line x1="5"  y1="12" x2="19" y2="12" />
               </svg>
-              New Blog
+              New Post
             </Link>
           </div>
         </div>
@@ -732,7 +747,58 @@ function AdminPage() {
           />
         </div>
 
-        {/* ── Row 4: Content Manager ── */}
+        {/* ── Row 4: Campaign Manager ── */}
+        <div className="admin-section admin-campaigns">
+          <div className="admin-section-header">
+            <h2>Campaign Manager</h2>
+            <div className="admin-campaigns__header-right">
+              <span className="admin-section-count">
+                {MOCK_CAMPAIGN_HISTORY.length} sent
+              </span>
+              <Link to="/admin/campaigns" className="admin-action-btn admin-action-btn--sm">
+                Manage campaigns →
+              </Link>
+            </div>
+          </div>
+
+          {MOCK_CAMPAIGN_HISTORY.length === 0 ? (
+            <div className="empty-state">
+              No campaigns yet. Click "Manage campaigns" to send your first one.
+            </div>
+          ) : (
+            <div className="admin-campaign-list">
+              {MOCK_CAMPAIGN_HISTORY.slice(0, 5).map(c => {
+                const meta = audienceMeta(c.audience);
+                return (
+                  <Link
+                    key={c.id}
+                    to="/admin/campaigns"
+                    className="admin-campaign-row"
+                  >
+                    <div className="admin-campaign-row__main">
+                      <span className="admin-campaign-row__subject">
+                        {c.subject || '(no subject)'}
+                      </span>
+                      <div className="admin-campaign-row__meta">
+                        <span className={`admin-audience-pill admin-audience-pill--${meta.accent || 'slate'}`}>
+                          {meta.label}
+                        </span>
+                        <span className="admin-campaign-row__sub">
+                          {c.recipients.toLocaleString()} recipients · {formatCampaignSentAt(c.sentAt)}
+                        </span>
+                      </div>
+                    </div>
+                    <span className={`campaign-history__status campaign-history__status--${c.status}`}>
+                      {c.status}
+                    </span>
+                  </Link>
+                );
+              })}
+            </div>
+          )}
+        </div>
+
+        {/* ── Row 5: Content Manager ── */}
         <div className="admin-section">
           <div className="admin-section-header">
             <h2>Content Manager</h2>
@@ -768,7 +834,7 @@ function AdminPage() {
           ) : filteredPosts.length === 0 ? (
             <div className="empty-state">
               {posts.length === 0
-                ? 'No posts yet. Click "+ New Article" or "+ New Blog" to get started.'
+                ? 'No posts yet. Click "+ New Post" to get started — pick the content type from the dropdown in the editor.'
                 : 'No posts match your filters.'}
             </div>
           ) : (
@@ -838,6 +904,11 @@ function AdminPage() {
           onClose={() => setSelectedGame(null)}
         />
       )}
+
+      <AlertComposerModal
+        open={alertComposerOpen}
+        onClose={() => setAlertComposerOpen(false)}
+      />
     </div>
   );
 }

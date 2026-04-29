@@ -14,6 +14,260 @@ function slugify(text) {
     .replace(/-+/g, '-');
 }
 
+// ── AI assist (mock — wire to LLM later) ──────────────────
+const AI_BLOCK_QUICK_ACTIONS = [
+  { id: 'improve', label: 'Improve writing', icon: '✨' },
+  { id: 'shorter', label: 'Make it shorter', icon: '✂️' },
+  { id: 'expand',  label: 'Expand on this',  icon: '📖' },
+  { id: 'casual',  label: 'More casual',     icon: '👋' },
+  { id: 'sharper', label: 'More sharper',    icon: '⚡' },
+];
+
+function blocksToPlainText(blocks) {
+  return (blocks || []).map(b =>
+    b.type === 'list' ? (b.items || []).join('\n') : (b.text || '')
+  ).filter(Boolean).join('\n\n');
+}
+
+function mockTitleIdeas({ summary, content, type }) {
+  const seed = (summary || blocksToPlainText(content) || '').slice(0, 50) || 'this story';
+  const flavor = type === 'blog' ? 'Strategy:' : 'Inside:';
+  return [
+    `${flavor} What ${seed.split(' ').slice(0, 3).join(' ')} Means For The 2026 Season`,
+    `The Numbers Behind ${seed.split(' ').slice(0, 4).join(' ')}`,
+    `Why ${seed.split(' ').slice(0, 3).join(' ')} Will Define This Week`,
+    `A Closer Look: ${seed.split(' ').slice(0, 5).join(' ')}`,
+    `${seed.split(' ').slice(0, 4).join(' ')} — Explained`,
+  ];
+}
+
+function mockSummaryDraft(content) {
+  const text = blocksToPlainText(content);
+  if (!text) {
+    return 'Write a short, punchy summary — typically one or two sentences that tell the reader exactly what they\'ll get from the article.';
+  }
+  const firstSentence = text.split(/[.!?]/)[0] || '';
+  return `${firstSentence.trim()}. Here's a closer look at what the data — and the eye test — are telling us heading into the rest of the season.`;
+}
+
+function mockBlockRefine({ block, action }) {
+  const original = block.type === 'list' ? (block.items || []).join('\n') : (block.text || '');
+  if (!original) return original;
+
+  switch (action) {
+    case 'shorter':
+      return original.split('.').slice(0, 1).join('.') + '.';
+    case 'expand':
+      return original + '\n\nThis is one of those stretches where the underlying numbers really matter — peripherals, batted-ball quality, and matchup leverage are all pulling in the same direction. Worth keeping an eye on as the sample grows.';
+    case 'casual':
+      return original.replace(/\b(however|therefore|thus)\b/gi, 'so').replace(/\b(utilize|leverage)\b/gi, 'use');
+    case 'sharper':
+      return original.replace(/\.\s/g, '. ').replace(/(\bvery\b\s|\breally\b\s|\bquite\b\s)/gi, '');
+    case 'improve':
+    default:
+      return `${original}\n\n[AI polish: tightened phrasing, kept your original voice]`;
+  }
+}
+
+function ArticleAIModal({ open, mode, blockIndex, post, onClose, onApply }) {
+  const [prompt, setPrompt]     = useState('');
+  const [generating, setGenerating] = useState(false);
+  const [titleIdeas, setTitleIdeas] = useState([]);
+  const [draft, setDraft]       = useState('');
+
+  useEffect(() => {
+    if (open) {
+      setPrompt('');
+      setTitleIdeas([]);
+      setDraft('');
+      setGenerating(false);
+    }
+  }, [open, mode]);
+
+  if (!open) return null;
+
+  const block = mode === 'block' && blockIndex != null ? post.content[blockIndex] : null;
+
+  const handleGenerate = async (quickActionId) => {
+    setGenerating(true);
+    await new Promise(r => setTimeout(r, 1100)); // mock latency
+    if (mode === 'title') {
+      setTitleIdeas(mockTitleIdeas({ summary: post.summary, content: post.content, type: post.type }));
+    } else if (mode === 'summary') {
+      setDraft(mockSummaryDraft(post.content));
+    } else if (mode === 'block' && block) {
+      setDraft(mockBlockRefine({ block, action: quickActionId || 'improve' }));
+    }
+    setGenerating(false);
+  };
+
+  const heading = mode === 'title'   ? 'Title ideas'
+                : mode === 'summary' ? 'Generate summary'
+                : `Refine ${block?.type ?? 'block'}`;
+
+  const description = mode === 'title'   ? 'Generated from your current summary and content.'
+                    : mode === 'summary' ? 'Drafted from the body content you\'ve written so far.'
+                    : 'Refine the text inside this block while keeping your voice.';
+
+  return (
+    <div className="campaign-modal-overlay" onClick={onClose}>
+      <div className="ai-modal" onClick={e => e.stopPropagation()}>
+        <button className="ai-modal__close" onClick={onClose} aria-label="Close">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <line x1="18" y1="6" x2="6" y2="18"/>
+            <line x1="6" y1="6" x2="18" y2="18"/>
+          </svg>
+        </button>
+
+        <div className="ai-modal__header">
+          <span className="ai-modal__eyebrow">✨ AI Assist</span>
+          <h3>{heading}</h3>
+          <p className="ai-modal__sub">{description}</p>
+        </div>
+
+        <div className="ai-modal__body">
+          {mode === 'title' ? (
+            <>
+              {titleIdeas.length === 0 && !generating && (
+                <button
+                  type="button"
+                  className="campaign-btn campaign-btn--primary"
+                  onClick={() => handleGenerate()}
+                  style={{ width: '100%' }}
+                >
+                  ✨ Generate 5 title ideas
+                </button>
+              )}
+              {generating && <div className="ai-modal__loading">Generating ideas…</div>}
+              {titleIdeas.length > 0 && (
+                <div className="ai-suggestion-list">
+                  {titleIdeas.map((s, i) => (
+                    <button
+                      key={i}
+                      type="button"
+                      className="ai-suggestion"
+                      onClick={() => { onApply(s); onClose(); }}
+                    >
+                      <span className="ai-suggestion__index">{i + 1}</span>
+                      <span className="ai-suggestion__text">{s}</span>
+                      <span className="ai-suggestion__hint">Click to use →</span>
+                    </button>
+                  ))}
+                  <button
+                    type="button"
+                    className="campaign-btn campaign-btn--ghost"
+                    onClick={() => handleGenerate()}
+                    style={{ marginTop: '0.5rem' }}
+                  >
+                    Try again
+                  </button>
+                </div>
+              )}
+            </>
+          ) : mode === 'summary' ? (
+            <>
+              {!draft && !generating && (
+                <button
+                  type="button"
+                  className="campaign-btn campaign-btn--primary"
+                  onClick={() => handleGenerate()}
+                  style={{ width: '100%' }}
+                >
+                  ✨ Draft a summary from my content
+                </button>
+              )}
+              {generating && <div className="ai-modal__loading">Drafting summary…</div>}
+              {draft && !generating && (
+                <>
+                  <label className="ai-modal__label">Suggested summary</label>
+                  <textarea
+                    className="campaign-textarea"
+                    value={draft}
+                    onChange={e => setDraft(e.target.value)}
+                    rows={5}
+                  />
+                  <div className="ai-modal__actions">
+                    <button type="button" className="campaign-btn campaign-btn--ghost" onClick={onClose}>Cancel</button>
+                    <button
+                      type="button"
+                      className="campaign-btn campaign-btn--primary"
+                      onClick={() => { onApply(draft); onClose(); }}
+                    >
+                      Apply summary
+                    </button>
+                  </div>
+                </>
+              )}
+            </>
+          ) : (
+            <>
+              <label className="ai-modal__label">Custom instruction (optional)</label>
+              <textarea
+                className="campaign-textarea ai-modal__prompt"
+                placeholder="e.g. Tighten this paragraph and add a stat to back the claim."
+                value={prompt}
+                onChange={e => setPrompt(e.target.value)}
+                rows={3}
+              />
+
+              <div className="ai-modal__quick-row">
+                <span className="ai-modal__quick-label">Quick refine:</span>
+                {AI_BLOCK_QUICK_ACTIONS.map(a => (
+                  <button
+                    key={a.id}
+                    type="button"
+                    className="ai-quick-chip"
+                    onClick={() => handleGenerate(a.id)}
+                    disabled={generating}
+                  >
+                    {a.icon} {a.label}
+                  </button>
+                ))}
+              </div>
+
+              {generating && <div className="ai-modal__loading">Refining…</div>}
+
+              {draft && !generating && (
+                <>
+                  <label className="ai-modal__label" style={{ marginTop: '1rem' }}>Suggested revision</label>
+                  <textarea
+                    className="campaign-textarea"
+                    value={draft}
+                    onChange={e => setDraft(e.target.value)}
+                    rows={8}
+                  />
+                </>
+              )}
+
+              <div className="ai-modal__actions">
+                <button type="button" className="campaign-btn campaign-btn--ghost" onClick={onClose}>Cancel</button>
+                {!draft ? (
+                  <button
+                    type="button"
+                    className="campaign-btn campaign-btn--primary"
+                    onClick={() => handleGenerate()}
+                    disabled={!prompt || generating}
+                  >
+                    ✨ Generate
+                  </button>
+                ) : (
+                  <button
+                    type="button"
+                    className="campaign-btn campaign-btn--primary"
+                    onClick={() => { onApply(draft); onClose(); }}
+                  >
+                    Apply revision
+                  </button>
+                )}
+              </div>
+            </>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function estimateReadTime(blocks) {
   const text = (blocks || []).map(b => {
     if (b.type === 'list') return (b.items || []).join(' ');
@@ -24,7 +278,7 @@ function estimateReadTime(blocks) {
 }
 
 // ── Content Block Editor ──────────────────────────────────
-function BlockEditor({ block, index, total, onChange, onDelete, onMoveUp, onMoveDown }) {
+function BlockEditor({ block, index, total, onChange, onDelete, onMoveUp, onMoveDown, onAi }) {
   const handleTextChange = (e) => onChange(index, { ...block, text: e.target.value });
   const handleItemChange = (itemIdx, val) => {
     const items = [...(block.items || [])];
@@ -42,6 +296,17 @@ function BlockEditor({ block, index, total, onChange, onDelete, onMoveUp, onMove
       <div className="block-header">
         <span className="block-type-label">{block.type}</span>
         <div className="block-actions">
+          {block.type !== 'list' && onAi && (
+            <button
+              type="button"
+              className="block-btn block-btn--ai"
+              onClick={() => onAi(index)}
+              title="Refine with AI"
+              aria-label="Refine this block with AI"
+            >
+              ✨
+            </button>
+          )}
           {index > 0 && <button type="button" className="block-btn" onClick={() => onMoveUp(index)}>↑</button>}
           {index < total - 1 && <button type="button" className="block-btn" onClick={() => onMoveDown(index)}>↓</button>}
           <button type="button" className="block-btn delete" onClick={() => onDelete(index)}>✕</button>
@@ -136,6 +401,9 @@ function ArticleEditor() {
   const [slugManuallyEdited, setSlugManuallyEdited] = useState(false);
   const [fetchingPost, setFetchingPost] = useState(!isNew);
 
+  // AI assist modal: { mode: 'title' | 'summary' | 'block', blockIndex?: number } | null
+  const [aiModal, setAiModal] = useState(null);
+
   // auth redirect disabled for development
 
   // Load existing post if editing
@@ -218,6 +486,28 @@ function ArticleEditor() {
   const deleteBlock = useCallback((index) => {
     setPost(prev => ({ ...prev, content: prev.content.filter((_, i) => i !== index) }));
   }, []);
+
+  const handleAiApply = (text) => {
+    if (!aiModal) return;
+    if (aiModal.mode === 'title') {
+      setPost(prev => ({
+        ...prev,
+        title: text,
+        ...(slugManuallyEdited ? {} : { slug: slugify(text) }),
+      }));
+    } else if (aiModal.mode === 'summary') {
+      setPost(prev => ({ ...prev, summary: text }));
+    } else if (aiModal.mode === 'block' && aiModal.blockIndex != null) {
+      const idx = aiModal.blockIndex;
+      setPost(prev => {
+        const content = [...prev.content];
+        const block = content[idx];
+        if (!block) return prev;
+        content[idx] = { ...block, text };
+        return { ...prev, content };
+      });
+    }
+  };
 
   const moveBlock = useCallback((index, direction) => {
     setPost(prev => {
@@ -339,11 +629,48 @@ function ArticleEditor() {
         <div className="editor-layout">
           {/* ── Main Column ── */}
           <div className="editor-main">
+            {/* Type picker — only relevant for new posts */}
+            {isNew && (
+              <div className="editor-card editor-type-picker">
+                <h3>Content Type</h3>
+                <p className="editor-type-picker__hint">Pick where this post will live before you start writing.</p>
+                <div className="editor-type-picker__options">
+                  <button
+                    type="button"
+                    className={`editor-type-option${post.type === 'article' ? ' is-active' : ''}`}
+                    onClick={() => handleChange('type', 'article')}
+                  >
+                    <span className="editor-type-option__icon">📰</span>
+                    <span className="editor-type-option__name">Sandlot Insider</span>
+                    <span className="editor-type-option__desc">Long-form article · /sandlot-insider/…</span>
+                  </button>
+                  <button
+                    type="button"
+                    className={`editor-type-option${post.type === 'blog' ? ' is-active' : ''}`}
+                    onClick={() => handleChange('type', 'blog')}
+                  >
+                    <span className="editor-type-option__icon">📝</span>
+                    <span className="editor-type-option__name">Strategy Blog</span>
+                    <span className="editor-type-option__desc">Shorter blog post · /blogs/…</span>
+                  </button>
+                </div>
+              </div>
+            )}
+
             {/* Title & Slug */}
             <div className="editor-card">
               <h3>Post Info</h3>
               <div className="editor-field">
-                <label>Title *</label>
+                <div className="editor-field__labelrow">
+                  <label>Title *</label>
+                  <button
+                    type="button"
+                    className="ai-assist-btn"
+                    onClick={() => setAiModal({ mode: 'title' })}
+                  >
+                    ✨ AI Suggest
+                  </button>
+                </div>
                 <input
                   type="text"
                   className="title-input"
@@ -362,7 +689,16 @@ function ArticleEditor() {
                 />
               </div>
               <div className="editor-field">
-                <label>Summary / Excerpt *</label>
+                <div className="editor-field__labelrow">
+                  <label>Summary / Excerpt *</label>
+                  <button
+                    type="button"
+                    className="ai-assist-btn"
+                    onClick={() => setAiModal({ mode: 'summary' })}
+                  >
+                    ✨ Draft from content
+                  </button>
+                </div>
                 <textarea
                   placeholder="One or two sentence teaser…"
                   rows={3}
@@ -395,6 +731,7 @@ function ArticleEditor() {
                     onDelete={deleteBlock}
                     onMoveUp={(i) => moveBlock(i, -1)}
                     onMoveDown={(i) => moveBlock(i, 1)}
+                    onAi={(i) => setAiModal({ mode: 'block', blockIndex: i })}
                   />
                 ))}
               </div>
@@ -524,6 +861,15 @@ function ArticleEditor() {
           </div>
         </div>
       </div>
+
+      <ArticleAIModal
+        open={aiModal !== null}
+        mode={aiModal?.mode}
+        blockIndex={aiModal?.blockIndex}
+        post={post}
+        onClose={() => setAiModal(null)}
+        onApply={handleAiApply}
+      />
     </div>
   );
 }
