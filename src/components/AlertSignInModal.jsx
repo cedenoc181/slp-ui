@@ -1,10 +1,10 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import {
-  getUnreadModalAlertsForUser,
+  getUnreadModalAlerts,
   markAlertRead,
   formatAlertDate,
-} from '../data/constants/alertsMockData';
+} from '../data/services/alertsService';
 import '../styles/alert-modal.css';
 
 /**
@@ -16,14 +16,16 @@ export default function AlertSignInModal() {
   const { isAuthenticated, user } = useAuth();
   const [queue, setQueue] = useState([]);
 
-  // Re-check the queue any time the auth state flips to "signed in"
   useEffect(() => {
     if (!isAuthenticated || !user?.email) {
       setQueue([]);
       return;
     }
-    const unread = getUnreadModalAlertsForUser(user.email);
-    setQueue(unread);
+    let cancelled = false;
+    getUnreadModalAlerts()
+      .then(unread => { if (!cancelled) setQueue(unread); })
+      .catch(err => { console.warn('Failed to load sign-in alerts:', err.message); });
+    return () => { cancelled = true; };
   }, [isAuthenticated, user?.email]);
 
   if (queue.length === 0) return null;
@@ -32,7 +34,9 @@ export default function AlertSignInModal() {
   const remaining = queue.length - 1;
 
   const handleAcknowledge = () => {
-    markAlertRead(current.id, user.email);
+    markAlertRead(current.id).catch(err => {
+      console.warn('Failed to mark alert read:', err.message);
+    });
     setQueue(q => q.slice(1));
   };
 

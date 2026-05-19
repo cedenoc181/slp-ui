@@ -1,14 +1,38 @@
+import { useEffect, useState } from 'react';
 import { useSearchParams, Link } from 'react-router-dom';
+import { unsubscribe } from '../../../data/services/campaignsService';
 
 function UnsubscribePage() {
   const [searchParams] = useSearchParams();
-  const status = searchParams.get('status');
+  const token = searchParams.get('token');
+  // Allow ?status=success/invalid/error to short-circuit the POST for legacy email links.
+  const initialStatus = searchParams.get('status');
+
+  const [status, setStatus] = useState(initialStatus || (token ? 'processing' : 'invalid'));
+
+  useEffect(() => {
+    if (initialStatus || !token) return;
+    let cancelled = false;
+    unsubscribe(token)
+      .then(() => { if (!cancelled) setStatus('success'); })
+      .catch(err => {
+        if (cancelled) return;
+        const msg = (err?.message || '').toLowerCase();
+        setStatus(msg.includes('invalid') || msg.includes('expired') ? 'invalid' : 'error');
+      });
+    return () => { cancelled = true; };
+  }, [token, initialStatus]);
 
   const content = {
+    processing: {
+      icon: '⏳',
+      heading: 'Processing your request…',
+      message: "Hang on while we update your preferences.",
+    },
     success: {
       icon: '✅',
       heading: "You've been unsubscribed",
-      message: "You've been successfully removed from the Sandlot Picks waitlist. You won't receive any more emails from us.",
+      message: "You won't receive any more email updates from Sandlot Picks. You can re-enable email updates any time from your account settings.",
     },
     invalid: {
       icon: '⚠️',

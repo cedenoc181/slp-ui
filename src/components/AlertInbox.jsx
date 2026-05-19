@@ -1,11 +1,10 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import {
-  getAlertsForUser,
-  isAlertRead,
+  getMyAlerts,
   markAlertRead,
   formatAlertDate,
-} from '../data/constants/alertsMockData';
+} from '../data/services/alertsService';
 import '../styles/alert-modal.css';
 
 /**
@@ -17,22 +16,22 @@ export default function AlertInbox() {
   const [alerts, setAlerts] = useState([]);
   const [openId, setOpenId] = useState(null);
 
-  // Refresh on user change. Bump a tick when alerts change so unread counts update.
-  const [tick, setTick] = useState(0);
   useEffect(() => {
     if (!user?.email) {
       setAlerts([]);
       return;
     }
-    const list = getAlertsForUser(user.email)
-      .slice()
-      .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-    setAlerts(list);
-  }, [user?.email, tick]);
+    let cancelled = false;
+    getMyAlerts()
+      .then(list => { if (!cancelled) setAlerts(list); })
+      .catch(err => { console.warn('Failed to load inbox alerts:', err.message); });
+    return () => { cancelled = true; };
+  }, [user?.email]);
 
   if (!user?.email) return null;
+  if (alerts.length === 0) return null;
 
-  const unreadCount = alerts.filter(a => !isAlertRead(a.id, user.email)).length;
+  const unreadCount = alerts.filter(a => !a.isRead).length;
 
   const handleToggle = (id) => {
     if (openId === id) {
@@ -40,13 +39,14 @@ export default function AlertInbox() {
       return;
     }
     setOpenId(id);
-    if (!isAlertRead(id, user.email)) {
-      markAlertRead(id, user.email);
-      setTick(t => t + 1);
+    const target = alerts.find(a => a.id === id);
+    if (target && !target.isRead) {
+      setAlerts(curr => curr.map(a => (a.id === id ? { ...a, isRead: true } : a)));
+      markAlertRead(id).catch(err => {
+        console.warn('Failed to mark alert read:', err.message);
+      });
     }
   };
-
-  if (alerts.length === 0) return null;
 
   return (
     <section id="inbox" className="settings-section alert-inbox">
@@ -65,12 +65,11 @@ export default function AlertInbox() {
 
       <div className="alert-inbox__list">
         {alerts.map(a => {
-          const read = isAlertRead(a.id, user.email);
           const isOpen = openId === a.id;
           return (
             <div
               key={a.id}
-              className={`alert-inbox__item${!read ? ' is-unread' : ''}${isOpen ? ' is-open' : ''}`}
+              className={`alert-inbox__item${!a.isRead ? ' is-unread' : ''}${isOpen ? ' is-open' : ''}`}
             >
               <button
                 type="button"
@@ -78,7 +77,7 @@ export default function AlertInbox() {
                 onClick={() => handleToggle(a.id)}
                 aria-expanded={isOpen}
               >
-                <span className={`alert-inbox__dot${read ? ' is-read' : ''}`} aria-hidden="true" />
+                <span className={`alert-inbox__dot${a.isRead ? ' is-read' : ''}`} aria-hidden="true" />
                 <div className="alert-inbox__row-main">
                   <span className="alert-inbox__subject">{a.subject}</span>
                   <span className="alert-inbox__date">{formatAlertDate(a.createdAt)}</span>
@@ -88,7 +87,7 @@ export default function AlertInbox() {
               {isOpen && (
                 <div className="alert-inbox__body">
                   {(a.body || '').split('\n').map((line, i) => (
-                    <p key={i}>{line || '\u00A0'}</p>
+                    <p key={i}>{line || ' '}</p>
                   ))}
                 </div>
               )}

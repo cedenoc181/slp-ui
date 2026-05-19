@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../../../context/AuthContext';
 import supabase from '../../../lib/supabaseClient';
+import { generate as aiGenerate } from '../../../data/services/aiService';
 import '../../../styles/admin-page-styling/admin.css';
 
 // ── Helpers ───────────────────────────────────────────────
@@ -14,7 +15,7 @@ function slugify(text) {
     .replace(/-+/g, '-');
 }
 
-// ── AI assist (mock — wire to LLM later) ──────────────────
+// ── AI assist ─────────────────────────────────────────────
 const AI_BLOCK_QUICK_ACTIONS = [
   { id: 'improve', label: 'Improve writing', icon: '✨' },
   { id: 'shorter', label: 'Make it shorter', icon: '✂️' },
@@ -29,51 +30,13 @@ function blocksToPlainText(blocks) {
   ).filter(Boolean).join('\n\n');
 }
 
-function mockTitleIdeas({ summary, content, type }) {
-  const seed = (summary || blocksToPlainText(content) || '').slice(0, 50) || 'this story';
-  const flavor = type === 'blog' ? 'Strategy:' : 'Inside:';
-  return [
-    `${flavor} What ${seed.split(' ').slice(0, 3).join(' ')} Means For The 2026 Season`,
-    `The Numbers Behind ${seed.split(' ').slice(0, 4).join(' ')}`,
-    `Why ${seed.split(' ').slice(0, 3).join(' ')} Will Define This Week`,
-    `A Closer Look: ${seed.split(' ').slice(0, 5).join(' ')}`,
-    `${seed.split(' ').slice(0, 4).join(' ')} — Explained`,
-  ];
-}
-
-function mockSummaryDraft(content) {
-  const text = blocksToPlainText(content);
-  if (!text) {
-    return 'Write a short, punchy summary — typically one or two sentences that tell the reader exactly what they\'ll get from the article.';
-  }
-  const firstSentence = text.split(/[.!?]/)[0] || '';
-  return `${firstSentence.trim()}. Here's a closer look at what the data — and the eye test — are telling us heading into the rest of the season.`;
-}
-
-function mockBlockRefine({ block, action }) {
-  const original = block.type === 'list' ? (block.items || []).join('\n') : (block.text || '');
-  if (!original) return original;
-
-  switch (action) {
-    case 'shorter':
-      return original.split('.').slice(0, 1).join('.') + '.';
-    case 'expand':
-      return original + '\n\nThis is one of those stretches where the underlying numbers really matter — peripherals, batted-ball quality, and matchup leverage are all pulling in the same direction. Worth keeping an eye on as the sample grows.';
-    case 'casual':
-      return original.replace(/\b(however|therefore|thus)\b/gi, 'so').replace(/\b(utilize|leverage)\b/gi, 'use');
-    case 'sharper':
-      return original.replace(/\.\s/g, '. ').replace(/(\bvery\b\s|\breally\b\s|\bquite\b\s)/gi, '');
-    case 'improve':
-    default:
-      return `${original}\n\n[AI polish: tightened phrasing, kept your original voice]`;
-  }
-}
-
 function ArticleAIModal({ open, mode, blockIndex, post, onClose, onApply }) {
   const [prompt, setPrompt]     = useState('');
   const [generating, setGenerating] = useState(false);
   const [titleIdeas, setTitleIdeas] = useState([]);
   const [draft, setDraft]       = useState('');
+  const [error, setError]       = useState(null);
+  const [rateLimited, setRateLimited] = useState(false);
 
   useEffect(() => {
     if (open) {
@@ -81,6 +44,8 @@ function ArticleAIModal({ open, mode, blockIndex, post, onClose, onApply }) {
       setTitleIdeas([]);
       setDraft('');
       setGenerating(false);
+      setError(null);
+      setRateLimited(false);
     }
   }, [open, mode]);
 
@@ -90,15 +55,36 @@ function ArticleAIModal({ open, mode, blockIndex, post, onClose, onApply }) {
 
   const handleGenerate = async (quickActionId) => {
     setGenerating(true);
-    await new Promise(r => setTimeout(r, 1100)); // mock latency
-    if (mode === 'title') {
-      setTitleIdeas(mockTitleIdeas({ summary: post.summary, content: post.content, type: post.type }));
-    } else if (mode === 'summary') {
-      setDraft(mockSummaryDraft(post.content));
-    } else if (mode === 'block' && block) {
-      setDraft(mockBlockRefine({ block, action: quickActionId || 'improve' }));
+    setError(null);
+    try {
+      if (mode === 'title') {
+        const texts = await aiGenerate('article_title', {
+          summary: post.summary || '',
+          content_text: blocksToPlainText(post.content),
+          type: post.type || 'article',
+          count: 5,
+        });
+        setTitleIdeas(Array.isArray(texts) ? texts : []);
+      } else if (mode === 'summary') {
+        const text = await aiGenerate('article_summary', {
+          content_text: blocksToPlainText(post.content),
+        });
+        setDraft(typeof text === 'string' ? text : '');
+      } else if (mode === 'block' && block) {
+        const text = await aiGenerate('article_block_refine', {
+          block_text: block.type === 'list' ? (block.items || []).join('\n') : (block.text || ''),
+          block_type: block.type,
+          action: quickActionId || 'improve',
+          instruction: prompt || '',
+        });
+        setDraft(typeof text === 'string' ? text : '');
+      }
+    } catch (err) {
+      setError(err?.message || 'AI request failed. Please try again.');
+      if (err?.status === 429) setRateLimited(true);
+    } finally {
+      setGenerating(false);
     }
-    setGenerating(false);
   };
 
   const heading = mode === 'title'   ? 'Title ideas'
@@ -126,6 +112,12 @@ function ArticleAIModal({ open, mode, blockIndex, post, onClose, onApply }) {
         </div>
 
         <div className="ai-modal__body">
+          {error && (
+            <div className="ai-modal__error">
+              ⚠ {error}
+              {rateLimited && ' (Try again in about an hour.)'}
+            </div>
+          )}
           {mode === 'title' ? (
             <>
               {titleIdeas.length === 0 && !generating && (
@@ -133,6 +125,7 @@ function ArticleAIModal({ open, mode, blockIndex, post, onClose, onApply }) {
                   type="button"
                   className="campaign-btn campaign-btn--primary"
                   onClick={() => handleGenerate()}
+                  disabled={rateLimited}
                   style={{ width: '100%' }}
                 >
                   ✨ Generate 5 title ideas
@@ -157,6 +150,7 @@ function ArticleAIModal({ open, mode, blockIndex, post, onClose, onApply }) {
                     type="button"
                     className="campaign-btn campaign-btn--ghost"
                     onClick={() => handleGenerate()}
+                    disabled={rateLimited}
                     style={{ marginTop: '0.5rem' }}
                   >
                     Try again
@@ -171,6 +165,7 @@ function ArticleAIModal({ open, mode, blockIndex, post, onClose, onApply }) {
                   type="button"
                   className="campaign-btn campaign-btn--primary"
                   onClick={() => handleGenerate()}
+                  disabled={rateLimited}
                   style={{ width: '100%' }}
                 >
                   ✨ Draft a summary from my content
@@ -211,14 +206,18 @@ function ArticleAIModal({ open, mode, blockIndex, post, onClose, onApply }) {
               />
 
               <div className="ai-modal__quick-row">
-                <span className="ai-modal__quick-label">Quick refine:</span>
+                <span className="ai-modal__quick-label">
+                  {prompt.trim()
+                    ? 'Clear the instruction above to use quick refines'
+                    : 'Quick refine:'}
+                </span>
                 {AI_BLOCK_QUICK_ACTIONS.map(a => (
                   <button
                     key={a.id}
                     type="button"
                     className="ai-quick-chip"
                     onClick={() => handleGenerate(a.id)}
-                    disabled={generating}
+                    disabled={generating || rateLimited || prompt.trim() !== ''}
                   >
                     {a.icon} {a.label}
                   </button>
@@ -246,7 +245,7 @@ function ArticleAIModal({ open, mode, blockIndex, post, onClose, onApply }) {
                     type="button"
                     className="campaign-btn campaign-btn--primary"
                     onClick={() => handleGenerate()}
-                    disabled={!prompt || generating}
+                    disabled={!prompt || generating || rateLimited}
                   >
                     ✨ Generate
                   </button>

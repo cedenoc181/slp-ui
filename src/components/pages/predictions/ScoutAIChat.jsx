@@ -103,7 +103,7 @@ Heavy chalk like the Yankees-on-Boston isn't sexy, but the model agrees with the
 
 Underdog ML edges historically outperform when our model disagrees with the market by 8%+. The Reds line is the standout tonight.`;
   }
-  if (lower.includes('strikeout') || lower.includes('k') && lower.includes('pitcher')) {
+  if (lower.includes('strikeout') || (lower.includes('k') && lower.includes('pitcher'))) {
     return `Top strikeout edges tonight (by EV):
 
 1. **Tarik Skubal Over 6.5 K's** — projected 7.4, EV +18%

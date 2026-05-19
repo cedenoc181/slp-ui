@@ -5,7 +5,14 @@ import supabase from '../../../lib/supabaseClient';
 import predictionsService from '../../../data/services/predictionsService';
 import predictionsPerformanceService from '../../../data/services/predictionsPerformanceService';
 import { TEAM_METADATA } from '../../../data/constants/apiConstants';
-import { MOCK_CAMPAIGN_HISTORY, audienceMeta, formatCampaignSentAt } from '../../../data/constants/campaignsMockData';
+import { audienceMeta, formatCampaignSentAt } from '../../../data/constants/campaignsConstants';
+import {
+  listAlerts,
+  deleteAlert,
+  getAlertReads,
+  formatAlertDate,
+} from '../../../data/services/alertsService';
+import { listCampaigns } from '../../../data/services/campaignsService';
 import AlertComposerModal from './AlertComposerModal';
 import '../../../styles/admin-page-styling/admin.css';
 import '../../../styles/alert-modal.css';
@@ -541,6 +548,101 @@ function PlayerPropsWedge({ data, loading, error }) {
   );
 }
 
+// ─── Side drawer: Alert read receipts ─────────────────────────────────────────
+
+function AlertReadsDrawer({ alert, onClose }) {
+  const [data, setData] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    const handleKey = (e) => { if (e.key === 'Escape') onClose(); };
+    document.addEventListener('keydown', handleKey);
+    return () => document.removeEventListener('keydown', handleKey);
+  }, [onClose]);
+
+  useEffect(() => {
+    if (!alert) return;
+    let cancelled = false;
+    setLoading(true);
+    setError(null);
+    setData(null);
+    getAlertReads(alert.id)
+      .then(d => { if (!cancelled) setData(d); })
+      .catch(err => { if (!cancelled) setError(err?.message || 'Could not load read receipts.'); })
+      .finally(() => { if (!cancelled) setLoading(false); });
+    return () => { cancelled = true; };
+  }, [alert]);
+
+  if (!alert) return null;
+
+  const isSpecific = alert.targetType === 'specific';
+  const reads = data?.reads ?? [];
+  const readCount = data?.readCount ?? 0;
+  const audienceSize = data?.audienceSize ?? null;
+
+  return (
+    <div className="admin-side-overlay" onClick={onClose}>
+      <aside className="admin-side admin-side--reads" onClick={e => e.stopPropagation()} role="dialog" aria-label="Alert read receipts">
+        <button className="admin-side__close" onClick={onClose} aria-label="Close">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <line x1="18" y1="6" x2="6" y2="18"/>
+            <line x1="6" y1="6" x2="18" y2="18"/>
+          </svg>
+        </button>
+
+        <div className="admin-side__header">
+          <span className="admin-side__eyebrow">📬 Read Receipts</span>
+          <h3 className="alert-reads__subject">{alert.subject}</h3>
+          <div className="alert-reads__summary">
+            {loading ? 'Loading…' : audienceSize != null
+              ? `${readCount} of ${audienceSize} confirmed`
+              : `${readCount} confirmed`}
+          </div>
+        </div>
+
+        <div className="admin-side__body">
+          {error ? (
+            <div className="admin-alerts__error">⚠ {error}</div>
+          ) : loading ? (
+            <div className="empty-state">Loading recipients…</div>
+          ) : reads.length === 0 ? (
+            <div className="empty-state">
+              {isSpecific
+                ? 'No recipients targeted.'
+                : 'No users have confirmed this alert yet.'}
+            </div>
+          ) : (
+            <>
+              <div className="alert-reads__list">
+                {reads.map((r, i) => (
+                  <div
+                    key={`${r.email}-${i}`}
+                    className={`alert-reads__row${r.readAt ? ' is-read' : ' is-unread'}`}
+                  >
+                    <span className={`alert-reads__dot${r.readAt ? ' is-read' : ''}`} aria-hidden="true" />
+                    <div className="alert-reads__row-main">
+                      <span className="alert-reads__email">{r.email}</span>
+                      <span className="alert-reads__time">
+                        {r.readAt ? formatAlertDate(r.readAt) : 'Not yet read'}
+                      </span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+              {data?.capped && (
+                <div className="alert-reads__capped-note">
+                  Showing the {reads.length} most recent confirmations · total {readCount}
+                </div>
+              )}
+            </>
+          )}
+        </div>
+      </aside>
+    </div>
+  );
+}
+
 // ─── Main page ────────────────────────────────────────────────────────────────
 
 function AdminPage() {
@@ -576,6 +678,19 @@ function AdminPage() {
   const [reportModal, setReportModal] = useState(null); // null | 'today' | 'yesterday'
   const [selectedGame, setSelectedGame] = useState(null); // { game, date } | null
   const [alertComposerOpen, setAlertComposerOpen] = useState(false);
+
+  // Alert manager state
+  const [alerts, setAlerts] = useState([]);
+  const [alertsLoading, setAlertsLoading] = useState(true);
+  const [alertsError, setAlertsError] = useState(null);
+  const [alertDeleteConfirm, setAlertDeleteConfirm] = useState(null);
+  const [alertDeletingId, setAlertDeletingId] = useState(null);
+  const [readsDrawerAlert, setReadsDrawerAlert] = useState(null);
+
+  // Campaign manager state
+  const [campaigns, setCampaigns] = useState([]);
+  const [campaignsLoading, setCampaignsLoading] = useState(true);
+  const [campaignsError, setCampaignsError] = useState(null);
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -632,6 +747,43 @@ function AdminPage() {
 
     return () => { cancelled = true; };
   }, []);
+
+  // Fetch sent alerts for the Alert Manager section
+  useEffect(() => {
+    let cancelled = false;
+    listAlerts()
+      .then(list => { if (!cancelled) setAlerts(list); })
+      .catch(err => { if (!cancelled) setAlertsError(err?.message || 'Could not load alerts.'); })
+      .finally(() => { if (!cancelled) setAlertsLoading(false); });
+    return () => { cancelled = true; };
+  }, []);
+
+  // Fetch recent campaigns for the Campaign Manager section
+  useEffect(() => {
+    let cancelled = false;
+    listCampaigns()
+      .then(list => { if (!cancelled) setCampaigns(list); })
+      .catch(err => { if (!cancelled) setCampaignsError(err?.message || 'Could not load campaigns.'); })
+      .finally(() => { if (!cancelled) setCampaignsLoading(false); });
+    return () => { cancelled = true; };
+  }, []);
+
+  const handleDeleteAlert = async (alertId) => {
+    setAlertDeletingId(alertId);
+    try {
+      await deleteAlert(alertId);
+      setAlerts(curr => curr.filter(a => a.id !== alertId));
+      setAlertDeleteConfirm(null);
+    } catch (err) {
+      setAlertsError(err?.message || 'Could not delete alert.');
+    } finally {
+      setAlertDeletingId(null);
+    }
+  };
+
+  const handleAlertCreated = (created) => {
+    if (created) setAlerts(curr => [created, ...curr]);
+  };
 
   const handleDelete = async (postId) => {
     const { error } = await supabase.from('content_posts').delete().eq('id', postId);
@@ -747,13 +899,122 @@ function AdminPage() {
           />
         </div>
 
-        {/* ── Row 4: Campaign Manager ── */}
+        {/* ── Row 4: Alert Manager ── */}
+        <div className="admin-section admin-alerts">
+          <div className="admin-section-header">
+            <h2>Alert Manager</h2>
+            <div className="admin-alerts__header-right">
+              <span className="admin-section-count">
+                {alertsLoading ? '…' : `${alerts.length} sent`}
+              </span>
+              <button
+                type="button"
+                className="admin-action-btn admin-action-btn--sm"
+                onClick={() => setAlertComposerOpen(true)}
+              >
+                + New alert
+              </button>
+            </div>
+          </div>
+
+          {alertsError && (
+            <div className="admin-alerts__error">⚠ {alertsError}</div>
+          )}
+
+          {alertsLoading ? (
+            <div className="empty-state">Loading alerts…</div>
+          ) : alerts.length === 0 ? (
+            <div className="empty-state">
+              No alerts sent yet. Click "+ New alert" to publish your first one.
+            </div>
+          ) : (
+            <div className="admin-alert-list">
+              {alerts.map(a => {
+                const audienceLabel = a.targetType === 'all'
+                  ? 'All users'
+                  : `Specific (${(a.targetEmails || []).length})`;
+                const audienceAccent = a.targetType === 'all' ? 'teal' : 'gold';
+                const typeLabel = a.displayType === 'modal' ? '⚡ Modal popup' : '📬 Inbox';
+                const confirming = alertDeleteConfirm === a.id;
+                const deleting   = alertDeletingId === a.id;
+                const isModal    = a.displayType === 'modal';
+                const readCount  = a.readCount ?? 0;
+                const audSize    = a.audienceSize;
+                const receiptLabel = audSize != null
+                  ? `${readCount} of ${audSize} confirmed`
+                  : `${readCount} confirmed`;
+
+                return (
+                  <div key={a.id} className="admin-alert-row">
+                    <div className="admin-alert-row__main">
+                      <span className="admin-alert-row__subject">
+                        {a.subject || '(no subject)'}
+                      </span>
+                      <div className="admin-alert-row__meta">
+                        <span className={`admin-audience-pill admin-audience-pill--${audienceAccent}`}>
+                          {audienceLabel}
+                        </span>
+                        <span className="admin-alert-row__type-chip">{typeLabel}</span>
+                        {isModal && (
+                          <button
+                            type="button"
+                            className="admin-alert-row__receipt"
+                            onClick={() => setReadsDrawerAlert(a)}
+                            aria-label={`View read receipts (${receiptLabel})`}
+                          >
+                            ✓ {receiptLabel}
+                            <span className="admin-alert-row__receipt-arrow" aria-hidden="true">→</span>
+                          </button>
+                        )}
+                        <span className="admin-alert-row__sub">
+                          {formatAlertDate(a.createdAt)}
+                        </span>
+                      </div>
+                    </div>
+                    <div className="admin-alert-row__actions">
+                      {confirming ? (
+                        <>
+                          <button
+                            type="button"
+                            className="btn-danger"
+                            onClick={() => handleDeleteAlert(a.id)}
+                            disabled={deleting}
+                          >
+                            {deleting ? 'Deleting…' : 'Confirm'}
+                          </button>
+                          <button
+                            type="button"
+                            className="btn-secondary"
+                            onClick={() => setAlertDeleteConfirm(null)}
+                            disabled={deleting}
+                          >
+                            Cancel
+                          </button>
+                        </>
+                      ) : (
+                        <button
+                          type="button"
+                          className="btn-danger"
+                          onClick={() => setAlertDeleteConfirm(a.id)}
+                        >
+                          Delete
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
+
+        {/* ── Row 5: Campaign Manager ── */}
         <div className="admin-section admin-campaigns">
           <div className="admin-section-header">
             <h2>Campaign Manager</h2>
             <div className="admin-campaigns__header-right">
               <span className="admin-section-count">
-                {MOCK_CAMPAIGN_HISTORY.length} sent
+                {campaignsLoading ? '…' : `${campaigns.length} sent`}
               </span>
               <Link to="/admin/campaigns" className="admin-action-btn admin-action-btn--sm">
                 Manage campaigns →
@@ -761,13 +1022,17 @@ function AdminPage() {
             </div>
           </div>
 
-          {MOCK_CAMPAIGN_HISTORY.length === 0 ? (
+          {campaignsError ? (
+            <div className="admin-alerts__error">⚠ {campaignsError}</div>
+          ) : campaignsLoading ? (
+            <div className="empty-state">Loading campaigns…</div>
+          ) : campaigns.length === 0 ? (
             <div className="empty-state">
               No campaigns yet. Click "Manage campaigns" to send your first one.
             </div>
           ) : (
             <div className="admin-campaign-list">
-              {MOCK_CAMPAIGN_HISTORY.slice(0, 5).map(c => {
+              {campaigns.slice(0, 5).map(c => {
                 const meta = audienceMeta(c.audience);
                 return (
                   <Link
@@ -784,7 +1049,7 @@ function AdminPage() {
                           {meta.label}
                         </span>
                         <span className="admin-campaign-row__sub">
-                          {c.recipients.toLocaleString()} recipients · {formatCampaignSentAt(c.sentAt)}
+                          {(c.recipientCount ?? 0).toLocaleString()} recipients · {formatCampaignSentAt(c.sentAt)}
                         </span>
                       </div>
                     </div>
@@ -798,7 +1063,7 @@ function AdminPage() {
           )}
         </div>
 
-        {/* ── Row 5: Content Manager ── */}
+        {/* ── Row 6: Content Manager ── */}
         <div className="admin-section">
           <div className="admin-section-header">
             <h2>Content Manager</h2>
@@ -908,7 +1173,15 @@ function AdminPage() {
       <AlertComposerModal
         open={alertComposerOpen}
         onClose={() => setAlertComposerOpen(false)}
+        onCreated={handleAlertCreated}
       />
+
+      {readsDrawerAlert && (
+        <AlertReadsDrawer
+          alert={readsDrawerAlert}
+          onClose={() => setReadsDrawerAlert(null)}
+        />
+      )}
     </div>
   );
 }

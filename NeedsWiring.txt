@@ -158,6 +158,123 @@ OPEN QUESTIONS
 
 
 ============================================================
+FEATURE 1A — ALERT READ RECEIPTS (ADMIN VIEW)
+============================================================
+
+WHAT IT IS
+----------
+Admins want to see who has acknowledged each modal alert (clicked
+"Got it" on the sign-in modal). This drives two UI states in the
+Alert Manager section of the admin dashboard:
+
+  1. target_type = 'all'      → show "{N} of {audience_size} confirmed"
+  2. target_type = 'specific' → show per-recipient list: which targeted
+                                emails have clicked "Got it" and when
+
+Inbox / "general" alerts are out of scope here — read_at on those is
+just an "opened" signal, not an explicit acknowledgement.
+
+CURRENT STATE
+-------------
+The alert_reads table already exists (created in the original Feature
+1 server build) and is populated by POST /api/v1/users/me/alerts/{id}/read
+when a user dismisses the sign-in modal. The data is captured but no
+admin endpoint surfaces it. The Alert Manager UI at
+src/components/pages/Admin/AdminPage.jsx has no read-receipt display
+today.
+
+FRONTEND FILES THAT WILL CONSUME THIS API
+-----------------------------------------
+- src/components/pages/Admin/AdminPage.jsx
+    (admin-alert-row renders the receipt summary inline + an
+     expandable "Reads" drawer or button for the per-email detail)
+- src/data/services/alertsService.js
+    (add getAlertReads(alertId) helper)
+
+DATA — NO SCHEMA CHANGES NEEDED
+-------------------------------
+Everything is derivable from the existing tables:
+  - alerts                (target_type, target_emails, display_type)
+  - alert_reads           (alert_id, user_id, read_at)
+  - users                 (id, email)
+For target_type='all' the "audience size" should match the same filter
+the user-facing GET /api/v1/users/me/alerts uses — i.e. all users for
+whom this alert would have been visible at the time of querying. A
+reasonable v1 simplification: count = total active users (excluding
+soft-deleted). Document whichever you choose.
+
+ENDPOINTS
+---------
+
+(1) Extend GET /api/v1/admin/alerts response
+    Add two aggregate fields to each alert row so the list view can
+    render the headline number without N round-trips:
+      {
+        "id": 42,
+        "subject": "...",
+        ...,
+        "read_count": 12,            // unique users in alert_reads
+        "audience_size": 287         // see notes below
+      }
+    audience_size semantics:
+      - target_type = 'all'      → count of users targetable today
+      - target_type = 'specific' → length of target_emails
+    audience_size MAY be null if computing it is expensive; the
+    frontend will fall back to showing just "{read_count} confirmed".
+
+(2) GET /api/v1/admin/alerts/{alert_id}/reads
+    Auth: admin only (403 otherwise)
+    Returns the per-recipient detail.
+
+    For target_type = 'specific':
+      [
+        { "email": "a@b.com", "user_id": 12,   "read_at": "2026-05-14T18:22:00Z" },
+        { "email": "c@d.com", "user_id": null, "read_at": null },
+        { "email": "e@f.com", "user_id": 17,   "read_at": null }
+      ]
+      - One entry per address in target_emails
+      - user_id = null if the email doesn't match a registered user
+      - read_at = null if they haven't clicked "Got it"
+      - Sort: read first (newest first), then unread alphabetical
+
+    For target_type = 'all':
+      {
+        "read_count": 12,
+        "audience_size": 287,
+        "reads": [
+          { "email": "a@b.com", "user_id": 12, "read_at": "2026-05-14T18:22:00Z" },
+          ...
+        ]
+      }
+      - "reads" is paginated/capped to the most-recent 200 to avoid
+        dumping the entire user table in one response. The headline
+        number (read_count) is the source of truth.
+
+    Errors:
+      403 { "detail": "Admin access required." }
+      404 { "detail": "Alert not found." }
+
+CLIENT BEHAVIOR
+---------------
+- The admin row already shows audience pill + type chip. For modal
+  alerts it will add a small "{read_count} of {audience_size} confirmed"
+  badge inline. Non-modal rows skip this entirely.
+- Clicking the row (or a "View reads" affordance) opens a drawer that
+  calls (2) and renders the per-recipient table.
+- Real-time updates are NOT required for v1 — receipts refresh when
+  the admin reopens the drawer or refreshes the page.
+
+OPEN QUESTIONS
+--------------
+- Should deleting an alert (DELETE /api/v1/admin/alerts/{id}) also
+  remove the read receipts? Today the CASCADE on alert_reads says yes.
+  If admins ever want post-hoc audit, switch to soft-delete first
+  (see Feature 1 open question on `deleted_at`).
+- Privacy: per-recipient read data exposes user activity. Document
+  the admin-only access; consider adding it to a future audit log.
+
+
+============================================================
 FEATURE 2 — EMAIL CAMPAIGNS
 ============================================================
 

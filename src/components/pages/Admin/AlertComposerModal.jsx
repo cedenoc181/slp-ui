@@ -1,10 +1,9 @@
 import { useState, useEffect } from 'react';
-import { addAlert } from '../../../data/constants/alertsMockData';
+import { createAlert } from '../../../data/services/alertsService';
 
 /**
  * Admin-only composer for creating new alerts/announcements.
- * Replace `addAlert(...)` with a POST to `/api/v1/admin/alerts` once the
- * backend is wired.
+ * POSTs to /api/v1/admin/alerts via alertsService.
  */
 export default function AlertComposerModal({ open, onClose, onCreated }) {
   const [subject, setSubject]       = useState('');
@@ -45,20 +44,21 @@ export default function AlertComposerModal({ open, onClose, onCreated }) {
     }
 
     setSubmitting(true);
-    // Mock latency for realism — replace with API call later
-    await new Promise(r => setTimeout(r, 600));
-
-    const created = addAlert({
-      subject: subject.trim(),
-      body: body.trim(),
-      displayType,
-      targetType,
-      targetEmails: targetType === 'specific' ? targetEmails : [],
-    });
-
-    setSubmitting(false);
-    if (onCreated) onCreated(created);
-    onClose();
+    try {
+      const created = await createAlert({
+        subject: subject.trim(),
+        body: body.trim(),
+        displayType,
+        targetType,
+        targetEmails: targetType === 'specific' ? targetEmails : [],
+      });
+      setSubmitting(false);
+      if (onCreated) onCreated(created);
+      onClose();
+    } catch (err) {
+      setSubmitting(false);
+      setError(err.message || 'Could not publish alert. Please try again.');
+    }
   };
 
   return (

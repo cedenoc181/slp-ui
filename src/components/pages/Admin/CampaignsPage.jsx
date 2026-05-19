@@ -1,7 +1,16 @@
 import { useState, useEffect, useMemo } from 'react';
 import { Link } from 'react-router-dom';
+import ReactMarkdown from 'react-markdown';
 import { useAuth } from '../../../context/AuthContext';
-import { AUDIENCE_PRESETS, MOCK_CAMPAIGN_HISTORY, formatCampaignSentAt } from '../../../data/constants/campaignsMockData';
+import spaLogo from '../../../assets/images/spa-retro-logo-removebg.png';
+import { AUDIENCE_PRESETS, formatCampaignSentAt } from '../../../data/constants/campaignsConstants';
+import {
+  listCampaigns,
+  getAudienceCounts,
+  sendTestCampaign,
+  sendCampaign,
+} from '../../../data/services/campaignsService';
+import { generate as aiGenerate } from '../../../data/services/aiService';
 import '../../../styles/admin-page-styling/admin.css';
 import '../../../styles/admin-page-styling/campaigns.css';
 
@@ -51,37 +60,13 @@ const AI_QUICK_ACTIONS = [
   { id: 'cta',     label: 'Stronger CTA',    icon: '🎯' },
 ];
 
-// Pre-canned mock outputs — replace with real LLM call later.
-function mockGenerateBody({ prompt, audience, currentBody }) {
-  const segment = audience.label.toLowerCase();
-  const opening = prompt
-    ? `Hey there,\n\nWe wanted to share something with our ${segment}.`
-    : `Hey there,\n\nQuick update for our ${segment}.`;
-  const middle = prompt
-    ? `\n\n${prompt}\n\nWe think this is going to make a real difference in how you approach the season.`
-    : `\n\nWe just shipped a few improvements based on your feedback. Highlights below — log in any time to check them out.`;
-  const close = `\n\n• Game predictions updated for tonight's slate\n• Pitcher props refreshed with the latest odds\n• Scout AI reports running on every matchup\n\nAs always, hit reply if you have any questions.\n\n— The Sandlot Picks team`;
-  return (currentBody && currentBody.length > 100)
-    ? `${currentBody}\n\n${close}`
-    : opening + middle + close;
-}
-
-function mockSubjectIdeas(audience) {
-  const seg = audience.label;
-  return [
-    `${seg}: tonight's top picks are live`,
-    `Don't miss out — Scout AI has spoken`,
-    `Your edge for tonight's slate (${seg.toLowerCase()})`,
-    `Quick read: 3 plays we love today`,
-    `New from Sandlot Picks ⚾`,
-  ];
-}
-
-function AIAssistModal({ open, mode, audience, currentBody, onClose, onApply }) {
+function AIAssistModal({ open, mode, audience, recipientCount, currentBody, onClose, onApply }) {
   const [prompt, setPrompt]       = useState('');
   const [generating, setGenerating] = useState(false);
   const [draft, setDraft]         = useState('');
   const [subjectIdeas, setSubjectIdeas] = useState([]);
+  const [error, setError]         = useState(null);
+  const [rateLimited, setRateLimited] = useState(false);
 
   useEffect(() => {
     if (open) {
@@ -89,6 +74,8 @@ function AIAssistModal({ open, mode, audience, currentBody, onClose, onApply }) 
       setDraft('');
       setSubjectIdeas([]);
       setGenerating(false);
+      setError(null);
+      setRateLimited(false);
     }
   }, [open, mode]);
 
@@ -98,16 +85,31 @@ function AIAssistModal({ open, mode, audience, currentBody, onClose, onApply }) 
 
   const handleGenerate = async (quickActionId) => {
     setGenerating(true);
-    await new Promise(r => setTimeout(r, 1100)); // mock latency
-    if (isSubjectMode) {
-      setSubjectIdeas(mockSubjectIdeas(audience));
-    } else {
-      const effectivePrompt = quickActionId
-        ? AI_QUICK_ACTIONS.find(a => a.id === quickActionId)?.label || prompt
-        : prompt;
-      setDraft(mockGenerateBody({ prompt: effectivePrompt, audience, currentBody }));
+    setError(null);
+    try {
+      if (isSubjectMode) {
+        const texts = await aiGenerate('campaign_subject', {
+          audience: audience.key,
+          count: 5,
+        });
+        setSubjectIdeas(Array.isArray(texts) ? texts : []);
+      } else {
+        const instruction = quickActionId
+          ? AI_QUICK_ACTIONS.find(a => a.id === quickActionId)?.label || prompt
+          : prompt;
+        const text = await aiGenerate('campaign_body', {
+          audience: audience.key,
+          current_body: currentBody || '',
+          instruction: instruction || '',
+        });
+        setDraft(typeof text === 'string' ? text : '');
+      }
+    } catch (err) {
+      setError(err?.message || 'AI request failed. Please try again.');
+      if (err?.status === 429) setRateLimited(true);
+    } finally {
+      setGenerating(false);
     }
-    setGenerating(false);
   };
 
   return (
@@ -124,11 +126,18 @@ function AIAssistModal({ open, mode, audience, currentBody, onClose, onApply }) 
           <span className="ai-modal__eyebrow">✨ AI Assist</span>
           <h3>{isSubjectMode ? 'Subject line ideas' : 'Refine or generate your email'}</h3>
           <p className="ai-modal__sub">
-            Targeting <strong>{audience.label}</strong> · {audience.mockCount} recipients
+            Targeting <strong>{audience.label}</strong>
+            {recipientCount != null && ` · ${recipientCount} recipients`}
           </p>
         </div>
 
         <div className="ai-modal__body">
+          {error && (
+            <div className="ai-modal__error">
+              ⚠ {error}
+              {rateLimited && ' (Try again in about an hour.)'}
+            </div>
+          )}
           {isSubjectMode ? (
             <>
               {subjectIdeas.length === 0 && !generating && (
@@ -136,6 +145,7 @@ function AIAssistModal({ open, mode, audience, currentBody, onClose, onApply }) 
                   type="button"
                   className="campaign-btn campaign-btn--primary"
                   onClick={() => handleGenerate()}
+                  disabled={rateLimited}
                   style={{ width: '100%' }}
                 >
                   ✨ Generate 5 subject ideas
@@ -160,6 +170,7 @@ function AIAssistModal({ open, mode, audience, currentBody, onClose, onApply }) 
                     type="button"
                     className="campaign-btn campaign-btn--ghost"
                     onClick={() => handleGenerate()}
+                    disabled={rateLimited}
                     style={{ marginTop: '0.5rem' }}
                   >
                     Try again
@@ -179,14 +190,18 @@ function AIAssistModal({ open, mode, audience, currentBody, onClose, onApply }) 
               />
 
               <div className="ai-modal__quick-row">
-                <span className="ai-modal__quick-label">Or refine current draft:</span>
+                <span className="ai-modal__quick-label">
+                  {prompt.trim()
+                    ? 'Clear the instruction above to use quick refines'
+                    : 'Or refine current draft:'}
+                </span>
                 {AI_QUICK_ACTIONS.map(a => (
                   <button
                     key={a.id}
                     type="button"
                     className="ai-quick-chip"
                     onClick={() => handleGenerate(a.id)}
-                    disabled={generating}
+                    disabled={generating || rateLimited || prompt.trim() !== ''}
                   >
                     {a.icon} {a.label}
                   </button>
@@ -216,7 +231,7 @@ function AIAssistModal({ open, mode, audience, currentBody, onClose, onApply }) 
                     type="button"
                     className="campaign-btn campaign-btn--primary"
                     onClick={() => handleGenerate()}
-                    disabled={!prompt || generating}
+                    disabled={!prompt || generating || rateLimited}
                   >
                     ✨ Generate
                   </button>
@@ -264,6 +279,58 @@ function ConfirmSendModal({ open, audience, recipients, subject, onConfirm, onCa
 }
 
 // ─── Email preview (right side) ──────────────────────────────────────────────
+// Inline element styles mirror the server's _render_markdown_body() so preview ≡ inbox.
+const MD_COMPONENTS = {
+  p:          ({ node, ...p }) => <p style={{ margin: '0 0 16px 0', lineHeight: 1.55, color: '#1a1a1a' }} {...p} />,
+  strong:     ({ node, ...p }) => <strong style={{ fontWeight: 700 }} {...p} />,
+  em:         ({ node, ...p }) => <em style={{ fontStyle: 'italic' }} {...p} />,
+  a:          ({ node, children, ...p }) => (
+    <a
+      style={{ color: '#0d9488', textDecoration: 'underline' }}
+      onClick={e => e.preventDefault()}
+      {...p}
+    >
+      {children}
+    </a>
+  ),
+  h1:         ({ node, children, ...p }) => <h1 style={{ fontSize: '1.5rem',  fontWeight: 800, color: '#111', margin: '1rem 0 0.6rem' }} {...p}>{children}</h1>,
+  h2:         ({ node, children, ...p }) => <h2 style={{ fontSize: '1.25rem', fontWeight: 700, color: '#111', margin: '0.9rem 0 0.5rem' }} {...p}>{children}</h2>,
+  h3:         ({ node, children, ...p }) => <h3 style={{ fontSize: '1.05rem', fontWeight: 700, color: '#111', margin: '0.85rem 0 0.45rem' }} {...p}>{children}</h3>,
+  h4:         ({ node, children, ...p }) => <h4 style={{ fontSize: '0.95rem', fontWeight: 700, color: '#111', margin: '0.8rem 0 0.4rem' }} {...p}>{children}</h4>,
+  ul:         ({ node, ordered, ...p }) => <ul style={{ margin: '0 0 16px 0', paddingLeft: '1.4rem' }} {...p} />,
+  ol:         ({ node, ordered, ...p }) => <ol style={{ margin: '0 0 16px 0', paddingLeft: '1.4rem' }} {...p} />,
+  li:         ({ node, ordered, ...p }) => <li style={{ margin: '0 0 4px 0', lineHeight: 1.55 }} {...p} />,
+  blockquote: ({ node, ...p }) => (
+    <blockquote
+      style={{
+        margin: '0 0 16px 0',
+        padding: '0.5rem 0.9rem',
+        borderLeft: '3px solid #2dd4bf',
+        background: 'rgba(45, 212, 191, 0.06)',
+        fontStyle: 'italic',
+        color: '#374151',
+      }}
+      {...p}
+    />
+  ),
+  hr:         () => <hr style={{ border: 0, borderTop: '1px solid #e5e7eb', margin: '1.25rem 0' }} />,
+  code:       ({ node, inline, className, children, ...p }) => (
+    <code
+      style={{
+        background: '#f3f4f6',
+        color: '#111',
+        padding: '0.1rem 0.4rem',
+        borderRadius: '4px',
+        fontSize: '0.88em',
+        fontFamily: 'ui-monospace, SFMono-Regular, Menlo, monospace',
+      }}
+      {...p}
+    >
+      {children}
+    </code>
+  ),
+};
+
 function EmailPreview({ subject, body, cta }) {
   return (
     <div className="campaign-preview">
@@ -274,11 +341,14 @@ function EmailPreview({ subject, body, cta }) {
         <span className="campaign-preview__chrome-url">no-reply@sandlotpicks.com</span>
       </div>
       <div className="campaign-preview__inner">
-        <div className="campaign-preview__brand">⚾ Sandlot Picks</div>
+        <div className="campaign-preview__brand">
+          <img src={spaLogo} alt="" className="campaign-preview__brand-logo" />
+          <span>Sandlot Picks Analytics</span>
+        </div>
         <h2 className="campaign-preview__subject">{subject || 'Your subject line preview'}</h2>
         <div className="campaign-preview__body">
           {body
-            ? body.split('\n').map((line, i) => <p key={i}>{line || '\u00A0'}</p>)
+            ? <ReactMarkdown components={MD_COMPONENTS}>{body}</ReactMarkdown>
             : <p className="campaign-preview__placeholder">Email body preview will appear here…</p>}
         </div>
         {cta?.label && (
@@ -312,15 +382,41 @@ export default function CampaignsPage() {
 
   const [testEmail,    setTestEmail]    = useState('');
   const [testStatus,   setTestStatus]   = useState(null); // null | 'sending' | 'sent' | 'error'
+  const [testError,    setTestError]    = useState(null);
   const [confirmOpen,  setConfirmOpen]  = useState(false);
   const [sendStatus,   setSendStatus]   = useState(null); // null | 'sending' | 'sent' | 'error'
+  const [sendError,    setSendError]    = useState(null);
 
-  const [history, setHistory] = useState(MOCK_CAMPAIGN_HISTORY);
+  const [history, setHistory]               = useState([]);
+  const [historyLoading, setHistoryLoading] = useState(true);
+  const [historyError,   setHistoryError]   = useState(null);
+
+  const [audienceCounts,        setAudienceCounts]        = useState(null);
+  const [audienceCountsLoading, setAudienceCountsLoading] = useState(true);
 
   const [aiModal, setAiModal] = useState(null); // null | 'subject' | 'body'
 
   useEffect(() => { window.scrollTo(0, 0); }, []);
   useEffect(() => { if (user?.email) setTestEmail(user.email); }, [user]);
+
+  // Fetch history + audience counts on mount
+  useEffect(() => {
+    let cancelled = false;
+    listCampaigns()
+      .then(list => { if (!cancelled) setHistory(list); })
+      .catch(err => { if (!cancelled) setHistoryError(err?.message || 'Could not load campaign history.'); })
+      .finally(() => { if (!cancelled) setHistoryLoading(false); });
+
+    getAudienceCounts()
+      .then(counts => { if (!cancelled) setAudienceCounts(counts); })
+      .catch(() => { /* counts are non-fatal; UI falls back to "—" */ })
+      .finally(() => { if (!cancelled) setAudienceCountsLoading(false); });
+
+    return () => { cancelled = true; };
+  }, []);
+
+  const countFor = (key) => (audienceCounts ? audienceCounts[key] ?? 0 : null);
+  const currentCount = countFor(audienceKey);
 
   const audience = useMemo(
     () => AUDIENCE_PRESETS.find(a => a.key === audienceKey) || AUDIENCE_PRESETS[0],
@@ -342,37 +438,60 @@ export default function CampaignsPage() {
   const handleTestSend = async () => {
     if (!testEmail || !subject) return;
     setTestStatus('sending');
-    // Mock: replace with real API call later
-    await new Promise(r => setTimeout(r, 900));
-    setTestStatus('sent');
-    setTimeout(() => setTestStatus(null), 3500);
+    setTestError(null);
+    try {
+      await sendTestCampaign({
+        subject,
+        body,
+        ctaLabel,
+        ctaUrl,
+        toEmail: testEmail,
+      });
+      setTestStatus('sent');
+      setTimeout(() => setTestStatus(null), 3500);
+    } catch (err) {
+      setTestStatus('error');
+      setTestError(err?.message || 'Could not send test email.');
+      setTimeout(() => setTestStatus(null), 5000);
+    }
   };
 
   const handleConfirmSend = async () => {
     setConfirmOpen(false);
     setSendStatus('sending');
-    // Mock: replace with real API call later
-    await new Promise(r => setTimeout(r, 1200));
-    setHistory(prev => [
-      {
-        id: Date.now(),
+    setSendError(null);
+    try {
+      const created = await sendCampaign({
         subject,
+        body,
+        ctaLabel,
+        ctaUrl,
         audience: audience.key,
-        recipients: audience.mockCount,
-        sentAt: new Date().toISOString(),
-        status: 'sent',
-      },
-      ...prev,
-    ]);
-    setSendStatus('sent');
-    setTimeout(() => {
-      setSendStatus(null);
-      setSubject('');
-      setBody('');
-      setCtaLabel('');
-      setCtaUrl('');
-      setActiveTemplate(null);
-    }, 2500);
+      });
+      setHistory(prev => [
+        {
+          id: created.id,
+          subject,
+          audience: audience.key,
+          recipientCount: created.recipientCount,
+          sentAt: created.sentAt,
+          status: created.status || 'sent',
+        },
+        ...prev,
+      ]);
+      setSendStatus('sent');
+      setTimeout(() => {
+        setSendStatus(null);
+        setSubject('');
+        setBody('');
+        setCtaLabel('');
+        setCtaUrl('');
+        setActiveTemplate(null);
+      }, 2500);
+    } catch (err) {
+      setSendStatus('error');
+      setSendError(err?.message || 'Could not send campaign.');
+    }
   };
 
   if (loading) return null;
@@ -436,22 +555,31 @@ export default function CampaignsPage() {
               <div className="campaign-card__header">
                 <h3>Audience</h3>
                 <span className="campaign-recipient-count">
-                  ~{audience.mockCount} {audience.mockCount === 1 ? 'recipient' : 'recipients'}
+                  {audienceCountsLoading
+                    ? 'Loading recipients…'
+                    : currentCount === null
+                      ? '— recipients'
+                      : `~${currentCount} ${currentCount === 1 ? 'recipient' : 'recipients'}`}
                 </span>
               </div>
               <div className="campaign-audience-grid">
-                {AUDIENCE_PRESETS.map(a => (
-                  <button
-                    key={a.key}
-                    type="button"
-                    className={`campaign-audience${audienceKey === a.key ? ' is-active' : ''}`}
-                    onClick={() => setAudienceKey(a.key)}
-                  >
-                    <span className="campaign-audience__name">{a.label}</span>
-                    <span className="campaign-audience__count">{a.mockCount}</span>
-                    <span className="campaign-audience__desc">{a.desc}</span>
-                  </button>
-                ))}
+                {AUDIENCE_PRESETS.map(a => {
+                  const c = countFor(a.key);
+                  return (
+                    <button
+                      key={a.key}
+                      type="button"
+                      className={`campaign-audience${audienceKey === a.key ? ' is-active' : ''}`}
+                      onClick={() => setAudienceKey(a.key)}
+                    >
+                      <span className="campaign-audience__name">{a.label}</span>
+                      <span className="campaign-audience__count">
+                        {c === null ? '—' : c}
+                      </span>
+                      <span className="campaign-audience__desc">{a.desc}</span>
+                    </button>
+                  );
+                })}
               </div>
               <p className="campaign-card__footnote">
                 Users who disabled email updates are automatically excluded from every send.
@@ -563,22 +691,30 @@ export default function CampaignsPage() {
                 >
                   {testStatus === 'sending' ? 'Sending…'
                     : testStatus === 'sent' ? '✓ Test sent'
+                    : testStatus === 'error' ? '✗ Test failed'
                     : 'Send Test'}
                 </button>
               </div>
+              {testError && (
+                <div className="campaign-send-error">⚠ {testError}</div>
+              )}
 
               <div className="campaign-send-row">
                 <button
                   type="button"
                   className="campaign-btn campaign-btn--primary"
                   onClick={() => setConfirmOpen(true)}
-                  disabled={!canSend || sendStatus === 'sending'}
+                  disabled={!canSend || sendStatus === 'sending' || currentCount === null}
                 >
                   {sendStatus === 'sending' ? 'Sending…'
                     : sendStatus === 'sent' ? '✓ Campaign sent!'
-                    : `Send to ${audience.mockCount} recipients`}
+                    : currentCount === null ? 'Loading recipient count…'
+                    : `Send to ${currentCount} recipients`}
                 </button>
               </div>
+              {sendError && (
+                <div className="campaign-send-error">⚠ {sendError}</div>
+              )}
             </div>
 
           </div>
@@ -594,9 +730,15 @@ export default function CampaignsPage() {
         <div className="campaign-history">
           <div className="campaign-history__header">
             <h2>Recent Campaigns</h2>
-            <span className="campaign-history__count">{history.length} sent</span>
+            <span className="campaign-history__count">
+              {historyLoading ? '…' : `${history.length} sent`}
+            </span>
           </div>
-          {history.length === 0 ? (
+          {historyError ? (
+            <div className="campaign-send-error">⚠ {historyError}</div>
+          ) : historyLoading ? (
+            <div className="campaign-history__empty">Loading campaigns…</div>
+          ) : history.length === 0 ? (
             <div className="campaign-history__empty">No campaigns sent yet.</div>
           ) : (
             <div className="campaign-history__list">
@@ -606,7 +748,7 @@ export default function CampaignsPage() {
                     <span className="campaign-history__subject">{c.subject || '(no subject)'}</span>
                     <span className="campaign-history__meta">
                       {AUDIENCE_PRESETS.find(a => a.key === c.audience)?.label || c.audience}
-                      {' · '}{c.recipients} recipients
+                      {' · '}{c.recipientCount} recipients
                       {' · '}{formatCampaignSentAt(c.sentAt)}
                     </span>
                   </div>
@@ -624,7 +766,7 @@ export default function CampaignsPage() {
       <ConfirmSendModal
         open={confirmOpen}
         audience={audience}
-        recipients={audience.mockCount}
+        recipients={currentCount ?? 0}
         subject={subject}
         onConfirm={handleConfirmSend}
         onCancel={() => setConfirmOpen(false)}
@@ -634,6 +776,7 @@ export default function CampaignsPage() {
         open={aiModal !== null}
         mode={aiModal}
         audience={audience}
+        recipientCount={currentCount}
         currentBody={body}
         onClose={() => setAiModal(null)}
         onApply={(text) => {
