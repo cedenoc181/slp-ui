@@ -813,5 +813,447 @@ records inline. Add cursor pagination later if any list grows
 beyond a few hundred entries.
 
 ============================================================
+FEATURE 7 — HERO IMAGE UPLOAD (FASTAPI PROXY → SUPABASE STORAGE)
+============================================================
+
+WHAT IT IS
+----------
+The article/blog editor's "Hero Image URL" field is currently a
+URL-only text input. Admins want to upload an image directly from
+their machine and have the resulting public URL filled in for them.
+
+CURRENT STATE
+-------------
+- The Supabase Storage bucket `post-images` has been created
+  (public reads enabled, 5 MB limit, allowed MIME types png/jpeg/
+  webp/gif). No RLS policies are needed — see auth context below.
+- Editor field at src/components/pages/Admin/ArticleEditor.jsx:837
+  is a <input type="url"> that stores whatever the admin pastes.
+- No Storage usage exists anywhere in src/ today.
+
+AUTH CONTEXT (IMPORTANT — DRIVES THE DESIGN)
+--------------------------------------------
+The application uses **FastAPI-issued JWTs for auth**, not Supabase
+Auth. The frontend Supabase client is created with the anon key
+(public, in the bundle). `public.users.id` is an integer; nothing
+exists in the database that ties a Supabase Auth UUID to an app
+user. Consequences:
+
+  - `auth.uid()` from RLS policies is always null on browser calls.
+  - RLS policies attempting to gate by app-user identity will lock
+    out everyone, not just non-admins.
+  - The browser CANNOT be trusted to authorize its own uploads.
+
+Therefore the upload MUST be proxied through the FastAPI server,
+which already has admin verification (`get_current_admin_user`)
+and the Supabase service_role key (already in .env — your existing
+scripts/syncContentFromSupabase.js uses SUPABASE_SERVICE_ROLE_KEY).
+The service_role key bypasses Storage RLS entirely, so the bucket
+needs no extra policies beyond the implicit public-read behavior.
+
+WHAT NEEDS TO BE DONE — A SINGLE FASTAPI ENDPOINT
+-------------------------------------------------
+
+(1) NEW ENDPOINT
+    POST /api/v1/admin/upload
+    Auth: admin only (use existing get_current_admin_user)
+    Content-Type: multipart/form-data
+    Form fields:
+      file:   the binary image (required)
+      kind:   "hero" | "block"  (optional, default "hero" — drives
+                                 the storage path prefix)
+      slug:   string (optional — used in the storage path for
+                      human-readable layout, falls back to "misc")
+
+    Behavior:
+      a. Validate Content-Type starts with "image/" and is in:
+           ["image/png", "image/jpeg", "image/webp", "image/gif"]
+         else 400 { "detail": "Only PNG, JPEG, WebP, or GIF images
+                              are allowed." }
+      b. Validate file size <= 5 MB (5_242_880 bytes)
+         else 400 { "detail": "Image must be 5 MB or smaller." }
+      c. Build the storage path:
+           {kind}/{slug or "misc"}/{epoch_ms}-{slugified_filename}
+         where slugified_filename strips spaces/special chars and
+         keeps the original extension. Example:
+           hero/welcome-2026-season/1715800000000-banner.png
+      d. Upload via Supabase Python client:
+           supabase.storage
+             .from_("post-images")
+             .upload(path, file_bytes, file_options={"content-type": mime})
+      e. Construct the public URL:
+           {SUPABASE_URL}/storage/v1/object/public/post-images/{path}
+         (or use supabase.storage.from_("post-images").get_public_url(path))
+
+    Response 201:
+      {
+        "url": "https://xyz.supabase.co/storage/v1/object/public/post-images/hero/welcome-2026-season/1715800000000-banner.png",
+        "path": "hero/welcome-2026-season/1715800000000-banner.png",
+        "size_bytes": 184231,
+        "content_type": "image/png"
+      }
+
+    Errors:
+      400 { "detail": "<specific reason>" }
+      403 { "detail": "Admin access required." }
+      502 { "detail": "Storage upload failed: <provider message>" }
+
+(2) NO DATABASE CHANGES
+    The returned URL is written into the existing
+    content_posts.hero_image_url column (text). No schema change.
+
+(3) NO RLS POLICIES NEEDED
+    Reads: bucket is already public.
+    Writes: only the FastAPI server (with service_role) can write.
+            Browser-side anon-key uploads to the bucket will be
+            implicitly denied because no INSERT policy exists.
+    This is the desired security posture for this stack.
+
+(4) OPTIONAL — DELETE ENDPOINT (NOT REQUIRED FOR V1)
+    Once content rotation is happening, an admin DELETE endpoint
+    would let stale images be cleaned up:
+      DELETE /api/v1/admin/upload  body { "path": "<storage path>" }
+    Skip for v1; orphaned images can be cleaned up by a future
+    sweep job that compares storage objects to content_posts.hero_image_url
+    references.
+
+FRONTEND CHANGES (HANDLED IN A FOLLOW-UP CHANGE, NO ACTION NEEDED)
+------------------------------------------------------------------
+Once the endpoint is live, the editor will:
+  a. Add a small "Upload image" button next to the existing URL input.
+  b. File picker (accept="image/*", 5MB max) → POST multipart to
+     /api/v1/admin/upload with form fields { file, kind: "hero",
+     slug: post.slug }.
+  c. On success, set hero_image_url to response.url.
+  d. Show inline upload progress + error states.
+The existing URL input stays — admins can still paste an external URL.
+
+CONFIRMATION TO SEND BACK
+-------------------------
+Reply with:
+  - Endpoint deployed and reachable at /api/v1/admin/upload
+  - Confirmation of the multipart contract above
+  - The exact public URL pattern the endpoint returns (so the FE
+    knows to expect the storage.../object/public/... form)
+Once confirmed, the FE upload UI will be wired in a single follow-up.
+
+
+============================================================
+FEATURE 8 — MIGRATE content_posts TO USER DB (CMS BEHIND FASTAPI)
+============================================================
+
+WHAT IT IS
+----------
+Today the article/blog CMS table `content_posts` lives in the
+Supabase project and is read/written from the browser directly via
+the Supabase JS client using the anon key. The user wants this
+table moved into the existing user_directory Postgres DB and put
+behind the FastAPI admin auth layer — same pattern used for
+alerts, campaigns, and AI usage logs.
+
+WHY (BUSINESS + SECURITY MOTIVATION)
+------------------------------------
+1. **Security**: The anon key ships in the public bundle. Any
+   visitor with devtools can call `supabase.from('content_posts')
+   .insert/.update/.delete(...)`. Whether they succeed depends on
+   whatever RLS policies (if any) exist on the table — server
+   agent should audit current policies during the migration. Moving
+   the table behind FastAPI's `get_current_admin_user` closes the
+   path entirely and aligns content with how alerts/campaigns are
+   already gated.
+2. **Architectural consistency**: User has stated their preference
+   is "two databases — MLB data + user data, with all user-touching
+   tables in the user DB." `content_posts` belongs in the user DB
+   per that mental model.
+3. **Foundation for future features**: Once behind FastAPI, future
+   features (audit logging on edits, server-side content validation,
+   webhook triggers on publish, draft autosave throttling, etc.)
+   become trivial to add.
+
+CURRENT STATE
+-------------
+- Frontend uses `supabase.from('content_posts')` in two places:
+  - src/components/pages/Admin/AdminPage.jsx (list + delete)
+  - src/components/pages/Admin/ArticleEditor.jsx (load + insert + update)
+- Build-time sync at scripts/syncContentFromSupabase.js pulls every
+  published row using SUPABASE_SERVICE_ROLE_KEY and writes the
+  static JSON files the public site reads (article.json,
+  moreArticles.json, blogs.json). react-snap pre-renders the
+  bundled site at deploy time — this SEO architecture must be
+  preserved.
+- Hero image upload (Feature 7) is already correctly behind
+  FastAPI. It writes a Storage object and returns a URL string;
+  that URL goes into content_posts.hero_image_url. No change to
+  hero upload as part of this migration.
+
+WHAT THE SERVER AGENT NEEDS TO DO
+---------------------------------
+
+(1) AUDIT CURRENT SUPABASE RLS ON content_posts (PRE-MIGRATION)
+    Quickly check what policies exist today and what's actually
+    writable from the anon key. The frontend writes succeed today,
+    so either RLS is disabled or there's a permissive policy.
+    Document what you find so the security baseline is captured.
+    SQL:
+      SELECT polname, polcmd, polroles, polqual, polwithcheck
+      FROM pg_policy
+      WHERE polrelid = 'public.content_posts'::regclass;
+
+      SELECT relrowsecurity, relforcerowsecurity
+      FROM pg_class
+      WHERE relname = 'content_posts' AND relnamespace = 'public'::regnamespace;
+
+(2) CREATE THE TABLE IN user_directory DB (ALEMBIC MIGRATION)
+    Mirror the existing Supabase schema exactly. Best source of
+    truth is the columns the frontend currently reads/writes:
+      id                    serial primary key
+      type                  text not null            -- 'article' | 'blog'
+      title                 text not null
+      slug                  text not null unique
+      author                text not null
+      status                text not null default 'draft'  -- 'draft' | 'published'
+      date                  date null
+      tags                  text[] not null default '{}'
+      summary               text default ''
+      hero_image_url        text null
+      hero_image_alt        text null
+      content               jsonb not null default '[]'    -- block array
+      read_time_minutes     int null
+      estimated_word_count  int null
+      seo                   jsonb not null default '{}'
+      affiliate_cta         jsonb not null default '{"enabled":false}'
+      affiliate_disclaimer  text null
+      related_posts         text[] not null default '{}'
+      reference_urls        text[] not null default '{}'
+      created_at            timestamptz not null default now()
+      updated_at            timestamptz not null default now()
+      created_by            int null references users(id) on delete set null
+
+    Indexes:
+      content_posts (status, type, date DESC)   -- list filtering
+      content_posts (slug)                       -- public lookup
+      content_posts (created_at DESC)            -- admin recent-list
+
+(3) ONE-TIME DATA MIGRATION SCRIPT
+    Pull every row from the existing Supabase content_posts table
+    and insert into the new user_directory table. Preserve ids if
+    feasible (re-sequence the primary key afterward so future
+    inserts don't collide).
+
+    The frontend currently fetches with .select(
+      'id, type, title, slug, status, date, tags, author, updated_at'
+    ) for the list, and a full row for the editor. So both shapes
+    need to round-trip.
+
+    Sanity check after migration: counts match, no NULL on NOT NULL
+    columns, all published rows still resolvable by slug.
+
+(4) NEW FASTAPI ROUTER — content_posts_router.py
+    Auth model:
+      - Admin-only:    list (all statuses), create, update, delete, get-by-id
+      - Public/anon:   read-by-slug (for the build-time sync script
+                       and any future runtime fetches)
+
+    Endpoints:
+
+    (a) GET /api/v1/admin/content-posts
+        Auth: admin
+        Query params: type ('article' | 'blog' | null),
+                      status ('draft' | 'published' | null),
+                      q (title substring, null)
+        Returns: [{ id, type, title, slug, status, date, tags,
+                    author, updated_at }] (lightweight list shape)
+
+    (b) GET /api/v1/admin/content-posts/{id}
+        Auth: admin
+        Returns: full row including content/seo/affiliate_cta blobs
+
+    (c) POST /api/v1/admin/content-posts
+        Auth: admin
+        Body: full row payload (title, slug, type, ... — see schema)
+        Behavior: insert, set created_by = current_admin.id
+        Response 201: created row (full shape)
+        Errors: 400 on missing required fields, 409 if slug exists
+
+    (d) PUT /api/v1/admin/content-posts/{id}
+        Auth: admin
+        Body: full row payload (allow partial via Pydantic Optional)
+        Behavior: update + bump updated_at
+        Response: updated row (full shape)
+        Errors: 404 if not found, 409 if slug change collides
+
+    (e) DELETE /api/v1/admin/content-posts/{id}
+        Auth: admin
+        Response: 204
+
+    (f) GET /api/v1/content-posts (PUBLIC)
+        No auth.
+        Query: type ('article' | 'blog' | null), limit (default 50)
+        Returns ONLY status='published' rows, sorted by date DESC.
+        Used by the sync script — replaces the current Supabase
+        service-role fetch.
+        Optional: separate endpoint for slug lookup
+        GET /api/v1/content-posts/{slug} returns single full row.
+
+    Validation/notes:
+      - slug must match /^[a-z0-9-]+$/
+      - type must be in ('article','blog')
+      - status must be in ('draft','published')
+      - tags + related_posts + reference_urls accept JSON array bodies
+        and store as text[]
+
+(5) DROP THE SUPABASE TABLE AFTER VERIFICATION
+    Only after the FE swap (handled separately) is deployed and
+    confirmed reading/writing successfully against the new
+    endpoints. Suggested holding period: 7 days minimum.
+
+CONFIRMATION TO SEND BACK
+-------------------------
+Reply with:
+  - Migration ran successfully, N rows copied
+  - All six endpoints deployed and reachable
+  - RLS audit result on the old Supabase table (separate finding)
+  - Any deviations from the schema above (column types/nulls)
+Once confirmed, the frontend will be wired in a single follow-up:
+  - New contentService.js (mirrors alertsService pattern)
+  - Replace all `supabase.from('content_posts')...` calls in
+    AdminPage.jsx + ArticleEditor.jsx
+  - Repoint scripts/syncContentFromSupabase.js to the new public
+    endpoint (rename to syncContentFromApi.js)
+  - Remove src/lib/supabaseClient.js if nothing else uses it
+
+
+============================================================
+FEATURE 9 — AI ASSIST: AUTO-FILL SEO FIELDS FROM CONTENT
+============================================================
+
+WHAT IT IS
+----------
+A single "✨ Auto-fill SEO from content" button in the SEO card
+of the article/blog editor that calls the AI proxy and populates
+THREE fields at once:
+  - seo_title          (SEO Title / title_tag — ~50-60 chars)
+  - seo_description    (Meta description — ~150-160 chars)
+  - seo_keywords       (5-10 keyword phrases, comma-joined on FE)
+
+Unlike the existing per-field AI helpers (article_title returns 5
+suggestions, article_summary returns one paragraph), this is a
+single bulk-fill action: one click → three populated fields.
+
+CURRENT STATE
+-------------
+- The SEO card at src/components/pages/Admin/ArticleEditor.jsx has
+  three plain inputs (seo_title, seo_description, seo_keywords)
+  with NO AI helpers today.
+- The existing AI proxy task surface (Feature 3 task contract)
+  has no task that produces SEO fields. Adding one new task is the
+  minimum change.
+- All other AI tasks already work fine; this extends without
+  breaking any of them.
+
+WHAT NEEDS TO BE DONE — ONE NEW AI TASK
+---------------------------------------
+
+(1) ADD TASK: article_seo
+    Endpoint: POST /api/v1/admin/ai/generate   (existing, no URL change)
+    Auth: admin only (existing dependency)
+
+    Request body:
+      {
+        "task": "article_seo",
+        "context": {
+          "title":         "<post.title — required, can be empty>",
+          "summary":       "<post.summary — required, can be empty>",
+          "content_text":  "<flattened body blocks — required, can be empty>",
+          "type":          "article" | "blog"
+        }
+      }
+
+    Validation:
+      - If title + summary + content_text are all empty strings,
+        return 400 { "detail": "Need a title, summary, or body content
+        to generate SEO fields from." }
+      - Otherwise proceed with whatever's provided.
+
+    Response shape — NEW (structured, not text/texts):
+      200 {
+        "seo": {
+          "title_tag":        "string (≤60 chars, ≥10 chars)",
+          "meta_description": "string (≤160 chars, ≥50 chars)",
+          "keywords":         ["string", ...]   // 5-10 entries, lowercase
+        }
+      }
+
+    Why a new top-level key (`seo` instead of `text`/`texts`)?
+    Because the response is a structured object with multiple
+    fields, not a single string or an array of strings. The FE
+    aiService already type-checks the response shape and routes
+    accordingly — adding `seo` is a one-line check.
+
+    Errors:
+      400 { "detail": "Need a title, summary, or body content
+                       to generate SEO fields from." }
+      403 { "detail": "Admin access required." }
+      429 { "detail": "AI usage limit reached. Try again in 1 hour." }
+      502 { "detail": "AI provider error." }
+
+(2) PROMPT GUIDANCE FOR THE LLM
+    Brand voice: punchy, data-grounded, baseball-fluent, no hype
+    (same system prompt as the other article tasks).
+    Add to the task-specific prompt:
+      - title_tag should mirror the post title's intent but be
+        optimized for search — concise, front-loaded with the
+        primary keyword, ≤60 chars so it doesn't truncate in SERPs.
+      - meta_description should read like a SERP snippet that
+        earns the click: ≤160 chars, includes the post's
+        primary keyword + a clear value proposition.
+      - keywords should be 5-10 short noun phrases (lowercase,
+        comma-separated when joined for display). Prioritize:
+          * the player/team/concept named in the post
+          * the post's actionable angle ("pitcher props",
+            "skubal strikeout edge", etc.)
+          * the publication's domain ("mlb predictions",
+            "baseball analytics", etc.)
+        Avoid generic stop-words ("the best", "for fans"), avoid
+        duplicates, lowercase only.
+      - All three fields should reference the SAME post — don't
+        wander off into related-but-different topics.
+
+(3) MODEL CHOICE
+    claude-haiku-4-5 is plenty for this — structured generation
+    from short inputs, no creative leap needed. Use the cheaper
+    model unless quality lags in practice.
+
+FRONTEND CHANGES (HANDLED IN A FOLLOW-UP, NO ACTION NEEDED)
+-----------------------------------------------------------
+Once the task is live, the editor will:
+  a. Add a small "✨ Auto-fill SEO from content" button at the
+     top of the SEO card.
+  b. Click → call aiGenerate('article_seo', { title, summary,
+     content_text, type }).
+  c. Service handler routes the new `seo` response shape and
+     returns { title_tag, meta_description, keywords }.
+  d. FE populates seo_title, seo_description, and seo_keywords
+     (joined with ", ") in one setPost call.
+  e. Inline status: "Generating…" → "✓ Filled" → silent.
+  f. Guard: button disabled when title + summary + body are all
+     empty (mirrors the Summary AI button guard from earlier).
+  g. Errors render in the existing AI modal error pattern (or a
+     small inline banner here since there's no modal needed —
+     this is a direct-action button, not a multi-step picker).
+
+CONFIRMATION TO SEND BACK
+-------------------------
+Reply with:
+  - Task `article_seo` accepted on /admin/ai/generate, response
+    shape confirmed as `{ seo: { title_tag, meta_description,
+    keywords } }`.
+  - Sample successful payload + response so FE can validate the
+    parser.
+  - Confirmation the empty-inputs 400 fires correctly.
+Once confirmed, the FE will be wired in a single follow-up.
+
+
+============================================================
 END OF DOCUMENT
 ============================================================

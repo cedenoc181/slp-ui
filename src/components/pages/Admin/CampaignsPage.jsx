@@ -390,6 +390,8 @@ export default function CampaignsPage() {
   const [history, setHistory]               = useState([]);
   const [historyLoading, setHistoryLoading] = useState(true);
   const [historyError,   setHistoryError]   = useState(null);
+  const [historyPage,    setHistoryPage]    = useState(0);
+  const HISTORY_PAGE_SIZE = 5;
 
   const [audienceCounts,        setAudienceCounts]        = useState(null);
   const [audienceCountsLoading, setAudienceCountsLoading] = useState(true);
@@ -479,6 +481,7 @@ export default function CampaignsPage() {
         },
         ...prev,
       ]);
+      setHistoryPage(0);
       setSendStatus('sent');
       setTimeout(() => {
         setSendStatus(null);
@@ -727,39 +730,74 @@ export default function CampaignsPage() {
         </div>
 
         {/* History */}
-        <div className="campaign-history">
-          <div className="campaign-history__header">
-            <h2>Recent Campaigns</h2>
-            <span className="campaign-history__count">
-              {historyLoading ? '…' : `${history.length} sent`}
-            </span>
-          </div>
-          {historyError ? (
-            <div className="campaign-send-error">⚠ {historyError}</div>
-          ) : historyLoading ? (
-            <div className="campaign-history__empty">Loading campaigns…</div>
-          ) : history.length === 0 ? (
-            <div className="campaign-history__empty">No campaigns sent yet.</div>
-          ) : (
-            <div className="campaign-history__list">
-              {history.map(c => (
-                <div key={c.id} className="campaign-history__row">
-                  <div className="campaign-history__row-main">
-                    <span className="campaign-history__subject">{c.subject || '(no subject)'}</span>
-                    <span className="campaign-history__meta">
-                      {AUDIENCE_PRESETS.find(a => a.key === c.audience)?.label || c.audience}
-                      {' · '}{c.recipientCount} recipients
-                      {' · '}{formatCampaignSentAt(c.sentAt)}
-                    </span>
+        {(() => {
+          const totalPages = Math.max(1, Math.ceil(history.length / HISTORY_PAGE_SIZE));
+          const safePage   = Math.min(historyPage, totalPages - 1);
+          const start      = safePage * HISTORY_PAGE_SIZE;
+          const visible    = history.slice(start, start + HISTORY_PAGE_SIZE);
+          const showPager  = history.length > HISTORY_PAGE_SIZE;
+
+          return (
+            <div className="campaign-history">
+              <div className="campaign-history__header">
+                <h2>Recent Campaigns</h2>
+                <span className="campaign-history__count">
+                  {historyLoading ? '…' : `${history.length} sent`}
+                </span>
+              </div>
+              {historyError ? (
+                <div className="campaign-send-error">⚠ {historyError}</div>
+              ) : historyLoading ? (
+                <div className="campaign-history__empty">Loading campaigns…</div>
+              ) : history.length === 0 ? (
+                <div className="campaign-history__empty">No campaigns sent yet.</div>
+              ) : (
+                <>
+                  <div className="campaign-history__list">
+                    {visible.map(c => (
+                      <div key={c.id} className="campaign-history__row">
+                        <div className="campaign-history__row-main">
+                          <span className="campaign-history__subject">{c.subject || '(no subject)'}</span>
+                          <span className="campaign-history__meta">
+                            {AUDIENCE_PRESETS.find(a => a.key === c.audience)?.label || c.audience}
+                            {' · '}{c.recipientCount} recipients
+                            {' · '}{formatCampaignSentAt(c.sentAt)}
+                          </span>
+                        </div>
+                        <span className={`campaign-history__status campaign-history__status--${c.status}`}>
+                          {c.status}
+                        </span>
+                      </div>
+                    ))}
                   </div>
-                  <span className={`campaign-history__status campaign-history__status--${c.status}`}>
-                    {c.status}
-                  </span>
-                </div>
-              ))}
+                  {showPager && (
+                    <div className="campaign-history__pager">
+                      <button
+                        type="button"
+                        className="campaign-btn campaign-btn--ghost campaign-history__pager-btn"
+                        onClick={() => setHistoryPage(p => Math.max(0, p - 1))}
+                        disabled={safePage === 0}
+                      >
+                        ← Previous
+                      </button>
+                      <span className="campaign-history__pager-label">
+                        Page {safePage + 1} of {totalPages}
+                      </span>
+                      <button
+                        type="button"
+                        className="campaign-btn campaign-btn--ghost campaign-history__pager-btn"
+                        onClick={() => setHistoryPage(p => Math.min(totalPages - 1, p + 1))}
+                        disabled={safePage >= totalPages - 1}
+                      >
+                        Next →
+                      </button>
+                    </div>
+                  )}
+                </>
+              )}
             </div>
-          )}
-        </div>
+          );
+        })()}
 
       </div>
 

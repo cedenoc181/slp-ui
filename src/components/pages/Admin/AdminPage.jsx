@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../../context/AuthContext';
-import supabase from '../../../lib/supabaseClient';
+import * as contentService from '../../../data/services/contentService';
 import predictionsService from '../../../data/services/predictionsService';
 import predictionsPerformanceService from '../../../data/services/predictionsPerformanceService';
 import { TEAM_METADATA } from '../../../data/constants/apiConstants';
@@ -696,18 +696,21 @@ function AdminPage() {
     window.scrollTo(0, 0);
   }, []);
 
-  // Fetch posts (existing)
+  // Fetch posts
   useEffect(() => {
-    async function fetchPosts() {
-      setFetching(true);
-      const { data, error } = await supabase
-        .from('content_posts')
-        .select('id, type, title, slug, status, date, tags, author, updated_at')
-        .order('updated_at', { ascending: false });
-      if (!error) setPosts(data || []);
-      setFetching(false);
-    }
-    fetchPosts();
+    let cancelled = false;
+    setFetching(true);
+    contentService.adminList()
+      .then(list => {
+        if (cancelled) return;
+        const sorted = Array.isArray(list)
+          ? [...list].sort((a, b) => new Date(b.updated_at) - new Date(a.updated_at))
+          : [];
+        setPosts(sorted);
+      })
+      .catch(() => { if (!cancelled) setPosts([]); })
+      .finally(() => { if (!cancelled) setFetching(false); });
+    return () => { cancelled = true; };
   }, [isAuthenticated, user]);
 
   // Fetch dashboard data in parallel
@@ -786,8 +789,12 @@ function AdminPage() {
   };
 
   const handleDelete = async (postId) => {
-    const { error } = await supabase.from('content_posts').delete().eq('id', postId);
-    if (!error) setPosts(prev => prev.filter(p => p.id !== postId));
+    try {
+      await contentService.adminDelete(postId);
+      setPosts(prev => prev.filter(p => p.id !== postId));
+    } catch (err) {
+      console.error('Failed to delete post:', err?.message || err);
+    }
     setDeleteConfirm(null);
   };
 

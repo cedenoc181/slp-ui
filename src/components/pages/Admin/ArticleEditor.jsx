@@ -1,8 +1,9 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../../../context/AuthContext';
-import supabase from '../../../lib/supabaseClient';
+import * as contentService from '../../../data/services/contentService';
 import { generate as aiGenerate } from '../../../data/services/aiService';
+import { uploadImage, UPLOAD_MAX_BYTES, UPLOAD_ALLOWED_MIME } from '../../../data/services/uploadsService';
 import '../../../styles/admin-page-styling/admin.css';
 
 // ── Helpers ───────────────────────────────────────────────
@@ -28,6 +29,153 @@ function blocksToPlainText(blocks) {
   return (blocks || []).map(b =>
     b.type === 'list' ? (b.items || []).join('\n') : (b.text || '')
   ).filter(Boolean).join('\n\n');
+}
+
+// ── Autosave status pill ──────────────────────────────────────────
+function formatAgo(date) {
+  const seconds = Math.floor((Date.now() - date.getTime()) / 1000);
+  if (seconds < 5)    return 'just now';
+  if (seconds < 60)   return `${seconds}s ago`;
+  const minutes = Math.floor(seconds / 60);
+  if (minutes < 60)   return `${minutes}m ago`;
+  const hours = Math.floor(minutes / 60);
+  if (hours < 24)     return `${hours}h ago`;
+  return date.toLocaleDateString();
+}
+
+// eslint-disable-next-line no-unused-vars
+function AutosaveIndicator({ saving, isDirty, lastSavedAt, tick }) {
+  if (saving)   return <span className="editor-autosave editor-autosave--saving">Autosaving…</span>;
+  if (isDirty)  return <span className="editor-autosave editor-autosave--dirty">Unsaved changes</span>;
+  if (lastSavedAt) return <span className="editor-autosave editor-autosave--saved">Auto-saved · {formatAgo(lastSavedAt)}</span>;
+  return null;
+}
+
+// ── Preview drawer (mirrors the public post renderer at ArticlesPost.jsx) ─────
+function parsePreviewBold(text) {
+  if (!text) return null;
+  const parts = (text || '').split(/(\*\*[^*]+\*\*)/g);
+  return parts.map((part, i) => {
+    if (part.startsWith('**') && part.endsWith('**')) {
+      return <strong key={i}>{part.slice(2, -2)}</strong>;
+    }
+    return part;
+  });
+}
+
+function PreviewBlock({ block, index }) {
+  switch (block.type) {
+    case 'heading':    return <h2 key={index}>{parsePreviewBold(block.text)}</h2>;
+    case 'subheading': return <h3 key={index}>{parsePreviewBold(block.text)}</h3>;
+    case 'paragraph':  return <p key={index}>{parsePreviewBold(block.text)}</p>;
+    case 'list':
+      return (
+        <ul key={index}>
+          {(block.items || []).map((li, idx) => (
+            <li key={idx}>{parsePreviewBold(li)}</li>
+          ))}
+        </ul>
+      );
+    case 'quote':
+      return (
+        <blockquote key={index}>
+          <p>{parsePreviewBold(block.text)}</p>
+          {block.author && <cite>— {block.author}</cite>}
+        </blockquote>
+      );
+    default: return null;
+  }
+}
+
+function PostPreviewDrawer({ post, onClose }) {
+  useEffect(() => {
+    const handleKey = (e) => { if (e.key === 'Escape') onClose(); };
+    document.addEventListener('keydown', handleKey);
+    return () => document.removeEventListener('keydown', handleKey);
+  }, [onClose]);
+
+  const tags = (post.tags || '')
+    .split(',')
+    .map(t => t.trim())
+    .filter(Boolean);
+
+  const dateLabel = post.date
+    ? new Date(post.date).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })
+    : '';
+
+  const readTime = estimateReadTime(post.content);
+  const wordCount = (post.content || []).map(b =>
+    b.type === 'list' ? (b.items || []).join(' ') : (b.text || '')
+  ).join(' ').trim().split(/\s+/).filter(Boolean).length;
+
+  return (
+    <div className="admin-side-overlay" onClick={onClose}>
+      <aside className="admin-side post-preview-drawer" onClick={e => e.stopPropagation()} role="dialog" aria-label="Post preview">
+        <button className="admin-side__close" onClick={onClose} aria-label="Close preview">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <line x1="18" y1="6" x2="6" y2="18"/>
+            <line x1="6" y1="6" x2="18" y2="18"/>
+          </svg>
+        </button>
+
+        <div className="post-preview-drawer__scroll">
+          <span className="post-preview-drawer__badge">
+            Preview · {post.status || 'draft'}
+          </span>
+
+          {tags.length > 0 && (
+            <div className="post-preview-drawer__tags">
+              {tags.slice(0, 5).map((t, i) => (
+                <span key={i} className="post-preview-drawer__tag">{t}</span>
+              ))}
+            </div>
+          )}
+
+          <h1 className="post-preview-drawer__title">
+            {post.title || <span className="post-preview-drawer__placeholder">Untitled</span>}
+          </h1>
+
+          {post.summary && (
+            <p className="post-preview-drawer__summary">{post.summary}</p>
+          )}
+
+          <div className="post-preview-drawer__meta">
+            <span>{post.author || 'Sandlot Picks Team'}</span>
+            {dateLabel && <><span>·</span><span>{dateLabel}</span></>}
+            {wordCount > 0 && <><span>·</span><span>{readTime} min read</span></>}
+          </div>
+
+          {post.hero_image_url && (
+            <img
+              src={post.hero_image_url}
+              alt={post.hero_image_alt || ''}
+              className="post-preview-drawer__hero"
+            />
+          )}
+
+          <div className="post-preview-drawer__body">
+            {(post.content || []).length === 0 ? (
+              <p className="post-preview-drawer__placeholder">No content blocks yet — add a paragraph, heading, or list in the editor.</p>
+            ) : (
+              post.content.map((block, i) => <PreviewBlock key={i} block={block} index={i} />)
+            )}
+          </div>
+
+          {post.affiliate_enabled && post.affiliate_link && (
+            <div className="post-preview-drawer__affiliate">
+              {post.affiliate_context && <p>{post.affiliate_context}</p>}
+              <a href={post.affiliate_link} onClick={e => e.preventDefault()} className="post-preview-drawer__affiliate-btn">
+                {post.affiliate_platform || 'Learn more'} →
+              </a>
+              {post.affiliate_disclaimer && (
+                <p className="post-preview-drawer__disclaimer">{post.affiliate_disclaimer}</p>
+              )}
+            </div>
+          )}
+        </div>
+      </aside>
+    </div>
+  );
 }
 
 function ArticleAIModal({ open, mode, blockIndex, post, onClose, onApply }) {
@@ -400,22 +548,38 @@ function ArticleEditor() {
   const [slugManuallyEdited, setSlugManuallyEdited] = useState(false);
   const [fetchingPost, setFetchingPost] = useState(!isNew);
 
+  // Autosave state
+  const [isDirty, setIsDirty] = useState(false);
+  const [lastSavedAt, setLastSavedAt] = useState(null);
+  const [agoTick, setAgoTick] = useState(0); // forces re-render so "Auto-saved · Xm ago" stays fresh
+  const autosaveTimer = useRef(null);
+  const skipDirtyOnce = useRef(true); // ignore the first post change (initial mount / fetch)
+
   // AI assist modal: { mode: 'title' | 'summary' | 'block', blockIndex?: number } | null
   const [aiModal, setAiModal] = useState(null);
+  const [previewOpen, setPreviewOpen] = useState(false);
+
+  // Hero image upload state
+  const [uploadingHero, setUploadingHero] = useState(false);
+  const [uploadError, setUploadError] = useState(null);
+  const heroFileRef = useRef(null);
+
+  // SEO auto-fill state
+  const [seoGenerating, setSeoGenerating] = useState(false);
+  const [seoJustFilled, setSeoJustFilled] = useState(false);
+  const [seoError, setSeoError] = useState(null);
+  const [seoRateLimited, setSeoRateLimited] = useState(false);
 
   // auth redirect disabled for development
 
   // Load existing post if editing
   useEffect(() => {
     if (isNew) return;
+    let cancelled = false;
     async function loadPost() {
-      const { data, error } = await supabase
-        .from('content_posts')
-        .select('*')
-        .eq('id', id)
-        .single();
-
-      if (!error && data) {
+      try {
+        const data = await contentService.adminGet(id);
+        if (cancelled || !data) return;
         const seo = data.seo || {};
         const aff = data.affiliate_cta || {};
         setPost({
@@ -441,11 +605,40 @@ function ArticleEditor() {
           related_posts: (data.related_posts || []).join(', '),
         });
         setSlugManuallyEdited(true); // don't auto-regenerate slug for existing posts
+      } catch (err) {
+        console.error('Failed to load post:', err?.message || err);
+      } finally {
+        if (!cancelled) setFetchingPost(false);
       }
-      setFetchingPost(false);
     }
     loadPost();
+    return () => { cancelled = true; };
   }, [id, isNew, isAuthenticated, user]);
+
+  // Mark dirty whenever the post changes — skip the initial load + the next change that follows it
+  useEffect(() => {
+    if (skipDirtyOnce.current) {
+      skipDirtyOnce.current = false;
+      return;
+    }
+    setIsDirty(true);
+  }, [post]);
+
+  // Debounced autosave (existing posts only; new posts wait for the first manual save)
+  useEffect(() => {
+    if (isNew || !isDirty || saving) return;
+    if (autosaveTimer.current) clearTimeout(autosaveTimer.current);
+    autosaveTimer.current = setTimeout(() => { save(); }, 3000);
+    return () => { if (autosaveTimer.current) clearTimeout(autosaveTimer.current); };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [post, isDirty, isNew, saving]);
+
+  // Tick once a minute so the "Auto-saved · Xm ago" label stays current without manual refresh
+  useEffect(() => {
+    if (!lastSavedAt) return;
+    const iv = setInterval(() => setAgoTick(t => t + 1), 60_000);
+    return () => clearInterval(iv);
+  }, [lastSavedAt]);
 
   // Auto-generate slug from title (only for new posts, until user edits slug manually)
   const handleTitleChange = (e) => {
@@ -464,6 +657,72 @@ function ArticleEditor() {
 
   const handleChange = (field, value) => {
     setPost(prev => ({ ...prev, [field]: value }));
+  };
+
+  // Hero image: mirror the server's validation client-side for instant feedback,
+  // then proxy through POST /api/v1/admin/upload (service-role bypasses RLS).
+  const handleHeroUpload = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploadError(null);
+
+    if (!UPLOAD_ALLOWED_MIME.includes(file.type)) {
+      setUploadError('Only PNG, JPEG, WebP, or GIF images are allowed.');
+      e.target.value = '';
+      return;
+    }
+    if (file.size > UPLOAD_MAX_BYTES) {
+      setUploadError('Image must be 5 MB or smaller.');
+      e.target.value = '';
+      return;
+    }
+
+    setUploadingHero(true);
+    try {
+      const { url } = await uploadImage({
+        file,
+        kind: 'hero',
+        slug: post.slug || 'misc',
+      });
+      setPost(prev => ({ ...prev, hero_image_url: url }));
+    } catch (err) {
+      setUploadError(err?.message || 'Upload failed. Please try again.');
+    } finally {
+      setUploadingHero(false);
+      // allow re-selecting the same file again
+      if (heroFileRef.current) heroFileRef.current.value = '';
+    }
+  };
+
+  // SEO auto-fill — one round-trip populates seo_title, seo_description, seo_keywords
+  const handleAutoFillSeo = async () => {
+    setSeoGenerating(true);
+    setSeoError(null);
+    try {
+      const seo = await aiGenerate('article_seo', {
+        title:        post.title || '',
+        summary:      post.summary || '',
+        content_text: blocksToPlainText(post.content || []),
+        type:         post.type || 'article',
+      });
+      if (!seo || typeof seo !== 'object') {
+        throw new Error('Unexpected SEO response shape from the server.');
+      }
+      const keywords = Array.isArray(seo.keywords) ? seo.keywords : [];
+      setPost(prev => ({
+        ...prev,
+        seo_title:       seo.title_tag || '',
+        seo_description: seo.meta_description || '',
+        seo_keywords:    keywords.join(', '),
+      }));
+      setSeoJustFilled(true);
+      setTimeout(() => setSeoJustFilled(false), 2500);
+    } catch (err) {
+      setSeoError(err?.message || 'Could not generate SEO fields.');
+      if (err?.status === 429) setSeoRateLimited(true);
+    } finally {
+      setSeoGenerating(false);
+    }
   };
 
   // Content block operations
@@ -559,22 +818,22 @@ function ArticleEditor() {
       related_posts: post.related_posts ? post.related_posts.split(',').map(s => s.trim()).filter(Boolean) : [],
     };
 
-    let error;
-    if (isNew) {
-      const res = await supabase.from('content_posts').insert(payload);
-      error = res.error;
-    } else {
-      const res = await supabase.from('content_posts').update(payload).eq('id', id);
-      error = res.error;
-    }
-
-    if (error) {
-      console.error('Save error:', error);
-      setSaveStatus('error');
-    } else {
+    try {
+      if (isNew) {
+        await contentService.adminCreate(payload);
+      } else {
+        await contentService.adminUpdate(id, payload);
+      }
       setSaveStatus('saved');
+      setLastSavedAt(new Date());
+      // The setPost below will retrigger the dirty effect — preempt it.
+      skipDirtyOnce.current = true;
+      setIsDirty(false);
       if (newStatus) setPost(prev => ({ ...prev, status: newStatus }));
       if (isNew) navigate('/admin');
+    } catch (err) {
+      console.error('Save error:', err?.message || err);
+      setSaveStatus('error');
     }
 
     setSaving(false);
@@ -614,8 +873,12 @@ function ArticleEditor() {
         <div className="editor-header">
           <h1>{isNew ? `New ${post.type === 'blog' ? 'Blog Post' : 'Article'}` : 'Edit Post'}</h1>
           <div className="editor-actions">
+            {!isNew && <AutosaveIndicator saving={saving} isDirty={isDirty} lastSavedAt={lastSavedAt} tick={agoTick} />}
             {saveStatus === 'saved' && <span className="editor-save-msg">✓ Saved</span>}
             {saveStatus === 'error' && <span className="editor-save-err">✗ Failed to save</span>}
+            <button type="button" className="btn-secondary" onClick={() => setPreviewOpen(true)}>
+              Preview
+            </button>
             <button type="button" className="btn-secondary" onClick={() => save('draft')} disabled={saving}>
               {saving ? 'Saving…' : 'Save Draft'}
             </button>
@@ -690,13 +953,22 @@ function ArticleEditor() {
               <div className="editor-field">
                 <div className="editor-field__labelrow">
                   <label>Summary / Excerpt *</label>
-                  <button
-                    type="button"
-                    className="ai-assist-btn"
-                    onClick={() => setAiModal({ mode: 'summary' })}
-                  >
-                    ✨ Draft from content
-                  </button>
+                  {(() => {
+                    const hasBody = blocksToPlainText(post.content).length > 0;
+                    return (
+                      <button
+                        type="button"
+                        className="ai-assist-btn"
+                        onClick={() => setAiModal({ mode: 'summary' })}
+                        disabled={!hasBody}
+                        title={hasBody
+                          ? 'Draft a summary from the body content below'
+                          : 'Add at least one paragraph in the Content section below first'}
+                      >
+                        ✨ Draft from content
+                      </button>
+                    );
+                  })()}
                 </div>
                 <textarea
                   placeholder="One or two sentence teaser…"
@@ -704,6 +976,11 @@ function ArticleEditor() {
                   value={post.summary}
                   onChange={e => handleChange('summary', e.target.value)}
                 />
+                {blocksToPlainText(post.content).length === 0 && (
+                  <p className="ai-empty-hint">
+                    ✨ "Draft from content" reads your body paragraphs below — add some content first to enable it.
+                  </p>
+                )}
               </div>
               <div className="editor-field">
                 <label>Tags (comma-separated)</label>
@@ -745,7 +1022,43 @@ function ArticleEditor() {
 
             {/* SEO */}
             <div className="editor-card">
-              <h3>SEO</h3>
+              <div className="editor-card__header">
+                <h3>SEO</h3>
+                {(() => {
+                  const seoHasAnyInput =
+                    (post.title || '').trim().length > 0 ||
+                    (post.summary || '').trim().length > 0 ||
+                    blocksToPlainText(post.content || []).length > 0;
+                  const disabled = seoGenerating || seoRateLimited || !seoHasAnyInput;
+                  return (
+                    <button
+                      type="button"
+                      className="ai-assist-btn"
+                      onClick={handleAutoFillSeo}
+                      disabled={disabled}
+                      title={
+                        !seoHasAnyInput
+                          ? 'Add a title, summary, or body content first'
+                          : seoRateLimited
+                            ? 'Hourly AI limit reached — try again in about an hour'
+                            : 'Generate title, description, and keywords from this post'
+                      }
+                    >
+                      {seoGenerating
+                        ? 'Generating…'
+                        : seoJustFilled
+                          ? '✓ Filled'
+                          : '✨ Auto-fill SEO from content'}
+                    </button>
+                  );
+                })()}
+              </div>
+              {seoError && (
+                <p className="hero-upload-error">
+                  ⚠ {seoError}
+                  {seoRateLimited && ' (Try again in about an hour.)'}
+                </p>
+              )}
               <div className="editor-field">
                 <label>SEO Title (defaults to post title)</label>
                 <input type="text" placeholder="SEO-optimized title…" value={post.seo_title} onChange={e => handleChange('seo_title', e.target.value)} />
@@ -833,20 +1146,48 @@ function ArticleEditor() {
             <div className="editor-card">
               <h3>Hero Image</h3>
               <div className="editor-field">
-                <label>Image URL</label>
-                <input type="url" placeholder="https://… or /images/…" value={post.hero_image_url} onChange={e => handleChange('hero_image_url', e.target.value)} />
+                <button
+                  type="button"
+                  className="btn-secondary hero-upload-btn"
+                  onClick={() => heroFileRef.current?.click()}
+                  disabled={uploadingHero}
+                >
+                  {uploadingHero
+                    ? 'Uploading…'
+                    : post.hero_image_url ? '↑ Replace image' : '↑ Upload image'}
+                </button>
+                <input
+                  ref={heroFileRef}
+                  type="file"
+                  accept="image/png,image/jpeg,image/webp,image/gif"
+                  style={{ display: 'none' }}
+                  onChange={handleHeroUpload}
+                />
+                {uploadError && <p className="hero-upload-error">⚠ {uploadError}</p>}
+                <p className="hero-upload-hint">
+                  PNG, JPEG, WebP, or GIF. Max 5 MB.
+                </p>
               </div>
               <div className="editor-field">
                 <label>Alt Text</label>
                 <input type="text" placeholder="Descriptive alt text" value={post.hero_image_alt} onChange={e => handleChange('hero_image_alt', e.target.value)} />
               </div>
               {post.hero_image_url && (
-                <img
-                  src={post.hero_image_url}
-                  alt={post.hero_image_alt}
-                  style={{ width: '100%', borderRadius: '6px', marginTop: '0.5rem', objectFit: 'cover', maxHeight: '140px' }}
-                  onError={e => e.target.style.display = 'none'}
-                />
+                <div className="hero-preview">
+                  <img
+                    src={post.hero_image_url}
+                    alt={post.hero_image_alt}
+                    className="hero-preview__img"
+                    onError={e => e.target.style.display = 'none'}
+                  />
+                  <button
+                    type="button"
+                    className="hero-preview__remove"
+                    onClick={() => handleChange('hero_image_url', '')}
+                  >
+                    Remove image
+                  </button>
+                </div>
               )}
             </div>
 
@@ -869,6 +1210,10 @@ function ArticleEditor() {
         onClose={() => setAiModal(null)}
         onApply={handleAiApply}
       />
+
+      {previewOpen && (
+        <PostPreviewDrawer post={post} onClose={() => setPreviewOpen(false)} />
+      )}
     </div>
   );
 }

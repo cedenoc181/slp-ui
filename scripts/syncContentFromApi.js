@@ -1,43 +1,43 @@
 /**
- * syncContentFromSupabase.js
+ * syncContentFromApi.js
  * ─────────────────────────────────────────────────────────
  * Build-time script: fetches published articles and blogs
- * from Supabase and writes them to the local JSON content
- * files consumed by the React app.
+ * from the FastAPI public endpoint and writes them to the
+ * local JSON content files consumed by the React app.
  *
  * This preserves SEO because react-snap can pre-render
  * pages using the local JSON files at build time.
  *
+ * Replaces the previous Supabase-direct approach — Feature 8
+ * moved content_posts into the user DB behind FastAPI.
+ *
  * Usage:
- *   node scripts/syncContentFromSupabase.js
+ *   node scripts/syncContentFromApi.js
  *
  * Called automatically by `npm run predeploy` before build.
  * ─────────────────────────────────────────────────────────
  */
 
 require('dotenv').config();
-const { createClient } = require('@supabase/supabase-js');
 const fs = require('fs');
 const path = require('path');
 
 // ── Paths ────────────────────────────────────────────────
-const ARTICLE_FILE    = path.join(__dirname, '../src/data/contentData/article.json');
-const MORE_FILE       = path.join(__dirname, '../src/data/contentData/moreArticles.json');
-const BLOGS_FILE      = path.join(__dirname, '../src/data/contentData/blogs.json');
+const ARTICLE_FILE      = path.join(__dirname, '../src/data/contentData/article.json');
+const MORE_FILE         = path.join(__dirname, '../src/data/contentData/moreArticles.json');
+const BLOGS_FILE        = path.join(__dirname, '../src/data/contentData/blogs.json');
 const ARTICLES_PER_PAGE = 4;
+const FETCH_LIMIT       = 200;
 
-// ── Supabase client (uses service role key — server-side only) ──
-const supabaseUrl = process.env.SUPABASE_URL;
-const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+// ── API base URL ─────────────────────────────────────────
+// Honor an explicit override; otherwise default to production. The script
+// runs at deploy time (predeploy) so production is the right default.
+const API_BASE_URL =
+  process.env.API_BASE_URL
+  || process.env.REACT_APP_API_BASE_URL
+  || 'https://www.sandlotpicksanalytics.com';
 
-if (!supabaseUrl || !supabaseKey) {
-  console.error('❌  SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY is not set in .env');
-  process.exit(1);
-}
-
-const supabase = createClient(supabaseUrl, supabaseKey);
-
-// ── Transform a Supabase row → JSON file format ──────────
+// ── Transform an API row → JSON file format ──────────────
 function rowToPost(row) {
   return {
     id:                   row.id,
@@ -63,10 +63,21 @@ function rowToPost(row) {
   };
 }
 
+async function fetchPublished(type) {
+  const url = `${API_BASE_URL}/api/v1/content-posts?type=${encodeURIComponent(type)}&limit=${FETCH_LIMIT}`;
+  const res = await fetch(url);
+  if (!res.ok) {
+    const body = await res.text().catch(() => '');
+    throw new Error(`HTTP ${res.status} from ${url}: ${body.slice(0, 200)}`);
+  }
+  const json = await res.json();
+  return Array.isArray(json) ? json : [];
+}
+
 // ── Sync articles → article.json + moreArticles.json ─────
 async function syncArticles(articles) {
   if (articles.length === 0) {
-    console.log('ℹ️   No published articles in Supabase — keeping existing article files.');
+    console.log('ℹ️   No published articles from API — keeping existing article files.');
     return;
   }
 
@@ -111,14 +122,12 @@ async function syncArticles(articles) {
 // ── Sync blogs → blogs.json ───────────────────────────────
 async function syncBlogs(blogs) {
   if (blogs.length === 0) {
-    console.log('ℹ️   No published blogs in Supabase — keeping existing blogs file.');
+    console.log('ℹ️   No published blogs from API — keeping existing blogs file.');
     return;
   }
 
-  // Sort by id descending
   blogs.sort((a, b) => b.id - a.id);
 
-  // Read current blogs.json metadata to preserve non-content fields
   let existing = {};
   try {
     existing = JSON.parse(fs.readFileSync(BLOGS_FILE, 'utf8'));
@@ -137,38 +146,31 @@ async function syncBlogs(blogs) {
 
 // ── Main ─────────────────────────────────────────────────
 async function main() {
-  console.log('🔄  Syncing content from Supabase…\n');
+  console.log(`🔄  Syncing content from ${API_BASE_URL}…\n`);
+
+  if (typeof fetch !== 'function') {
+    console.error('❌  Global fetch() not available. Node 18+ required.');
+    process.exit(1);
+  }
 
   try {
-    // Fetch published articles
-    const { data: articleRows, error: articleError } = await supabase
-      .from('content_posts')
-      .select('*')
-      .eq('type', 'article')
-      .eq('status', 'published')
-      .order('id', { ascending: false });
-
-    if (articleError) {
-      console.error('⚠️   Could not fetch articles from Supabase:', articleError.message);
+    let articleRows = [];
+    try {
+      articleRows = await fetchPublished('article');
+    } catch (err) {
+      console.error('⚠️   Could not fetch articles:', err.message);
       console.log('    Keeping existing article files.\n');
-    } else {
-      await syncArticles((articleRows || []).map(rowToPost));
     }
+    await syncArticles(articleRows.map(rowToPost));
 
-    // Fetch published blogs
-    const { data: blogRows, error: blogError } = await supabase
-      .from('content_posts')
-      .select('*')
-      .eq('type', 'blog')
-      .eq('status', 'published')
-      .order('id', { ascending: false });
-
-    if (blogError) {
-      console.error('⚠️   Could not fetch blogs from Supabase:', blogError.message);
+    let blogRows = [];
+    try {
+      blogRows = await fetchPublished('blog');
+    } catch (err) {
+      console.error('⚠️   Could not fetch blogs:', err.message);
       console.log('    Keeping existing blogs file.\n');
-    } else {
-      await syncBlogs((blogRows || []).map(rowToPost));
     }
+    await syncBlogs(blogRows.map(rowToPost));
 
     console.log('\n✔   Sync complete.\n');
   } catch (err) {

@@ -155,6 +155,7 @@
   font-size: 0.85rem;
   font-weight: 700;
   color: #fff;
+  padding-right: 3.5rem;
 }
 
 .campaign-audience__count {
@@ -505,6 +506,27 @@
 .campaign-history__list {
   display: flex;
   flex-direction: column;
+}
+
+.campaign-history__pager {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-top: 1rem;
+  padding-top: 0.85rem;
+  border-top: 1px solid rgba(148, 163, 184, 0.12);
+}
+
+.campaign-history__pager-btn {
+  padding: 0.4rem 0.85rem;
+  font-size: 0.78rem;
+}
+
+.campaign-history__pager-label {
+  font-size: 0.78rem;
+  color: rgba(255, 255, 255, 0.5);
+  font-weight: 500;
 }
 
 .campaign-history__row {
