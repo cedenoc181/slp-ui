@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import blogsData from '../../../data/contentData/blogs.json';
+import { listPublished, apiPostToDisplay } from '../../../data/services/contentService';
 
 function BlogPage() {
   const [searchTerm, setSearchTerm] = useState('');
@@ -10,8 +11,39 @@ function BlogPage() {
     window.scrollTo(0, 0);
   }, []);
 
-  // Sort blogs by ID in descending order (highest/newest first)
-  const sortedBlogs = [...blogsData.blogs].sort((a, b) => b.id - a.id);
+  // Sort by date DESC across mixed sources (static + DB). See articles.jsx
+  // for the full rationale — id is unreliable across two unrelated id seqs.
+  const byDateDesc = (a, b) => {
+    const aDate = a?.date || '';
+    const bDate = b?.date || '';
+    if (aDate && bDate && aDate !== bDate) return aDate < bDate ? 1 : -1;
+    if (!aDate && bDate) return 1;
+    if (aDate && !bDate) return -1;
+    return (b?.id ?? 0) - (a?.id ?? 0);
+  };
+
+  // Static-first sorted blogs (drives react-snap pre-render).
+  const staticBlogs = [...(blogsData.blogs || [])].sort(byDateDesc);
+
+  // After hydration we MERGE with the live API list (same strategy as articles).
+  const [sortedBlogs, setSortedBlogs] = useState(staticBlogs);
+
+  useEffect(() => {
+    let cancelled = false;
+    listPublished({ type: 'blog', limit: 200 })
+      .then(rows => {
+        if (cancelled) return;
+        const apiList = (rows || []).map(apiPostToDisplay).filter(Boolean);
+        if (apiList.length === 0) return;
+        const apiBySlug = new Map(apiList.map(b => [b.slug, b]));
+        const staticOnly = staticBlogs.filter(b => !apiBySlug.has(b.slug));
+        const merged = [...apiList, ...staticOnly].sort(byDateDesc);
+        setSortedBlogs(merged);
+      })
+      .catch(() => { /* keep static on failure */ });
+    return () => { cancelled = true; };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // Get all unique tags
   const allTags = ['all', ...new Set(sortedBlogs.flatMap(blog => blog.tags))];

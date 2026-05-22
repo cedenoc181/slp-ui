@@ -18,7 +18,9 @@ async function campaignsFetch(endpoint, method = 'GET', body = null, { authed = 
 
   const data = await res.json().catch(() => ({}));
   if (!res.ok) {
-    throw new Error(data.detail || data.message || `Request failed (${res.status})`);
+    const err = new Error(data.detail || data.message || `Request failed (${res.status})`);
+    err.status = res.status;
+    throw err;
   }
   return data;
 }
@@ -39,6 +41,43 @@ function normalizeCampaign(raw) {
 export async function listCampaigns() {
   const data = await campaignsFetch('/api/v1/admin/campaigns');
   return Array.isArray(data) ? data.map(normalizeCampaign) : [];
+}
+
+/**
+ * DELETE /api/v1/admin/campaigns/{id}  (Feature 11)
+ *
+ * Hard-deletes the campaign row. Sent emails are not recalled — this
+ * only removes the historical record from the admin dashboard. 404 is
+ * treated as a silent success by the caller (race: another tab already
+ * deleted it; end state is the same).
+ */
+export async function deleteCampaign(id) {
+  await campaignsFetch(`/api/v1/admin/campaigns/${id}`, 'DELETE');
+}
+
+/**
+ * GET /api/v1/admin/campaigns/{id}  (Feature 10)
+ *
+ * Returns the full campaign row including raw markdown body + CTA fields,
+ * so the admin detail drawer can render the same EmailPreview as the
+ * composer's live preview.
+ */
+export async function getCampaign(id) {
+  const data = await campaignsFetch(`/api/v1/admin/campaigns/${id}`);
+  if (!data || typeof data !== 'object') return null;
+  return {
+    id:             data.id,
+    subject:        data.subject || '',
+    body:           data.body || '',
+    ctaLabel:       data.cta_label ?? null,
+    ctaUrl:         data.cta_url ?? null,
+    audience:       data.audience,
+    recipientCount: typeof data.recipient_count === 'number' ? data.recipient_count : 0,
+    status:         data.status,
+    sentAt:         data.sent_at ?? null,
+    createdAt:      data.created_at,
+    createdBy:      data.created_by ?? null,
+  };
 }
 
 export async function getAudienceCounts() {

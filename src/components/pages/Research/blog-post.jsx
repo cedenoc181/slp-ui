@@ -1,11 +1,30 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import blogsData from '../../../data/contentData/blogs.json';
+import { getBySlug, apiPostToDisplay } from '../../../data/services/contentService';
 import '../../../styles/insights-page-styling/blog-post.css';
 
 function BlogPost() {
   const { slug } = useParams();
-  const blog = blogsData.blogs.find(b => b.slug === slug);
+  const staticMatch = (blogsData.blogs || []).find(b => b.slug === slug);
+
+  // Static-first, then revalidate from API (mirrors ArticlePost pattern).
+  const [blog, setBlog] = useState(staticMatch || null);
+  const [apiAttempted, setApiAttempted] = useState(false);
+
+  useEffect(() => {
+    let cancelled = false;
+    setApiAttempted(false);
+    getBySlug(slug)
+      .then(row => {
+        if (cancelled) return;
+        const fresh = apiPostToDisplay(row);
+        if (fresh) setBlog(fresh);
+      })
+      .catch(() => { /* 404 or network — keep static if we have it */ })
+      .finally(() => { if (!cancelled) setApiAttempted(true); });
+    return () => { cancelled = true; };
+  }, [slug]);
 
   useEffect(() => {
     if (!blog) return;
@@ -80,6 +99,17 @@ function BlogPost() {
   }, [blog]);
 
   if (!blog) {
+    if (!apiAttempted) {
+      return (
+        <section className="blog-post-page">
+          <div className="container">
+            <div className="blog-not-found">
+              <h1>Loading…</h1>
+            </div>
+          </div>
+        </section>
+      );
+    }
     return (
       <section className="blog-post-page">
         <div className="container">

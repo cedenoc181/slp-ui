@@ -61,6 +61,36 @@ export function adminDelete(id) {
   return contentFetch(`/api/v1/admin/content-posts/${id}`, 'DELETE');
 }
 
+// ── Display-shape transform ─────────────────────────────────────────────────
+// Mirrors scripts/syncContentFromApi.js → rowToPost() so the public readers
+// can swap a JSON-loaded post for a freshly-fetched one without any field-name
+// mismatches. Most notably: hero_image_url/alt → hero_image: { url, alt }.
+export function apiPostToDisplay(row) {
+  if (!row) return null;
+  return {
+    id:                   row.id,
+    title:                row.title,
+    slug:                 row.slug,
+    author:               row.author,
+    date:                 row.date ? String(row.date).split('T')[0] : null,
+    status:               'Final',
+    tags:                 row.tags || [],
+    summary:              row.summary || '',
+    read_time_minutes:    row.read_time_minutes || null,
+    estimated_word_count: row.estimated_word_count || null,
+    hero_image: {
+      url: row.hero_image_url || '',
+      alt: row.hero_image_alt || '',
+    },
+    content:              row.content || [],
+    seo:                  row.seo || {},
+    affiliate_cta:        row.affiliate_cta || { enabled: false },
+    affiliate_disclaimer: row.affiliate_disclaimer || '',
+    related_posts:        row.related_posts || [],
+    reference_urls:       row.reference_urls || [],
+  };
+}
+
 // ── Public (no auth) ────────────────────────────────────────────────────────
 
 export function listPublished({ type, limit = 50 } = {}) {

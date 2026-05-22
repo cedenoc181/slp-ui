@@ -2,18 +2,38 @@ import { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import articlesData from '../../../data/contentData/article.json';
 import moreArticlesData from '../../../data/contentData/moreArticles.json';
+import { getBySlug, apiPostToDisplay } from '../../../data/services/contentService';
 import '../../../styles/insights-page-styling/articles-post.css';
 
 function ArticlePost() {
   const { slug } = useParams();
-  
-  // Combine articles from both files
+
+  // Static-first lookup so react-snap pre-renders + first paint are populated
   const allArticles = [
     ...(articlesData?.articles || []),
     ...(moreArticlesData?.articles || [])
   ];
-  
-  const article = allArticles.find(a => a.slug === slug);
+  const staticMatch = allArticles.find(a => a.slug === slug);
+
+  // After hydration we revalidate from the API. The fresh row wins; static
+  // is the SEO/first-paint fallback. New articles (published since the last
+  // deploy) have no staticMatch and render purely from the API.
+  const [article, setArticle] = useState(staticMatch || null);
+  const [apiAttempted, setApiAttempted] = useState(false);
+
+  useEffect(() => {
+    let cancelled = false;
+    setApiAttempted(false);
+    getBySlug(slug)
+      .then(row => {
+        if (cancelled) return;
+        const fresh = apiPostToDisplay(row);
+        if (fresh) setArticle(fresh);
+      })
+      .catch(() => { /* 404 or network — keep static if we have it */ })
+      .finally(() => { if (!cancelled) setApiAttempted(true); });
+    return () => { cancelled = true; };
+  }, [slug]);
   
   // Text-to-Speech state
   const [isPlaying, setIsPlaying] = useState(false);
@@ -307,6 +327,20 @@ function ArticlePost() {
   }, [article]);
 
   if (!article) {
+    // While the API call is still in flight on a brand-new slug, render a
+    // light loading state instead of flashing "Not Found". Once the API
+    // returns (either 404 or success), we either show this state or render.
+    if (!apiAttempted) {
+      return (
+        <section className="article-post-page">
+          <div className="container">
+            <div className="article-not-found">
+              <h1>Loading…</h1>
+            </div>
+          </div>
+        </section>
+      );
+    }
     return (
       <section className="article-post-page">
         <div className="container">

@@ -12,7 +12,8 @@ import {
   getAlertReads,
   formatAlertDate,
 } from '../../../data/services/alertsService';
-import { listCampaigns } from '../../../data/services/campaignsService';
+import { listCampaigns, getCampaign, deleteCampaign } from '../../../data/services/campaignsService';
+import EmailPreview from './EmailPreview';
 import AlertComposerModal from './AlertComposerModal';
 import '../../../styles/admin-page-styling/admin.css';
 import '../../../styles/alert-modal.css';
@@ -643,10 +644,157 @@ function AlertReadsDrawer({ alert, onClose }) {
   );
 }
 
+// ─── Side drawer: Campaign detail (full email view) ───────────────────────────
+
+function CampaignDetailDrawer({ campaignId, summary, onClose, onDeleted }) {
+  const [data, setData] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [deleteConfirm, setDeleteConfirm] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+  const [deleteError, setDeleteError] = useState(null);
+
+  useEffect(() => {
+    const handleKey = (e) => { if (e.key === 'Escape') onClose(); };
+    document.addEventListener('keydown', handleKey);
+    return () => document.removeEventListener('keydown', handleKey);
+  }, [onClose]);
+
+  useEffect(() => {
+    if (!campaignId) return;
+    let cancelled = false;
+    setLoading(true);
+    setError(null);
+    setData(null);
+    setDeleteConfirm(false);
+    setDeleteError(null);
+    getCampaign(campaignId)
+      .then(d => { if (!cancelled) setData(d); })
+      .catch(err => { if (!cancelled) setError(err?.message || 'Could not load campaign.'); })
+      .finally(() => { if (!cancelled) setLoading(false); });
+    return () => { cancelled = true; };
+  }, [campaignId]);
+
+  const handleDelete = async () => {
+    setDeleting(true);
+    setDeleteError(null);
+    try {
+      await deleteCampaign(campaignId);
+      if (onDeleted) onDeleted(campaignId);
+    } catch (err) {
+      // Race: another tab/admin already deleted it. Treat as silent success.
+      if (err?.status === 404) {
+        if (onDeleted) onDeleted(campaignId);
+        return;
+      }
+      setDeleting(false);
+      setDeleteError(err?.message || 'Could not delete campaign.');
+    }
+  };
+
+  if (!campaignId) return null;
+
+  // Fall back to the lightweight `summary` (from the list endpoint) until the
+  // full row arrives, so headers don't flicker while the API call is in flight.
+  const subject     = data?.subject     ?? summary?.subject     ?? '';
+  const audience    = data?.audience    ?? summary?.audience;
+  const recipients  = data?.recipientCount ?? summary?.recipientCount ?? 0;
+  const sentAt      = data?.sentAt      ?? summary?.sentAt;
+  const status      = data?.status      ?? summary?.status;
+  const meta        = audience ? audienceMeta(audience) : null;
+
+  return (
+    <div className="admin-side-overlay" onClick={onClose}>
+      <aside className="admin-side admin-side--campaign" onClick={e => e.stopPropagation()} role="dialog" aria-label="Campaign detail">
+        <button className="admin-side__close" onClick={onClose} aria-label="Close campaign detail">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <line x1="18" y1="6" x2="6" y2="18"/>
+            <line x1="6" y1="6" x2="18" y2="18"/>
+          </svg>
+        </button>
+
+        <div className="admin-side__header">
+          <span className="admin-side__eyebrow">📧 Campaign</span>
+          <h3 className="campaign-detail__subject">{subject || '(no subject)'}</h3>
+          <div className="campaign-detail__meta">
+            {meta && (
+              <span className={`admin-audience-pill admin-audience-pill--${meta.accent || 'slate'}`}>
+                {meta.label}
+              </span>
+            )}
+            <span>{(recipients ?? 0).toLocaleString()} recipients</span>
+            <span>·</span>
+            <span>{sentAt ? `Sent ${formatCampaignSentAt(sentAt)}` : 'Not sent'}</span>
+            {status && (
+              <span className={`campaign-history__status campaign-history__status--${status}`}>
+                {status}
+              </span>
+            )}
+          </div>
+          <div className="campaign-detail__actions">
+            {deleteConfirm ? (
+              <>
+                <button
+                  type="button"
+                  className="btn-danger"
+                  onClick={handleDelete}
+                  disabled={deleting}
+                >
+                  {deleting ? 'Deleting…' : 'Confirm delete'}
+                </button>
+                <button
+                  type="button"
+                  className="btn-secondary"
+                  onClick={() => setDeleteConfirm(false)}
+                  disabled={deleting}
+                >
+                  Cancel
+                </button>
+              </>
+            ) : (
+              <button
+                type="button"
+                className="btn-danger"
+                onClick={() => setDeleteConfirm(true)}
+              >
+                Delete campaign
+              </button>
+            )}
+          </div>
+          {deleteError && (
+            <p className="campaign-send-error">⚠ {deleteError}</p>
+          )}
+        </div>
+
+        <div className="admin-side__body campaign-detail__body">
+          {error ? (
+            <div className="campaign-send-error">⚠ {error}</div>
+          ) : loading ? (
+            <div className="empty-state">Loading email…</div>
+          ) : data ? (
+            <EmailPreview
+              subject={data.subject}
+              body={data.body}
+              cta={{ label: data.ctaLabel, url: data.ctaUrl }}
+            />
+          ) : (
+            <div className="empty-state">No campaign data available.</div>
+          )}
+        </div>
+      </aside>
+    </div>
+  );
+}
+
 // ─── Main page ────────────────────────────────────────────────────────────────
 
 function AdminPage() {
   const { isAuthenticated, loading, user } = useAuth();
+  const navigate = useNavigate();
+
+  // Public URL for a post — articles live under /sandlot-insider, blogs under /blogs.
+  const publicUrlFor = (post) =>
+    `/${post.type === 'article' ? 'sandlot-insider' : 'blogs'}/${post.slug}`;
 
   // Posts state (existing)
   const [posts, setPosts] = useState([]);
@@ -654,7 +802,6 @@ function AdminPage() {
   const [typeFilter, setTypeFilter] = useState('all');
   const [statusFilter, setStatusFilter] = useState('all');
   const [searchTerm, setSearchTerm] = useState('');
-  const [deleteConfirm, setDeleteConfirm] = useState(null);
 
   // Dashboard wedge state
   const [metrics, setMetrics] = useState([]);
@@ -691,6 +838,7 @@ function AdminPage() {
   const [campaigns, setCampaigns] = useState([]);
   const [campaignsLoading, setCampaignsLoading] = useState(true);
   const [campaignsError, setCampaignsError] = useState(null);
+  const [openCampaign, setOpenCampaign] = useState(null); // lightweight summary; drawer fetches full row
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -786,16 +934,6 @@ function AdminPage() {
 
   const handleAlertCreated = (created) => {
     if (created) setAlerts(curr => [created, ...curr]);
-  };
-
-  const handleDelete = async (postId) => {
-    try {
-      await contentService.adminDelete(postId);
-      setPosts(prev => prev.filter(p => p.id !== postId));
-    } catch (err) {
-      console.error('Failed to delete post:', err?.message || err);
-    }
-    setDeleteConfirm(null);
   };
 
   const filteredPosts = posts.filter(p => {
@@ -1042,10 +1180,12 @@ function AdminPage() {
               {campaigns.slice(0, 5).map(c => {
                 const meta = audienceMeta(c.audience);
                 return (
-                  <Link
+                  <button
                     key={c.id}
-                    to="/admin/campaigns"
-                    className="admin-campaign-row"
+                    type="button"
+                    className="admin-campaign-row admin-campaign-row--button"
+                    onClick={() => setOpenCampaign(c)}
+                    title={`View "${c.subject || '(no subject)'}"`}
                   >
                     <div className="admin-campaign-row__main">
                       <span className="admin-campaign-row__subject">
@@ -1063,7 +1203,7 @@ function AdminPage() {
                     <span className={`campaign-history__status campaign-history__status--${c.status}`}>
                       {c.status}
                     </span>
-                  </Link>
+                  </button>
                 );
               })}
             </div>
@@ -1122,34 +1262,34 @@ function AdminPage() {
                   </tr>
                 </thead>
                 <tbody>
-                  {filteredPosts.map(post => (
-                    <tr key={post.id}>
-                      <td className="post-title-cell">
-                        {post.title}
-                        <small>/{post.type === 'article' ? 'sandlot-insider' : 'blogs'}/{post.slug}</small>
-                      </td>
-                      <td>
-                        <span className="type-badge">{post.type}</span>
-                      </td>
-                      <td>
-                        <span className={`status-badge ${post.status}`}>{post.status}</span>
-                      </td>
-                      <td>{post.date || '—'}</td>
-                      <td>
-                        <div className="post-actions">
-                          <Link to={`/admin/edit/${post.id}`} className="btn-secondary">Edit</Link>
-                          {deleteConfirm === post.id ? (
-                            <>
-                              <button className="btn-danger" onClick={() => handleDelete(post.id)}>Confirm</button>
-                              <button className="btn-secondary" onClick={() => setDeleteConfirm(null)}>Cancel</button>
-                            </>
-                          ) : (
-                            <button className="btn-danger" onClick={() => setDeleteConfirm(post.id)}>Delete</button>
-                          )}
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
+                  {filteredPosts.map(post => {
+                    const stop = (e) => e.stopPropagation();
+                    return (
+                      <tr
+                        key={post.id}
+                        className="posts-table__row--clickable"
+                        onClick={() => navigate(publicUrlFor(post))}
+                        title={`View ${post.title}`}
+                      >
+                        <td className="post-title-cell">
+                          {post.title}
+                          <small>/{post.type === 'article' ? 'sandlot-insider' : 'blogs'}/{post.slug}</small>
+                        </td>
+                        <td>
+                          <span className="type-badge">{post.type}</span>
+                        </td>
+                        <td>
+                          <span className={`status-badge ${post.status}`}>{post.status}</span>
+                        </td>
+                        <td>{post.date || '—'}</td>
+                        <td onClick={stop}>
+                          <div className="post-actions">
+                            <Link to={`/admin/edit/${post.id}`} className="btn-secondary" onClick={stop}>Edit</Link>
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })}
                 </tbody>
               </table>
             </div>
@@ -1187,6 +1327,18 @@ function AdminPage() {
         <AlertReadsDrawer
           alert={readsDrawerAlert}
           onClose={() => setReadsDrawerAlert(null)}
+        />
+      )}
+
+      {openCampaign && (
+        <CampaignDetailDrawer
+          campaignId={openCampaign.id}
+          summary={openCampaign}
+          onClose={() => setOpenCampaign(null)}
+          onDeleted={(id) => {
+            setCampaigns(prev => prev.filter(c => c.id !== id));
+            setOpenCampaign(null);
+          }}
         />
       )}
     </div>

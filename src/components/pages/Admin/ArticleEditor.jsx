@@ -569,6 +569,11 @@ function ArticleEditor() {
   const [uploadError, setUploadError] = useState(null);
   const heroFileRef = useRef(null);
 
+  // Delete-post state (only surfaced when post.status === 'published')
+  const [deleteConfirm, setDeleteConfirm] = useState(false);
+  const [deletingPost, setDeletingPost] = useState(false);
+  const [deletePostError, setDeletePostError] = useState(null);
+
   // SEO auto-fill state
   const [seoGenerating, setSeoGenerating] = useState(false);
   const [seoJustFilled, setSeoJustFilled] = useState(false);
@@ -576,6 +581,11 @@ function ArticleEditor() {
   const [seoRateLimited, setSeoRateLimited] = useState(false);
 
   // auth redirect disabled for development
+
+  // Scroll to top when entering the editor (and when switching between edits)
+  useEffect(() => {
+    window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
+  }, [id]);
 
   // Load existing post if editing
   useEffect(() => {
@@ -696,6 +706,22 @@ function ArticleEditor() {
       setUploadingHero(false);
       // allow re-selecting the same file again
       if (heroFileRef.current) heroFileRef.current.value = '';
+    }
+  };
+
+  // Delete a published post — hard delete, navigate back to /admin on success
+  const handleDeletePost = async () => {
+    if (isNew) return; // can't delete a post that hasn't been saved yet
+    setDeletingPost(true);
+    setDeletePostError(null);
+    try {
+      await contentService.adminDelete(id);
+      navigate('/admin');
+    } catch (err) {
+      // 404 race (another tab deleted it) → end state matches success
+      if (err?.status === 404) { navigate('/admin'); return; }
+      setDeletingPost(false);
+      setDeletePostError(err?.message || 'Could not delete post.');
     }
   };
 
@@ -859,7 +885,16 @@ function ArticleEditor() {
     setTimeout(() => setSaveStatus(null), 4000);
   };
 
-  if (loading || fetchingPost) return null;
+  if (loading || fetchingPost) {
+    return (
+      <div className="article-editor-page">
+        <div className="editor-loading">
+          <div className="editor-loading__spinner" aria-hidden="true" />
+          <p className="editor-loading__label">Loading post…</p>
+        </div>
+      </div>
+    );
+  }
 
   if (false) {
     return (
@@ -898,9 +933,11 @@ function ArticleEditor() {
             <button type="button" className="btn-secondary" onClick={() => setPreviewOpen(true)}>
               Preview
             </button>
-            <button type="button" className="btn-secondary" onClick={() => save('draft')} disabled={saving}>
-              {saving ? 'Saving…' : 'Save Draft'}
-            </button>
+            {post.status !== 'published' && (
+              <button type="button" className="btn-secondary" onClick={() => save('draft')} disabled={saving}>
+                {saving ? 'Saving…' : 'Save Draft'}
+              </button>
+            )}
             <button type="button" className="btn-success" onClick={() => save('published')} disabled={saving}>
               {post.status === 'published' ? 'Update' : 'Publish'}
             </button>
@@ -1181,9 +1218,11 @@ function ArticleEditor() {
               <button type="button" className="btn-success" style={{ width: '100%', marginTop: '0.5rem' }} onClick={() => save('published')} disabled={saving}>
                 {post.status === 'published' ? 'Update' : 'Publish'}
               </button>
-              <button type="button" className="btn-secondary" style={{ width: '100%', marginTop: '0.5rem' }} onClick={() => save('draft')} disabled={saving}>
-                Save Draft
-              </button>
+              {post.status !== 'published' && (
+                <button type="button" className="btn-secondary" style={{ width: '100%', marginTop: '0.5rem' }} onClick={() => save('draft')} disabled={saving}>
+                  Save Draft
+                </button>
+              )}
             </div>
 
             <div className="editor-card">
@@ -1243,6 +1282,48 @@ function ArticleEditor() {
             </div>
           </div>
         </div>
+
+        {!isNew && (
+          <section className="editor-danger-zone">
+            <div className="editor-danger-zone__copy">
+              <h3>Delete this post</h3>
+              <p>This permanently removes the post from the database. Sent campaigns linking to it will still resolve to a 404. Cannot be undone.</p>
+            </div>
+            <div className="editor-danger-zone__actions">
+              {deleteConfirm ? (
+                <>
+                  <button
+                    type="button"
+                    className="btn-danger"
+                    onClick={handleDeletePost}
+                    disabled={deletingPost}
+                  >
+                    {deletingPost ? 'Deleting…' : 'Confirm delete'}
+                  </button>
+                  <button
+                    type="button"
+                    className="btn-secondary"
+                    onClick={() => setDeleteConfirm(false)}
+                    disabled={deletingPost}
+                  >
+                    Cancel
+                  </button>
+                </>
+              ) : (
+                <button
+                  type="button"
+                  className="btn-danger"
+                  onClick={() => { setDeletePostError(null); setDeleteConfirm(true); }}
+                >
+                  Delete post
+                </button>
+              )}
+            </div>
+            {deletePostError && (
+              <p className="editor-danger-zone__error">⚠ {deletePostError}</p>
+            )}
+          </section>
+        )}
       </div>
 
       <ArticleAIModal

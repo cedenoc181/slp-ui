@@ -1255,5 +1255,210 @@ Once confirmed, the FE will be wired in a single follow-up.
 
 
 ============================================================
+FEATURE 10 — CAMPAIGN DETAIL (FULL EMAIL VIEW IN ADMIN)
+============================================================
+
+WHAT IT IS
+----------
+A side drawer in the Campaign Manager (admin dashboard) that opens
+when an admin clicks a campaign row, showing the full email exactly
+as it was sent: subject, body (rendered as markdown using the same
+pipeline the server already uses for outbound emails), CTA button,
+audience, recipient count, sent timestamp, status.
+
+Same UX pattern as the Alert read-receipts drawer (Feature 1A) and
+the Article preview drawer in the editor — slide-in side panel,
+Esc-to-close, click-overlay-to-close.
+
+CURRENT STATE
+-------------
+- GET /api/v1/admin/campaigns returns a LIGHTWEIGHT list shape:
+    { id, subject, audience, recipient_count, sent_at, status }
+  No body, no CTA, no created_at — by design, since the list view
+  doesn't need them and they can be heavy (long body strings).
+- No GET /api/v1/admin/campaigns/{id} endpoint exists today.
+- The frontend Campaign Manager rows are currently <Link> elements
+  that navigate to /admin/campaigns (the composer page). The
+  requested behavior is: row click opens a drawer showing the full
+  email; the "Manage campaigns" link in the section header still
+  navigates to the composer.
+
+WHAT NEEDS TO BE DONE — ONE NEW ENDPOINT
+----------------------------------------
+
+(1) NEW ENDPOINT
+    GET /api/v1/admin/campaigns/{campaign_id}
+    Auth: admin only (use existing get_current_admin_user)
+
+    Response 200:
+      {
+        "id":              <int>,
+        "subject":         <string>,
+        "body":            <string — original markdown the admin
+                                     typed in the composer, BEFORE
+                                     server-side _render_markdown_body
+                                     transformation>,
+        "cta_label":       <string | null>,
+        "cta_url":         <string | null>,
+        "audience":        "all" | "free" | "premium" | "weekly" |
+                            "monthly" | "annual" | "lapsed",
+        "recipient_count": <int>,
+        "status":          "sent" | "failed" | "draft",
+        "sent_at":         <ISO-8601 datetime with Z | null>,
+        "created_at":      <ISO-8601 datetime with Z>,
+        "created_by":      <int | null>
+      }
+
+    Errors:
+      403 { "detail": "Admin access required." }
+      404 { "detail": "Campaign not found." }
+
+    Why return the raw markdown body, not the rendered HTML?
+      - The frontend already has react-markdown wired in
+        CampaignsPage.jsx's EmailPreview component with inline
+        styles that mirror the server's _render_markdown_body
+        output (see Feature 2 conventions on email template).
+      - Reusing that same component for the drawer means preview
+        and detail-view render identically — single source of truth
+        for "how does this look to the recipient."
+      - Sending raw markdown keeps the payload smaller than rendered
+        HTML with inline styles.
+
+(2) NO SCHEMA OR RLS CHANGES
+    The campaigns table already stores body + cta_label + cta_url +
+    created_at + created_by. This endpoint is a pure read against
+    existing columns.
+
+FRONTEND CHANGES (HANDLED IN A FOLLOW-UP, NO ACTION NEEDED)
+-----------------------------------------------------------
+Once the endpoint is live, the admin dashboard will:
+
+  a. Add campaignsService.getCampaign(id) hitting the new endpoint.
+  b. Convert the Campaign Manager rows from <Link to="/admin/campaigns">
+     to clickable rows that open a side drawer (similar to the
+     existing Alert reads drawer at AdminPage.jsx).
+  c. Drawer fetches the full campaign on open, then renders:
+       - Subject as the drawer header
+       - Audience pill + recipient count + "Sent · {timestamp}"
+       - The same EmailPreview component already used in the
+         composer — passed the fetched { subject, body, cta }
+       - Loading state while the fetch is in flight
+       - Inline error banner if the fetch fails (404, 403, etc.)
+  d. Esc + click-overlay close the drawer; keyboard accessible.
+  e. The "Manage campaigns →" header link still navigates to the
+     composer page for editing/sending new campaigns.
+
+CONFIRMATION TO SEND BACK
+-------------------------
+Reply with:
+  - Endpoint live at GET /api/v1/admin/campaigns/{id}
+  - Confirmation that body is returned as the raw markdown string
+    the admin typed (not the rendered HTML)
+  - 404 detail string matches "Campaign not found." exactly so the
+    FE error banner is consistent with other endpoints
+Once confirmed, the FE drawer wires up in a single follow-up.
+
+
+============================================================
+FEATURE 11 — DELETE EMAIL CAMPAIGNS (ADMIN CLEANUP)
+============================================================
+
+WHAT IT IS
+----------
+Admins want to remove sent/failed/draft campaign rows from the
+Campaign Manager. Today the list grows forever — no UI affordance
+and no endpoint exists to prune it. Add a single DELETE endpoint
+and the frontend will surface a delete button inside the campaign
+detail drawer (Feature 10) with a two-step confirm flow.
+
+This does NOT recall sent emails (which is impossible) — it just
+removes the historical record from the admin dashboard.
+
+CURRENT STATE
+-------------
+Endpoints today on the campaigns router:
+  GET    /api/v1/admin/campaigns               (list, lightweight)
+  GET    /api/v1/admin/campaigns/{id}          (full detail — Feature 10)
+  GET    /api/v1/admin/campaigns/audience-counts
+  POST   /api/v1/admin/campaigns/test
+  POST   /api/v1/admin/campaigns/send
+
+There is no DELETE. The frontend Campaign Manager rows in
+src/components/pages/Admin/AdminPage.jsx render from the list
+endpoint and currently have no destructive actions wired.
+
+WHAT NEEDS TO BE DONE — ONE NEW ENDPOINT
+----------------------------------------
+
+(1) NEW ENDPOINT
+    DELETE /api/v1/admin/campaigns/{campaign_id}
+    Auth: admin only (use existing get_current_admin_user)
+
+    Behavior:
+      - Hard delete by default (row removed from campaigns table).
+        Sent emails have already left the building; the row is just
+        a historical record. Deleting it has no downstream side effect.
+      - If a campaign_recipients tracking table was added later
+        (Feature 2 listed it as optional), cascade those rows. Today
+        that table doesn't exist, so this is a forward-looking note.
+
+    Response 204 No Content on success.
+
+    Errors:
+      403 { "detail": "Admin access required." }
+      404 { "detail": "Campaign not found." }      // match the GET 404 message exactly
+
+    ROUTE ORDER REMINDER (per the bug caught in Feature 10):
+    FastAPI matches routes in registration order. The dynamic
+    /{campaign_id} routes (GET + DELETE) must be registered AFTER
+    the static sibling routes (/audience-counts, /test, /send).
+    Putting DELETE next to the existing GET /{campaign_id} is the
+    natural placement and preserves the convention.
+
+SOFT-DELETE ALTERNATIVE (DECIDE WITH PRODUCT BEFORE BUILDING)
+-------------------------------------------------------------
+Hard delete is recommended for v1 — campaigns are immutable historical
+records once sent. If audit/compliance requirements emerge later
+(e.g. "we deleted a campaign that contained a regulatory misstep,
+but we need to prove we deleted it"), switch to soft-delete:
+  ALTER TABLE campaigns ADD COLUMN deleted_at timestamptz NULL;
+  -- And filter list/detail queries: WHERE deleted_at IS NULL
+Skip this for v1 unless someone asks specifically for retention.
+
+NO RLS / NO BUCKET WORK
+-----------------------
+Pure read+delete against existing campaigns table. No Storage
+implications. Service-role-equivalent backend auth via the
+existing admin JWT middleware.
+
+FRONTEND CHANGES (HANDLED IN A FOLLOW-UP, NO ACTION NEEDED)
+-----------------------------------------------------------
+Once the endpoint is live, the admin dashboard will:
+
+  a. Add campaignsService.deleteCampaign(id) — one-line addition,
+     same shape as adminDeleteAlert / contentService.adminDelete.
+  b. Add a "Delete campaign" button to the CampaignDetailDrawer
+     header (below the meta row, before the email preview body).
+  c. Two-step confirm pattern (same as posts table + alerts):
+     "Delete" → "Confirm" / "Cancel" inline.
+  d. On 204: close the drawer, remove the row from the local
+     campaigns state via setCampaigns(prev => prev.filter(...)) —
+     no refetch needed.
+  e. On 404 (already deleted by another tab/admin): treat as a
+     no-op success, close the drawer, remove from local state.
+  f. On 403/other error: inline red banner with the server's detail.
+
+CONFIRMATION TO SEND BACK
+-------------------------
+Reply with:
+  - DELETE endpoint live at /api/v1/admin/campaigns/{id}
+  - 204 on success, 404 with exact detail "Campaign not found."
+  - Confirmation the route is registered AFTER the static sibling
+    routes (so /audience-counts, /test, /send still resolve correctly)
+  - Hard-delete vs soft-delete choice (default: hard)
+Once confirmed, the FE delete button wires up in a single follow-up.
+
+
+============================================================
 END OF DOCUMENT
 ============================================================
