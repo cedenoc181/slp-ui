@@ -4,6 +4,7 @@ import { useAuth } from '../../../context/AuthContext';
 import * as contentService from '../../../data/services/contentService';
 import { generate as aiGenerate } from '../../../data/services/aiService';
 import { uploadImage, UPLOAD_MAX_BYTES, UPLOAD_ALLOWED_MIME } from '../../../data/services/uploadsService';
+import AFFILIATE_PRESETS from '../../../data/constants/affiliateLinks.json';
 import '../../../styles/admin-page-styling/admin.css';
 
 // ── Helpers ───────────────────────────────────────────────
@@ -520,6 +521,10 @@ function ArticleEditor() {
   const isNew = !id;
   const defaultType = searchParams.get('type') === 'blog' ? 'blog' : 'article';
 
+  // Defaults for the Affiliate CTA come from the first entry in affiliateLinks.json
+  // so editing that file auto-updates the prefill behavior — no code change needed.
+  const defaultAffiliate = AFFILIATE_PRESETS[0] || null;
+
   const [post, setPost] = useState({
     type: defaultType,
     title: '',
@@ -535,11 +540,11 @@ function ArticleEditor() {
     seo_title: '',
     seo_description: '',
     seo_keywords: '',
-    affiliate_enabled: false,
-    affiliate_platform: '',
-    affiliate_link: '',
+    affiliate_enabled: Boolean(defaultAffiliate),
+    affiliate_platform: defaultAffiliate?.name || '',
+    affiliate_link:     defaultAffiliate?.url  || '',
     affiliate_context: '',
-    affiliate_disclaimer: '',
+    affiliate_disclaimer: defaultAffiliate?.disclaimer || '',
     related_posts: '',
   });
 
@@ -692,6 +697,20 @@ function ArticleEditor() {
       // allow re-selecting the same file again
       if (heroFileRef.current) heroFileRef.current.value = '';
     }
+  };
+
+  // Affiliate CTA: pick a preset → fill platform + link, and disclaimer only if blank
+  const handleAffiliatePreset = (preset) => {
+    setPost(prev => ({
+      ...prev,
+      affiliate_platform: preset.name || '',
+      affiliate_link:     preset.url || '',
+      // Don't clobber a custom disclaimer the admin may have typed
+      affiliate_disclaimer:
+        prev.affiliate_disclaimer && prev.affiliate_disclaimer.trim()
+          ? prev.affiliate_disclaimer
+          : (preset.disclaimer || ''),
+    }));
   };
 
   // SEO auto-fill — one round-trip populates seo_title, seo_description, seo_keywords
@@ -1088,6 +1107,30 @@ function ArticleEditor() {
               </div>
               {post.affiliate_enabled && (
                 <>
+                  {AFFILIATE_PRESETS.length > 0 && (
+                    <div className="editor-field">
+                      <label>Quick pick</label>
+                      <div className="affiliate-preset-row">
+                        {AFFILIATE_PRESETS.map(preset => {
+                          const isActive = post.affiliate_link === preset.url;
+                          return (
+                            <button
+                              key={preset.key}
+                              type="button"
+                              className={`affiliate-preset${isActive ? ' is-active' : ''}`}
+                              onClick={() => handleAffiliatePreset(preset)}
+                              title={preset.url}
+                            >
+                              {preset.name}
+                            </button>
+                          );
+                        })}
+                      </div>
+                      <p className="affiliate-preset-hint">
+                        Picks fill Platform + Link. Disclaimer auto-fills only if empty so your custom copy is preserved.
+                      </p>
+                    </div>
+                  )}
                   <div className="editor-field">
                     <label>Platform</label>
                     <input type="text" placeholder="e.g. DraftKings, FanDuel" value={post.affiliate_platform} onChange={e => handleChange('affiliate_platform', e.target.value)} />
