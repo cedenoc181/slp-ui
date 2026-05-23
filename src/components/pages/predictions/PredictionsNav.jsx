@@ -1,10 +1,13 @@
 import { NavLink } from 'react-router-dom';
+import { SHOW_SCOUT_AI } from '../../../data/constants/featureFlags';
 
 const LINKS = [
   { to: '/predictions/games',    label: 'Game Predictions' },
   { to: '/predictions/pitchers', label: 'Pitcher Props' },
   { to: '/predictions/batters',  label: 'Batter Props' },
-  { to: '/predictions/scout-ai', label: 'Scout AI', accent: true },
+  ...(SHOW_SCOUT_AI
+    ? [{ to: '/predictions/scout-ai', label: 'Scout AI', accent: true }]
+    : []),
 ];
 
 export default function PredictionsNav() {

@@ -16,6 +16,7 @@ import iconGameProp from '../assets/icons/game-prop.png';
 import iconPitcherProp from '../assets/icons/pitcher-prop.png';
 import iconBatterProp from '../assets/icons/batter-prop.png';
 import iconScoutAi from '../assets/icons/analysis.png';
+import { SHOW_SCOUT_AI } from '../data/constants/featureFlags';
 import iconSandlotInsider from '../assets/icons/sandlot-insider.png';
 import iconStrategyBlog from '../assets/icons/strategy-blog.png';
 import iconDataScience from '../assets/icons/data-science-and-baseball.png';
@@ -724,16 +725,18 @@ function Header() {
                   <div className="dropdown-desc">Hits, HRs, RBIs & stolen base props</div>
                 </div>
               </button>
-              <button onClick={() => handleNavClick('/predictions/scout-ai')} className="dropdown-item dropdown-item--scout">
-                <img src={iconScoutAi} alt="" className="dropdown-icon" />
-                <div>
-                  <div className="dropdown-title">
-                    Scout AI
-                    <span className="dropdown-badge">✨ AI</span>
+              {SHOW_SCOUT_AI && (
+                <button onClick={() => handleNavClick('/predictions/scout-ai')} className="dropdown-item dropdown-item--scout">
+                  <img src={iconScoutAi} alt="" className="dropdown-icon" />
+                  <div>
+                    <div className="dropdown-title">
+                      Scout AI
+                      <span className="dropdown-badge">✨ AI</span>
+                    </div>
+                    <div className="dropdown-desc">Chat with our AI for instant pick recommendations</div>
                   </div>
-                  <div className="dropdown-desc">Chat with our AI for instant pick recommendations</div>
-                </div>
-              </button>
+                </button>
+              )}
             </div>
           </div>
 

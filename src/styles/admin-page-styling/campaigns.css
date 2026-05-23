@@ -546,6 +546,28 @@
   background: rgba(255, 255, 255, 0.02);
 }
 
+/* When the row is rendered as <button> (clickable to open the drawer) */
+.campaign-history__row--button {
+  width: 100%;
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.06);
+  cursor: pointer;
+  font-family: inherit;
+  text-align: left;
+  color: inherit;
+}
+.campaign-history__row--button:last-child {
+  border-bottom: none;
+}
+.campaign-history__row--button:hover {
+  background: rgba(45, 212, 191, 0.04);
+}
+.campaign-history__row--button:focus-visible {
+  outline: 2px solid rgba(45, 212, 191, 0.55);
+  outline-offset: -2px;
+}
+
 .campaign-history__row-main {
   display: flex;
   flex-direction: column;

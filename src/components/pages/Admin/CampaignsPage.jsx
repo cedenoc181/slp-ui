@@ -2,6 +2,7 @@ import { useState, useEffect, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../../../context/AuthContext';
 import EmailPreview from './EmailPreview';
+import CampaignDetailDrawer from './CampaignDetailDrawer';
 import { AUDIENCE_PRESETS, formatCampaignSentAt } from '../../../data/constants/campaignsConstants';
 import {
   listCampaigns,
@@ -300,6 +301,7 @@ export default function CampaignsPage() {
   const [historyError,   setHistoryError]   = useState(null);
   const [historyPage,    setHistoryPage]    = useState(0);
   const HISTORY_PAGE_SIZE = 5;
+  const [openCampaign, setOpenCampaign] = useState(null);
 
   const [audienceCounts,        setAudienceCounts]        = useState(null);
   const [audienceCountsLoading, setAudienceCountsLoading] = useState(true);
@@ -663,7 +665,13 @@ export default function CampaignsPage() {
                 <>
                   <div className="campaign-history__list">
                     {visible.map(c => (
-                      <div key={c.id} className="campaign-history__row">
+                      <button
+                        key={c.id}
+                        type="button"
+                        className="campaign-history__row campaign-history__row--button"
+                        onClick={() => setOpenCampaign(c)}
+                        title={`View "${c.subject || '(no subject)'}"`}
+                      >
                         <div className="campaign-history__row-main">
                           <span className="campaign-history__subject">{c.subject || '(no subject)'}</span>
                           <span className="campaign-history__meta">
@@ -675,7 +683,7 @@ export default function CampaignsPage() {
                         <span className={`campaign-history__status campaign-history__status--${c.status}`}>
                           {c.status}
                         </span>
-                      </div>
+                      </button>
                     ))}
                   </div>
                   {showPager && (
@@ -730,6 +738,18 @@ export default function CampaignsPage() {
           else if (aiModal === 'body') setBody(text);
         }}
       />
+
+      {openCampaign && (
+        <CampaignDetailDrawer
+          campaignId={openCampaign.id}
+          summary={openCampaign}
+          onClose={() => setOpenCampaign(null)}
+          onDeleted={(id) => {
+            setHistory(prev => prev.filter(c => c.id !== id));
+            setOpenCampaign(null);
+          }}
+        />
+      )}
     </div>
   );
 }
