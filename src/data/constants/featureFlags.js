@@ -8,4 +8,4 @@
 // Hidden while the Feature 6 LLM proxy
 // (POST /api/v1/predictions/scout-ai/chat) is still on mock responses.
 // Flip to `true` once the server endpoint is deployed and streaming.
-export const SHOW_SCOUT_AI = true;
+export const SHOW_SCOUT_AI = false;

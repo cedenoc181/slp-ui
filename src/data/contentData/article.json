@@ -1,958 +1,272 @@
 {
-  "schema_version": "1.0",
+  "schema_version": "2.0",
   "site": "sandlotpicks.com",
-  "generated_at": "2026-02-23",
+  "generated_at": "2026-05-26",
   "pagination": {
     "current_page": 1,
     "articles_per_page": 4,
-    "total_pages": 3,
-    "has_more": true
+    "total_articles": 3,
+    "total_pages": 1,
+    "has_more": false
   },
   "articles": [
     {
-      "id": 13,
-      "title": "Pools A–D: Our Two Favorites in Every Group — and the Stars Who’ll Drive Them",
-      "slug": "wbc-2026-pool-favorites-a-b-c-d-top-two-teams-and-stars",
-      "author": "Sandlot Picks Analytics",
-      "date": "2026-02-03",
-      "status": "Final",
-      "tags": [
-        "WBC 2026",
-        "International Baseball",
-        "Pool A",
-        "Pool B",
-        "Pool C",
-        "Pool D",
-        "Tournament Favorites",
-        "Player Projections"
-      ],
-      "summary": "From Puerto Rico and Cuba in Pool A to the Dominican Republic and Venezuela in Pool D, we name our top two in each group and spotlight three stars per team who can swing the extra win that sends them through.",
-      "read_time_minutes": 8,
-      "estimated_word_count": 1850,
-      "hero_image": {
-        "url": "/article-heros/top4PoolTeams.png",
-        "alt": "Top 4 Pool Teams In 2026 WBC"
-      },
-      "content": [
-        {
-          "type": "heading",
-          "text": "Pools A–D: Our Two Favorites in Every Group — and the Stars Who’ll Drive Them"
-        },
-        {
-          "type": "paragraph",
-          "text": "Rosters won’t lock until closer to first pitch, but talent tells a clear story. These are the two teams we expect to top each WBC pool (A–D) — and the three star contributors most likely to carry them into the knockout rounds. We have grounded each pick in the players’ actual 2025 MLB production to show why their contributions scale in the compressed, high-leverage environment of a March tournament."
-        },
-        {
-          "type": "heading",
-          "text": "Pool A"
-        },
-        {
-          "type": "subheading",
-          "text": "🇵🇷 Puerto Rico — favorites on defense + late-game edge"
-        },
-        {
-          "type": "paragraph",
-          "text": "Puerto Rico enters as our Pool A favorite on the strength of elite defense, a front-line rotation arm, and the best closer in the tournament. The Boricua formula in March is proven: limit free passes, convert contact into outs, then hand the ball to Edwin Díaz. In a short series, one clean ninth-inning performance can swing a group stage result — and no closer in baseball offers that guarantee more consistently than Díaz."
-        },
-        {
-          "type": "paragraph",
-          "text": "Francisco Lindor (SS) is the team captain and emotional engine. In 2025, Lindor posted a .263 AVG, 30 HR, 94 RBI, and a .837 OPS while logging 5.1 WAR — a consistent, two-way contributor at the most important defensive position on the field. His at-bats shrink in March: he makes pitchers work, sprays contact to all fields, and delivers in close games more reliably than his raw power numbers suggest. Edwin Díaz (CL) is the tournament’s premier high-leverage arm, carrying a sub-2.00 ERA in the ninth inning with a fastball/sweeper combination that generates elite swing-and-miss rates. In 2025 he posted 28 saves and 104 strikeouts in 64.1 innings, maintaining a 1.55 ERA. In a pool where one run can flip the standings, Díaz is Puerto Rico’s trump card. José Berríos (SP) is the steady opening-day anchor — a strike-thrower with a 12–9 record and 3.92 ERA in 2025 whose ability to go deep into games limits bullpen exposure early in pool play."
-        },
-        {
-          "type": "subheading",
-          "text": "🇨🇺 Cuba — athletic power with front-line stuff"
-        },
-        {
-          "type": "paragraph",
-          "text": "Cuba’s case for a top-two Pool A finish is built on one of the most physically imposing position players in the tournament and a starting pitcher who generates elite whiffs against MLB-caliber lineups. Luis Robert Jr. (CF) is the tournament’s premier speed-power threat — a center fielder with 30 HR, 82 RBI, and a .753 OPS in 2025 (in a season interrupted by injury). When healthy and locked in, Robert is a game-breaking presence who changes pitcher approach from the first at-bat. Yariel Rodríguez (SP) brings swing-and-miss stuff — a mid-90s heater paired with sharp offspeed — that plays especially well against the contact-heavy lineups Cuba will see in Pool A. Yoán Moncada (3B) is the grinder: a switch-hitter who can work counts, punish fastballs, and provide the lineup stability that gets the most out of Robert and Rodríguez when all three are contributing."
-        },
-        {
-          "type": "heading",
-          "text": "Pool B"
-        },
-        {
-          "type": "subheading",
-          "text": "🇺🇸 United States — Cy Young top end, thunder everywhere"
-        },
-        {
-          "type": "paragraph",
-          "text": "Pool B is Team USA’s pool to lose. Two reigning Cy Young winners front a rotation that no other nation can match on the mound, and the everyday lineup — led by Aaron Judge — pairs elite OBP with historic power. USA’s blueprint in 2026 is simple: let Skenes and Skubal limit damage in Games 1 and 2, then let the lineup’s depth overwhelm bullpens that were not built to face this much quality across nine hitters."
-        },
-        {
-          "type": "paragraph",
-          "text": "Aaron Judge (RF) is the tournament’s most dangerous hitter — a .331 AVG, 53 HR, 114 RBI, 1.144 OPS season in 2025 that earned him his second AL MVP. No one in March Baseball has his combination of power, strike-zone discipline, and run-shaping presence. Paul Skenes (SP) was the unanimous 2025 NL Cy Young winner (10–10, 1.97 ERA, 0.95 WHIP, 216 K) — the lowest ERA by a qualified NL starter and an arsenal of four-seam velocity, elite slider, and emerging splitter that gives hitters no count to rest. Tarik Skubal (SP) is the AL bookend: back-to-back AL Cy Young winner (2024: 18–4, 2.39 ERA; 2025: 13–6, 2.21 ERA, 0.89 WHIP, 241 K), a commanding lefty who erases right-left splits and generates historically weak contact. With Judge, Bobby Witt Jr., Bryce Harper, and Kyle Schwarber in the lineup behind these two, there is no soft patch to exploit."
-        },
-        {
-          "type": "subheading",
-          "text": "🇲🇽 Mexico — balance, savvy, and March-tested bats"
-        },
-        {
-          "type": "paragraph",
-          "text": "Mexico profiles as the strongest number-two team in Pool B and a legitimate sleeper threat to push the USA deep in the bracket. Their advantage over the other Pool B nations is tournament-caliber bats who have already proved themselves in high-stakes international play. Randy Arozarena (OF) was the 2023 WBC MVP for Mexico and brings that same March monster energy — relentless at-bats, stolen bases when you least expect them, and the ability to turn a close game into a memory. In 2025 he hit .272 with 23 HR and a .803 OPS, but his career WBC batting average underscores how he elevates in this setting. Isaac Paredes (3B) is the disciplined anchor — a .234 AVG, 31 HR, .825 OPS hitter in 2025 who takes walks, punishes mistakes, and extends rallies in ways that add up across a compressed schedule. Alejandro Kirk (C) brings elite bat-to-ball skill from a premium position; his contact rate and zone control create production that gives Mexico a floor even when the power goes cold."
-        },
-        {
-          "type": "heading",
-          "text": "Pool C"
-        },
-        {
-          "type": "subheading",
-          "text": "🇯🇵 Japan — precision, power, and ruthless depth"
-        },
-        {
-          "type": "paragraph",
-          "text": "Japan enters Pool C as the defending WBC champion and the deepest pitching nation in the tournament. They combine precision pitching — the ability to locate at the edges of the zone all night — with lineup thunder from the sport’s most unique player. The reigning champs have the staff to win games 2–1 and the lineup to win them 7–4. That flexibility is what makes them the most complete team in the tournament field."
-        },
-        {
-          "type": "paragraph",
-          "text": "Shohei Ohtani (DH/SP) is the unmatchable centerpiece — a 2025 season where he hit 43 HR with a .958 OPS while also making pitching appearances with elite strikeout rates. No WBC opponent can prepare two separate game plans for the same player; the strategic disruption alone is worth extra innings. Yoshinobu Yamamoto (SP) is Japan’s Game 1 anchor — in 2025, he went 12–8 with a 2.97 ERA and 201 strikeouts while commanding four pitches to both sides of the plate, making him virtually unaffected by scouting report adjustments. Roki Sasaki (SP) is the short-tournament advantage: triple-digit carry with a disappearing splitter, a profile that generates weak contact and swing-and-miss at equal rates. Both Yamamoto and Sasaki spent years dominating NPB before arriving in MLB — they have been in high-pressure environments their entire careers."
-        },
-        {
-          "type": "subheading",
-          "text": "🇰🇷 Korea — run prevention first, then pressure"
-        },
-        {
-          "type": "paragraph",
-          "text": "Korea’s path out of Pool C runs through defense, pitching efficiency, and the ability to manufacture runs against a Japan team that will limit big innings. They do not need to outslug Japan — they need to outlast them. Ha-Seong Kim (SS/2B) is the tournament’s most complete middle infielder: a .269 AVG, 11 HR, 4.0 WAR player in 2025 whose defense at shortstop, base IQ, and clutch contact make him Korea’s most valuable on-field asset. Jung Hoo Lee (OF) is Korea’s best pure hitter — a contact machine with a .272 AVG and 85 RBI in 2025 who generates hard contact at a consistently high rate regardless of count. Hyun Jin Ryu (SP) brings veteran sequencing and the ability to steal strikes; his value in a pool-play scenario is outsized because teams facing a crafty lefty who mixes well early in camp tend to get frustrated, which is exactly when Korea makes them pay."
-        },
-        {
-          "type": "heading",
-          "text": "Pool D"
-        },
-        {
-          "type": "subheading",
-          "text": "🇩🇴 Dominican Republic — the deepest lineup on earth"
-        },
-        {
-          "type": "paragraph",
-          "text": "The Dominican Republic enters Pool D as the most talent-dense offensive unit in the tournament. Their 2025 MLB production across the projected nine — 263 combined HR, a mean OPS of .836, and 46.4 total WAR — sets a standard no other nation can match. Opponents will throw their two best arms at this lineup, and the DR will still produce crooked numbers because there are no soft landings from top to bottom. They are our top pick to win Pool D outright and make a Gold Medal run."
-        },
-        {
-          "type": "paragraph",
-          "text": "Juan Soto (RF) is the tournament’s most complete hitter: in 2025 he posted 43 HR, a .263 AVG, and a .921 OPS with 6.2 WAR — and his 14.1% walk rate means pitchers who try to work around him simply extend innings for the players behind him. Julio Rodríguez (CF) is the five-tool spark plug: 32 HR, .267 AVG, .798 OPS, 6.8 WAR in 2025, with the baserunning instincts and late-inning electricity to shift momentum in the sixth inning of a one-run game. Fernando Tatis Jr. (LF) brings 25 HR, .268 AVG, .814 OPS, and 5.9 WAR — a well-rounded season from a player who forces defensive reshuffles just by stepping in. Add José Ramírez (30 HR, .283 AVG, .863 OPS, 5.8 WAR) and Vladimir Guerrero Jr. (23 HR, .292 AVG, .848 OPS, 4.5 WAR) and the middle of this lineup represents the best top-five of any WBC squad."
-        },
-        {
-          "type": "subheading",
-          "text": "🇻🇪 Venezuela — contact kings with star torque"
-        },
-        {
-          "type": "paragraph",
-          "text": "Venezuela is our number-two in Pool D and a serious threat to the DR if their stars carry their regular-season form into March. The formula: OBP-first at the top, power in the middle, and a closing unit that can win games when offense is scarce. Ronald Acuña Jr. (OF) is the leadoff terror — fence-to-fence carry, elite stolen base instincts, and a presence in the first inning that changes how opponents manage their best arms. José Altuve (2B) remains one of the great WBC performers of the modern era with a .382 career WBC batting average; his 2025 production (.281 AVG, 14 HR, .793 OPS) masks an at-bat quality that spikes in high-leverage situations. Luis Arráez (INF) is the at-bat extender — a .354 AVG hitter with a sub-6% strikeout rate who turns elite pitching into stressful innings and extends rallies that put Venezuela’s power bats in run-scoring situations."
-        },
-        {
-          "type": "heading",
-          "text": "Sandlot Picks’ Take"
-        },
-        {
-          "type": "paragraph",
-          "text": "Tournament variance is real — one bulk arm can flip a pool — but talent density matters most in March. Our chalk: Pool A — Puerto Rico > Cuba; Pool B — USA > Mexico; Pool C — Japan > Korea; Pool D — Dominican Republic > Venezuela. All eight have clear paths out of group play; the stars above are the ones we expect to swing the extra win that sends them on."
-        }
-      ],
-      "seo": {
-        "title_tag": "WBC 2026 Pools A–D Favorites: Puerto Rico, Cuba; USA, Mexico; Japan, Korea; Dominican Republic, Venezuela | Sandlot Insider",
-        "meta_description": "Our top two picks in every WBC 2026 pool (A–D) and the three stars per team who will drive them: Puerto Rico (Lindor, Díaz, Berríos), Cuba (Robert Jr., Yariel Rodríguez, Moncada), USA (Judge, Skenes, Skubal), Mexico (Arozarena, Paredes, Kirk), Japan (Ohtani, Yamamoto, Sasaki), Korea (Kim, Jung Hoo Lee, Ryu), Dominican Republic (Soto, Rodríguez, Tatis Jr.), Venezuela (Acuña Jr., Altuve, Arráez).",
-        "keywords": [
-          "WBC 2026 Pools",
-          "Pool A Puerto Rico Cuba",
-          "Pool B USA Mexico",
-          "Pool C Japan Korea",
-          "Pool D Dominican Republic Venezuela",
-          "Francisco Lindor",
-          "Edwin Díaz",
-          "José Berríos",
-          "Luis Robert Jr.",
-          "Yariel Rodríguez",
-          "Yoán Moncada",
-          "Aaron Judge",
-          "Paul Skenes",
-          "Tarik Skubal",
-          "Randy Arozarena",
-          "Isaac Paredes",
-          "Alejandro Kirk",
-          "Shohei Ohtani",
-          "Yoshinobu Yamamoto",
-          "Roki Sasaki",
-          "Ha-Seong Kim",
-          "Jung Hoo Lee",
-          "Hyun Jin Ryu",
-          "Juan Soto",
-          "Julio Rodríguez",
-          "Fernando Tatis Jr.",
-          "Ronald Acuña Jr.",
-          "José Altuve",
-          "Luis Arráez"
-        ],
-        "canonical_url": "https://sandlotpicks.com/articles/wbc-2026-pool-favorites-a-b-c-d-top-two-teams-and-stars",
-        "og_image": "https://sandlotpicks.com/article-heros/top4PoolTeams.png"
-      },
-      "related_posts": [
-        "dominican-republic-2026-wbc-lineup-favorites",
-        "team-usa-2026-wbc-roster-cy-youngs-dominate"
-      ],
-      "author_bio": "The Sandlot Picks Analytics team combines data science and baseball operations expertise to build predictive models for MLB player props and game totals. Our analysts have backgrounds in sabermetrics, sports statistics, and quantitative research. All predictions are powered by Statcast-based models updated daily.",
-      "author_credentials": [
-        "MLB Statcast data analysis",
-        "xwOBA and FIP-based modeling",
-        "Sports betting market research"
-      ]
-    },
-    {
-      "id": 12,
-      "title": "Three Sleepers That Can Wreck Brackets at the 2026 WBC",
-      "slug": "wbc-2026-three-sleeper-teams-to-watch",
-      "author": "Sandlot Picks Analytics",
-      "date": "2026-02-01",
-      "status": "Final",
-      "tags": [
-        "WBC 2026",
-        "International Baseball",
-        "Sleeper Teams",
-        "Tournament Favorites",
-        "Bracket Busters"
-      ],
-      "summary": "Favorites get the headlines; March brings the chaos. Our three most overlooked sleeper teams — Netherlands, Canada, and Panama — have the star power, matchup levers, and bullpen bite to flip pools and ruin a contender’s path to Gold.",
-      "read_time_minutes": 4,
-      "estimated_word_count": 820,
-      "hero_image": {
-        "url": "/article-heros/top3Sleepers.png",
-        "alt": "Top 3 Sleepers That Can Wreck Brackets at the 2026 WBC"
-      },
-      "content": [
-        {
-          "type": "paragraph",
-          "text": "Favorites get the headlines; March gets the chaos. Every World Baseball Classic produces a team (or three) that shreds expectations, flips a pool, and forces a favorite into the hard bracket a round too early. Here are our three most overlooked sleepers — clubs with enough star power, matchup edges, and bullpen bite to make a legit run at the knockout rounds and make someone’s path to Gold a nightmare."
-        },
-        {
-          "type": "heading",
-          "text": "🇳🇱 Kingdom of the Netherlands — star infielders, tournament-tested bullpen"
-        },
-        {
-          "type": "paragraph",
-          "text": "Why they’re slept on: They don’t carry the same aura as DR, USA, or Japan, and many fans still underrate the Curaçao/Aruba pipeline that feeds this roster. But the Netherlands routinely plays clean defense, controls the strike zone, and fields a back end that can end six outs on command — perfect traits for a short tournament."
-        },
-        {
-          "type": "paragraph",
-          "text": "Three stars who move the needle:\n• Xander Bogaerts (SS/INF): Professional at-bats that spray liners, punish mistakes, and stabilize the infield.\n• Jurickson Profar (OF/1B): Switch-hitter with OBP/gap power and defensive flexibility; lengthens rallies and lineup options.\n• Kenley Jansen (CL): Pressure-proof closer with late life and a career of October reps; closes traffic innings when it matters."
-        },
-        {
-          "type": "paragraph",
-          "text": "How they win: By shrinking the game. The bats make pitchers work, the defense erases extra 90s, and the bullpen closes the door. If they play with a lead after the sixth, pencil in the handshake line."
-        },
-        {
-          "type": "heading",
-          "text": "🇨🇦 Canada — middle-of-the-order thunder + a top-tier closer"
-        },
-        {
-          "type": "paragraph",
-          "text": "Why they’re slept on: Spotlight in the Americas gravitates to USA, DR, PR, and Venezuela — leaving Canada mislabeled as “scrappy.” In reality, their middle-of-the-order thump and late-inning power arm give them a clear tournament formula: slug early, Romano late."
-        },
-        {
-          "type": "paragraph",
-          "text": "Three stars who move the needle:\n• Freddie Freeman (1B): One of the sport’s toughest outs; disciplined gap-to-gap hitter made for 2–2 games in the seventh.\n• Josh Naylor (1B/OF): Left-handed juice with loud contact in leverage; forces strikes behind Freeman and brings edge.\n• Jordan Romano (CL): Late-inning gas with swing-and-miss; shortens games and lets Canada use aggressive starter hooks."
-        },
-        {
-          "type": "paragraph",
-          "text": "How they win: By stacking quality at-bats around Freeman/Naylor to grab an early edge, then turning games over to Romano and matchup relievers. Canada doesn’t need track meets; they need to be plus in one-run games — and this build can be."
-        },
-        {
-          "type": "heading",
-          "text": "🇵🇦 Panama — contact, speed, and a bullpen that travels"
-        },
-        {
-          "type": "paragraph",
-          "text": "Why they’re slept on: They rarely enter with headliner hype, so people overlook the pieces that matter most in March: athletic defense, contact that plays in any park, and nasty late-inning stuff. Panama can win the hidden innings — and the WBC is full of hidden innings."
-        },
-        {
-          "type": "paragraph",
-          "text": "Three stars who move the needle:\n• Christian Bethancourt (C): Game manager with leadership value; handles hard stuff, controls the run game, and can ambush velo.\n• José Caballero (INF): Chaos creator — contact, speed, and opportunistic baserunning that turns singles into stress.\n• Justin Lawrence (RHP): Sidewinding heater with uncomfortable life; leverage look that erases traffic without relying on BABIP."
-        },
-        {
-          "type": "paragraph",
-          "text": "How they win: By manufacturing runs (bunts optional), converting contact into outs, and winning the bullpen fight. The recipe is classic tournament ball: grab the extra 90, roll the double play, and hand the ball to a reliever who doesn’t need a perfect defense behind him."
-        },
-        {
-          "type": "heading",
-          "text": "Why these three can flip a pool"
-        },
-        {
-          "type": "paragraph",
-          "text": "• They all have a closing plan: Jansen, Romano, Lawrence — different looks, same outcome: strikeouts when BABIP turns cruel. In March, that skill is worth more than a fourth middle-order bat.\n• They have lineup levers: Each can toggle offense based on opponent — contact/speed vs. power staffs, or lift vs. pitch-to-contact arms.\n• They play clean: The fastest way to go home is to give away bases. These rosters feature defenders who convert contact into outs, an underrated edge in short tournaments."
-        },
-        {
-          "type": "heading",
-          "text": "Sandlot Picks’ Take"
-        },
-        {
-          "type": "paragraph",
-          "text": "We’re not saying all three crash the semis — tournament variance is real — but every favorite will circle them in red. Netherlands can protect any lead after the sixth. Canada has the punch to drop a seed in one swing and the closer to stand on it. Panama can turn a 3–2 game into a maze of bad swings and stranded runners. Ignore them at your peril."
-        }
-      ],
-      "seo": {
-        "title_tag": "2026 WBC Sleepers: Netherlands, Canada, Panama — The Underdogs That Can Flip a Pool | Sandlot Insider",
-        "meta_description": "Three sleeper teams to watch at the 2026 World Baseball Classic: Netherlands (Bogaerts, Profar, Jansen), Canada (Freeman, Naylor, Romano), and Panama (Bethancourt, Caballero, Justin Lawrence). Why their stars, defense, and bullpens can wreck brackets.",
-        "keywords": [
-          "WBC 2026 sleepers",
-          "Netherlands WBC Bogaerts Profar Jansen",
-          "Canada WBC Freeman Naylor Romano",
-          "Panama WBC Bethancourt Caballero Justin Lawrence",
-          "World Baseball Classic underdogs",
-          "international baseball upsets",
-          "tournament bracket busters"
-        ],
-        "canonical_url": "https://sandlotpicks.com/articles/wbc-2026-three-sleeper-teams-to-watch",
-        "og_image": "https://sandlotpicks.com/article-heros/top3Sleepers.png"
-      },
-      "related_posts": [
-        "wbc-2026-pool-favorites-a-b-c-d-top-two-teams-and-stars",
-        "dominican-republic-2026-wbc-lineup-favorites",
-        "team-usa-2026-wbc-roster-cy-youngs-dominate"
-      ],
-      "author_bio": "The Sandlot Picks Analytics team combines data science and baseball operations expertise to build predictive models for MLB player props and game totals. Our analysts have backgrounds in sabermetrics, sports statistics, and quantitative research. All predictions are powered by Statcast-based models updated daily.",
-      "author_credentials": [
-        "MLB Statcast data analysis",
-        "xwOBA and FIP-based modeling",
-        "Sports betting market research"
-      ]
-    },
-    {
-      "id": 11,
-      "title": "“If You Want to Add Talent, Boras Gets His Slice”: How Scott Boras Bent MLB Free Agency To His Will",
-      "slug": "scott-boras-mlb-free-agency-greatest-agent",
-      "author": "Sandlot Picks Analytics",
-      "date": "2026-01-09",
+      "id": 6,
+      "title": "The Model Sees Nine Runs in Chicago and a Padres Win",
+      "slug": "the-model-sees-nine-runs-in-chicago-and-a-padres-win",
+      "author": "Sandlot Picks Team",
+      "date": "2026-05-26",
       "status": "Final",
       "tags": [
         "MLB",
-        "Free Agency",
-        "Scott Boras",
-        "Player Contracts",
-        "Agent Market",
-        "Business of Baseball",
-        "Editorial"
+        "Sports Betting",
+        "Phillies",
+        "Padres",
+        "Twins",
+        "White Sox",
+        "Moneyline",
+        "Totals"
       ],
-      "summary": "For three decades Scott Boras has treated free agency like a leverage laboratory, delivering record deals for star clients and collecting his slice along the way. We break down the playbook, fee structure, owner sentiment, who he represents this winter, and the big question: is he the greatest sports agent ever?",
-      "read_time_minutes": 4,
-      "estimated_word_count": 875,
+      "summary": "Joe Ryan's ERA nearly doubles on the road (3.95 vs. 2.15 at home), and Aaron Nola is letting hitters post .884 OPS against him — two starting pitchers the model sees as significantly underpriced by their respective totals. Both games project to run production the lines aren't accounting for.",
+      "read_time_minutes": 2,
+      "estimated_word_count": 493,
       "hero_image": {
-        "url": "/article-heros/ScottB.png",
-        "alt": "Scott Boras MLB Free Agency Greatest Agent"
+        "url": "https://ryrlvrbjpwpecxpjicdo.supabase.co/storage/v1/object/public/post-images/hero/the-model-sees-nine-runs-in-chicago-and-a-padres-win/1779828902889-screen-shot-2026-05-26-at-4-54-36-pm.png",
+        "alt": "Twins vs White Sox Over 7.5 runs"
       },
       "content": [
         {
-          "type": "paragraph",
-          "text": "In modern baseball, star hunting has a toll booth—and Scott Boras runs it. For three decades, the Boras Corporation has turned free agency into a yield farm for generational contracts, record AAVs, and leverage that often outmuscles even the richest clubs. The result: if you’re an owner or a GM trying to add premium talent, there’s a good chance Boras gets his slice."
+          "text": "Twins  @ White Sox ",
+          "type": "heading"
         },
         {
-          "type": "heading",
-          "text": "The Playbook: Maximize the Marketplace, Then Redefine It"
+          "text": "Pick: Over 7.5 Runs ",
+          "type": "subheading"
         },
         {
-          "type": "paragraph",
-          "text": "Boras’ core strategy isn’t complicated, just relentless: widen the bidding pool, resist early discounts, and weaponize precedent. Each new landmark deal becomes the floor for the next superstar. Think mega-pacts for frontline pitchers and middle-of-the-order anchors—agreements that set the tone for the entire market and ripple for years."
+          "text": "⚾ Pitching Matchup\nJoe Ryan has elite stuff (3.02 ERA, 9.69 K/9), but his road splits crater: 3.95 ERA and 1.06 WHIP away versus 2.15 ERA and 0.89 WHIP at home. The White Sox hit better at home (.237 AVG, .744 OPS). Sean Burke is the weaker arm (4.08 ERA overall), and he implodes at home (4.73 ERA) versus excels on the road (3.05 ERA). But Burke suppresses right-handed bats (.225 AVG, .649 OPS)—critical against Minnesota's right-heavy lineup. Burke's handedness edge neutralizes the Twins' core, while Ryan's road vulnerability is the real problem.\n\n📊 Splits Edge\nThe White Sox own a clear home offensive edge (.744 OPS at home, .701 on the road). Ryan's road ERA balloons nearly two full runs above his home mark—a punishing swing for a road starter. Burke's home struggles are concerning, but the Twins' road offense (.705 OPS) doesn't have the juice to exploit him enough to flip the advantage.\n\n🔑 Key Factors\nJoe Ryan's road ERA sits at 3.95 versus 2.15 at home—a 1.80-run gap that matters when he takes the mound in Chicago.\nSean Burke holds right-handed hitters to .225 AVG and .649 OPS, a critical split against Minnesota's right-dominant lineup.\nWhite Sox home splits (.744 OPS) versus Twins road splits (.705 OPS) give Chicago a measurable offensive environment edge.\n\n📈 Total Lean OVER\nThe model projects 9.62 runs against a 7.5 total—a two-run buffer. Burke's 4.73 home ERA and Ryan's 3.95 road ERA both point to runs the market underpriced.",
+          "type": "paragraph"
         },
         {
-          "type": "paragraph",
-          "text": "He’s also mastered the calendar. Slow-playing winters, floating ‘mystery teams,’ and controlling the narrative keeps pressure on clubs that feel one piece away. When scarcity bites, numbers climb."
+          "text": "Phillies @ Padres",
+          "type": "heading"
         },
         {
-          "type": "heading",
-          "text": "“His Slice”: How MLB Agent Fees Actually Work"
+          "text": "Pick: Padres Moneyline",
+          "type": "subheading"
         },
         {
-          "type": "paragraph",
-          "text": "MLB doesn’t impose a hard cap on agent commissions. Fees are negotiated between player and agent (subject to MLBPA guidelines that protect the player’s minimum compensation). In practice, industry norms hover around roughly 4–5% on player contracts. On billion-dollar portfolios, even single-digit percentages compound into nine-figure career earnings."
-        },
-        {
-          "type": "paragraph",
-          "text": "That’s the Boras business model in a sentence: scale, patience, and leverage—applied deal after deal."
-        },
-        {
-          "type": "heading",
-          "text": "How Owners and Clubs Really Feel"
-        },
-        {
-          "type": "paragraph",
-          "text": "Two truths coexist: respect and resentment. Front offices privately concede Boras is the best in the business at extracting full value—he’s meticulously prepared and ruthless in comps. At the same time, some owners see his process as an annual hostage situation: if you need the star, you pay the toll. Complaints aside, those same clubs end up at the table whenever a championship window opens."
-        },
-        {
-          "type": "heading",
-          "text": "2025–26 Offseason: Who’s at Boras’ Table (and why it proves the slice thesis)"
-        },
-        {
-          "type": "paragraph",
-          "text": "• Cody Bellinger (OF/1B) — Still unsigned as his camp works the long-term lane. He’s a headline outfield bat and a classic case study in Boras’ slow-play approach: build demand, let scarcity set the price, and aim for both term and AAV that fit a star profile."
-        },
-        {
-          "type": "paragraph",
-          "text": "• Alex Bregman (3B) — A high-end third baseman back on the market seeking a multi-year anchor deal. He’s precisely the kind of middle-of-the-order/left-side profile that draws big-market attention and invites precedent-setting comps."
-        },
-        {
-          "type": "paragraph",
-          "text": "• Pete Alonso (1B) — **Signed: 5 years, $155 million with the Baltimore Orioles.** A middle-order masher landing $31M AAV with a contender is textbook Boras outcome: monetize premium power at scale and do it in a market hungry for impact bats."
-        },
-        {
-          "type": "paragraph",
-          "text": "In sum, the 2025–26 winter amplifies the thesis. Clubs that want instant offense or cornerstone bats find themselves navigating the same toll road—Boras in the booth, precedent on the placard."
-        },
-        {
-          "type": "heading",
-          "text": "What Boras Changed About Free Agency"
-        },
-        {
-          "type": "paragraph",
-          "text": "1) Pace & patience: He normalized waiting out the market to surpass ‘comfortable’ early offers. 2) Precedent as weapon: Every record deal becomes a ladder rung for the next client. 3) Narrative control: Strategic leaks, tailored comps, and media moments turn public perception into leverage."
-        },
-        {
-          "type": "heading",
-          "text": "Is Scott Boras the Greatest Sports Agent Ever?"
-        },
-        {
-          "type": "paragraph",
-          "text": "Across all sports, there are titans—Rich Paul in the NBA, Drew Rosenhaus in the NFL, Jorge Mendes in world football. But if the criteria are total guaranteed money negotiated and long-term market-shaping power, Boras is the clubhouse leader. Multiple all-time record deals, decades atop agent rankings, and a portfolio measured in billions paint a singular picture."
-        },
-        {
-          "type": "paragraph",
-          "text": "Verdict: In baseball, he’s the clear No. 1. In the broader sports world, it’s hard to find a stronger case for “greatest of all time.” If you want to add elite talent, history says Boras gets his slice—and his players get their bag."
+          "text": "⚾ Pitching Matchup\nAaron Nola is having a rough go of it — 6.04 ERA, 1.56 WHIP, and neither lefties (.303 AVG, .884 OPS) nor righties (.295 AVG, .825 OPS) are struggling against him. Throw in a 6.10 road ERA and Petco looks like a bad spot. Randy Vásquez is the opposite story: 2.96 ERA, 1.19 WHIP, and he's been nasty against righties (.209 AVG, .630 OPS). That matters here because Philly rolls out mostly right-handed bats.\n\n📊 Splits Edge\nVásquez owns the matchup. His .630 OPS allowed to righties and 1.03 WHIP in that split are elite territory. Nola's splits don't help him either way. San Diego gets the clear edge.\n\n🔑 Key Factors\nNola's numbers are rough — 6.04 ERA, 1.56 WHIP, letting lefties hit .303/.884 OPS. That's bad company.\nVásquez has been sharp everywhere (2.96 ERA, 1.19 WHIP), and even sharper on the road (1.46 ERA, 0.85 WHIP away). Today he's home, which makes him even tougher.\nPhilly's road split is the worst in their profile — .212 AVG, .629 OPS — so they're coming in cold against a guy who's been dealing.\n\n💲 Odds Edge\nPadres -115 implies 53.7%, but the model has San Diego at 57.5% — modest value on the ML. The Phillies +130 on the run line gets interesting if you think this stays tight; the model says a one-run game is very possible.",
+          "type": "paragraph"
         }
       ],
       "seo": {
-        "title_tag": "Scott Boras, MLB Free Agency & the 5% Slice: Bellinger, Bregman, Alonso-to-Orioles | Sandlot Insider",
-        "meta_description": "How Scott Boras turned MLB free agency into a leverage machine: playbook, agent fee norms (~4–5%), owner sentiment, and the 2025–26 headline clients—Cody Bellinger, Alex Bregman, and Pete Alonso (5/$155M Orioles). Is Boras the greatest sports agent ever?",
         "keywords": [
-          "Scott Boras",
-          "Scott Boras 5 percent commission",
-          "MLB agent fees",
-          "Boras clients 2025 2026",
-          "Cody Bellinger free agency",
-          "Alex Bregman free agency",
-          "Pete Alonso Orioles 155 million",
-          "largest MLB contracts",
-          "MLB free agency leverage",
-          "Boras Corporation"
+          "joe ryan road splits",
+          "aaron nola era",
+          "twins white sox over pick",
+          "padres phillies prediction",
+          "mlb picks today",
+          "pitcher props analysis",
+          "baseball analytics predictions",
+          "run line value"
         ],
-        "canonical_url": "https://sandlotpicks.com/articles/scott-boras-mlb-free-agency-greatest-agent",
-        "og_image": "https://sandlotpicks.com/article-heros/ScottB.png"
+        "og_image": "https://ryrlvrbjpwpecxpjicdo.supabase.co/storage/v1/object/public/post-images/hero/the-model-sees-nine-runs-in-chicago-and-a-padres-win/1779828902889-screen-shot-2026-05-26-at-4-54-36-pm.png",
+        "title_tag": "Joe Ryan road splits and Aaron Nola props: MLB picks today",
+        "canonical_url": "https://www.sandlotpicks.com/sandlot-insider/the-model-sees-nine-runs-in-chicago-and-a-padres-win",
+        "meta_description": "Twins-White Sox projects to 9.6 runs vs 7.5 total. Padres favored over Phillies. Data-driven picks from Sandlot."
       },
+      "affiliate_cta": {
+        "link": "https://www.sandlotpicks.com/upgrade",
+        "context": "Claim 7 day free pass!",
+        "enabled": true,
+        "platform": "Sandlot Picks"
+      },
+      "affiliate_disclaimer": "Data and predictions provided for informational and entertainment purposes only.",
       "related_posts": [
-        "yankees-2026-four-offseason-pillars-closer-shortstop-or-second-base",
-        "aaron-judge-vs-cal-raleigh-2025-al-mvp-debate"
+        "/three-games-three-bets-worth-making-on-todays-mlb-slate"
       ],
-      "author_bio": "The Sandlot Picks Analytics team combines data science and baseball operations expertise to build predictive models for MLB player props and game totals. Our analysts have backgrounds in sabermetrics, sports statistics, and quantitative research. All predictions are powered by Statcast-based models updated daily.",
-      "author_credentials": [
-        "MLB Statcast data analysis",
-        "xwOBA and FIP-based modeling",
-        "Sports betting market research"
-      ]
+      "reference_urls": []
     },
     {
-      "id": 10,
-      "title": "AL & NL Cy Youngs Set to Dominate the World…Baseball Classic: Team USA’s 2026 WBC Super-Roster",
-      "slug": "team-usa-2026-wbc-roster-cy-youngs-dominate",
-      "author": "Sandlot Picks Analytics",
-      "date": "2025-12-26",
-      "status": "Final",
-      "tags": [
-        "WBC 2026",
-        "Team USA",
-        "MLB",
-        "Baseball America",
-        "ESPN",
-        "Roster Projection",
-        "International Baseball",
-        "Analytics"
-      ],
-      "summary": "Two reigning Cy Young winners—Paul Skenes and Tarik Skubal—headline a Team USA core loaded with 2025 star power. We compile confirmed commitments, project a starting nine and rotation, roll up 2025 stat lines, and explain why the Americans should cruise to the finals.",
-      "read_time_minutes": 4,
-      "estimated_word_count": 1100,
-      "hero_image": {
-        "url": "/article-heros/team-USA.png",
-        "alt": "aaron judge, bryce harper, tarik skubal and cal raleigh in Team USA baseball uniforms"
-      },
-      "content": [
-        {
-          "type": "paragraph",
-          "text": "Team USA’s 2026 WBC build reads like a superteam. With the reigning AL and NL Cy Young winners—Tarik Skubal and Paul Skenes—fronting the staff and an everyday group led by Aaron Judge, Bobby Witt Jr., Bryce Harper and more, the path to gold runs through the stars and stripes. Official commitments tracked by MLB.com already include Judge (captain), Witt Jr., Gunnar Henderson, Cal Raleigh, Kyle Schwarber, Corbin Carroll, Pete Crow-Armstrong, Will Smith, Brice Turang, and arms like Skenes, Skubal, Logan Webb, Joe Ryan, Mason Miller, Clay Holmes and Nolan McLean."
-        },
-        {
-          "type": "paragraph",
-          "text": "Add Bryce Harper’s public commitment, and it’s clear the lineup depth is catching up to the headline pitching. "
-        },
-        {
-          "type": "heading",
-          "text": "Projected USA Starting Lineup (with 2025 MLB production)"
-        },
-        {
-          "type": "paragraph",
-          "text": "1) SS Bobby Witt Jr. — .295 AVG, 23 HR, 88 RBI, .852 OPS."
-        },
-        {
-          "type": "paragraph",
-          "text": "2) CF Pete Crow-Armstrong — .247, 31 HR, 95 RBI, .768 OPS."
-        },
-        {
-          "type": "paragraph",
-          "text": "3) RF Aaron Judge — .331, 53 HR, 114 RBI, 1.144 OPS. "
-        },
-        {
-          "type": "paragraph",
-          "text": "4) DH Kyle Schwarber — .240, 56 HR, 132 RBI, .928 OPS. "
-        },
-        {
-          "type": "paragraph",
-          "text": "5) 1B Bryce Harper — .261, 27 HR, 75 RBI, .844 OPS. "
-        },
-        {
-          "type": "paragraph",
-          "text": "6) LF Corbin Carroll — .259, 31 HR, 84 RBI, .883 OPS. "
-        },
-        {
-          "type": "paragraph",
-          "text": "7) 3B Gunnar Henderson — .274, 17 HR, 68 RBI, .787 OPS. "
-        },
-        {
-          "type": "paragraph",
-          "text": "8) C Cal Raleigh — .247, 60 HR, 125 RBI, .948 OPS. "
-        },
-        {
-          "type": "paragraph",
-          "text": "9) 2B Brice Turang — .288, 18 HR, 81 RBI, .794 OPS. "
-        },
-        {
-          "type": "paragraph",
-          "text": "Lineup snapshot (computed from the nine above): Total HR 316; Total RBI 862; Average AVG ≈ .271; Average OPS ≈ .883. "
-        },
-        {
-          "type": "paragraph",
-          "text": "WAR context (ESPN position-player board): Judge 9.7; Raleigh 7.3; Witt Jr. 7.1; Crow-Armstrong 6.0; Carroll 5.8; Turang 5.5; Henderson 5.4; Schwarber 4.7 — a subtotal of 51.5 WAR from eight hitters (Harper’s 2025 WAR not listed on the leaders page, so the true total is higher). "
-        },
-        {
-          "type": "heading",
-          "text": "Rotation & Late-Inning Plan (with 2025 MLB production)"
-        },
-        {
-          "type": "paragraph",
-          "text": "SP1 Paul Skenes — 10–10, 1.97 ERA, 0.95 WHIP, 216 K; unanimous 2025 NL Cy Young. "
-        },
-        {
-          "type": "paragraph",
-          "text": "SP2 Tarik Skubal — 13–6, 2.21 ERA, 0.89 WHIP, 241 K; back-to-back AL Cy Young (2024–2025). "
-        },
-        {
-          "type": "paragraph",
-          "text": "SP3 Logan Webb — 15–11, 3.22 ERA, 1.24 WHIP, 224 K. "
-        },
-        {
-          "type": "paragraph",
-          "text": "SP4 Joe Ryan — 13–10, 3.42 ERA, 1.04 WHIP, 194 K. "
-        },
-        {
-          "type": "paragraph",
-          "text": "Late innings: Mason Miller — 22 SV, 2.63 ERA, 0.91 WHIP, 104 K; David Bednar — 27 SV, 2.30 ERA, 1.04 WHIP. "
-        },
-        {
-          "type": "paragraph",
-          "text": "Rotation snapshot (Skenes/Skubal/Webb/Ryan): Average ERA ≈ 2.71; Average WHIP ≈ 1.03; Combined strikeouts 875; W-L 51–37. Pitching WAR (ESPN leaders subset): Skenes 7.6 + Skubal 6.6 + Ryan 4.5 = 18.7 (Webb not listed on the leaders page, so the true total is higher). "
-        },
-        {
-          "type": "heading",
-          "text": "Why It Scales in March"
-        },
-        {
-          "type": "paragraph",
-          "text": "Two aces who just won the major awards travel in any format; add a middle-order anchored by Judge/Harper/Schwarber, plus plus-glove/impact bats like Witt Jr., Henderson, Raleigh and speed/pressure from Carroll and Crow-Armstrong, and you get both detonation (HR/OPS) and sequence offense. With Miller/Bednar at the back, the U.S. can shorten games to seven innings in bracket play. "
-        },
-        {
-          "type": "heading",
-          "text": "Sandlot Picks’ Call"
-        },
-        {
-          "type": "paragraph",
-          "text": "On paper, this is the tournament’s best top-end rotation (two reigning Cy Youngs) and a starting nine that averaged ~.883 OPS with 316 HR in 2025. We expect Team USA to dominate pool play and walk into the finals as the favorite. "
-        },
-        {
-          "type": "heading",
-          "text": "Sources"
-        },
-        {
-          "type": "paragraph",
-          "text": "Commitments & WBC hub: MLB.com running list of confirmed 2026 WBC players; USA Baseball updates. Harper commit: Reuters. Player stats & WAR: ESPN player pages and 2025 WAR leaderboard. Context/coverage: Baseball America WBC pages. "
-        }
-      ],
-      "seo": {
-        "title_tag": "Team USA 2026 WBC Roster: Judge, Harper, Witt Jr., Raleigh + Cy Youngs Skenes & Skubal | Sandlot Insider",
-        "meta_description": "Using MLB.com, ESPN.com and Baseball America sources, we compile Team USA’s 2026 WBC roster and 2025 stat lines—Judge, Harper, Witt Jr., Henderson, Raleigh, Schwarber, Carroll, Crow-Armstrong, Turang—with Cy Youngs Paul Skenes and Tarik Skubal atop the rotation. Totals/averages, WAR roll-ups, and why the U.S. should cruise to the finals.",
-        "keywords": [
-          "Team USA WBC 2026 roster",
-          "Aaron Judge 2025 stats",
-          "Bryce Harper Team USA 2026",
-          "Bobby Witt Jr. WBC 2026",
-          "Gunnar Henderson 2025 stats",
-          "Cal Raleigh 60 HR 2025",
-          "Kyle Schwarber 56 HR 2025",
-          "Corbin Carroll 2025 OPS",
-          "Pete Crow-Armstrong 2025 stats",
-          "Brice Turang 2025 stats",
-          "Paul Skenes 2025 Cy Young",
-          "Tarik Skubal 2025 Cy Young",
-          "Mason Miller 2025 saves",
-          "Logan Webb 2025 stats",
-          "Joe Ryan 2025 stats",
-          "MLB.com WBC commitments",
-          "ESPN WAR leaders 2025",
-          "Baseball America WBC coverage"
-        ],
-        "canonical_url": "https://sandlotpicks.com/articles/team-usa-wbc-roster",
-        "og_image": "https://sandlotpicks.com/article-heros/team-USA.png"
-      },
-      "reference_urls": [
-        "https://www.mlb.com/news/mlb-players-in-the-2026-world-baseball-classic",
-        "https://www.reuters.com/sports/phillies-bryce-harper-play-team-usa-wbc--flm-2025-12-23/",
-        "https://www.espn.com/mlb/war/leaders/_/type/seasonal/year/2025",
-        "https://www.espn.com/mlb/player/_/id/33192/aaron-judge",
-        "https://www.espn.com/mlb/player/_/id/30951/bryce-harper",
-        "https://www.espn.com/mlb/player/_/id/42403/bobby-witt-jr",
-        "https://www.espn.com/mlb/player/_/id/42507/gunnar-henderson",
-        "https://www.espn.com/mlb/player/_/id/41292/cal-raleigh",
-        "https://www.espn.com/mlb/player/_/id/33712/kyle-schwarber",
-        "https://www.espn.com/mlb/player/_/id/42404/corbin-carroll",
-        "https://www.espn.com/mlb/player/_/id/4717833/pete-crow-armstrong",
-        "https://www.espn.com/mlb/player/_/id/41179/brice-turang",
-        "https://www.espn.com/mlb/player/_/id/4719507/paul-skenes",
-        "https://www.espn.com/mlb/player/_/id/42409/tarik-skubal",
-        "https://www.espn.com/mlb/player/_/id/41216/logan-webb",
-        "https://www.espn.com/mlb/player/_/id/42450/joe-ryan",
-        "https://www.baseballamerica.com/stories/competition/international/"
-      ],
-      "related_posts": [
-        "paul-skenes-cy-young-legend-in-the-making-2025",
-        "tarik-skubal-two-time-al-cy-young-journey-2025",
-        "dominican-republic-2026-wbc-lineup-favorites"
-      ],
-      "author_bio": "The Sandlot Picks Analytics team combines data science and baseball operations expertise to build predictive models for MLB player props and game totals. Our analysts have backgrounds in sabermetrics, sports statistics, and quantitative research. All predictions are powered by Statcast-based models updated daily.",
-      "author_credentials": [
-        "MLB Statcast data analysis",
-        "xwOBA and FIP-based modeling",
-        "Sports betting market research"
-      ]
-    },
-    {
-      "id": 9,
-      "title": "Team Dominican Republic-2026 WBC: A Lineup Built to Steamroll",
-      "slug": "dominican-republic-2026-wbc-lineup-favorites",
-      "author": "Sandlot Picks Analytics",
-      "date": "2025-12-06",
-      "status": "Final",
-      "tags": [
-        "WBC",
-        "Dominican Republic",
-        "Juan Soto",
-        "Vladimir Guerrero Jr",
-        "José Ramírez",
-        "Fernando Tatis Jr",
-        "International Baseball",
-        "Player Projections",
-        "Tournament Favorites"
-      ],
-      "summary": "Baseball America’s ideal roster projection for the Dominican Republic pairs perfectly with the stars’ 2025 production. We — the Sandlot Picks Team — love DR as the top team in Pool D and expect a real run for Gold.",
-      "read_time_minutes": 5,
-      "estimated_word_count": 700,
-      "hero_image": {
-        "url": "/article-heros/team-DR.png",
-        "alt": "Team Dominican Republic WBC 2026 lineup graphic with star players"
-      },
-      "content": [
-        {
-          "type": "paragraph",
-          "text": "Baseball America’s “ideal roster” projection for the Dominican Republic reads like a fever dream for pitchers and a parade route for hitters. If this nine takes the field next March, you’re looking at a group with star power at every spot, thump in all quadrants, and enough athleticism to turn routine singles into crooked numbers. Layer in how these bats actually performed in 2025, and the case for “tournament favorite” moves from narrative to math."
-        },
-        {
-          "type": "paragraph",
-          "text": "Where we stand: We — the Sandlot Picks Team — love Team Dominican Republic as the top team in Pool D, and we’re expecting a strong run for Gold."
-        },
-        {
-          "type": "heading",
-          "text": "The Projected Nine (with 2025 production)"
-        },
-        {
-          "type": "paragraph",
-          "text": "C — Yainer Díaz: Contact-first catcher who doesn’t have to sell out for power to beat you. In 2025, he posted 20 HR, .256 AVG, .701 OPS; 2.7 WAR—solid floor behind the plate, and more than enough pop in a DH-heavy era."
-        },
-        {
-          "type": "paragraph",
-          "text": "1B — Vladimir Guerrero Jr: The most electric hitter when he’s synced. 23 HR, .292 AVG, .848 OPS; 4.5 WAR in 2025, with the kind of plate coverage that makes in-tournament scouting reports feel pointless."
-        },
-        {
-          "type": "paragraph",
-          "text": "2B — Ketel Marte: Efficient damage up the middle of the field: 28 HR, .283 AVG, .893 OPS; 4.4 WAR in 2025. Switch-hitting, gap-to-gap power, and playoff-caliber poise."
-        },
-        {
-          "type": "paragraph",
-          "text": "SS — Jeremy Peña: The “glue” player whose 2025 was a genuine breakout at the plate: 17 HR, .304 AVG, .840 OPS; 5.6 WAR. Add plus instincts and steady hands at short, and he’s the perfect WBC table-setter/turner."
-        },
-        {
-          "type": "paragraph",
-          "text": "3B — José Ramírez: Relentless. 30 HR, .283 AVG, .863 OPS; 5.8 WAR in 2025, elite swing decisions, and baserunning that steals outs as often as it steals bases."
-        },
-        {
-          "type": "paragraph",
-          "text": "LF — Fernando Tatis Jr: Game-breaking athlete who still turned in a well-rounded year: 25 HR, .268 AVG, .814 OPS; 5.9 WAR. He changes fielding alignments just by stepping in."
-        },
-        {
-          "type": "paragraph",
-          "text": "CF — Julio Rodríguez: If “carry an offense for a week” was a stat, he’d lead it. 32 HR, .267 AVG, .798 OPS; 6.8 WAR in 2025, with late-inning electricity that travels."
-        },
-        {
-          "type": "paragraph",
-          "text": "RF — Juan Soto: The zone is his, not the pitcher’s. 43 HR, .263 AVG, .921 OPS; 6.2 WAR in 2025, with a swing/decision combo that keeps rallies alive even on his “quiet” days."
-        },
-        {
-          "type": "paragraph",
-          "text": "DH — Junior Caminero: The young thunderstick: 45 HR, .264 AVG, .846 OPS; 4.5 WAR in 2025. You can’t pitch around everyone; when they try, he punishes it."
-        },
-        {
-          "type": "heading",
-          "text": "The Math Behind the Mayhem"
-        },
-        {
-          "type": "paragraph",
-          "text": "Stack these nine together and the 2025 ledger looks like a juggernaut: Total HR: 263; team AVG (mean of player AVGs): ~.275; team OPS (mean of player OPS): ~.836; total WAR: ~46.4 (≈ 5.2 WAR per player). In a tournament setting—short series, compact schedules—that level of bankable production compresses variance. You’re not hoping for one hot bat; you’re demanding at-bats that win expected value across the lineup, inning after inning."
-        },
-        {
-          "type": "heading",
-          "text": "What Makes This Lineup Different"
-        },
-        {
-          "type": "subheading",
-          "text": "1) No soft landings."
-        },
-        {
-          "type": "paragraph",
-          "text": "Most WBC lineups feature a star cluster at the top and air pockets at the bottom. The DR can conceivably run seven 5+ WAR bats from 2025 in a row. Miss in any quadrant and someone with 25–45 HR power is waiting."
-        },
-        {
-          "type": "subheading",
-          "text": "2) Diverse run creation — with elite HR/OPS punch."
-        },
-        {
-          "type": "paragraph",
-          "text": "This isn’t a “three true outcomes” group stuck in one gear; it’s a multi-modal offense with premium impact. Guerrero Jr. and Ramírez can manufacture with two strikes. Peña and Marte keep rallies alive with contact and gap power. Rodríguez and Tatis Jr. pressure defenders and create extra 90s with speed. And the top-end thump is real: Soto (.921 OPS, 43 HR), Caminero (.846 OPS, 45 HR), Ramírez (.863 OPS, 30 HR), and Marte (.893 OPS, 28 HR) headline a unit that averaged ~.836 OPS across the nine. Add Guerrero Jr.’s high-contact thunder and Rodríguez’s 30+ homer pop and you get a lineup that can win with OPS or win with sequence—whichever the game state demands."
-        },
-        {
-          "type": "subheading",
-          "text": "3) Defensive sanity."
-        },
-        {
-          "type": "paragraph",
-          "text": "It’s easy to get intoxicated by power totals, but this alignment can also convert contact into outs at premium spots: Peña at SS, Ramírez at 3B, Rodríguez in CF, Tatis Jr. in LF. In a tournament where one bad inning can send you home, that’s non-negotiable value supported by their 2025 WAR profiles."
-        },
-        {
-          "type": "heading",
-          "text": "Depth Check: A Bench of Superstars"
-        },
-        {
-          "type": "paragraph",
-          "text": "If the projected nine is frightening, the bench might be scarier. Options like Manny Machado, Rafael Devers, O’Neil Cruz, Elly De La Cruz, and Geraldo Perdomo give the DR matchup nukes and positional flexibility. Need late-inning thump versus a righty? Devers changes the inning with one swing. Want length at short or a left-side cannon? O’Neil Cruz brings elite arm strength and light-tower power. Prefer speed/chaos? Elly De La Cruz can flip an inning with a steal or a missile to the gap. Perdomo offers glove-first stability and OBP to reset the top. And Machado remains a bankable at-bat with postseason-grade poise. In a compressed tournament, this depth wins days when one or two stars don’t have it."
-        },
-        {
-          "type": "heading",
-          "text": "The Favorite’s Burden"
-        },
-        {
-          "type": "paragraph",
-          "text": "Being the heavyweight cuts both ways. Every opponent will throw their best two arms at this lineup, and WBC variance is real—one brilliant four-inning bulk outing can flip a pool. But when you compare 2025 performance across nine hitters, plus the star-studded bench, it narrows down the countries that can match the Dominican Republic’s combination of peak power, on-base skill, athletic defense, and depth. That’s why, on paper, we have Team DR atop Pool D—and we expect them to make a legitimate run for Gold."
-        }
-      ],
-      "seo": {
-        "title_tag": "Dominican Republic 2026 WBC Lineup: Soto, J-Rod, Tatis Jr., J-Ram, Peña, Marte, Vlad Jr., Yainer Díaz, Caminero | Sandlot Insider",
-        "meta_description": "BaseballAmerica.com’s ideal roster projection plus 2025 stats paint the Dominican Republic as Pool D’s top team—and our pick to make a run for Gold. Breakdown of Soto, Julio Rodríguez, Tatis Jr., José Ramírez, Jeremy Peña, Ketel Marte, Vladimir Guerrero Jr., Yainer Díaz, and Junior Caminero.",
-        "keywords": [
-          "Dominican Republic WBC 2026",
-          "Juan Soto",
-          "Julio Rodríguez",
-          "Fernando Tatis Jr.",
-          "José Ramírez",
-          "Jeremy Peña",
-          "Ketel Marte",
-          "Vladimir Guerrero Jr.",
-          "Yainer Díaz",
-          "Junior Caminero",
-          "Baseball America WBC projection",
-          "Pool D favorites",
-          "Sandlot Picks",
-          "Sandlot Insider",
-          "2025 player stats",
-          "Sandlot Picks Analytics",
-          "WBC 2026 predictions",
-          "World Baseball Classic 2026"
-        ],
-        "canonical_url": "https://sandlotpicks.com/articles/dominican-republic-2026-wbc-lineup-favorites",
-        "og_image": "https://sandlotpicks.com/article-heros/team-DR.png",
-        "reference_url": "https://www.baseballamerica.com/stories/world-baseball-classic-2026-projecting-ideal-rosters-for-the-dominican-republic-venezuela-latin-american-teams/"
-      },
-      "related_posts": [
-        "yankees-2026-four-offseason-pillars-closer-shortstop-or-second-base"
-      ],
-      "author_bio": "The Sandlot Picks Analytics team combines data science and baseball operations expertise to build predictive models for MLB player props and game totals. Our analysts have backgrounds in sabermetrics, sports statistics, and quantitative research. All predictions are powered by Statcast-based models updated daily.",
-      "author_credentials": [
-        "MLB Statcast data analysis",
-        "xwOBA and FIP-based modeling",
-        "Sports betting market research"
-      ]
-    },
-    {
-      "id": 8,
-      "title": "Blueprint to the Bronx (2025 → 2026): Four Offseason Pillars That Turn the Yankees Into Real Contenders",
-      "slug": "yankees-2026-four-offseason-pillars-closer-shortstop-or-second-base",
-      "author": "Sandlot Picks Analytics",
-      "date": "2025-11-21",
+      "id": 5,
+      "title": "Three Games Where the Model Beats the Market",
+      "slug": "three-games-three-bets-worth-making-on-todays-mlb-slate",
+      "author": "Sandlot Picks Team",
+      "date": "2026-05-25",
       "status": "Final",
       "tags": [
         "MLB",
-        "New York Yankees",
-        "Offseason",
-        "Free Agency",
-        "Trade Targets",
-        "Roster Construction",
-        "2026 Outlook"
+        "Sports Betting",
+        "Baltimore Orioles",
+        "Athletics",
+        "Arizona Diamondbacks",
+        "San Francisco Giants",
+        "Seattle Mariners",
+        "Tampa bay Rays"
       ],
-      "summary": "The 2025 Yankees fell short because the bats went quiet in October and the bullpen leaked in leverage. With a premier rotation poised to get healthier in 2026, New York should prioritize three moves across four pillars: keep Cody Bellinger, sign Devin Williams to a 1-year prove-it deal, and acquire either a shortstop or a second baseman by packaging Domínguez, Volpe, and top prospects.",
-      "read_time_minutes": 5,
-      "estimated_word_count": 900,
+      "summary": "Bradish surrenders a .948 OPS to right-handed bats and walks nearly five per nine innings, which is exactly the lineup Tampa brings to Camden Yards. The ML model projects 9.58 runs in that game, while Oakland gets Luis Castillo on the road with a 6.85 ERA against an Athletics offense that hits .267 at home.",
+      "read_time_minutes": 4,
+      "estimated_word_count": 843,
       "hero_image": {
-        "url": "/article-heros/yankees-2026-blueprint-hero.png",
-        "alt": "Yankee Stadium under the lights with a tactical blueprint overlay"
+        "url": "https://ryrlvrbjpwpecxpjicdo.supabase.co/storage/v1/object/public/post-images/hero/three-games-three-bets-worth-making-on-todays-mlb-slate/1779730776967-screen-shot-2026-05-25-at-12-38-18-pm.png",
+        "alt": "Diamondbacks at Giants"
       },
       "content": [
         {
-          "type": "paragraph",
-          "text": "The 2025 Yankees didn’t fall short because they lacked star power; they fell short because the offense vanished in October from key spots (including Anthony Volpe, Trent Grisham, and Jazz Chisholm) and the bullpen leaked in leverage. With a starting rotation that should be one of the league’s best in 2026 (three arms set to return from the IL), this winter should be about finishing games and raising the floor up the middle."
+          "text": "Rays @ Orioles",
+          "type": "heading"
         },
         {
-          "type": "paragraph",
-          "text": "Below: four pillars aligned to 2025 realities—and the three concrete moves to make now."
+          "text": "PICK: Over 7.5 runs",
+          "type": "subheading"
         },
         {
-          "type": "heading",
-          "text": "Pillar 1 — Lock in the Lefty Anchor (Move #1: Sign Cody Bellinger)"
+          "text": "⚾ Pitching Matchup\nMcClanahan's road ERA jumps to 3.79 versus 2.10 at home. Bradish is a sharp liability against right-handed bats, surrendering a .338 AVG and .948 OPS to RHB. Tampa's lineup is built to exploit it—his 4.82 BB/9 compounds command issues and opens base paths. The Rays have outscored Baltimore 25–10 in three meetings this season.\n\n📊 Splits Edge\nBradish's .948 OPS to RHB is the sharpest offensive lever here. Tampa's road offense (.692 OPS) grades well above Baltimore's approach, giving righties a clear path to damage.\n\n🔑 Key Factors\nBradish's RHB split and walk rate create scoring opportunities. McClanahan's elevated road ERA (3.79) keeps Baltimore in range. Both teams grade as run-scoring threats in this matchup.\n\n📈 Total Lean OVER 7.5\nThe ML model projects 9.58 runs—1.5+ above the line. Bradish's walk rate and RHB vulnerability drive the projection; McClanahan's road splits prevent the Rays from shutting down Baltimore entirely.\n\n⚠ Red Flags\nBaltimore's below-average offense still poses limited ceiling risk. The Rays' season-series dominance is real, but McClanahan's arm talent is sharp enough to suppress total upside if he commands.",
+          "type": "paragraph"
         },
         {
-          "type": "paragraph",
-          "text": "2025 impact (Yankees): 29 HR, 98 RBI, .814 OPS in 152 games. That’s steady, middle-of-the-order thump over a full slate."
+          "text": "Diamondbacks @ Giants",
+          "type": "heading"
         },
         {
-          "type": "paragraph",
-          "text": "Versatility: played all three outfield spots and first base, letting the Yankees cover injuries and matchups without sacrificing defense."
+          "text": "PICK: Over 7.5 runs",
+          "type": "subheading"
         },
         {
-          "type": "paragraph",
-          "text": "Fit: a left-handed approach that plays perfectly to the short porch and stabilizes the 2–5 pockets of the order. In 2026, Bellinger profiles as the everyday LF with periodic shifts to 1B—lowering lineup volatility in October."
+          "text": "⚾ Pitching Matchup\nMerrill Kelly's 5.71 ERA and 1.51 WHIP are concerning, but his road splits (5.32 ERA) play better against a Giants lineup that manages just .682 OPS at home vs. RHP. Landen Roupp is the clear advantage—3.27 ERA, 9.98 K/9—but Arizona's right-heavy lineup exploits his weaker RHB split (.261 AVG, .680 OPS), capping his ceiling.\n\n📊 Splits Edge\nArizona's right-handed bats neutralize Roupp's LHB dominance. Kelly's road ERA edges his home rate, but neither starter shows a decisive offensive disadvantage.\n\n🔑 Key Factors\nArizona swept SF 3-0 this season, outscoring them 17-11.\nKelly's 1.51 WHIP and 3.95 BB/9 signal early trouble—walks fuel run totals.\nSF's home offense (.244 AVG, .679 OPS) ranks among the NL's weakest, but Kelly's volatility and command issues make damage inevitable.\n\n📈 Total Lean OVER 7.5\nThe ML model projects 10.95 runs—3.5 above the line. Kelly's ERA and chronic wildness support aggressive Over action even accounting for variance.\n\n💲 Odds Edge\nArizona at +112 offers value: the model gives the D-backs 58.8% win probability vs. the market's 47.0% implied—a 15+ point gap backed by season-series dominance and Kelly's favorable road numbers.\n\n⚠ Red Flags\nKelly's volatility could result in early removal, limiting Arizona's run-scoring window.\nThe model's ±3.26 standard deviation places 7.5 near the lower bound—sharp variance exists.\n\n🤖 ML Alignment\nModel fully supports the Over at 10.95 projected runs and Arizona's value at +112 given the 58.8% win probability divergence from market consensus.",
+          "type": "paragraph"
         },
         {
-          "type": "heading",
-          "text": "Pillar 2 — Bank the Last Three Outs (Move #2: Sign Devin Williams to a 1-year prove-it deal)"
+          "text": "Mariners @ Athletics ",
+          "type": "heading"
         },
         {
-          "type": "paragraph",
-          "text": "What 2025 told us: a 4.79 ERA (career worst) but an underlying xERA near 3.09; zero of six inherited runners scored; a 2.50 ERA from Aug. 10 to season’s end; a 0.00 ERA in the postseason; and performance stabilization when usage shifted to setup."
+          "text": "PICK: Athletics Moneyline",
+          "type": "subheading"
         },
         {
-          "type": "paragraph",
-          "text": "2026 plan: a one-year, incentive-laced deal (with option flexibility). Open camp with Williams as the favorite for the ninth, manage back-to-backs and pitch-shape consistency, and let the 30%+ strikeout ceiling reassert over a full season. Late-inning strikeouts remain the biggest marginal upgrade the Yankees can buy."
-        },
-        {
-          "type": "heading",
-          "text": "Pillar 3 — Fortify the Middle (Move #3: Choose ONE path — SS or 2B)"
-        },
-        {
-          "type": "paragraph",
-          "text": "Path A — Shortstop: Nico Horner (contact/OBP floor, clean actions, baserunning value) or Corey Seager (if pried loose: middle-order lefty with October pedigree)."
-        },
-        {
-          "type": "paragraph",
-          "text": "Path B — Second base: Ketel Marte (if willing to come to New York) for switch-hitting pop and gap power; if Marte lands, slide Jazz Chisholm to shortstop to keep range and athleticism up the middle."
-        },
-        {
-          "type": "paragraph",
-          "text": "Why just one? You need one everyday up-the-middle answer with above-average defense and a contact floor. Over 162, that can net 20–30 runs saved/created when you combine defense, RISP execution, and baserunning IQ."
-        },
-        {
-          "type": "heading",
-          "text": "Pillar 4 — Capital Allocation (Both Must Go to Land the Upgrade)"
-        },
-        {
-          "type": "paragraph",
-          "text": "To complete either Path A (SS) or Path B (2B), the Yankees will have to move both Jasson Domínguez and Jose Caballero or Anthony Volpe in a headliner package. Their individual value won’t net those names; this must be a both-players + prospects offer to match 2026 urgency and the acquisition cost for elite, controllable talent."
-        },
-        {
-          "type": "paragraph",
-          "text": "Return standard (no exceptions): the package must return one of the following on Day 1 — a top-tier shortstop or a top-tier second baseman who profiles as an October-relevant regular (3–5 WAR range, defense + contact)."
-        },
-        {
-          "type": "paragraph",
-          "text": "Guardrails: clean medicals/pitch-shape data for any arm included; do not accept a bat-only shortstop; retain at least one top-10 pitching prospect to backfill injuries."
-        },
-        {
-          "type": "heading",
-          "text": "2026 Staff Configuration: How You Fix the Bullpen"
-        },
-        {
-          "type": "paragraph",
-          "text": "Assuming Gerrit Cole and Carlos Rodón return to the rotation, reallocate depth to stabilize leverage: move Ryan Yarbrough, Will Warren, and Clarke Schmidt into bullpen roles to create multi-inning length and matchup flexibility."
-        },
-        {
-          "type": "paragraph",
-          "text": "With Williams re-established at the back end, Aaron Boone can shorten games to seven innings, avoid the third-time-through penalty, and stop the late-inning leaks that hurt against the Blue Jays in the 2025 postseason."
-        },
-        {
-          "type": "heading",
-          "text": "The 2025 Postmortem → The 2026 Mandate"
-        },
-        {
-          "type": "paragraph",
-          "text": "Bats went quiet in October — including Volpe, Trent Grisham, and Jazz Chisholm — when base hits, not big flies, were at a premium. The bullpen cracked in leverage, flipping tight games."
-        },
-        {
-          "type": "paragraph",
-          "text": "Fix those two pressure points and, with a healthier rotation, the Yankees are built for deep October."
-        },
-        {
-          "type": "heading",
-          "text": "The To-Do List (short and ruthless)"
-        },
-        {
-          "type": "paragraph",
-          "text": "1) Sign Cody Bellinger: keep the 2025 production (29 HR, 98 RBI, .814 OPS) and defensive elasticity. \n2) Sign Devin Williams: a 1-year, payroll-smart prove-it deal; manage him deliberately until the ninth is undeniably his again. \n3) Choose ONE path up the middle — SS (Horner/Seager) OR 2B (Marte with Jazz to SS) — and pay the real price: both Domínguez and Caballero or Volpe, plus top prospects."
-        },
-        {
-          "type": "paragraph",
-          "text": "Execute these three moves across these four pillars, and the Yankees don’t just look better in 2026—they look engineered for the final six outs of October, where parades are won."
+          "text": "⚾ Pitching Matchup\nLuis Castillo has been a liability in 2026, posting a 6.41 ERA and 1.55 WHIP with splits that are alarming in every direction — .300 AVG vs RHB and a 6.85 ERA on the road. Pitching away from T-Mobile tonight, Castillo faces an Athletics lineup that hits .267/.781 at home, a significant home-field offensive bump. Aaron Civale counters with a far more manageable 3.31 ERA and keeps right-handed hitters in check at .247/.742, giving Oakland a clear edge in the matchup.\n\n📊 Splits Edge\nThe Athletics hold the splits edge on both sides — Civale is sharper at home (3.48 ERA) against a Mariners road offense that slashes just .224/.674, while Castillo's road ERA of 6.85 is a genuine liability against an Athletics offense that elevates at Sutter Health Park.\n\n🔑 Key Factors\nCastillo's road ERA of 6.85 and WHIP of 1.61 makes him one of the most vulnerable road starters in the league right now — the Athletics bat .267 at home.\nCivale holds RHB to a .247 AVG and .742 OPS with a 1.15 WHIP, and the Mariners' road OPS of .674 is the second-lowest split in this matchup.\nAthletics are 27-26 overall and went 3-2 across their last five road games, returning home where they've posted a .267/.781 team slash line.\n\n📈 Total Lean UNDER 10.5\nThe ML model projects 9.92 total runs against a posted line of 10.5 — Civale's 3.31 ERA and the Mariners' .674 road OPS should suppress Seattle's side enough to keep this under the number.\n\n💲 Odds Edge\nThe market has the Mariners as a narrow favorite at -116 (53.8% implied), but the ML model gives the Athletics a 58.2% win probability — that's a meaningful 7+ point gap favoring Oakland that the line doesn't reflect. Civale vs. a struggling road Castillo is a clear edge for the home side.\n\n⚠ Red Flags\nCastillo's strikeout rate (9.13 K/9) suggests he still misses bats, and if he settles in early, the Athletics' low-floor offense could limit run production.\nThe Athletics' team ERA of 4.25 and bullpen usage could become an issue if Civale doesn't go deep, especially with a high 10.5 posted total creating blowout risk.\n\n🤖 ML Alignment\nMy read aligns with the ML model — both favor the Athletics, and the market's slight lean toward Seattle on the moneyline makes Oakland even more attractive as a value play.",
+          "type": "paragraph"
         }
       ],
       "seo": {
-        "title_tag": "Yankees 2026 Contender Plan: Keep Bellinger, Sign Williams, Trade for SS or 2B | Sandlot Insider",
-        "meta_description": "Using only 2025 context: why the Yankees should keep Cody Bellinger, sign Devin Williams to a 1-year deal, and trade both Domínguez and Volpe (plus prospects) for either a shortstop or second baseman to fix what failed in October.",
         "keywords": [
-          "Yankees 2025 offseason",
-          "Cody Bellinger Yankees 2025",
-          "Devin Williams prove-it deal",
-          "Jasson Domínguez trade",
-          "Anthony Volpe trade",
-          "Yankees shortstop target",
-          "Yankees second base target",
-          "2026 Yankees bullpen"
+          "mlb predictions",
+          "baseball analytics",
+          "pitching splits",
+          "moneyline picks",
+          "over under picks",
+          "sports betting analytics",
+          "market inefficiencies",
+          "era splits",
+          "lineup matchups"
         ],
-        "canonical_url": "https://sandlotpicks.com/articles/yankees-2026-four-offseason-pillars-closer-shortstop-or-second-base",
-        "og_image": "https://sandlotpicks.com/article-heros/yankees-2026-blueprint-hero.png"
+        "og_image": "https://ryrlvrbjpwpecxpjicdo.supabase.co/storage/v1/object/public/post-images/hero/three-games-three-bets-worth-making-on-todays-mlb-slate/1779730776967-screen-shot-2026-05-25-at-12-38-18-pm.png",
+        "title_tag": "MLB Picks: Three Games Where Analytics Beats the Line",
+        "canonical_url": "https://www.sandlotpicks.com/sandlot-insider/three-games-three-bets-worth-making-on-todays-mlb-slate",
+        "meta_description": "Data-driven MLB picks for Rays-Orioles, Diamondbacks-Giants, and Mariners-Athletics. Model projections vs. market odds."
       },
+      "affiliate_cta": {
+        "link": "https://www.sandlotpicks.com/upgrade",
+        "context": "Try for 7 Days!",
+        "enabled": true,
+        "platform": "Sandlot Picks"
+      },
+      "affiliate_disclaimer": "Data and predictions provided for informational and entertainment purposes only.",
       "related_posts": [
-        "blue-jays-2025-turnaround-from-basement-to-brink",
-        "aaron-judge-vs-cal-raleigh-2025-al-mvp-debate"
+        "five-batter-props-standing-out-on-todays-mlb-schedule-525",
+        "the-model-sees-nine-runs-in-chicago-and-a-padres-win"
       ],
-      "author_bio": "The Sandlot Picks Analytics team combines data science and baseball operations expertise to build predictive models for MLB player props and game totals. Our analysts have backgrounds in sabermetrics, sports statistics, and quantitative research. All predictions are powered by Statcast-based models updated daily.",
-      "author_credentials": [
-        "MLB Statcast data analysis",
-        "xwOBA and FIP-based modeling",
-        "Sports betting market research"
-      ]
+      "reference_urls": []
+    },
+    {
+      "id": 4,
+      "title": "Five Batter Props Standing Out on Today's MLB Schedule 5/25",
+      "slug": "five-batter-props-standing-out-on-todays-mlb-schedule-525",
+      "author": "Sandlot Picks Team",
+      "date": "2026-05-25",
+      "status": "Final",
+      "tags": [
+        "Baseball",
+        "MLB",
+        "batter props",
+        "Sports Betting"
+      ],
+      "summary": "Yandy Díaz has gone 10-for-22 against Kyle Bradish with a 1.273 OPS in that sample, and the model projects 4.02 total bases against a 1.5 line. George Springer is the power upside play — 5.84 projected TB against a pitcher surrendering 1.31 HR/9, with Springer's OPS doubling at home.",
+      "read_time_minutes": 3,
+      "estimated_word_count": 681,
+      "hero_image": {
+        "url": "https://ryrlvrbjpwpecxpjicdo.supabase.co/storage/v1/object/public/post-images/hero/five-batter-props-standing-out-on-todays-mlb-schedule-525/1779730901968-screen-shot-2026-05-25-at-10-32-33-am.png",
+        "alt": ""
+      },
+      "content": [
+        {
+          "text": "Today's Best Batter Props to Target",
+          "type": "heading"
+        },
+        {
+          "text": "Rays vs Orioles: Yandy Diaz",
+          "type": "subheading"
+        },
+        {
+          "text": "Yandy Díaz carries a 0.315 AVG and 0.896 OPS on the road against RHP Kyle Bradish, though his splits show 0.302 AVG and 0.805 OPS away from home. That's offset by his dominant 0.455 AVG and 1.273 OPS in 24 career PA against Bradish—elite familiarity despite the venue.\n\nHis 0.455 H2H average (10 H in 22 AB) and season 0.315 AVG exceed the 1.5 hits line. The ML model projects 1.69 hits. Road splits drag slightly, but career dominance and strong recent form (9 H in last 5 games) support the over.\n\nOn total bases, Díaz's 0.503 season SLG yields ~1.94 TB per game. The ML model projects 4.02 TB against the 1.5 consensus line. H2H splits are sharper: 16 TB in 24 PA (1.5 TB per PA), with recent outings of 4 TB (05/24), 6 TB (05/19), and 6 TB (05/18). Road splits present a modest headwind but don't offset his season-long offensive consistency.",
+          "type": "paragraph"
+        },
+        {
+          "text": "Diamondbacks vs Giants — Nolan Arenado",
+          "type": "subheading"
+        },
+        {
+          "text": "Arenado's road splits look great (0.220 AVG, 0.700 OPS), but throw in Landen Roupp and everything changes. He's crushing this guy — 0.667 AVG, 1.000 SLG in head-to-head — and our model sees 2.43 hits coming, way above the 0.5 consensus line.\n\nYeah, he's hitting just 0.220 on the road this year, but his track record against Roupp is legit (2 hits in his last 3 at-bats). The model is projecting 4.28 total bases — nearly nine times the consensus 0.5 line. Add in his 0.47 season SLG and the fact he's been racking up 2–4 TB in three of his last five games, and the over case builds fast.\n\nThe line's heavy (−190), so the market's skeptical. But the model edge is real here.",
+          "type": "paragraph"
+        },
+        {
+          "text": "Marlins vs Blue Jays – George Springer",
+          "type": "subheading"
+        },
+        {
+          "text": "Our model says Springer's hitting 2.43 hits tonight—well clear of that 0.5 line. He's consistently making contact at home (.227 AVG, 17 hits in 75 AB). Junk's giving up 9.33 hits per nine with an ugly 5.07 ERA. That's contact-hitter weather.\n\nThe home run projection is 1.25, nearly doubling the consensus 0.5. Springer's raked in two straight games, sitting at 5 HR in his last 34. He's a flyball pitcher's problem, especially when Springer's hitting at home and Junk's serving up fastballs at a 1.31 HR/9 clip.\n\nTotal bases: 5.84 per our model, crushing that 1.5 line. Springer's been on a power tear—6 TB on 05/23, 4 TB on 05/21—and he's torched Junk for 5 TB in three at-bats on 3/16. Playing at home helps; his OPS jumps from .374 season-wide to .758 at the ballpark. Junk's soft fastball approach (6.55 K/9) is tailor-made for what Springer does.",
+          "type": "paragraph"
+        },
+        {
+          "text": "Mariners vs Athletics - Jeff McNeil",
+          "type": "subheading"
+        },
+        {
+          "text": "McNeil owns a ridiculous .533 AVG with 1.267 SLG in 15 career at-bats against Castillo—but here's the thing: he's hitting .267 on the season and went 0-for-3 his last two games. That's real noise. Still, the matchup matters. Castillo's an RHP with a 6.41 ERA, and McNeil hits .278 against righties. Our model spits out 1.67 hits. The market has him at 0.5. That's mispriced.\n\nMcNeil's 0.533 career AVG against Castillo is the headline, and it holds up. Yeah, he's 3-for-18 his last five games overall, but that H2H sample—8 hits in 16 PA—is exactly what you want to see. The RHP matchup (.278 season AVG vs righties) is another layer. A recent 0-for-6 doesn't erase what this guy does to Castillo.\n\nMcNeil's hit 3 homers in 6 career PA against Castillo, and our model projects .71 homeruns. The 0.5 line looks soft. The caveat: he's only got 2 homers in 50 games this season and none at home. Castillo's allowing 1.36 HR/9, though, and McNeil's power history in this matchup is legit—just not overwhelming conviction.\n\nMcNeil's career 1.267 SLG against Castillo (19 TB in 16 PA) crushes the 1.5 line. His season SLG sits at .360 with 58 TB across 50 games—roughly 1.16 TB per game—but the H2H edge and RHP split push this over. Model and matchup point the same way.",
+          "type": "paragraph"
+        }
+      ],
+      "seo": {
+        "keywords": [
+          "yandy diaz props",
+          "nolan arenado props",
+          "jeff mcneil props",
+          "Geroge Springer props",
+          "mlb batter props",
+          "mlb predictions",
+          "head-to-head splits",
+          "baseball analytics",
+          "prop betting edges"
+        ],
+        "og_image": "https://ryrlvrbjpwpecxpjicdo.supabase.co/storage/v1/object/public/post-images/hero/five-batter-props-standing-out-on-todays-mlb-schedule-525/1779730901968-screen-shot-2026-05-25-at-10-32-33-am.png",
+        "title_tag": "MLB Batter Props 5/25: Yandy Díaz, Arenado, Springer, McNeil Picks",
+        "canonical_url": "https://www.sandlotpicks.com/sandlot-insider/five-batter-props-standing-out-on-todays-mlb-schedule-525",
+        "meta_description": "Five high-value batter props standing out on today's MLB schedule, backed by head-to-head splits and model projections. Find the matchups with edges."
+      },
+      "affiliate_cta": {
+        "link": "https://www.sandlotpicks.com/upgrade",
+        "context": "Enjoy a free 7 day pass using code \"FREE7\" At Checkout!",
+        "enabled": true,
+        "platform": "Sandlot Picks"
+      },
+      "affiliate_disclaimer": "Data and predictions provided for informational and entertainment purposes only.",
+      "related_posts": [
+        "three-games-three-bets-worth-making-on-todays-mlb-slate",
+        "the-model-sees-nine-runs-in-chicago-and-a-padres-win"
+      ],
+      "reference_urls": []
     }
   ]
 }
