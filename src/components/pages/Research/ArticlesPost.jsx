@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import articlesData from '../../../data/contentData/article.json';
 import moreArticlesData from '../../../data/contentData/moreArticles.json';
-import { getBySlug, apiPostToDisplay } from '../../../data/services/contentService';
+import { getBySlug, listPublished, apiPostToDisplay } from '../../../data/services/contentService';
 import '../../../styles/insights-page-styling/articles-post.css';
 
 function ArticlePost() {
@@ -34,7 +34,31 @@ function ArticlePost() {
       .finally(() => { if (!cancelled) setApiAttempted(true); });
     return () => { cancelled = true; };
   }, [slug]);
-  
+
+  // Pool used to resolve related-post slugs. Static JSON gives the SEO/first-
+  // paint fallback; the API pull below lets brand-new DB-only articles also
+  // be referenced as related posts before the next deploy.
+  const [apiArticles, setApiArticles] = useState([]);
+  useEffect(() => {
+    let cancelled = false;
+    listPublished({ type: 'article', limit: 200 })
+      .then(rows => {
+        if (cancelled) return;
+        const normalized = (rows || []).map(apiPostToDisplay).filter(Boolean);
+        if (normalized.length > 0) setApiArticles(normalized);
+      })
+      .catch(() => { /* keep static-only on failure */ });
+    return () => { cancelled = true; };
+  }, []);
+
+  // Merge by slug — API wins on conflict so edits propagate; static-only
+  // entries remain available (legacy JSON articles never imported to the DB).
+  const apiBySlug = new Map(apiArticles.map(a => [a.slug, a]));
+  const relatedLookupPool = [
+    ...apiArticles,
+    ...allArticles.filter(a => !apiBySlug.has(a.slug)),
+  ];
+
   // Text-to-Speech state
   const [isPlaying, setIsPlaying] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
@@ -585,7 +609,7 @@ const renderContent = (item, index) => {
               <h3>📚 Related Articles</h3>
               <div className="related-posts-grid">
                 {article.related_posts.map((relatedSlug, idx) => {
-                  const relatedArticle = allArticles.find(a => a.slug === relatedSlug);
+                  const relatedArticle = relatedLookupPool.find(a => a.slug === relatedSlug);
                   return relatedArticle ? (
                     <Link 
                       key={idx}
