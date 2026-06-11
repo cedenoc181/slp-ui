@@ -188,7 +188,7 @@ function HitRateStat({ label, data }) {
 function HitRateWedge({ title, data, loading, error, onClick }) {
   const summary = data?.summary ?? null;
   const gameCount = Array.isArray(data?.games) ? data.games.length : null;
-  const clickable = !loading && !error && summary && gameCount;
+  const clickable = !loading && !error && !!summary && !!gameCount;
 
   const Wrapper = clickable ? 'button' : 'div';
   const wrapperProps = clickable
