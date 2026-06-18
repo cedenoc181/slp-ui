@@ -1460,5 +1460,170 @@ Once confirmed, the FE delete button wires up in a single follow-up.
 
 
 ============================================================
+FEATURE — BET LIBRARY / P&L TRACKER (ADMIN-ONLY)
+============================================================
+
+WHAT IT IS
+----------
+An admin-only "track bets you like" library in the Predictions
+section. From the prop pages an admin can save a pick they've
+either *taken* or on their *watchlist* (their correlation to the bet). Each
+saved bet captures the Scout AI prompt/reasoning, the odds, the
+model probability, EV, and confidence at pick time. The Bet
+Library page then builds a flat 1-unit profit/loss + ROI record
+across all tracked picks — measuring how the user does when they
+follow Sandlot Picks.
+
+Two correlation states:
+  - taken     → user actually placed the bet; counts toward P/L.
+  - watchlist → user was interested but didn't place the bet; tracked
+                for reference, excluded from the taken P/L headline.
+
+P/L MODEL (flat 1-unit staking)
+-------------------------------
+Each bet risks exactly 1 unit. On settlement:
+  - won  → +unitProfit(odds), where
+           unitProfit = odds>0 ? odds/100 : 100/abs(odds)
+  - lost → -1
+  - push →  0 (stake returned)
+ROI     = (sum of unit P/L) / (wins + losses) * 100   [pushes excluded]
+Win rate = wins / (wins + losses) * 100               [pushes excluded]
+This math currently lives client-side in
+src/data/services/betLibraryService.js (unitProfit / betPL /
+summarize). The server only needs to persist the records and
+their status; the FE computes the summary. (Optionally the server
+can grade bets automatically — see "AUTO-GRADING" below.)
+
+CURRENT STATE
+-------------
+All tracked bets live in browser localStorage under key
+`spa_bet_library_v1`. This means the library does not survive a
+browser/device change and can't be reconciled against real game
+results. Needs a real backend, scoped per-user.
+
+FRONTEND FILES THAT WILL CONSUME THIS API
+-----------------------------------------
+- src/data/services/betLibraryService.js
+    (swap the localStorage read/write helpers for api.get/post/
+     patch/delete — method surface already matches: list / add /
+     update / remove / clear; all return Promises)
+- src/components/pages/predictions/BetLibrary.jsx   (library + P/L page)
+- src/data/services/matchupBets.js  (builds the Selection-field typeahead of
+     trackable bets for a chosen matchup from EXISTING real endpoints —
+     /predictions/today, /predictions/pitchers/{game_pk},
+     /predictions/batters/{game_pk}. No new backend needed; it auto-fills
+     odds/model_prob/ev onto the tracked bet at pick time.)
+- src/components/pages/predictions/PredictionsNav.jsx (admin-only tab)
+- (LATER) "Track" / "Watch" buttons on GameProps.jsx, PitcherProps.jsx,
+     BatterProps.jsx — these will call betLibraryService.add(...)
+
+DATA MODEL
+----------
+Table: tracked_bets
+  id            uuid PRIMARY KEY DEFAULT gen_random_uuid()
+  user_id       uuid NOT NULL REFERENCES users(id)
+  correlation   text NOT NULL CHECK (correlation IN ('taken','watchlist'))
+  matchup       text NOT NULL DEFAULT ''      -- "NYY @ BOS"
+  market        text NOT NULL DEFAULT ''      -- "Moneyline","Total","Strikeouts"...
+  selection     text NOT NULL                 -- "Boston Red Sox ML","Over 7.5"
+  odds          integer NOT NULL              -- American odds at pick time
+  model_prob    numeric NULL                  -- model win probability %
+  ev            numeric NULL                  -- expected value %
+  confidence    integer NULL CHECK (confidence BETWEEN 0 AND 5)
+                                              -- Scout AI confidence; 0 = muted (user faded Scout AI's side)
+  scout_prompt  text NOT NULL DEFAULT ''      -- Scout AI prompt/reasoning
+  game_pk       bigint NULL                   -- link back to the game when known
+  is_fade       boolean NOT NULL DEFAULT false -- bet is against Scout AI's recommended side
+  grade         jsonb NULL                    -- auto-settle descriptor (market/side/line/teamId/statType/playerId)
+  game_start    timestamptz NULL              -- first pitch; gates the ~2.5h settle delay
+  status        text NOT NULL DEFAULT 'pending'
+                CHECK (status IN ('pending','won','lost','push'))
+  created_at    timestamptz NOT NULL DEFAULT now()
+  settled_at    timestamptz NULL
+
+  INDEX (user_id, created_at DESC)
+
+ENDPOINTS (namespace: /api/v1/bet-library, admin JWT required)
+--------------------------------------------------------------
+  GET    /api/v1/bet-library
+         → 200, array of bet records for the authenticated admin,
+           newest first. Field names: camelCase to match the FE
+           record shape (id, createdAt, correlation, matchup,
+           market, selection, odds, modelProb, ev, confidence,
+           scoutPrompt, gamePk, isFade, grade, gameStartEpoch,
+           status, settledAt) — OR return snake_case (game_start as
+           ISO; grade as jsonb) and we'll map in the service.
+           State your choice.
+
+  POST   /api/v1/bet-library
+         body: { correlation, matchup, market, selection, odds,
+                 modelProb, ev, confidence, scoutPrompt, gamePk,
+                 isFade, grade, gameStartEpoch, status }
+         (status optional, defaults 'pending'. isFade defaults false.
+          grade is the opaque auto-settle descriptor — persist as
+          jsonb, never parsed server-side unless you build the
+          grading job below. gameStartEpoch is epoch ms → store as
+          game_start timestamptz.)
+         → 201, the created record (server sets id/createdAt).
+
+  PATCH  /api/v1/bet-library/{id}
+         body: partial — primarily { status }. When status moves to a
+         terminal value ('won'|'lost'|'push') and settled_at is null,
+         server stamps settled_at = now(); when status returns to
+         'pending', clear settled_at.
+         → 200, the updated record. 404 detail "Bet not found."
+
+  DELETE /api/v1/bet-library/{id}
+         → 204. 404 detail "Bet not found."
+
+  (OPTIONAL) DELETE /api/v1/bet-library  → clears the caller's library.
+
+OWNERSHIP / RLS
+---------------
+Every row is scoped to user_id = the JWT subject. All four
+endpoints must filter/enforce user_id = current admin so one
+admin can never read or mutate another's tracked bets. Standard
+admin JWT middleware + a user_id WHERE clause (or RLS policy
+USING (user_id = auth.uid())).
+
+AUTO-GRADING
+------------
+Game markets (moneyline / run line / total) ALREADY auto-settle on
+the client: betGrader.js (src/data/services/betGrader.js) pulls the
+final game record from scheduleService (GET /scheduled-games/today
+and /scheduled-games/prior — the same data the schedule page uses to
+flip live games to Final) ~2.5h after first pitch and grades from
+status + winning_team_id + home/away_runs_score. Each bet stores a
+`grade` descriptor + `gameStartEpoch` to drive this.
+
+STILL NEEDED FROM THE SERVER — player-prop grading:
+Pitcher/batter props can't be settled from the team box score. Each
+prop bet stores grade = { type:'pitcher_prop'|'batter_prop', side,
+line, statType, playerId }. Options:
+  (a) A nightly job that matches tracked_bets to per-player game-log
+      results (the existing /games/pitcher and /games/batter logs
+      carry per-game stats by player_id) and sets status/settled_at;
+      OR
+  (b) Expose a settle endpoint, e.g.
+      GET /api/v1/bet-library/result?game_pk=&stat_type=&player_id=
+      returning the player's actual stat for that game so the client
+      can compare to line/side.
+Until then, player props remain 'pending' and settle manually.
+When the backend owns persistence, fold the game-market grading into
+the same job so settlement is server-authoritative across markets.
+
+CONFIRMATION TO SEND BACK
+-------------------------
+Reply with:
+  - The four endpoints live under /api/v1/bet-library
+  - camelCase vs snake_case response choice
+  - 201 on create returning the full record (incl. id, createdAt)
+  - PATCH settled_at stamping behavior confirmed
+  - user_id scoping/RLS confirmed
+Once confirmed, betLibraryService swaps localStorage → fetch in a
+single follow-up with no page-level changes.
+
+
+============================================================
 END OF DOCUMENT
 ============================================================

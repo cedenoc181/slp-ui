@@ -52,6 +52,32 @@
   border: 1px solid rgba(99, 102, 241, 0.3);
 }
 
+/* Bet Library — admin tool, set apart on the right of the nav */
+.predictions-nav-link--library {
+  margin-left: auto;
+  border: 1px solid rgba(99, 102, 241, 0.25);
+  background: rgba(99, 102, 241, 0.06);
+  color: rgba(255, 255, 255, 0.6);
+}
+.predictions-nav-link--library::before {
+  content: '';
+  position: absolute;
+  left: -0.65rem;
+  top: 50%;
+  transform: translateY(-50%);
+  height: 60%;
+  width: 1px;
+  background: rgba(255, 255, 255, 0.12);
+}
+.predictions-nav-link--library {
+  position: relative;
+}
+.predictions-nav-link--library.active {
+  background: rgba(99, 102, 241, 0.18);
+  border-color: rgba(99, 102, 241, 0.4);
+  color: #fff;
+}
+
 .predictions-header-tag {
   font-size: 0.65rem;
   font-weight: 700;
