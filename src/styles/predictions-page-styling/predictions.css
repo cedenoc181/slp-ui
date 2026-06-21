@@ -25,12 +25,22 @@
 }
 
 /* ── Props nav tabs ───────────────────────────────────────── */
+/* Mobile-first: never wrap or spill — scroll horizontally when the tabs
+   (incl. admin tools) exceed the header width. Scrollbar hidden. */
 .predictions-nav {
   display: flex;
   gap: 0.25rem;
+  flex-wrap: nowrap;
+  max-width: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
 }
+.predictions-nav::-webkit-scrollbar { display: none; }
 
 .predictions-nav-link {
+  flex-shrink: 0;
   padding: 0.45rem 1rem;
   border-radius: 8px;
   font-size: 0.82rem;
@@ -52,30 +62,37 @@
   border: 1px solid rgba(99, 102, 241, 0.3);
 }
 
-/* Bet Library — admin tool, set apart on the right of the nav */
-.predictions-nav-link--library {
-  margin-left: auto;
+/* Admin tools (Bet Library, Lab) — grouped and set apart on the right of the nav */
+.predictions-nav-link--admin {
   border: 1px solid rgba(99, 102, 241, 0.25);
   background: rgba(99, 102, 241, 0.06);
   color: rgba(255, 255, 255, 0.6);
 }
-.predictions-nav-link--library::before {
+.predictions-nav-link--admin.active {
+  background: rgba(99, 102, 241, 0.18);
+  border-color: rgba(99, 102, 241, 0.4);
+  color: #fff;
+}
+/* First admin tab draws a divider before it. On desktop it also pushes the
+   whole group to the right; on smaller screens the tabs stay contiguous and
+   scroll (margin-left:auto would create awkward gaps inside a scroll area). */
+.predictions-nav-link--adminstart {
+  position: relative;
+  margin-left: 0.5rem;
+}
+.predictions-nav-link--adminstart::before {
   content: '';
   position: absolute;
-  left: -0.65rem;
+  left: -0.4rem;
   top: 50%;
   transform: translateY(-50%);
   height: 60%;
   width: 1px;
   background: rgba(255, 255, 255, 0.12);
 }
-.predictions-nav-link--library {
-  position: relative;
-}
-.predictions-nav-link--library.active {
-  background: rgba(99, 102, 241, 0.18);
-  border-color: rgba(99, 102, 241, 0.4);
-  color: #fff;
+@media (min-width: 1025px) {
+  .predictions-nav-link--adminstart { margin-left: auto; }
+  .predictions-nav-link--adminstart::before { left: -0.65rem; }
 }
 
 .predictions-header-tag {
@@ -288,27 +305,27 @@
   .predictions-categories-grid {
     grid-template-columns: 1fr;
   }
+
+  /* Tighter tabs so more fit before scrolling; nav still scrolls if needed. */
+  .predictions-nav-link {
+    padding: 0.4rem 0.75rem;
+    font-size: 0.78rem;
+  }
+  .predictions-header-inner h1 {
+    white-space: nowrap;
+  }
 }
 
 @media (max-width: 425px) {
+  /* Let the scrollable nav bleed to the screen edges so the first/last tab
+     isn't clipped by the header padding, and you can see it's scrollable. */
   .predictions-nav {
-    overflow-x: auto;
-    overflow-y: hidden;
-    -webkit-overflow-scrolling: touch;
-    scrollbar-width: none;
-    flex-wrap: nowrap;
+    margin: 0 -1rem;
     padding: 0 1rem;
   }
-  .predictions-header-inner::-webkit-scrollbar {
-    display: none;
-  }
-  .predictions-nav {
-    flex-shrink: 0;
-    flex-wrap: nowrap;
-  }
-  .predictions-header-inner h1 {
-    flex-shrink: 0;
-    white-space: nowrap;
+  .predictions-nav-link {
+    padding: 0.4rem 0.7rem;
+    font-size: 0.76rem;
   }
 }
 

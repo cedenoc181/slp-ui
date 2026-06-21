@@ -526,7 +526,7 @@ const CORR_FILTERS = [
 
 export default function BetLibrary() {
   const navigate = useNavigate();
-  const { isAuthenticated, isAdmin, loading } = useAuth();
+  const { isAuthenticated, hasAdminToolsAccess, loading } = useAuth();
 
   const [bets, setBets]       = useState([]);
   const [busy, setBusy]       = useState(true);
@@ -575,8 +575,8 @@ export default function BetLibrary() {
       navigate('/account', { state: { from: { pathname: '/predictions/bet-library' } } });
       return;
     }
-    if (!isAdmin) navigate('/predictions');
-  }, [loading, isAuthenticated, isAdmin, navigate]);
+    if (!hasAdminToolsAccess) navigate('/predictions');
+  }, [loading, isAuthenticated, hasAdminToolsAccess, navigate]);
 
   const refresh = useCallback(async () => {
     try {
@@ -668,7 +668,7 @@ export default function BetLibrary() {
   const summary = useMemo(() => summarize(corrBets), [corrBets]);
   const corrLabel = corr === 'all' ? 'all bets' : `${corr} bets`;
 
-  if (loading || !isAuthenticated || !isAdmin) return null;
+  if (loading || !isAuthenticated || !hasAdminToolsAccess) return null;
 
   return (
     <div className="predictions-page">

@@ -1,6 +1,7 @@
 import { createContext, useContext, useState, useEffect, useRef, useCallback } from 'react';
 import userAuthService, { setAccessToken, getAccessToken } from '../data/services/userAuthService';
 import userProfileService from '../data/services/userProfileService';
+import { ADMIN_TOOL_USER_IDS } from '../data/constants/featureFlags';
 
 const AuthContext = createContext(null);
 
@@ -213,6 +214,10 @@ export function AuthProvider({ children }) {
       profileLoading,
       // Role shortcuts mirroring backend dependency tiers
       isAdmin: user?.isAdmin === true || user?.isAdmin === 1,
+      // Admins, plus explicitly-granted user IDs, can use the Bet Library + Lab.
+      hasAdminToolsAccess:
+        user?.isAdmin === true || user?.isAdmin === 1
+        || ADMIN_TOOL_USER_IDS.some(id => String(id) === String(user?.id)),
       isVerified: user?.isVerified === true,
       isPremium: user?.isAdmin === true || user?.subscriptionTier === 'premium',
       hasScoutAiAccess:

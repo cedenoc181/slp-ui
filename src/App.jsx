@@ -73,6 +73,7 @@ import PitcherProps from './components/pages/predictions/PitcherProps';
 import BatterProps from './components/pages/predictions/BatterProps';
 import ScoutAIChat from './components/pages/predictions/ScoutAIChat';
 import BetLibrary from './components/pages/predictions/BetLibrary';
+import Lab from './components/pages/predictions/Lab';
 import UpgradePage from './components/pages/Account/UpgradePage';
 import CheckoutSuccessPage from './components/pages/Account/CheckoutSuccessPage';
 
@@ -172,6 +173,7 @@ const PAGE_TITLES = [
   { path: '/predictions/batters',     title: 'Batter Props' },
   { path: '/predictions/scout-ai',    title: 'Scout AI' },
   { path: '/predictions/bet-library', title: 'Bet Library' },
+  { path: '/predictions/lab',          title: 'Lab' },
   { path: '/unsubscribe',             title: 'Unsubscribe' },
   { path: '/verify-email',            title: 'Verify Email' },
 ];
@@ -262,7 +264,8 @@ function App() {
           <Route path="/predictions/pitchers" element={<ProtectedRoute require="premium"><PitcherProps /></ProtectedRoute>} />
           <Route path="/predictions/batters" element={<ProtectedRoute require="premium"><BatterProps /></ProtectedRoute>} />
           <Route path="/predictions/scout-ai" element={<ProtectedRoute require="premium"><ScoutAIChat /></ProtectedRoute>} />
-          <Route path="/predictions/bet-library" element={<ProtectedRoute require="admin"><BetLibrary /></ProtectedRoute>} />
+          <Route path="/predictions/bet-library" element={<ProtectedRoute require="admin-tools"><BetLibrary /></ProtectedRoute>} />
+          <Route path="/predictions/lab" element={<ProtectedRoute require="admin-tools"><Lab /></ProtectedRoute>} />
 
           {/* Education routes */}
           <Route path="/glossary" element={<Glossary />} />

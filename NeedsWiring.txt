@@ -1586,6 +1586,26 @@ admin can never read or mutate another's tracked bets. Standard
 admin JWT middleware + a user_id WHERE clause (or RLS policy
 USING (user_id = auth.uid())).
 
+NON-ADMIN ACCESS GRANT  ✅ DONE (2026-06-21)
+--------------------------------------------
+The frontend grants Bet Library + Lab access to specific non-admin
+users in addition to admins (FE allowlist: ADMIN_TOOL_USER_IDS in
+src/data/constants/featureFlags.js — currently [16]).
+
+RESOLVED server-side:
+  - Bet Library: the four /api/v1/bet-library/* routes were relaxed
+    from "admin only" to "admin OR user_id in {16}" in
+    bet_library_router.py; per-user row scoping unchanged. Verified
+    admin ✓, user 16 ✓, other non-admin → 403. Merged to main
+    (commit 7c4cbcf). User 16 no longer 401s on save/load once main
+    deploys. Keep this allowlist in sync with the FE
+    ADMIN_TOOL_USER_IDS; both go away together when opened to everyone.
+  - Lab data: /predictions/today and /predictions/pitchers/today are
+    CONFIRMED PUBLIC (depend only on get_db; no auth/premium/admin
+    dependency — only CORS). No grant needed. NOTE: if any future code
+    assumes these are premium-gated, that gating is NOT implemented —
+    they are open.
+
 AUTO-GRADING
 ------------
 Game markets (moneyline / run line / total) ALREADY auto-settle on
@@ -1622,6 +1642,53 @@ Reply with:
   - user_id scoping/RLS confirmed
 Once confirmed, betLibraryService swaps localStorage → fetch in a
 single follow-up with no page-level changes.
+
+
+============================================================
+FEATURE — PREDICTIONS LAB (SLATE SCREENER) ENRICHMENT
+============================================================
+
+WHAT IT IS
+----------
+Admin-only "Lab" tab (/predictions/lab) — a dynamic, day-trader-style
+screener over today's slate. Each starting pitcher is one row enriched
+with odds, the model's projection, and team/opponent form; the admin
+stacks any filters to surface hidden-value spots (e.g. "30+ starter on
+<=4 days rest, moderate favorite, vs a near-.500 team").
+
+CURRENT STATE
+-------------
+Fully working on existing endpoints — no backend required to run:
+  /predictions/today, /predictions/pitchers/today, /teams/standings.
+The filter catalog is data-driven (src/data/services/labFilters.js): a
+filter exists for every attribute, and several are already flagged
+`available: false` because their data isn't on the payload yet. Those
+filters render but are inert until the fields below land. Adding the
+field to the row (src/data/services/labSlate.js) auto-activates them.
+
+DATA REQUESTED (so the inert filters light up)
+----------------------------------------------
+On each starter in /predictions/pitchers/today (home_pitcher /
+away_pitcher objects), add:
+  age          integer   -- pitcher age in years
+  days_rest    integer   -- days since the pitcher's previous start
+  season_era   numeric   -- current-season ERA
+  throws       text      -- 'L' | 'R'
+  (optional)   recent form flags for "hot/struggling" screens
+
+Per-team situational splits (for opponent-coldness screens like
+"1-for-24 with RISP"), on /teams/standings rows or a lightweight slate
+endpoint keyed by team:
+  risp_avg     numeric   -- team AVG with runners in scoring position
+  key_injury   boolean   -- notable lineup/rotation injury flag
+
+FRONTEND
+--------
+No new service needed — labSlate.js already reads these field names off
+the pitcher node (age, days_rest, season_era, throws) and team form
+(rispAvg). Ship the fields and the matching Lab filters (Pitcher age,
+Days of rest, Season ERA, Throwing hand, Opp AVG w/ RISP) activate with
+zero FE changes. Confirm field names or tell me yours and I'll map them.
 
 
 ============================================================
