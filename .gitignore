@@ -31,8 +31,6 @@ yarn-error.log*
 # Data folder - ignore temp and reuseable data only
 /src/data/draftArticles.json
 /src/data/advertisements.json
-/src/data/membershipAccessAgreement.json
 
 # todo list 
 /todo.txt
-

@@ -1,0 +1,514 @@
+/* ============================================
+   TEAMS CAROUSEL SECTION
+   ============================================ */
+.teams-carousel {
+  background: linear-gradient(180deg, #161b22 0%, #0d1117 100%);
+  padding: 5rem 0;
+  position: relative;
+  overflow: hidden;
+}
+
+.teams-carousel::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+}
+
+.teams-carousel .container {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 2rem;
+}
+
+/* ============================================
+   HEADER
+   ============================================ */
+.carousel-header {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.header-text {
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.carousel-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: #e6edf3;
+  padding: 0.5rem 1rem;
+  border-radius: 50px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  margin-bottom: 1rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.badge-icon {
+  font-size: 1rem;
+}
+
+.carousel-header h2 {
+  font-size: 2.5rem;
+  font-weight: 800;
+  color: #e6edf3;
+  margin-bottom: 0.75rem;
+  letter-spacing: -0.5px;
+}
+
+.carousel-header p {
+  font-size: 1.1rem;
+  color: #8b949e;
+}
+
+/* ============================================
+   DIVISION TABS
+   ============================================ */
+.division-tabs {
+  display: flex;
+  justify-content: center;
+  gap: 0.5rem;
+  margin-bottom: 2rem;
+  flex-wrap: wrap;
+  padding: 0 1rem;
+}
+
+.division-tab {
+  padding: 0.6rem 1.25rem;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  color: #8b949e;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.division-tab:hover {
+  background: rgba(255, 255, 255, 0.06);
+  color: #e6edf3;
+}
+
+.division-tab.active {
+  background: linear-gradient(135deg, rgba(25, 118, 210, 0.2) 0%, rgba(100, 181, 246, 0.1) 100%);
+  border-color: rgba(100, 181, 246, 0.4);
+  color: #64B5F6;
+}
+
+/* ============================================
+   TEAMS SCROLL
+   ============================================ */
+.teams-scroll-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.scroll-btn {
+  flex-shrink: 0;
+  width: 44px;
+  height: 44px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 50%;
+  color: #8b949e;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.scroll-btn:hover {
+  background: rgba(100, 181, 246, 0.15);
+  border-color: rgba(100, 181, 246, 0.4);
+  color: #64B5F6;
+}
+
+.teams-scroll {
+  display: flex;
+  gap: 1.25rem;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  padding: 1rem 0.5rem;
+  flex: 1;
+  justify-content: center;
+}
+
+/* When scrollable (many teams), align to start */
+.teams-scroll.scrollable {
+  justify-content: flex-start;
+}
+
+.teams-scroll::-webkit-scrollbar {
+  display: none;
+}
+
+/* ============================================
+   TEAM CARD
+   ============================================ */
+.team-card {
+  flex: 0 0 160px;
+  min-width: 160px;
+  background: #1e1e1e;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 16px;
+  padding: 1.5rem 1rem;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  scroll-snap-align: start;
+  position: relative;
+  overflow: hidden;
+}
+
+.team-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: var(--team-color, #64B5F6);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.team-card:hover {
+  background: #252525;
+  border-color: rgba(255, 255, 255, 0.15);
+  transform: translateY(-4px);
+}
+
+.team-card:hover::before {
+  opacity: 1;
+}
+
+.team-logo-wrapper {
+  width: 72px;
+  height: 72px;
+  margin: 0 auto 1rem;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.03) 100%);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+}
+
+.team-card:hover .team-logo-wrapper {
+  background: linear-gradient(135deg, var(--team-color) 0%, rgba(255, 255, 255, 0.1) 100%);
+  border-color: var(--team-color);
+}
+
+.team-abbr {
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: #e6edf3;
+  letter-spacing: 1px;
+  transition: color 0.3s ease;
+}
+
+.team-logo-image {
+  width: 48px;
+  height: 48px;
+  object-fit: contain;
+  transition: transform 0.3s ease;
+}
+
+.team-card:hover .team-logo-image {
+  transform: scale(1.1);
+}
+
+.team-card:hover .team-abbr {
+  color: #fff;
+}
+
+.team-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  margin-bottom: 0.75rem;
+}
+
+.team-city {
+  font-size: 0.75rem;
+  color: #6e7681;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.team-name {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #e6edf3;
+}
+
+.team-hover-indicator {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #64B5F6;
+  opacity: 0;
+  transform: translateY(8px);
+  transition: all 0.3s ease;
+}
+
+.team-card:hover .team-hover-indicator {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* ============================================
+   LOADING SKELETON
+   ============================================ */
+.team-card.skeleton {
+  cursor: default;
+  pointer-events: none;
+}
+
+.team-card.skeleton .team-logo-wrapper {
+  background: rgba(255, 255, 255, 0.05);
+  animation: skeleton-pulse 1.5s ease-in-out infinite;
+}
+
+.skeleton-pulse {
+  animation: skeleton-pulse 1.5s ease-in-out infinite;
+}
+
+.skeleton-text {
+  display: block;
+  height: 12px;
+  width: 50px;
+  margin: 0 auto;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 4px;
+  animation: skeleton-pulse 1.5s ease-in-out infinite;
+}
+
+.skeleton-text.wide {
+  width: 70px;
+  height: 16px;
+  margin-top: 4px;
+}
+
+@keyframes skeleton-pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.4;
+  }
+}
+
+/* ============================================
+   ERROR STATE
+   ============================================ */
+.teams-error {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  padding: 2rem;
+  color: #f85149;
+  font-size: 0.95rem;
+}
+
+.scroll-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.scroll-btn:disabled:hover {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 255, 255, 0.1);
+  color: #8b949e;
+}
+
+/* ============================================
+   FOOTER STATS
+   ============================================ */
+.carousel-footer {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 2rem;
+  margin-top: 2.5rem;
+  padding-top: 2rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.footer-stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.footer-stat-value {
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: #64B5F6;
+  font-family: 'SF Mono', 'Fira Code', monospace;
+}
+
+.footer-stat-label {
+  font-size: 0.8rem;
+  color: #6e7681;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.footer-divider {
+  width: 1px;
+  height: 40px;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+/* ============================================
+   RESPONSIVE
+   ============================================ */
+@media (max-width: 1024px) {
+  .teams-carousel {
+    padding: 4rem 0;
+  }
+
+  .team-card {
+    flex: 0 0 145px;
+    min-width: 145px;
+    padding: 1.25rem 0.875rem;
+  }
+
+  .team-logo-wrapper {
+    width: 64px;
+    height: 64px;
+  }
+}
+
+@media (max-width: 768px) {
+  .teams-carousel {
+    padding: 3rem 0;
+  }
+
+  .teams-carousel .container {
+    padding: 0 1rem;
+  }
+
+  .carousel-header h2 {
+    font-size: 2rem;
+  }
+
+  .division-tabs {
+    gap: 0.35rem;
+  }
+
+  .division-tab {
+    padding: 0.5rem 0.875rem;
+    font-size: 0.8rem;
+  }
+
+  .scroll-btn {
+    display: none;
+  }
+
+  .teams-scroll-wrapper {
+    gap: 0;
+  }
+
+  .teams-scroll {
+    padding: 1rem 0;
+  }
+
+  .team-card {
+    flex: 0 0 135px;
+    min-width: 135px;
+    padding: 1rem 0.75rem;
+  }
+
+  .team-logo-wrapper {
+    width: 56px;
+    height: 56px;
+    margin-bottom: 0.75rem;
+  }
+
+  .team-abbr {
+    font-size: 1.1rem;
+  }
+
+  .team-name {
+    font-size: 0.9rem;
+  }
+
+  .carousel-footer {
+    gap: 1.5rem;
+    margin-top: 2rem;
+  }
+
+  .footer-stat-value {
+    font-size: 1.25rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .carousel-header h2 {
+    font-size: 1.75rem;
+  }
+
+  .carousel-badge {
+    font-size: 0.7rem;
+    padding: 0.4rem 0.8rem;
+  }
+
+  .division-tabs {
+    justify-content: flex-start;
+    overflow-x: auto;
+    flex-wrap: nowrap;
+    padding-bottom: 0.5rem;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .division-tab {
+    flex-shrink: 0;
+    padding: 0.45rem 0.75rem;
+    font-size: 0.75rem;
+  }
+
+  .team-card {
+    flex: 0 0 120px;
+    min-width: 120px;
+  }
+
+  .team-logo-wrapper {
+    width: 48px;
+    height: 48px;
+  }
+
+  .team-abbr {
+    font-size: 1rem;
+  }
+
+  .team-city {
+    font-size: 0.65rem;
+  }
+
+  .team-name {
+    font-size: 0.85rem;
+  }
+}

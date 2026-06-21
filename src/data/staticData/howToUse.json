@@ -1,0 +1,286 @@
+{
+  "tabs": [
+    {
+      "id": "getting-started",
+      "title": "Getting Started",
+      "sections": [
+        {
+          "type": "intro",
+          "title": "Welcome to Sandlot Picks Analytics!",
+          "content": "Your data-driven companion for MLB insights and analytics. Here's how to get the most out of our platform."
+        },
+        {
+          "type": "steps",
+          "steps": [
+            {
+              "number": 1,
+              "title": "Explore Player Analytics",
+              "description": "Dive deep into individual player performance:",
+              "items": [
+                "Search for any MLB player by name",
+                "View comprehensive batting and pitching statistics",
+                "Analyze trends across different time periods",
+                "Compare players using advanced metrics"
+              ],
+              "links": [
+                { "text": "Player Analytics", "url": "/player-analytics" }
+              ]
+            },
+            {
+              "number": 2,
+              "title": "Analyze Team Performance",
+              "description": "Get a complete picture of any MLB team:",
+              "items": [
+                "Browse all 30 MLB teams",
+                "View offensive, defensive, and pitching breakdowns",
+                "Track team trends and recent performance",
+                "Compare teams across various metrics"
+              ],
+              "links": [
+                { "text": "Team Analytics", "url": "/team-analytics" }
+              ]
+            },
+            {
+              "number": 3,
+              "title": "Check MLB Standings",
+              "description": "Stay updated on the league landscape:",
+              "items": [
+                "View current division standings",
+                "Track wild card races and playoff positioning",
+                "Analyze win/loss records and streaks",
+                "Monitor games behind and elimination numbers"
+              ],
+              "links": [
+                { "text": "MLB Standings", "url": "/mlb-standings" }
+              ]
+            },
+            {
+              "number": 4,
+              "title": "Learn & Research",
+              "description": "Expand your baseball analytics knowledge:",
+              "items": [
+                "Read our Sandlot Insider articles for in-depth analysis",
+                "Explore the Data Science section to understand our methodology",
+                "Use the Glossary to learn baseball statistics terminology",
+                "Check FAQs for answers to common questions"
+              ],
+              "links": [
+                { "text": "Glossary", "url": "/glossary" },
+                { "text": "FAQ", "url": "/faqs" },
+                { "text": "Data Science", "url": "/data-science" }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "analytics",
+      "title": "Using Analytics",
+      "sections": [
+        {
+          "type": "intro",
+          "title": "Navigating Our Analytics Tools",
+          "content": "Our analytics suite provides powerful insights to help you understand player and team performance at a deeper level."
+        },
+        {
+          "type": "faqs",
+          "items": [
+            {
+              "id": 1,
+              "icon": "player-analytics",
+              "question": "How do I find a specific player?",
+              "subtitle": "Searching for player stats and analytics",
+              "answer": "Navigate to Player Analytics and use the search bar at the top of the page. You can search by player name to instantly access their full statistical profile.",
+              "highlight": "Player Analytics"
+            },
+            {
+              "id": 2,
+              "icon": "team-analytics",
+              "question": "How do I view team statistics?",
+              "subtitle": "Accessing comprehensive team data",
+              "answer": "Go to Team Analytics and select any of the 30 MLB teams. You'll see:",
+              "list": [
+                "Offensive statistics (runs, hits, home runs, OPS)",
+                "Pitching metrics (ERA, WHIP, strikeouts)",
+                "Defensive performance data",
+                "Historical trends and comparisons"
+              ],
+              "highlight": "Team Analytics"
+            },
+            {
+              "id": 3,
+              "icon": "data-science-and-baseball",
+              "question": "What statistics are available?",
+              "subtitle": "Understanding the depth of our data",
+              "answer": "We provide both traditional and advanced statistics including:",
+              "list": [
+                "Traditional: AVG, HR, RBI, ERA, W-L",
+                "Advanced: wOBA, xFIP, BABIP, WAR",
+                "Situational: vs LHP/RHP splits, home/away",
+                "Recent form and trend analysis"
+              ]
+            },
+            {
+              "id": 4,
+              "icon": "mlb-schedule",
+              "question": "How often is the data updated?",
+              "subtitle": "Staying current with the latest stats",
+              "answer": "Our statistics are updated regularly throughout the MLB season to ensure you have access to the most current data for your analysis."
+            },
+            {
+              "id": 5,
+              "icon": "player-analytics",
+              "question": "Can I compare multiple players or teams?",
+              "subtitle": "Making side-by-side comparisons",
+              "answer": "Yes! Our analytics tools allow you to compare performance metrics across different players and teams to identify trends and make informed decisions."
+            },
+            {
+              "id": 6,
+              "icon": "glossary",
+              "question": "What if I don't understand a statistic?",
+              "subtitle": "Learning baseball analytics terminology",
+              "answer": "Visit our Glossary page for detailed explanations of all statistics and metrics used throughout the platform. Each term includes definitions and context for how to interpret the data.",
+              "highlight": "Glossary"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "understanding",
+      "title": "Understanding Stats",
+      "sections": [
+        {
+          "type": "intro",
+          "title": "Understanding Baseball Analytics",
+          "content": "Get familiar with the key metrics and statistics we use to analyze player and team performance."
+        },
+        {
+          "type": "metrics",
+          "title": "Key Metrics Explained",
+          "metrics": [
+            {
+              "name": "Batting Average (AVG)",
+              "description": "Hits divided by at-bats. A fundamental measure of a hitter's ability to get on base via hits.",
+              "scale": [
+                { "range": ".300+", "meaning": "Elite hitter" },
+                { "range": ".270-.299", "meaning": "Above average" },
+                { "range": ".240-.269", "meaning": "League average" },
+                { "range": "Below .240", "meaning": "Below average" }
+              ]
+            },
+            {
+              "name": "On-Base Plus Slugging (OPS)",
+              "description": "Combines on-base percentage and slugging percentage. A comprehensive measure of hitting ability.",
+              "scale": [
+                { "range": ".900+", "meaning": "All-Star caliber" },
+                { "range": ".800-.899", "meaning": "Above average" },
+                { "range": ".700-.799", "meaning": "League average" },
+                { "range": "Below .700", "meaning": "Below average" }
+              ]
+            },
+            {
+              "name": "Earned Run Average (ERA)",
+              "description": "Average earned runs allowed per nine innings pitched. Lower is better for pitchers.",
+              "scale": [
+                { "range": "Below 3.00", "meaning": "Ace level" },
+                { "range": "3.00-3.99", "meaning": "Quality starter" },
+                { "range": "4.00-4.99", "meaning": "League average" },
+                { "range": "5.00+", "meaning": "Below average" }
+              ]
+            },
+            {
+              "name": "Weighted On-Base Average (wOBA)",
+              "description": "Advanced metric that weights each way of reaching base by its run value.",
+              "scale": [
+                { "range": ".400+", "meaning": "Elite" },
+                { "range": ".340-.399", "meaning": "Above average" },
+                { "range": ".310-.339", "meaning": "League average" },
+                { "range": "Below .310", "meaning": "Below average" }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "factors",
+          "title": "Factors We Analyze",
+          "items": [
+            { "title": "Player Statistics", "description": "Recent form, season stats, career averages, and splits" },
+            { "title": "Matchup History", "description": "Batter vs. pitcher history and handedness advantages" },
+            { "title": "Ballpark Factors", "description": "Dimensions, altitude, and how parks affect scoring" },
+            { "title": "Weather Conditions", "description": "Wind, temperature, and humidity impacts on gameplay" },
+            { "title": "Team Performance", "description": "Overall team stats, lineup strength, and bullpen depth" },
+            { "title": "Advanced Metrics", "description": "xFIP, BABIP, exit velocity, barrel rate, and more" }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "tips",
+      "title": "Research Tips",
+      "sections": [
+        {
+          "type": "intro",
+          "title": "Getting the Most From Our Analytics",
+          "content": "Tips and strategies for conducting effective baseball research using our platform."
+        },
+        {
+          "type": "tips",
+          "tips": [
+            {
+              "icon": "how-to-use",
+              "title": "Start with the Basics",
+              "description": "Build your foundation before diving deep:",
+              "items": [
+                "Familiarize yourself with traditional stats first",
+                "Use our Glossary to understand new metrics",
+                "Compare players within the same position group",
+                "Look at both recent performance and season-long trends"
+              ]
+            },
+            {
+              "icon": "team-analytics",
+              "title": "Use Context",
+              "description": "Numbers tell a story, but context is key:",
+              "items": [
+                "Consider ballpark factors when comparing players",
+                "Account for schedule difficulty and opponent quality",
+                "Look at splits (home/away, vs LHP/RHP) for deeper insights",
+                "Check for injuries or lineup changes that affect stats"
+              ]
+            },
+            {
+              "icon": "data-science-and-baseball",
+              "title": "Identify Trends",
+              "description": "Look for patterns in the data:",
+              "items": [
+                "Track recent form vs. season averages",
+                "Monitor hot and cold streaks",
+                "Compare performance across different time periods",
+                "Watch for breakout players or declining veterans"
+              ]
+            },
+            {
+              "icon": "analysis",
+              "title": "Advanced Analysis",
+              "description": "Level up your research:",
+              "items": [
+                "Use advanced metrics like wOBA and xFIP for better accuracy",
+                "Analyze matchup-specific data for head-to-head insights",
+                "Consider team-level stats alongside individual performance",
+                "Cross-reference multiple data points before drawing conclusions"
+              ]
+            }
+          ]
+        },
+        {
+          "type": "warning",
+          "icon": "how-to-use",
+          "title": "Research Reminder",
+          "content": "Baseball analytics provide valuable insights, but no statistic can predict the future with certainty. Use our tools as part of a comprehensive research approach, and always consider multiple factors when forming opinions about player and team performance."
+        }
+      ]
+    }
+  ]
+}

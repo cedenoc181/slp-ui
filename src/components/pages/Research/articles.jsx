@@ -1,25 +1,72 @@
 import { useState, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { Link } from 'react-router-dom';
-import articlesData from '../../../data/article.json';
-import moreArticlesData from '../../../data/moreArticles.json';
+import articlesData from '../../../data/contentData/article.json';
+import moreArticlesData from '../../../data/contentData/moreArticles.json';
+import { listPublished, apiPostToDisplay } from '../../../data/services/contentService';
 
 function Article() {
-  const [searchTerm, setSearchTerm] = useState('');
-  const [selectedTag, setSelectedTag] = useState('all');
+  const [searchParams] = useSearchParams();
+  const initialSearch = searchParams.get('q') || '';
+  const initialTag = searchParams.get('tag') || 'all';
+  const [searchTerm, setSearchTerm] = useState(initialSearch);
+  const [selectedTag, setSelectedTag] = useState(initialTag);
   const [currentPage, setCurrentPage] = useState(1);
   const articlesPerPage = 4;
 
-  // Combine all articles from both JSON files and sort by ID descending
-  const allArticles = [
+  // Sort by date DESC across mixed sources (static + DB). id is unreliable
+  // when comparing JSON-only posts (legacy ids) against DB posts (fresh
+  // sequence). Nulls land last; ties break on id.
+  const byDateDesc = (a, b) => {
+    const aDate = a?.date || '';
+    const bDate = b?.date || '';
+    if (aDate && bDate && aDate !== bDate) return aDate < bDate ? 1 : -1;
+    if (!aDate && bDate) return 1;
+    if (aDate && !bDate) return -1;
+    return (b?.id ?? 0) - (a?.id ?? 0);
+  };
+
+  // Static-first list (JSON files baked at last deploy — drives react-snap pre-render).
+  const staticArticles = [
     ...(articlesData?.articles || []),
     ...(moreArticlesData?.articles || [])
-  ].sort((a, b) => b.id - a.id); // Sort highest ID first (newest first)
+  ].sort(byDateDesc);
+
+  // After hydration we MERGE with the live API list. API wins on slug
+  // conflicts (edits propagate), static articles not in the DB stay (legacy
+  // JSON-only posts), and API-only articles join the list.
+  const [allArticles, setAllArticles] = useState(staticArticles);
+
+  useEffect(() => {
+    let cancelled = false;
+    listPublished({ type: 'article', limit: 200 })
+      .then(rows => {
+        if (cancelled) return;
+        const apiList = (rows || []).map(apiPostToDisplay).filter(Boolean);
+        if (apiList.length === 0) return; // keep static if API has nothing
+        const apiBySlug = new Map(apiList.map(a => [a.slug, a]));
+        const staticOnly = staticArticles.filter(a => !apiBySlug.has(a.slug));
+        const merged = [...apiList, ...staticOnly].sort(byDateDesc);
+        setAllArticles(merged);
+      })
+      .catch(() => { /* keep static on failure */ });
+    return () => { cancelled = true; };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
 
   // Scroll to top when page changes
   useEffect(() => {
     window.scrollTo(0, 0);
   }, [currentPage]);
+
+  // Sync state with URL params when they change
+  useEffect(() => {
+    const qpSearch = searchParams.get('q') || '';
+    const qpTag = searchParams.get('tag') || 'all';
+    setSearchTerm(qpSearch);
+    setSelectedTag(qpTag);
+  }, [searchParams]);
 
   // Reset to page 1 when search/filter changes
   useEffect(() => {
@@ -49,18 +96,26 @@ function Article() {
     });
   });
 
-  // Sort by frequency and take top 10 for DISPLAY (plus 'all')
-  const displayTags = ['all', ...Object.entries(tagCounts)
-    .sort((a, b) => b[1] - a[1])
-    .slice(0, 10)
-    .map(([tag]) => tag)
-  ];
+  // Sort by frequency and take top 10 for DISPLAY (plus 'all'), always include selectedTag if custom
+  const displayTagsSet = new Set([
+    'all',
+    ...Object.entries(tagCounts)
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 10)
+      .map(([tag]) => tag)
+  ]);
+  if (selectedTag !== 'all') {
+    displayTagsSet.add(selectedTag);
+  }
+  const displayTags = Array.from(displayTagsSet);
 
   // Filter articles by search and tag
+  const activeTag = selectedTag === 'all' || allUniqueTags.has(selectedTag) ? selectedTag : 'all';
+
   const filteredArticles = allArticles.filter(article => {
     const matchesSearch = article.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          article.summary.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesTag = selectedTag === 'all' || article.tags.includes(selectedTag);
+    const matchesTag = activeTag === 'all' || article.tags.includes(activeTag);
     return matchesSearch && matchesTag;
   });
 

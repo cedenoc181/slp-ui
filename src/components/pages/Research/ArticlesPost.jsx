@@ -1,20 +1,64 @@
 import { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import articlesData from '../../../data/article.json';
-import moreArticlesData from '../../../data/moreArticles.json';
-import '../../../styles/articles-post.css';
+import articlesData from '../../../data/contentData/article.json';
+import moreArticlesData from '../../../data/contentData/moreArticles.json';
+import { getBySlug, listPublished, apiPostToDisplay } from '../../../data/services/contentService';
+import '../../../styles/insights-page-styling/articles-post.css';
 
 function ArticlePost() {
   const { slug } = useParams();
-  
-  // Combine articles from both files
+
+  // Static-first lookup so react-snap pre-renders + first paint are populated
   const allArticles = [
     ...(articlesData?.articles || []),
     ...(moreArticlesData?.articles || [])
   ];
-  
-  const article = allArticles.find(a => a.slug === slug);
-  
+  const staticMatch = allArticles.find(a => a.slug === slug);
+
+  // After hydration we revalidate from the API. The fresh row wins; static
+  // is the SEO/first-paint fallback. New articles (published since the last
+  // deploy) have no staticMatch and render purely from the API.
+  const [article, setArticle] = useState(staticMatch || null);
+  const [apiAttempted, setApiAttempted] = useState(false);
+
+  useEffect(() => {
+    let cancelled = false;
+    setApiAttempted(false);
+    getBySlug(slug)
+      .then(row => {
+        if (cancelled) return;
+        const fresh = apiPostToDisplay(row);
+        if (fresh) setArticle(fresh);
+      })
+      .catch(() => { /* 404 or network — keep static if we have it */ })
+      .finally(() => { if (!cancelled) setApiAttempted(true); });
+    return () => { cancelled = true; };
+  }, [slug]);
+
+  // Pool used to resolve related-post slugs. Static JSON gives the SEO/first-
+  // paint fallback; the API pull below lets brand-new DB-only articles also
+  // be referenced as related posts before the next deploy.
+  const [apiArticles, setApiArticles] = useState([]);
+  useEffect(() => {
+    let cancelled = false;
+    listPublished({ type: 'article', limit: 200 })
+      .then(rows => {
+        if (cancelled) return;
+        const normalized = (rows || []).map(apiPostToDisplay).filter(Boolean);
+        if (normalized.length > 0) setApiArticles(normalized);
+      })
+      .catch(() => { /* keep static-only on failure */ });
+    return () => { cancelled = true; };
+  }, []);
+
+  // Merge by slug — API wins on conflict so edits propagate; static-only
+  // entries remain available (legacy JSON articles never imported to the DB).
+  const apiBySlug = new Map(apiArticles.map(a => [a.slug, a]));
+  const relatedLookupPool = [
+    ...apiArticles,
+    ...allArticles.filter(a => !apiBySlug.has(a.slug)),
+  ];
+
   // Text-to-Speech state
   const [isPlaying, setIsPlaying] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
@@ -307,6 +351,20 @@ function ArticlePost() {
   }, [article]);
 
   if (!article) {
+    // While the API call is still in flight on a brand-new slug, render a
+    // light loading state instead of flashing "Not Found". Once the API
+    // returns (either 404 or success), we either show this state or render.
+    if (!apiAttempted) {
+      return (
+        <section className="article-post-page">
+          <div className="container">
+            <div className="article-not-found">
+              <h1>Loading…</h1>
+            </div>
+          </div>
+        </section>
+      );
+    }
     return (
       <section className="article-post-page">
         <div className="container">
@@ -475,36 +533,27 @@ const renderContent = (item, index) => {
             ))}
           </div>
 
-          {/* Affiliate CTA - only if it exists in JSON */}
-          {article.affiliate_cta?.enabled && (
-            <>
-              <div className="affiliate-disclaimer-header">
-                <p>Advertisement</p>
-              </div>       
-              <div 
-                className="affiliate-cta"
-                style={{
-                  backgroundImage: article.affiliate_cta['hero-banner'] 
-                    ? `url(${article.affiliate_cta['hero-banner']})` 
-                    : 'none'
-                }}
-              >
-                <div className="affiliate-cta-content">
-                  <h3>{article.affiliate_cta.platform}</h3>
-                  <p className="affiliate-offer">{article.affiliate_cta.offer}</p>
-                  <p className="affiliate-context">{article.affiliate_cta.context}</p>
-
-                  <a 
-                    href={article.affiliate_cta.link} 
-                    target="_blank" 
-                    rel="noopener noreferrer sponsored"
-                    className="affiliate-btn"
-                  >
-                    Get Started with {article.affiliate_cta.platform} →
-                  </a>
-                </div>
+          {/* Author Bio */}
+          {article.author_bio && (
+            <div className="article-author-bio">
+              <div className="author-bio-avatar">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                  <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                  <circle cx="12" cy="7" r="4"/>
+                </svg>
               </div>
-            </>
+              <div className="author-bio-content">
+                <p className="author-bio-name">{article.author}</p>
+                <p className="author-bio-text">{article.author_bio}</p>
+                {article.author_credentials && (
+                  <div className="author-bio-credentials">
+                    {article.author_credentials.map((cred, i) => (
+                      <span key={i} className="author-credential-tag">{cred}</span>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
           )}
 
           <footer className="article-footer">
@@ -560,7 +609,7 @@ const renderContent = (item, index) => {
               <h3>📚 Related Articles</h3>
               <div className="related-posts-grid">
                 {article.related_posts.map((relatedSlug, idx) => {
-                  const relatedArticle = allArticles.find(a => a.slug === relatedSlug);
+                  const relatedArticle = relatedLookupPool.find(a => a.slug === relatedSlug);
                   return relatedArticle ? (
                     <Link 
                       key={idx}

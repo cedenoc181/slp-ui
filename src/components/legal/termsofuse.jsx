@@ -1,5 +1,4 @@
 import { useEffect } from 'react';
-import '../../styles/legal.css';
 
 function TermsOfUse() {
   useEffect(() => {
@@ -22,7 +21,7 @@ function TermsOfUse() {
           <section>
             <h2>1. Nature of Services</h2>
             <p>
-              Sandlot Picks provides sports analytics, data-driven insights, and predictive modeling for sports betting. These analytics are used for educational and informational purposes only. Our Services include:
+              Sandlot Picks provides sports analytics, data-driven insights, and predictive modeling for sports betting information purposes. Our Services include:
             </p>
             <ul>
               <li>Statistical analysis and sports data visualization</li>
@@ -206,19 +205,15 @@ function TermsOfUse() {
 
             <h3>10.2 Cancellation and Refunds</h3>
             <ul>
+              <li>Annual subscriptions: 30-day money-back guarantee</li>
               <li>Monthly subscriptions: No refunds</li>
-              <li>Seasonal subscriptions: 30-day money-back guarantee</li>
-              <li>Lifetime subscription: 30-day money-back guarantee</li>
-              <li>Refund requests for *Seasonal subscriptions* and *Lifetime subscriptions* must be submitted within 30 days of purchase</li>
+              <li>Refund requests must be submitted within 30 days of purchase</li>
               <li>You may cancel your subscription at any time</li>
             </ul>
 
             <h3>10.3 Auto-Renewal</h3>
             <p>
-              The monthly access subscription plan: automatically renew unless canceled before the renewal date. You will be charged the then-current subscription fee.
-            </p>
-            <p>
-              Seasonal and Lifetime access subscription plans: do not auto-renew. They are one-time payments for the specified duration.
+              Subscriptions automatically renew unless canceled before the renewal date. You will be charged the then-current subscription fee.
             </p>
           </section>
 

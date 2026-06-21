@@ -1,0 +1,584 @@
+/* ============================================
+   Player Analytics Page - Dark Theme
+   ============================================ */
+
+/* CSS Variables for consistency */
+:root {
+  --pa-bg-primary: #121212;
+  --pa-bg-secondary: #121212;
+  --pa-bg-card: #1a1a1a;
+  --pa-bg-card-hover: #222222;
+  --pa-border-color: rgba(255, 255, 255, 0.08);
+  --pa-text-primary: #ffffff;
+  --pa-text-secondary: #a0a0a0;
+  --pa-text-muted: #666666;
+  --pa-primary-color: #1976D2;
+  --pa-primary-hover: #1565C0;
+  --pa-accent-gradient: linear-gradient(135deg, #1976D2 0%, #1565C0 100%);
+  --pa-success: #4CAF50;
+  --pa-warning: #FF9800;
+  --pa-danger: #F44336;
+}
+
+/* ============================================
+   Page Layout
+   ============================================ */
+.player-analytics-page {
+  min-height: 100vh;
+  background: var(--pa-bg-primary);
+  color: var(--pa-text-primary);
+}
+
+/* ============================================
+   Transition Overlay - Team/Season Switch Loading
+   ============================================ */
+
+.pa-transition-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(18, 18, 18, 0.95);
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  backdrop-filter: blur(4px);
+}
+
+@media (max-width: 768px) {
+  .pa-transition-overlay {
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    animation: pa-fade-in 0.2s ease-out;
+  }
+}
+
+.pa-transition-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.5rem;
+  color: var(--pa-text-primary, #ffffff);
+  font-size: 1.1rem;
+  font-weight: 500;
+}
+
+@keyframes pa-fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.pa-loading-spinner {
+  width: 48px;
+  height: 48px;
+  border: 4px solid rgba(255, 255, 255, 0.1);
+  border-top-color: var(--pa-primary-color, #1976D2);
+  border-radius: 50%;
+  animation: pa-spin 0.8s linear infinite;
+}
+
+@keyframes pa-spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Force dark background on player analytics page - mirrors team analytics */
+.player-analytics-page,
+.player-analytics-page .analytics-header,
+.player-analytics-page .analytics-content {
+  background-color: #121212 !important;
+  background-image: none !important;
+}
+
+/* ============================================
+   Header Section - Mirrored from Team Analytics
+   ============================================ */
+
+/* Override header gradient for player analytics - mirrors team analytics exactly */
+.player-analytics-page > .analytics-header,
+.player-analytics-page .analytics-header:not(.season-selector):not(.team-selector) {
+  background: linear-gradient(180deg, rgba(25, 118, 210, 0.15) 0%, transparent 100%) !important;
+  padding: 2rem 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Ensure selectors don't inherit header styles */
+.player-analytics-page .season-selector,
+.player-analytics-page .team-selector {
+  background: none !important;
+  padding: 0 !important;
+  border: none !important;
+}
+
+.player-analytics-page .analytics-header .container {
+  position: relative;
+  z-index: 1;
+}
+
+.player-analytics-page .analytics-header .header-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  gap: 1.5rem;
+}
+
+/* ============================================
+   Team Selector Wrapper
+   ============================================ */
+.player-analytics-page .team-selector-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  width: auto;
+  min-width: auto;
+  height: auto;
+}
+
+.player-analytics-page .team-header-inline {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.player-analytics-page .team-logo-image {
+  width: 60px;
+  height: 60px;
+  object-fit: contain;
+}
+
+.player-analytics-page .team-header-inline h1 {
+  font-size: 2rem;
+  font-weight: 700;
+  margin: 0;
+  color: #fff;
+}
+
+.player-analytics-page .selectors-row {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+}
+
+.player-analytics-page .team-selector,
+.player-analytics-page .season-selector {
+  position: relative;
+}
+
+/* ============================================
+   Dropdown Styling - Mirrors Team Analytics
+   ============================================ */
+.player-analytics-page .team-dropdown,
+.player-analytics-page .season-dropdown {
+  padding: 10px 16px;
+  padding-right: 36px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 8px;
+  color: var(--pa-text-primary);
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23aaa' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  transition: all 0.2s ease;
+  height: auto;
+  min-width: 120px;
+  transform: none;
+}
+
+.player-analytics-page .team-dropdown {
+  min-width: 200px;
+}
+
+.player-analytics-page .season-dropdown {
+  min-width: 100px;
+}
+
+.player-analytics-page .team-dropdown:hover,
+.player-analytics-page .season-dropdown:hover {
+  background-color: rgba(255, 255, 255, 0.12);
+  border-color: rgba(255, 255, 255, 0.25);
+}
+
+.player-analytics-page .team-dropdown:focus,
+.player-analytics-page .season-dropdown:focus {
+  outline: none;
+  border-color: var(--pa-primary-color);
+  box-shadow: 0 0 0 3px rgba(25, 118, 210, 0.2);
+}
+
+.player-analytics-page .team-dropdown option,
+.player-analytics-page .season-dropdown option {
+  background: #1e1e1e;
+  color: #fff;
+}
+
+/* ============================================
+   Timeframe Tabs - Mirrors Team Analytics
+   ============================================ */
+.player-analytics-page .timeframe-tabs {
+  display: flex;
+  gap: 8px;
+  background: rgba(255, 255, 255, 0.05);
+  padding: 6px;
+  border-radius: 10px;
+  width: auto;
+}
+
+.player-analytics-page .timeframe-tabs .tab {
+  padding: 10px 20px;
+  background: transparent;
+  border: none;
+  border-radius: 8px;
+  color: var(--pa-text-secondary);
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  flex: none;
+}
+
+.player-analytics-page .timeframe-tabs .tab:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--pa-text-primary);
+}
+
+.player-analytics-page .timeframe-tabs .tab.active {
+  background: var(--pa-primary-color);
+  color: #fff;
+}
+
+/* ============================================
+   Container - Mirrors Team Analytics
+   ============================================ */
+.player-analytics-page .container {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 1.5rem;
+}
+
+.player-analytics-page .analytics-content {
+  padding: 2rem 0;
+}
+
+/* ============================================
+   Eyebrow Text
+   ============================================ */
+.eyebrow {
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  font-size: 0.75rem;
+  color: var(--pa-text-muted);
+  margin: 0 0 0.5rem 0;
+  font-weight: 700;
+}
+
+/* ============================================
+   Section Cards (reusable)
+   ============================================ */
+.player-analytics-page .section-card {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  padding: 1.5rem;
+  transition: all 0.2s ease;
+}
+
+.player-analytics-page .section-card:hover {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.player-analytics-page .card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 1.25rem;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.player-analytics-page .card-header h3 {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--pa-text-primary);
+  margin: 0;
+}
+
+.player-analytics-page .card-subtitle {
+  font-size: 13px;
+  color: var(--pa-text-secondary);
+  margin: 4px 0 0 0;
+}
+
+/* ============================================
+   Loading & Error States
+   ============================================ */
+.player-analytics-page .loading-container,
+.player-analytics-page .error-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 60vh;
+  gap: 1rem;
+}
+
+.player-analytics-page .loading-spinner {
+  width: 50px;
+  height: 50px;
+  border: 4px solid rgba(255, 255, 255, 0.1);
+  border-top-color: var(--pa-primary-color);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+/* ============================================
+   Player Profile Link
+   ============================================ */
+.player-profile-link {
+  color: inherit;
+  text-decoration: none;
+}
+
+.player-profile-link:hover {
+  color: var(--pa-primary-color, #1976D2);
+  text-decoration: underline;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.player-analytics-page .loading-text {
+  color: var(--pa-text-secondary);
+  font-size: 1rem;
+}
+
+.player-analytics-page .error-message {
+  color: var(--pa-danger);
+  font-size: 1rem;
+  text-align: center;
+}
+
+/* ============================================
+   No Data Message
+   ============================================ */
+.player-analytics-page .no-data-message {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: 120px;
+  color: var(--pa-text-muted);
+  font-size: 14px;
+  font-style: italic;
+}
+
+/* ============================================
+   Responsive Design
+   ============================================ */
+@media (max-width: 1024px) {
+  .player-analytics-page .analytics-header .header-content {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .player-analytics-page .timeframe-tabs {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .player-analytics-page .timeframe-tabs .tab {
+        flex: 1 1;
+        text-align: center;
+  }
+}
+
+@media (max-width: 768px) {
+  .player-analytics-page > .analytics-header,
+  .player-analytics-page .analytics-header:not(.season-selector):not(.team-selector) {
+    padding: 1.5rem 0;
+  }
+
+  .player-analytics-page .team-header-inline h1 {
+    font-size: 1.5rem;
+  }
+
+  .player-analytics-page .team-logo-image {
+    width: 48px;
+    height: 48px;
+  }
+
+  .player-analytics-page .timeframe-tabs {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .player-analytics-page .timeframe-tabs .tab {
+    flex: 1;
+    text-align: center;
+    padding: 8px 12px;
+    font-size: 13px;
+  }
+
+  .player-analytics-page .selectors-row {
+    align-items: flex-start !important;
+  }
+
+}
+
+@media (max-width: 480px) {
+  .player-analytics-page .container {
+    padding: 1rem 1rem;
+  }
+
+  .player-analytics-page > .analytics-header,
+  .player-analytics-page .analytics-header:not(.season-selector):not(.team-selector) {
+    padding: 1.25rem 0;
+  }
+
+  .player-analytics-page .analytics-header .header-content {
+    gap: 1rem;
+  }
+
+  .player-analytics-page .team-selector-wrapper {
+    gap: 0.75rem;
+  }
+
+  .player-analytics-page .team-header-inline {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .player-analytics-page .team-logo-image {
+    width: 44px;
+    height: 44px;
+  }
+
+  .player-analytics-page .team-header-inline h1 {
+    font-size: 1.35rem;
+  }
+
+  .player-analytics-page .selectors-row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .player-analytics-page .team-dropdown,
+  .player-analytics-page .season-dropdown {
+    width: 100%;
+    min-width: 100%;
+  }
+
+  .player-analytics-page .timeframe-tabs {
+    flex-direction: row;
+    padding: 4px;
+    border-radius: 8px;
+  }
+
+  .player-analytics-page .timeframe-tabs .tab {
+    padding: 8px 12px;
+    font-size: 12px;
+    border-radius: 6px;
+  }
+
+  .split-bar-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+
+  .split-bar-item {
+    padding: 0.875rem;
+  }
+}
+
+/* Mobile Small Screens - 430px and below */
+@media (max-width: 430px) {
+  .player-analytics-page .team-selector-wrapper {
+    margin: 0 auto;
+    align-items: center;
+  }
+
+  .player-analytics-page .selectors-row {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center !important;
+    gap: 0.5rem;
+    width: fit-content !important;
+  }
+
+  .player-analytics-page .team-dropdown {
+    width: auto;
+    min-width: 180px;
+    text-align: center;
+  }
+
+  .player-analytics-page .season-dropdown {
+    width: auto;
+    min-width: 90px;
+    text-align: center;
+  }
+
+  .player-analytics-page .header-content {
+    gap: 1.5rem !important;
+  }
+
+  .player-analytics-page .timeframe-tabs {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: fit-content !important;
+    height: 40px;
+    margin: 0 auto !important;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  }
+
+  .player-analytics-page .timeframe-tabs:focus-within {
+    border-color: var(--pa-primary-color, #1976D2);
+    box-shadow: 0 0 0 3px rgba(25, 118, 210, 0.2);
+  }
+
+  .player-analytics-page .timeframe-tabs .tab:focus {
+    outline: none;
+  }
+}
+
+@media (max-width: 375px) {
+  .player-analytics-page .team-dropdown,
+  .player-analytics-page .season-dropdown {
+    font-size: 13px;
+    padding: 8px 12px;
+  }
+
+  .player-analytics-page .timeframe-tabs .tab {
+    font-size: 11px;
+    padding: 6px 10px;
+  }
+
+  .player-profile-link {
+    font-size: 0.75rem;
+  }
+}
+
+/* ============================================
+   Transitions & Animations - Minimal for Performance
+   ============================================ */
+/* Removed global wildcard transitions to prevent browser crashes */
+/* Individual elements should define their own minimal transitions as needed */
+
+/* Disable transitions for form elements */
+.player-analytics-page select,
+.player-analytics-page option {
+  transition: none;
+}

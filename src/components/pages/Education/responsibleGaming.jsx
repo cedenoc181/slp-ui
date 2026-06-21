@@ -1,25 +1,15 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import '../../../styles/responsibleGaming-page.css';
 
 function ResponsibleGaming() {
   return (
     <section className="responsible-gaming-page">
       <div className="container">
-        {/* Hero Section */}
-        <div className="rg-hero">
-          <div className="rg-hero-icon">
-            <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
-              <path d="M9 12l2 2 4-4"/>
-            </svg>
-          </div>
-          <h1>Responsible Gaming</h1>
-          <p className="hero-subtitle">
-            At Sandlot Picks, we're committed to promoting safe and responsible sports betting. 
-            Betting should be fun, entertaining, and never a financial burden.
-          </p>
-        </div>
+        <h1 className="page-title">Responsible Gaming</h1>
+        <p className="page-subtitle">
+          At Sandlot Picks, we're committed to promoting safe and responsible sports betting. 
+          Betting should be fun, entertaining, and never a financial burden.
+        </p>
 
         {/* Our Commitment */}
         <div className="rg-section">

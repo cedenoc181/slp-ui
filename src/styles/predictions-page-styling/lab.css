@@ -1,0 +1,303 @@
+/* ============================================================
+   PREDICTIONS LAB — slate screener
+   Dark theme, violet accent (#a78bfa). Prefix: lab-
+   ============================================================ */
+
+.lab-intro { margin-bottom: 1.5rem; }
+.lab-tag {
+  display: inline-block;
+  font-size: 0.62rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #c4b5fd;
+  background: rgba(167, 139, 250, 0.12);
+  border: 1px solid rgba(167, 139, 250, 0.3);
+  border-radius: 20px;
+  padding: 0.25rem 0.7rem;
+  margin-bottom: 0.65rem;
+}
+.lab-intro-sub {
+  font-size: 0.85rem;
+  line-height: 1.55;
+  color: rgba(255, 255, 255, 0.55);
+  margin: 0;
+  max-width: 720px;
+}
+
+/* ── Buttons ──────────────────────────────────────────────── */
+.lab-btn {
+  font-size: 0.8rem;
+  font-weight: 700;
+  border-radius: 9px;
+  padding: 0.5rem 0.95rem;
+  cursor: pointer;
+  border: 1px solid transparent;
+  transition: background 0.15s ease, border-color 0.15s ease, opacity 0.15s ease;
+  white-space: nowrap;
+}
+.lab-btn.primary { background: #8b5cf6; color: #fff; }
+.lab-btn.primary:hover { background: #7c4ddb; }
+.lab-btn.ghost {
+  background: rgba(255, 255, 255, 0.05);
+  color: rgba(255, 255, 255, 0.7);
+  border-color: rgba(255, 255, 255, 0.12);
+}
+.lab-btn.ghost:hover { background: rgba(255, 255, 255, 0.09); color: #fff; }
+
+/* ── Templates / saved screens ────────────────────────────── */
+.lab-templates {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 1.25rem;
+}
+.lab-templates-label {
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.4);
+  margin-right: 0.25rem;
+}
+.lab-template-chip {
+  font-size: 0.76rem;
+  font-weight: 600;
+  color: #c4b5fd;
+  background: rgba(167, 139, 250, 0.1);
+  border: 1px solid rgba(167, 139, 250, 0.28);
+  border-radius: 20px;
+  padding: 0.35rem 0.8rem;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+.lab-template-chip:hover { background: rgba(167, 139, 250, 0.2); }
+.lab-saved-chip {
+  display: inline-flex;
+  align-items: center;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 20px;
+  overflow: hidden;
+}
+.lab-saved-load {
+  font-size: 0.76rem; font-weight: 600; color: rgba(255,255,255,0.75);
+  background: transparent; border: none; cursor: pointer; padding: 0.35rem 0.5rem 0.35rem 0.8rem;
+}
+.lab-saved-load:hover { color: #fff; }
+.lab-saved-del {
+  font-size: 0.62rem; color: rgba(248,113,113,0.7); background: transparent; border: none;
+  cursor: pointer; padding: 0.35rem 0.6rem 0.35rem 0.3rem;
+}
+.lab-saved-del:hover { color: #f87171; }
+
+/* ── Filter builder ───────────────────────────────────────── */
+.lab-builder {
+  background: #1a1a1a;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 14px;
+  padding: 1rem 1.1rem;
+  margin-bottom: 1.5rem;
+  position: relative;
+}
+.lab-builder-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+.lab-builder-actions { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+.lab-match-count {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: #c4b5fd;
+}
+.lab-empty-filters {
+  margin-top: 0.9rem;
+  font-size: 0.82rem;
+  color: rgba(255, 255, 255, 0.4);
+}
+
+.lab-filter-grid {
+  margin-top: 1rem;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+  gap: 0.7rem;
+}
+.lab-filter-card {
+  background: #222;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+  padding: 0.7rem 0.8rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+.lab-filter-card.is-pending { opacity: 0.72; border-style: dashed; }
+.lab-filter-head { display: flex; align-items: center; gap: 0.4rem; }
+.lab-filter-group {
+  font-size: 0.55rem; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase;
+  color: #a78bfa; background: rgba(167,139,250,0.14); border-radius: 4px; padding: 0.1rem 0.35rem;
+}
+.lab-filter-label { font-size: 0.82rem; font-weight: 700; color: #fff; flex: 1; }
+.lab-filter-remove {
+  width: 22px; height: 22px; border-radius: 6px; flex-shrink: 0;
+  background: rgba(255,255,255,0.06); border: none; color: rgba(255,255,255,0.55);
+  cursor: pointer; font-size: 0.68rem;
+}
+.lab-filter-remove:hover { background: rgba(248,113,113,0.18); color: #f87171; }
+
+.lab-range-row { display: flex; align-items: flex-end; gap: 0.5rem; }
+.lab-range-row label { display: flex; flex-direction: column; gap: 0.2rem; flex: 1; }
+.lab-range-row label span {
+  font-size: 0.58rem; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase;
+  color: rgba(255,255,255,0.35);
+}
+.lab-range-dash { color: rgba(255,255,255,0.3); padding-bottom: 0.4rem; }
+.lab-range-row input, .lab-select {
+  background: #121212;
+  border: 1px solid rgba(255,255,255,0.14);
+  border-radius: 7px;
+  padding: 0.4rem 0.5rem;
+  font-size: 0.82rem;
+  color: #fff;
+  width: 100%;
+  font-family: inherit;
+}
+.lab-range-row input:focus, .lab-select:focus { outline: none; border-color: rgba(167,139,250,0.6); }
+.lab-select { cursor: pointer; appearance: none; }
+
+.lab-filter-hint { font-size: 0.68rem; color: rgba(255,255,255,0.4); line-height: 1.4; }
+.lab-pending-note { font-size: 0.68rem; color: #fbbf24; line-height: 1.4; }
+
+/* ── Add-filter menu ──────────────────────────────────────── */
+.lab-addmenu {
+  position: absolute;
+  top: 3.4rem; left: 1.1rem;
+  z-index: 30;
+  width: min(420px, calc(100% - 2.2rem));
+  max-height: 60vh; overflow-y: auto;
+  background: #161616;
+  border: 1px solid rgba(255,255,255,0.14);
+  border-radius: 12px;
+  box-shadow: 0 16px 40px rgba(0,0,0,0.5);
+}
+.lab-addmenu-head {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0.8rem 1rem; border-bottom: 1px solid rgba(255,255,255,0.07);
+  font-size: 0.82rem; font-weight: 700; color: #fff;
+  position: sticky; top: 0; background: #161616;
+}
+.lab-addmenu-body { padding: 0.5rem; }
+.lab-addmenu-group { margin-bottom: 0.6rem; }
+.lab-addmenu-group-title {
+  font-size: 0.6rem; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase;
+  color: rgba(255,255,255,0.35); padding: 0.3rem 0.5rem;
+}
+.lab-addmenu-item {
+  width: 100%; display: flex; align-items: center; justify-content: space-between; gap: 0.5rem;
+  padding: 0.5rem 0.6rem; background: transparent; border: none; border-radius: 7px;
+  cursor: pointer; text-align: left; font-size: 0.82rem; color: rgba(255,255,255,0.85);
+}
+.lab-addmenu-item:hover:not(:disabled) { background: rgba(167,139,250,0.14); }
+.lab-addmenu-item:disabled { cursor: default; color: rgba(255,255,255,0.4); }
+.lab-addmenu-item.pending { color: rgba(255,255,255,0.55); }
+.lab-tag-pending { font-size: 0.58rem; font-weight: 700; color: #fbbf24; background: rgba(251,191,36,0.12); border-radius: 4px; padding: 0.1rem 0.35rem; }
+.lab-tag-added { font-size: 0.58rem; font-weight: 700; color: #4ade80; }
+
+/* ── Results table ────────────────────────────────────────── */
+.lab-table-wrap {
+  overflow-x: auto;
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 14px;
+  background: #1a1a1a;
+}
+.lab-table { width: 100%; border-collapse: collapse; font-size: 0.82rem; }
+.lab-table thead th {
+  text-align: left;
+  font-size: 0.6rem; font-weight: 800; letter-spacing: 0.05em; text-transform: uppercase;
+  color: rgba(255,255,255,0.4);
+  padding: 0.7rem 0.85rem;
+  border-bottom: 1px solid rgba(255,255,255,0.1);
+  white-space: nowrap;
+}
+.lab-table tbody td {
+  padding: 0.6rem 0.85rem;
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+  color: rgba(255,255,255,0.82);
+  white-space: nowrap;
+}
+/* Empty separator row between matchups so each game's two starters read as a pair */
+.lab-table tbody tr.lab-row:hover td { background: rgba(167, 139, 250, 0.07); }
+.lab-table tbody tr.lab-spacer td {
+  height: 1.4rem;
+  padding: 0;
+  border: none;
+  background: transparent;
+}
+.lab-table tbody tr.lab-spacer:hover td { background: transparent; }
+.lab-pitcher { font-weight: 700; color: #fff; }
+.lab-pitcher-cell { display: inline-flex; align-items: center; gap: 0.5rem; }
+.lab-team-logo {
+  width: 24px;
+  height: 24px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  background: #fff;
+  padding: 2px;
+  object-fit: contain;
+  box-sizing: border-box;
+}
+.lab-pitcher-link {
+  background: transparent;
+  border: none;
+  padding: 0;
+  font: inherit;
+  color: #fff;
+  font-weight: 700;
+  cursor: pointer;
+  text-align: left;
+}
+.lab-pitcher-link:hover { color: #c4b5fd; text-decoration: underline; }
+.lab-vs { color: rgba(255,255,255,0.35); font-size: 0.72rem; }
+.lab-matchup-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  background: transparent;
+  border: none;
+  padding: 0;
+  font: inherit;
+  color: #c4b5fd;
+  font-weight: 600;
+  cursor: pointer;
+}
+.lab-matchup-link:hover { color: #ddd6fe; text-decoration: underline; }
+.lab-matchup-arrow { font-size: 0.7rem; opacity: 0.6; }
+.lab-matchup-link:hover .lab-matchup-arrow { opacity: 1; }
+.lab-muted { color: rgba(255,255,255,0.45); }
+.lab-dyn { color: #c4b5fd; font-weight: 600; }
+.lab-table .pos { color: #4ade80; }
+.lab-table .neg { color: #f87171; }
+
+/* ── States ───────────────────────────────────────────────── */
+.lab-loading { display: flex; align-items: center; gap: 0.8rem; color: rgba(255,255,255,0.6); font-size: 0.88rem; padding: 2rem 0; }
+.lab-error {
+  background: rgba(248,113,113,0.08); border: 1px solid rgba(248,113,113,0.3);
+  border-radius: 12px; padding: 0.9rem 1.1rem; color: #f87171; font-size: 0.85rem;
+}
+.lab-empty {
+  display: flex; flex-direction: column; align-items: center; gap: 0.4rem; text-align: center;
+  padding: 3rem 1rem; background: #1a1a1a; border: 1px dashed rgba(255,255,255,0.1); border-radius: 16px;
+}
+.lab-empty-icon { font-size: 2rem; }
+.lab-empty p { margin: 0; font-size: 0.9rem; color: rgba(255,255,255,0.7); }
+.lab-empty-sub { font-size: 0.8rem !important; color: rgba(255,255,255,0.4) !important; }
+
+.lab-disclaimer { margin-top: 1.5rem; font-size: 0.7rem; line-height: 1.5; color: rgba(255,255,255,0.3); }
+
+@media (max-width: 600px) {
+  .lab-filter-grid { grid-template-columns: 1fr; }
+}

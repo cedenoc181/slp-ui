@@ -1,0 +1,451 @@
+/* ============================================
+   Spring Training - Dark Theme
+   ============================================ */
+
+/* Spring Training Container */
+.spring-training-container {
+  width: 100%;
+  padding: 2rem 0;
+  background-color: #121212;
+}
+
+/* Spring Banner */
+.spring-banner {
+  display: flex;
+  align-items: center;
+  gap: 2rem;
+  background: linear-gradient(135deg, rgba(76, 175, 80, 0.2) 0%, rgba(76, 175, 80, 0.08) 100%);
+  border: 1px solid rgba(76, 175, 80, 0.3);
+  padding: 2rem;
+  border-radius: 16px;
+  margin-bottom: 2rem;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+}
+
+.spring-icon {
+  font-size: 4rem;
+  animation: bounce 2s infinite;
+}
+
+@keyframes bounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+
+.spring-info h2 {
+  font-size: 2rem;
+  color: #ffffff;
+  margin-bottom: 0.5rem;
+  font-weight: 800;
+}
+
+.spring-location {
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+.spring-stats {
+  display: flex;
+  gap: 2rem;
+  margin-left: auto;
+}
+
+.stat-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  padding: 1rem 1.5rem;
+  border-radius: 12px;
+}
+
+.stat-label {
+  font-size: 0.85rem;
+  color: rgba(255, 255, 255, 0.6);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.stat-value {
+  font-size: 2rem;
+  color: #ffffff;
+  font-weight: 800;
+  margin-top: 0.25rem;
+}
+
+/* Spring Standings Grid */
+.spring-standings-grid {
+  display: grid;
+  grid-template-columns: 1.5fr 1fr;
+  gap: 2rem;
+  margin-bottom: 1rem;
+}
+
+.spring-standings-card,
+.spring-stats-card {
+  background: #1e1e1e;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 16px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+  overflow: hidden;
+}
+
+.spring-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.25rem 1.5rem;
+  background: linear-gradient(135deg, rgba(25, 118, 210, 0.15) 0%, rgba(25, 118, 210, 0.05) 100%);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  color: white;
+}
+
+.spring-card-header h3 {
+  font-size: 1.25rem;
+  font-weight: 800;
+  margin: 0;
+  color: #ffffff;
+}
+
+.spring-badge,
+.stats-badge {
+  background: rgba(25, 118, 210, 0.2);
+  border: 1px solid rgba(25, 118, 210, 0.4);
+  padding: 0.5rem 1rem;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #64B5F6;
+}
+
+/* Spring Training Table */
+.spring-table-container {
+  overflow-x: auto;
+  padding: 1rem;
+}
+
+.spring-standings-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.95rem;
+}
+
+.spring-standings-table th {
+  background: rgba(255, 255, 255, 0.03);
+  padding: 1rem 0.75rem;
+  text-align: left;
+  font-weight: 700;
+  color: #666666;
+  text-transform: uppercase;
+  font-size: 0.8rem;
+  letter-spacing: 0.5px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.spring-standings-table td {
+  padding: 1rem 0.75rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  color: #ffffff;
+}
+
+.spring-standings-table tr.clickable-row {
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.spring-standings-table tr.clickable-row:hover {
+  background-color: rgba(255, 255, 255, 0.05);
+}
+
+.spring-standings-table tr.spring-leader {
+  background: linear-gradient(90deg, rgba(255, 215, 0, 0.1) 0%, transparent 100%);
+  border-left: 4px solid #FFD700;
+}
+
+.spring-standings-table tr.spring-leader:hover {
+  background: linear-gradient(90deg, rgba(255, 215, 0, 0.15) 0%, rgba(255, 255, 255, 0.05) 100%);
+}
+
+.spring-standings-table .rank-col {
+  width: 40px;
+  text-align: center;
+  font-weight: 700;
+  color: #666666;
+}
+
+.spring-standings-table .team-col {
+  min-width: 280px;
+}
+
+.team-logo {
+  font-size: 1.5rem;
+  margin-right: 0.75rem;
+}
+
+.team-info {
+  display: inline-flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.team-name {
+  font-weight: 700;
+  color: #ffffff;
+  font-size: 1rem;
+}
+
+.team-location {
+  font-size: 0.75rem;
+  color: #666666;
+  font-weight: 500;
+}
+
+.spring-top-badge {
+  font-size: 1.25rem;
+  margin-left: 0.5rem;
+}
+
+.spring-standings-table .wins {
+  color: #4CAF50;
+  font-weight: 700;
+}
+
+.spring-standings-table .losses {
+  color: #F44336;
+  font-weight: 700;
+}
+
+.spring-standings-table .pct {
+  font-weight: 600;
+  color: #ffffff;
+}
+
+.spring-standings-table .gb {
+  color: #a0a0a0;
+  font-weight: 600;
+}
+
+.diff.positive {
+  color: #4CAF50;
+  font-weight: 700;
+}
+
+.diff.negative {
+  color: #F44336;
+  font-weight: 700;
+}
+
+.streak-col {
+  width: 70px;
+  min-width: 70px;
+  text-align: center;
+}
+
+.l10-col {
+  width: 100px;
+  min-width: 100px;
+  text-align: center;
+  padding-right: 2rem !important;
+}
+
+.streak {
+  font-weight: 700;
+  padding: 0.2rem 0.5rem;
+  border-radius: 6px;
+  font-size: 0.8rem;
+}
+
+.streak.win-streak {
+  background: rgba(76, 175, 80, 0.15);
+  color: #4CAF50;
+}
+
+.streak.loss-streak {
+  background: rgba(244, 67, 54, 0.15);
+  color: #F44336;
+}
+
+/* Stats Grid */
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1rem;
+  padding: 0.75rem 1.5rem 0;
+}
+
+.stat-box {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  border-left: 4px solid #4CAF50;
+  transition: all 0.2s ease;
+}
+
+.stat-box:hover {
+  background: rgba(255, 255, 255, 0.06);
+  transform: translateX(5px);
+}
+
+.stat-icon {
+  font-size: 2rem;
+}
+
+.stat-content {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.stat-box .stat-label {
+  font-size: 0.75rem;
+  color: #666666;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.stat-number {
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: #ffffff;
+}
+
+/* Top Performers */
+.top-performers {
+  padding: 1.5rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.top-performers h4 {
+  font-size: 1.25rem;
+  color: #ffffff;
+  margin-bottom: 1rem;
+  font-weight: 800;
+}
+
+.performers-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.performers-group + .performers-group {
+  margin-top: 1.25rem;
+  padding-top: 1.25rem;
+  border-top: 1px dashed rgba(255, 255, 255, 0.1);
+}
+
+.performers-subtitle {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #ffffff;
+  margin-bottom: 0.5rem;
+}
+
+.performer-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.75rem;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 8px;
+  border-left: 3px solid #FFD700;
+}
+
+.performer-item:hover {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.performer-category {
+  font-size: 0.85rem;
+  color: #a0a0a0;
+  font-weight: 600;
+  flex: 1;
+}
+
+.performer-value {
+  font-size: 0.95rem;
+  color: #ffffff;
+  font-weight: 700;
+  flex: 1;
+  text-align: center;
+}
+
+.performer-stat {
+  font-size: 1rem;
+  color: #4CAF50;
+  font-weight: 800;
+  flex: 0.5;
+  text-align: right;
+}
+
+/* Spring Info Footer */
+.spring-info-footer {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2rem;
+  background: #1e1e1e;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  padding: 2rem;
+  border-radius: 16px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+}
+
+.info-section h4 {
+  font-size: 1.25rem;
+  color: #ffffff;
+  margin-bottom: 1rem;
+  font-weight: 800;
+}
+
+.info-section p {
+  font-size: 1rem;
+  color: #a0a0a0;
+  line-height: 1.6;
+}
+
+/* ============================================
+   Responsive Design
+   ============================================ */
+@media (max-width: 1200px) {
+  .spring-standings-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .stats-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  .spring-banner {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .spring-stats {
+    margin-left: 0;
+    width: 100%;
+    justify-content: center;
+  }
+
+  .spring-info-footer {
+    grid-template-columns: 1fr;
+  }
+
+  .hide-mobile {
+    display: none;
+  }
+
+  .spring-standings-table .team-col {
+    min-width: 200px;
+  }
+}

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import glossaryData from '../../../data/glossary.json';
+import glossaryData from '../../../data/staticData/glossary.json';
 
 
 function GlossaryPage() {

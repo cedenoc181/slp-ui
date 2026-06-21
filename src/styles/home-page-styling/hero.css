@@ -1,0 +1,1091 @@
+/* ============================================
+   HERO SECTION
+   ============================================ */
+   :root {
+    --primary: #041E42;
+    --secondary: #0e2f5f;
+    --white-bg: #F7F7F9;
+    --card-white: #FFFFFF;
+    --text-dark: #1F2933;
+    --text-muted: #546A7B;
+    --cta-color: #C8102E; /* MLB red */
+    --cta-hover: #E31837; /* Lighter red */
+  }
+
+.hero {
+  position: relative;
+  background: linear-gradient(180deg, rgba(25, 118, 210, 0.15) 0%, transparent 100%), #0d1117;
+  padding: 6rem 0;
+  text-align: center;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.hero h1 {
+  color: #FFFFFF;
+  font-size: 4.5rem;
+  margin-bottom: 1rem;
+  position: relative;
+  z-index: 10;
+  animation: zoomIn 1s ease-out;
+  letter-spacing: 2px;
+  text-shadow: 
+    0 4px 12px rgba(0, 0, 0, 0.5), 
+    0 2px 4px rgba(0, 0, 0, 0.3),
+    0 0 30px rgba(200, 16, 46, 0.3);
+  line-height: 1.2;
+  background: linear-gradient(135deg, rgba(4, 30, 66, 0.3) 0%, rgba(200, 16, 46, 0.2) 100%);
+  padding: 1.5rem 2rem;
+  border-radius: 12px;
+  backdrop-filter: blur(5px);
+  border: 2px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 
+    0 8px 32px rgba(0, 0, 0, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  cursor: pointer;
+  transition: all 0.4s ease;
+  overflow: hidden;
+}
+
+.hero-subtitle {
+  font-size: 1.5rem;
+  margin-bottom: 2rem;
+  color: rgba(255, 255, 255, 0.95);
+  position: relative;
+  z-index: 10;
+  text-shadow: 
+    0 2px 8px rgba(0, 0, 0, 0.4),
+    0 4px 16px rgba(0, 0, 0, 0.3),
+    0 1px 3px rgba(0, 0, 0, 0.5),
+    0 0 20px rgba(200, 16, 46, 0.2);
+  font-weight: 400;
+  letter-spacing: 0.5px;
+}
+
+.glow-spot {
+  position: absolute;
+  width: 70%;
+  height: 70%;
+  border-radius: 50%;
+  background: radial-gradient(
+    circle,
+    rgba(200, 16, 46, 0.6) 0%,
+    rgba(21, 47, 86, 0.4) 30%,
+    transparent 70%
+  );
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+  filter: blur(20px);
+  z-index: -1;
+}
+
+@keyframes zoomIn {
+  0% {
+    opacity: 0;
+    transform: scale(0.8);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.hero .container {
+  position: relative;
+  z-index: 5;
+}
+
+.hero-decorations {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  top: 0;
+  left: 0;
+  z-index: 1;
+  pointer-events: none;
+}
+
+.hero-chart-left {
+  position: absolute;
+  left: 5%;
+  top: 60%;
+  transform: translateY(-50%);
+  opacity: 0.35;
+  width: 350px;
+  height: 320px;
+  animation: fadeInLeft 2s ease-out, floatChart 4s ease-in-out 2s infinite;
+}
+
+.hero-chart-right {
+  position: absolute;
+  right: 5%;
+  top: 60%;
+  transform: translateY(-50%);
+  opacity: 0.35;
+  width: 350px;
+  height: 320px;
+  animation: fadeInRight 2s ease-out, floatChart 4s ease-in-out 2s infinite;
+}
+
+@keyframes fadeInLeft {
+  0% {
+    opacity: 0;
+    transform: translateY(-50%) translateX(-30px);
+  }
+  100% {
+    opacity: 0.15;
+    transform: translateY(-50%) translateX(0);
+  }
+}
+
+@keyframes fadeInRight {
+  0% {
+    opacity: 0;
+    transform: translateY(-50%) translateX(30px);
+  }
+  100% {
+    opacity: 0.15;
+    transform: translateY(-50%) translateX(0);
+  }
+}
+
+@keyframes floatChart {
+  0%, 100% {
+    transform: translateY(-50%) translateX(0);
+  }
+  50% {
+    transform: translateY(-45%) translateX(0);
+  }
+}
+
+.baseball-icon {
+    position: absolute;
+    width: 80px;
+    height: 80px;
+    opacity: 0.25;
+    animation: bounceBaseball 16s linear infinite;
+}
+  
+
+@keyframes bounceBaseball {
+  0% {
+    left: 10%;
+    top: 80%;
+    transform: translate(-50%, -50%) rotate(0deg);
+  }
+  12.5% {
+    left: 30%;
+    top: 40%;
+    transform: translate(-50%, -50%) rotate(180deg);
+  }
+  25% {
+    left: 50%;
+    top: 20%;
+    transform: translate(-50%, -50%) rotate(360deg);
+  }
+  37.5% {
+    left: 70%;
+    top: 40%;
+    transform: translate(-50%, -50%) rotate(540deg);
+  }
+  50% {
+    left: 90%;
+    top: 10%;
+    transform: translate(-50%, -50%) rotate(720deg);
+  }
+  62.5% {
+    left: 70%;
+    top: 40%;
+    transform: translate(-50%, -50%) rotate(900deg);
+  }
+  75% {
+    left: 50%;
+    top: 20%;
+    transform: translate(-50%, -50%) rotate(1080deg);
+  }
+  87.5% {
+    left: 30%;
+    top: 40%;
+    transform: translate(-50%, -50%) rotate(1260deg);
+  }
+  100% {
+    left: 10%;
+    top: 80%;
+    transform: translate(-50%, -50%) rotate(1440deg);
+  }
+}
+
+.cta-button {
+  background-color: #C8102E;
+  color: #FFFFFF;
+  box-shadow: 0 4px 12px rgba(200, 16, 46, 0.3), 0 0 20px rgba(200, 16, 46, 0.4);
+  border: none;
+  padding: 1rem 2.5rem;
+  font-size: 1.1rem;
+  font-weight: 600;
+  cursor: pointer;
+  border-radius: 6px;
+  transition: all 0.3s;
+  position: relative;
+  z-index: 10;
+  margin-top: 25px;
+}
+
+.cta-button:hover {
+  transform: translateY(-2px);
+  background-color: #E31837;
+  box-shadow: 0 6px 16px rgba(200, 16, 46, 0.4), 0 0 30px rgba(200, 16, 46, 0.6);
+  color: var(--text-dark);
+}
+
+/* ============================================
+   NEW: Live Badge
+   ============================================ */
+.hero-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: rgba(34, 197, 94, 0.15);
+  border: 1px solid rgba(34, 197, 94, 0.3);
+  color: #22c55e;
+  padding: 0.5rem 1rem;
+  border-radius: 50px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  margin-bottom: 1.5rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.badge-pulse {
+  width: 8px;
+  height: 8px;
+  background: #22c55e;
+  border-radius: 50%;
+  animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.5;
+    transform: scale(1.2);
+  }
+}
+
+/* ============================================
+   NEW: Floating Analytics Background
+   ============================================ */
+.hero-analytics-bg {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.floating-stat {
+  position: absolute;
+  font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: rgba(100, 181, 246, 0.12);
+  animation: float 20s ease-in-out infinite;
+  white-space: nowrap;
+}
+
+.stat-1 { top: 15%; left: 8%; animation-delay: 0s; }
+.stat-2 { top: 25%; right: 12%; animation-delay: -3s; }
+.stat-3 { top: 60%; left: 5%; animation-delay: -6s; }
+.stat-4 { top: 70%; right: 8%; animation-delay: -9s; }
+.stat-5 { top: 40%; left: 15%; animation-delay: -12s; }
+.stat-6 { top: 80%; right: 15%; animation-delay: -15s; }
+
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0) rotate(0deg);
+    opacity: 0.1;
+  }
+  25% {
+    transform: translateY(-15px) rotate(1deg);
+    opacity: 0.15;
+  }
+  50% {
+    transform: translateY(-5px) rotate(-1deg);
+    opacity: 0.12;
+  }
+  75% {
+    transform: translateY(-20px) rotate(0.5deg);
+    opacity: 0.08;
+  }
+}
+
+/* ============================================
+   NEW: Stats Strip
+   ============================================ */
+.hero-stats-strip {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 2rem;
+  margin: 2rem 0;
+  padding: 1.25rem 2rem;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 16px;
+  backdrop-filter: blur(10px);
+}
+
+.hero-stat-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.hero-stat-number {
+  font-size: 1.75rem;
+  font-weight: 800;
+  color: #64B5F6;
+  font-family: 'SF Mono', 'Fira Code', monospace;
+  line-height: 1;
+}
+
+.hero-stat-label {
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--pa-text-secondary, #a0a0a0);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.hero-stat-divider {
+  width: 1px;
+  height: 40px;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+/* ============================================
+   ENHANCED: CTA Buttons
+   ============================================ */
+.hero-cta-group {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  margin-top: 2.5rem;  /* Add space above */
+  margin-bottom: 2rem;
+  flex-wrap: wrap;
+}
+
+.hero-cta-primary {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 1rem 2rem;
+  background: linear-gradient(135deg, #1976D2 0%, #1565C0 100%);
+  color: #fff;
+  border: none;
+  border-radius: 12px;
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 20px rgba(25, 118, 210, 0.4);
+}
+
+.hero-cta-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 30px rgba(25, 118, 210, 0.5);
+}
+
+.hero-cta-primary svg {
+  transition: transform 0.3s ease;
+}
+
+.hero-cta-primary:hover svg {
+  transform: translateX(4px);
+}
+
+.hero-cta-secondary {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 1rem 2rem;
+  background: transparent;
+  color: #fff;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 12px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.hero-cta-secondary:hover {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 255, 255, 0.3);
+}
+
+/* ============================================
+   NEW: Email Form
+   ============================================ */
+.hero-email-form {
+  max-width: 480px;
+  margin: 0 auto;
+}
+
+.email-input-wrapper {
+  display: flex;
+  gap: 0.5rem;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 0.35rem;
+  transition: border-color 0.3s ease;
+}
+
+.email-input-wrapper:focus-within {
+  border-color: rgba(100, 181, 246, 0.5);
+}
+
+.email-input-wrapper input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  padding: 0.75rem 1rem;
+  color: #fff;
+  font-size: 0.95rem;
+  outline: none;
+}
+
+.email-input-wrapper input::placeholder {
+  color: rgba(255, 255, 255, 0.4);
+}
+
+.email-submit-btn {
+  padding: 0.75rem 1.5rem;
+  background: #1976D2;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.3s ease;
+  white-space: nowrap;
+}
+
+.email-submit-btn:hover {
+  background: #1565C0;
+}
+
+.email-disclaimer {
+  font-size: 0.75rem;
+  color: var(--pa-text-secondary, #808080);
+  margin-top: 0.75rem;
+  text-align: center;
+}
+
+/* ============================================
+   RESPONSIVE - BELOW IPAD PRO (1024px)
+   ============================================ */
+   @media screen and (max-width: 1024px) {
+    .hero {
+      padding: 4rem 0;
+    }
+  
+    .hero h1 {
+      font-size: 3rem;
+      padding: 1.25rem 1.75rem;
+      letter-spacing: 1.5px;
+    }
+  
+    .hero-subtitle {
+      font-size: 1.35rem;
+    }
+  
+    /* Keep baseball but make it smaller and adjust path */
+    .baseball-icon {
+      width: 50px;
+      height: 50px;
+      opacity: 0.2;
+    }
+  
+    /* Make charts smaller using width/height */
+    .hero-chart-left,
+    .hero-chart-right {
+      top: 50%;
+      width: 320px;
+      height: 310px;
+    }
+  
+    .hero-chart-left {
+        left: 3%;
+    }
+    
+    .hero-chart-right {
+      right: 4%;
+    }
+  
+    .cta-button {
+      font-size: 1rem;
+      padding: 0.875rem 2rem;
+    }
+  
+    .glow-spot {
+      width: 80%;
+      height: 80%;
+    }
+  }
+  
+  @media screen and (max-width: 912px) {
+    .hero-subtitle {
+        font-size: 1.25rem;
+      }
+
+    .hero-chart-left {
+        left: 1.4%;
+    }
+
+    .hero-chart-right {
+        right: 1.9%;
+      }
+  }
+  /* ============================================
+     RESPONSIVE - TABLET (768px)
+     ============================================ */
+@media screen and (max-width: 768px) {
+  .hero {
+    padding: 3rem 0;
+  }
+  
+  .hero h1 {
+    font-size: 2.5rem;
+    padding: 1rem 1.5rem;
+    letter-spacing: 1px;
+  }
+  
+  .hero-subtitle {
+    font-size: 1.1rem;
+    margin-bottom: 1.5rem;
+  }
+  /* Further reduce chart size using width/height */
+  .hero-chart-left, .hero-chart-right {
+    display: none;
+  }
+
+  /* Smaller, slower baseball */
+  .baseball-icon {
+    width: 60px;
+    height: 60px;
+    opacity: 0.18;
+    animation: bounceBaseballTablet 20s linear infinite;
+  }
+  
+  .cta-button {
+    font-size: 0.95rem;
+    padding: 0.75rem 1.75rem;
+  }
+}
+  
+  /* Adjusted baseball animation for tablet */
+  @keyframes bounceBaseballTablet {
+    0% {
+      left: 15%;
+      top: 70%;
+      transform: translate(-50%, -50%) rotate(0deg);
+    }
+    25% {
+      left: 50%;
+      top: 25%;
+      transform: translate(-50%, -50%) rotate(360deg);
+    }
+    50% {
+      left: 85%;
+      top: 15%;
+      transform: translate(-50%, -50%) rotate(720deg);
+    }
+    75% {
+      left: 50%;
+      top: 25%;
+      transform: translate(-50%, -50%) rotate(1080deg);
+    }
+    100% {
+      left: 15%;
+      top: 70%;
+      transform: translate(-50%, -50%) rotate(1440deg);
+    }
+}
+  
+  /* ============================================
+     RESPONSIVE - MOBILE (480px)
+     ============================================ */
+@media screen and (max-width: 480px) {
+    .hero {
+      padding: 1.5rem 0 1.75rem;
+    }
+  
+    .hero h1 {
+      font-size: 1.5rem;
+      padding: 0.65rem 0.9rem;
+      letter-spacing: 0.3px;
+      margin-bottom: 0.5rem;
+      border-radius: 8px;
+      backdrop-filter: none;
+      -webkit-backdrop-filter: none;
+    }
+  
+    .hero-subtitle {
+      font-size: 0.85rem;
+      margin-bottom: 0.75rem;
+      line-height: 1.4;
+      padding: 0 0.5rem;
+    }
+
+    /* Stats strip - compact for mobile */
+    .hero-stats-strip {
+      gap: 0.75rem;
+      margin: 1rem 0;
+      padding: 0.75rem 1rem;
+      border-radius: 10px;
+    }
+
+    .hero-stat-number {
+      font-size: 1.1rem;
+    }
+
+    .hero-stat-label {
+      font-size: 0.65rem;
+    }
+
+    .hero-stat-divider {
+      width: 40px;
+      height: 1px;
+    }
+
+    /* CTA button - appropriately sized for mobile touch */
+    .hero-cta-group {
+      margin-top: 1rem;
+      margin-bottom: 1rem;
+    }
+
+    .hero-cta-primary {
+      padding: 0.7rem 1.25rem;
+      font-size: 0.85rem;
+      border-radius: 8px;
+    }
+
+    .hero-cta-primary svg {
+      width: 16px;
+      height: 16px;
+    }
+  
+    .hero-chart-left {
+      display: none;
+    }
+
+    /* Disable all animations on mobile to reduce CPU/GPU load */
+    .baseball-icon {
+      display: none;
+    }
+
+    .floating-stat {
+      display: none;
+    }
+
+    .glow-spot {
+      display: none;
+    }
+
+    /* Disable backdrop-filter on mobile */
+    .hero-stats-strip {
+      backdrop-filter: none;
+      -webkit-backdrop-filter: none;
+    }
+  
+    .cta-button {
+      font-size: 0.8rem;
+      padding: 0.6rem 1.25rem;
+    }
+  
+    .glow-spot {
+      width: 90%;
+      height: 90%;
+    }
+}
+  
+  /* Simpler baseball path for mobile */
+  @keyframes bounceBaseballMobile {
+    0% {
+      left: 20%;
+      top: 80%;
+      transform: translate(-50%, -50%) rotate(0deg);
+    }
+    50% {
+      left: 80%;
+      top: 20%;
+      transform: translate(-50%, -50%) rotate(720deg);
+    }
+    100% {
+      left: 20%;
+      top: 80%;
+      transform: translate(-50%, -50%) rotate(1440deg);
+    }
+  }
+  
+  /* ============================================
+     RESPONSIVE - EXTRA SMALL (375px)
+     ============================================ */
+  @media screen and (max-width: 375px) {
+    .hero {
+      padding: 1.25rem 0 1.5rem;
+    }
+
+    .hero h1 {
+      font-size: 1.3rem;
+      padding: 0.5rem 0.75rem;
+      letter-spacing: 0.2px;
+    }
+  
+    .hero-subtitle {
+      font-size: 0.8rem;
+      margin-bottom: 0.5rem;
+      padding: 0 0.25rem;
+    }
+
+    /* Stats strip - even more compact */
+    .hero-stats-strip {
+      gap: 0.5rem;
+      margin: 0.75rem 0;
+      padding: 0.6rem 0.75rem;
+    }
+
+    .hero-stat-number {
+      font-size: 0.95rem;
+    }
+
+    .hero-stat-label {
+      font-size: 0.6rem;
+    }
+
+    .hero-stat-divider {
+      width: 30px;
+    }
+
+    /* CTA button - minimum touch target size (44px) */
+    .hero-cta-group {
+      margin-top: 0.75rem;
+      margin-bottom: 0.75rem;
+    }
+
+    .hero-cta-primary {
+      padding: 0.6rem 1rem;
+      font-size: 0.8rem;
+      min-height: 44px;
+    }
+
+    .hero-chart-left {
+      display: none;
+    }
+
+    .cta-button {
+      font-size: 0.75rem;
+      padding: 0.55rem 1rem;
+    }
+  
+    /* Hide baseball on very small screens */
+    .baseball-icon {
+      display: none;
+    }
+  }
+
+  /* ============================================
+   NEW: Live Badge
+   ============================================ */
+.hero-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: rgba(34, 197, 94, 0.15);
+  border: 1px solid rgba(34, 197, 94, 0.3);
+  color: #22c55e;
+  padding: 0.5rem 1rem;
+  border-radius: 50px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  margin-bottom: 1.5rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.badge-pulse {
+  width: 8px;
+  height: 8px;
+  background: #22c55e;
+  border-radius: 50%;
+  animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.5;
+    transform: scale(1.2);
+  }
+}
+
+/* ============================================
+   NEW: Floating Analytics Background
+   ============================================ */
+.hero-analytics-bg {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.floating-stat {
+  position: absolute;
+  font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: rgba(100, 181, 246, 0.12);
+  animation: float 20s ease-in-out infinite;
+  white-space: nowrap;
+}
+
+.stat-1 { top: 15%; left: 8%; animation-delay: 0s; }
+.stat-2 { top: 25%; right: 12%; animation-delay: -3s; }
+.stat-3 { top: 60%; left: 5%; animation-delay: -6s; }
+.stat-4 { top: 70%; right: 8%; animation-delay: -9s; }
+.stat-5 { top: 40%; left: 15%; animation-delay: -12s; }
+.stat-6 { top: 80%; right: 15%; animation-delay: -15s; }
+
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0) rotate(0deg);
+    opacity: 0.1;
+  }
+  25% {
+    transform: translateY(-15px) rotate(1deg);
+    opacity: 0.15;
+  }
+  50% {
+    transform: translateY(-5px) rotate(-1deg);
+    opacity: 0.12;
+  }
+  75% {
+    transform: translateY(-20px) rotate(0.5deg);
+    opacity: 0.08;
+  }
+}
+
+/* ============================================
+   NEW: Stats Strip
+   ============================================ */
+.hero-stats-strip {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 2rem;
+  margin: 2rem 0;
+  padding: 1.25rem 2rem;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 16px;
+  backdrop-filter: blur(10px);
+}
+
+.hero-stat-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.hero-stat-number {
+  font-size: 1.75rem;
+  font-weight: 800;
+  color: #64B5F6;
+  font-family: 'SF Mono', 'Fira Code', monospace;
+  line-height: 1;
+}
+
+.hero-stat-label {
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--pa-text-secondary, #a0a0a0);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.hero-stat-divider {
+  width: 1px;
+  height: 40px;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+/* ============================================
+   ENHANCED: CTA Buttons
+   ============================================ */
+.hero-cta-group {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  margin-top: 2.5rem;  /* Add space above */
+  margin-bottom: 2rem;
+  flex-wrap: wrap;
+}
+
+.hero-cta-primary {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 1rem 2rem;
+  background: linear-gradient(135deg, #1976D2 0%, #1565C0 100%);
+  color: #fff;
+  border: none;
+  border-radius: 12px;
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 20px rgba(25, 118, 210, 0.4);
+}
+
+.hero-cta-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 30px rgba(25, 118, 210, 0.5);
+}
+
+.hero-cta-primary svg {
+  transition: transform 0.3s ease;
+}
+
+.hero-cta-primary:hover svg {
+  transform: translateX(4px);
+}
+
+.hero-cta-secondary {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 1rem 2rem;
+  background: transparent;
+  color: #fff;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 12px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.hero-cta-secondary:hover {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 255, 255, 0.3);
+}
+
+/* ============================================
+   NEW: Email Form
+   ============================================ */
+.hero-email-form {
+  max-width: 480px;
+  margin: 0 auto;
+}
+
+.email-input-wrapper {
+  display: flex;
+  gap: 0.5rem;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 0.35rem;
+  transition: border-color 0.3s ease;
+}
+
+.email-input-wrapper:focus-within {
+  border-color: rgba(100, 181, 246, 0.5);
+}
+
+.email-input-wrapper input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  padding: 0.75rem 1rem;
+  color: #fff;
+  font-size: 0.95rem;
+  outline: none;
+}
+
+.email-input-wrapper input::placeholder {
+  color: rgba(255, 255, 255, 0.4);
+}
+
+.email-submit-btn {
+  padding: 0.75rem 1.5rem;
+  background: #1976D2;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.3s ease;
+  white-space: nowrap;
+}
+
+.email-submit-btn:hover {
+  background: #1565C0;
+}
+
+.email-disclaimer {
+  font-size: 0.75rem;
+  color: var(--pa-text-secondary, #808080);
+  margin-top: 0.75rem;
+  text-align: center;
+}
+
+/* ============================================
+   RESPONSIVE
+   ============================================ */
+@media (max-width: 768px) {
+  .hero-stats-strip {
+    flex-direction: column;
+    gap: 1rem;
+    padding: 1rem;
+  }
+
+  .hero-stat-divider {
+    width: 60px;
+    height: 1px;
+  }
+
+  .hero-cta-group {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .hero-cta-primary,
+  .hero-cta-secondary {
+    justify-content: center;
+  }
+
+  .email-input-wrapper {
+    flex-direction: column;
+  }
+
+  .email-submit-btn {
+    width: 100%;
+  }
+
+  .floating-stat {
+    display: none;
+  }
+}

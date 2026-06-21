@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import '../../../styles/about-page.css';
+import { Link } from 'react-router-dom';
 
 function AboutPage() {
   useEffect(() => {
@@ -9,64 +9,161 @@ function AboutPage() {
   return (
     <section className="about-page">
       <div className="container">
-        <h2 className="section-title">Sandlot Picks Analytics</h2>
-        
-        <div className="about-description">
-          <h3>Our Mission</h3>
-          <p>
-            Sandlot Picks Analytics is dedicated to providing data-driven insights and predictive analytics for MLB betting. 
-            We combine advanced statistical modeling with real-time data to give you an edge in your sports betting decisions.
-          </p>
+        <h1 className="page-title">About Sandlot Picks</h1>
+        <p className="page-subtitle">Your Premier MLB Analytics Platform</p>
 
-          <h3>What We Do</h3>
-          <p>
-            Our platform leverages machine learning algorithms and historical MLB data to generate accurate predictions 
-            for batter and pitcher prop outcomes. We analyze thousands of data points including player statistics, 
-            matchup histories, ballpark factors, and real-time performance metrics.
-          </p>
-
-          <h3>Our Approach</h3>
-          <p>
-            We believe in transparency and education. Our analytics are built on proven statistical methods including:
-          </p>
-          <ul>
-            <li><strong>Advanced Regression Models</strong> – Predicting player performance based on historical patterns</li>
-            <li><strong>Feature Engineering</strong> – Creating meaningful metrics from raw game data</li>
-            <li><strong>Real-time Analysis</strong> – Dynamically generating matchup-based predictions</li>
-            <li><strong>Model Validation</strong> – Using RMSE and R² to ensure prediction accuracy</li>
-          </ul>
-
-          <h3>Why Choose Us?</h3>
-          <p>
-            Unlike traditional sports betting advice, we provide:
-          </p>
-          <ul>
-            <li>Data-backed predictions, not gut feelings</li>
-            <li>Transparent methodology and model performance metrics</li>
-            <li>Educational content to help you understand the analytics</li>
-            <li>Continuous model improvement based on new data</li>
-            <li>Community-driven insights through our Discord community</li>
-          </ul>
-
-          <h3>The Team</h3>
-          <p>
-            Sandlot Picks was founded by data scientists and baseball enthusiasts who saw an opportunity to apply 
-            advanced analytics to sports betting. Our team combines expertise in statistics, machine learning, 
-            and deep knowledge of baseball to create the most accurate prediction models possible.
-          </p>
-
-          <h3>Responsible Gambling</h3>
-          <p>
-            We are committed to promoting responsible gambling. Our tools are designed to inform, not encourage 
-            excessive betting. Please gamble responsibly and never wager more than you can afford to lose.
-          </p>
-
-          <div className="highlight-box">
-            <h4>Join Our Community</h4>
+        <div className="about-content">
+          {/* Mission Section */}
+          <div className="about-section">
+            <div className="section-icon">
+              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                <circle cx="12" cy="12" r="10"/>
+                <path d="M12 6v6l4 2"/>
+              </svg>
+            </div>
+            <h2>Our Mission</h2>
             <p>
-              Connect with fellow data-driven bettors, share insights, and get exclusive access to our latest models 
-              and predictions. Join our Discord community today!
+              Sandlot Picks Analytics is dedicated to making comprehensive MLB statistics accessible to every baseball fan. 
+              We believe that understanding the numbers behind the game enhances the way you experience and appreciate baseball.
             </p>
+          </div>
+
+          {/* What We Offer Section */}
+          <div className="about-section">
+            <div className="section-icon">
+              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                <path d="M3 3v18h18"/>
+                <path d="M18 17V9"/>
+                <path d="M13 17V5"/>
+                <path d="M8 17v-3"/>
+              </svg>
+            </div>
+            <h2>What We Offer</h2>
+            <p>
+              Our platform provides a comprehensive suite of MLB analytics tools designed for fans, researchers, and anyone 
+              who wants to dive deeper into baseball data:
+            </p>
+            <ul className="feature-list">
+              <li>
+                <strong>Player Analytics</strong> – Detailed statistical profiles for every MLB player including batting, 
+                pitching, and advanced sabermetric data
+              </li>
+              <li>
+                <strong>Team Analytics</strong> – In-depth breakdowns of all 30 MLB teams covering offensive, pitching, 
+                and defensive performance
+              </li>
+              <li>
+                <strong>MLB Standings</strong> – Real-time division standings, wild card races, and playoff positioning
+              </li>
+              <li>
+                <strong>Educational Resources</strong> – Comprehensive glossary, how-to guides, and data science explanations 
+                to help you understand the metrics
+              </li>
+              <li>
+                <strong>Sandlot Insider</strong> – Original articles and analysis covering players, teams, and MLB storylines
+              </li>
+            </ul>
+          </div>
+
+          {/* Our Approach Section */}
+          <div className="about-section">
+            <div className="section-icon">
+              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                <path d="M12 2L2 7l10 5 10-5-10-5z"/>
+                <path d="M2 17l10 5 10-5"/>
+                <path d="M2 12l10 5 10-5"/>
+              </svg>
+            </div>
+            <h2>Our Approach</h2>
+            <p>
+              We combine traditional baseball statistics with modern sabermetrics to give you a complete picture. 
+              Our platform features:
+            </p>
+            <ul className="feature-list">
+              <li>
+                <strong>Traditional Metrics</strong> – The classic stats like batting average, ERA, RBIs, and wins 
+                that have defined baseball for generations
+              </li>
+              <li>
+                <strong>Advanced Sabermetrics</strong> – Modern metrics like wOBA, xFIP, WAR, and BABIP that reveal 
+                deeper performance insights
+              </li>
+              <li>
+                <strong>Historical Context</strong> – Multi-season data to track trends, improvements, and career trajectories
+              </li>
+              <li>
+                <strong>Clean Data Visualization</strong> – Easy-to-read tables and organized layouts that make 
+                complex data accessible
+              </li>
+            </ul>
+          </div>
+
+          {/* Access Tiers Section */}
+          <div className="about-section">
+            <div className="section-icon">
+              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                <path d="M9 12l2 2 4-4"/>
+              </svg>
+            </div>
+            <h2>Flexible Access</h2>
+            <p>
+              We've designed our platform with different access levels to meet your needs:
+            </p>
+            <div className="access-tiers">
+              <div className="tier-card">
+                <h4>Guest Access</h4>
+                <p>Browse MLB Standings, Glossary, educational content, and Sandlot Insider articles—no account needed.</p>
+              </div>
+              <div className="tier-card">
+                <h4>Free Account</h4>
+                <p>Unlock full access to Player Analytics and Team Analytics with comprehensive statistical breakdowns.</p>
+              </div>
+              <div className="tier-card premium">
+                <h4>Premium</h4>
+                <p>Full access to game predictions, pitcher and batter props, Scout AI scouting reports, and live odds across 7+ sportsbooks — powered by our machine learning and AI models. Monthly and annual members also get early beta access to new features and the Model Performance Dashboard.</p>
+              </div>
+            </div>
+          </div>
+
+          {/* Who We Are Section */}
+          <div className="about-section">
+            <div className="section-icon">
+              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                <circle cx="9" cy="7" r="4"/>
+                <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+                <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+              </svg>
+            </div>
+            <h2>Who We Are</h2>
+            <p>
+              Sandlot Picks was created by baseball fans and data enthusiasts who wanted to build the analytics 
+              platform they wished existed. We're passionate about both the art and science of baseball—the 
+              tradition and history alongside the numbers that reveal new layers of understanding.
+            </p>
+            <p>
+              Our goal is simple: help you appreciate baseball more by understanding it better. Whether you're 
+              settling a debate about who's having the better season, researching historical performance, or 
+              just curious about what "wOBA" actually means, we've got you covered.
+            </p>
+          </div>
+
+          {/* CTA Section */}
+          <div className="about-cta">
+            <h3>Ready to Explore?</h3>
+            <p>Dive into our analytics tools and discover new insights about the game you love.</p>
+            <div className="cta-buttons">
+              <Link to="/mlb-standings" className="cta-btn primary" onClick={() => window.scrollTo(0, 0)}>
+                View Standings
+              </Link>
+              <Link to="/glossary" className="cta-btn secondary" onClick={() => window.scrollTo(0, 0)}>
+                Browse Glossary
+              </Link>
+              <Link to="/features" className="cta-btn secondary" onClick={() => window.scrollTo(0, 0)}>
+                See All Features
+              </Link>
+            </div>
           </div>
         </div>
       </div>

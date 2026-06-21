@@ -1,0 +1,419 @@
+/* ════════════════════════════════════════════════════════════
+   Alerts — sign-in modal, settings inbox, admin composer
+   ════════════════════════════════════════════════════════════ */
+
+/* ── Sign-in alert modal ────────────────────────────────────── */
+.alert-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(6px);
+  z-index: 1500;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+  animation: alert-modal-fade 0.2s ease;
+}
+
+@keyframes alert-modal-fade {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+.alert-modal {
+  position: relative;
+  width: 100%;
+  max-width: 480px;
+  background: linear-gradient(180deg, #1e293b 0%, #1a2438 100%);
+  border: 1px solid rgba(45, 212, 191, 0.35);
+  border-radius: 16px;
+  padding: 1.75rem;
+  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.55), 0 0 60px rgba(45, 212, 191, 0.08);
+  animation: alert-modal-scale 0.22s ease;
+}
+
+@keyframes alert-modal-scale {
+  from { transform: scale(0.96); opacity: 0; }
+  to   { transform: scale(1);    opacity: 1; }
+}
+
+.alert-modal__header {
+  margin-bottom: 1.1rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.12);
+}
+
+.alert-modal__badge {
+  display: inline-block;
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #2dd4bf;
+  background: rgba(45, 212, 191, 0.12);
+  border: 1px solid rgba(45, 212, 191, 0.3);
+  border-radius: 20px;
+  padding: 0.25rem 0.7rem;
+  margin-bottom: 0.85rem;
+}
+
+.alert-modal__title {
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: #fff;
+  margin: 0 0 0.45rem;
+  line-height: 1.3;
+}
+
+.alert-modal__date {
+  font-size: 0.75rem;
+  color: rgba(255, 255, 255, 0.4);
+}
+
+.alert-modal__body {
+  font-size: 0.92rem;
+  color: rgba(255, 255, 255, 0.78);
+  line-height: 1.65;
+  max-height: 50vh;
+  overflow-y: auto;
+}
+
+.alert-modal__body p {
+  margin: 0 0 0.75rem;
+}
+
+.alert-modal__body p:last-child {
+  margin-bottom: 0;
+}
+
+.alert-modal__footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-top: 1.25rem;
+  padding-top: 1rem;
+  border-top: 1px solid rgba(148, 163, 184, 0.12);
+}
+
+.alert-modal__queue-count {
+  font-size: 0.75rem;
+  color: rgba(255, 255, 255, 0.45);
+}
+
+.alert-modal__cta {
+  margin-left: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.7rem 1.4rem;
+  background: linear-gradient(135deg, #14b8a6, #0d9488);
+  color: #fff;
+  font-size: 0.9rem;
+  font-weight: 700;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  font-family: inherit;
+  box-shadow: 0 4px 16px rgba(20, 184, 166, 0.4);
+  transition: all 0.15s ease;
+}
+
+.alert-modal__cta:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 22px rgba(20, 184, 166, 0.55);
+}
+
+/* ── Settings inbox ─────────────────────────────────────────── */
+.alert-inbox__title-row {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  margin-bottom: 0.25rem;
+}
+
+.alert-inbox__title-row h2 {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 0;
+}
+
+.alert-inbox__icon {
+  font-size: 1.1rem;
+}
+
+.alert-inbox__unread-badge {
+  display: inline-block;
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #fff;
+  background: linear-gradient(135deg, #ef4444, #dc2626);
+  padding: 0.2rem 0.6rem;
+  border-radius: 20px;
+}
+
+.alert-inbox__list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.alert-inbox__item {
+  background: #F7F9FC;
+  border: 1px solid #E2E8F0;
+  border-radius: 10px;
+  overflow: hidden;
+  transition: border-color 0.15s, background 0.15s;
+}
+
+.alert-inbox__item.is-unread {
+  background: #fffaf3;
+  border-color: rgba(245, 158, 11, 0.4);
+}
+
+.alert-inbox__item.is-open {
+  border-color: rgba(20, 184, 166, 0.5);
+}
+
+.alert-inbox__row {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  padding: 0.85rem 1rem;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  font-family: inherit;
+  text-align: left;
+  color: inherit;
+  transition: background 0.15s;
+}
+
+.alert-inbox__row:hover {
+  background: rgba(20, 184, 166, 0.05);
+}
+
+.alert-inbox__dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: #f59e0b;
+  box-shadow: 0 0 0 4px rgba(245, 158, 11, 0.18);
+  flex-shrink: 0;
+}
+
+.alert-inbox__dot.is-read {
+  background: #cbd5e0;
+  box-shadow: none;
+}
+
+.alert-inbox__row-main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  min-width: 0;
+}
+
+.alert-inbox__subject {
+  font-size: 0.92rem;
+  font-weight: 600;
+  color: #1A202C;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.alert-inbox__item.is-unread .alert-inbox__subject {
+  font-weight: 700;
+}
+
+.alert-inbox__date {
+  font-size: 0.72rem;
+  color: #718096;
+}
+
+.alert-inbox__chevron {
+  font-size: 0.85rem;
+  color: #a0aec0;
+  flex-shrink: 0;
+}
+
+.alert-inbox__body {
+  padding: 0 1rem 1rem 2.6rem;
+  font-size: 0.88rem;
+  line-height: 1.65;
+  color: #2d3748;
+  border-top: 1px solid #E2E8F0;
+  background: rgba(255, 255, 255, 0.5);
+}
+
+.alert-inbox__body p {
+  margin: 0.75rem 0 0;
+}
+
+/* ── Admin composer ─────────────────────────────────────────── */
+.alert-composer {
+  position: relative;
+  background: linear-gradient(180deg, #1e293b 0%, #1a2438 100%);
+  border: 1px solid rgba(45, 212, 191, 0.3);
+  border-radius: 16px;
+  padding: 1.75rem;
+  max-width: 600px;
+  width: 100%;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.55);
+}
+
+.alert-composer__header {
+  margin-bottom: 1.25rem;
+  padding-right: 2.5rem;
+}
+
+.alert-composer__eyebrow {
+  display: inline-block;
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #2dd4bf;
+  background: rgba(45, 212, 191, 0.12);
+  border: 1px solid rgba(45, 212, 191, 0.3);
+  border-radius: 20px;
+  padding: 0.25rem 0.7rem;
+  margin-bottom: 0.65rem;
+}
+
+.alert-composer__header h3 {
+  font-size: 1.15rem;
+  font-weight: 800;
+  color: #fff;
+  margin: 0 0 0.4rem;
+}
+
+.alert-composer__sub {
+  font-size: 0.85rem;
+  color: rgba(255, 255, 255, 0.55);
+  margin: 0;
+  line-height: 1.55;
+}
+
+.alert-composer__body {
+  display: flex;
+  flex-direction: column;
+}
+
+.alert-composer__label {
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.5);
+  margin-bottom: 0.4rem;
+}
+
+.alert-composer__choice-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.6rem;
+}
+
+.alert-composer__choice {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  padding: 0.85rem 1rem;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(148, 163, 184, 0.15);
+  border-radius: 10px;
+  cursor: pointer;
+  text-align: left;
+  font-family: inherit;
+  color: inherit;
+  transition: all 0.15s ease;
+}
+
+.alert-composer__choice:hover {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(148, 163, 184, 0.3);
+}
+
+.alert-composer__choice.is-active {
+  background: rgba(45, 212, 191, 0.1);
+  border-color: rgba(45, 212, 191, 0.55);
+  box-shadow: inset 0 0 0 1px rgba(45, 212, 191, 0.25);
+}
+
+.alert-composer__choice-icon {
+  font-size: 1.1rem;
+}
+
+.alert-composer__choice-name {
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: #fff;
+}
+
+.alert-composer__choice-desc {
+  font-size: 0.72rem;
+  color: rgba(255, 255, 255, 0.45);
+  line-height: 1.4;
+}
+
+.alert-composer__hint {
+  font-size: 0.72rem;
+  color: rgba(255, 255, 255, 0.45);
+  margin-top: 0.4rem;
+}
+
+.alert-composer__error {
+  margin: 1rem 0 0;
+  padding: 0.65rem 0.85rem;
+  background: rgba(248, 113, 113, 0.1);
+  border: 1px solid rgba(248, 113, 113, 0.3);
+  border-radius: 8px;
+  color: #fca5a5;
+  font-size: 0.82rem;
+}
+
+.alert-composer__actions {
+  display: flex;
+  gap: 0.6rem;
+  justify-content: flex-end;
+  margin-top: 1.5rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid rgba(148, 163, 184, 0.12);
+}
+
+/* ── Admin header accent button ─────────────────────────────── */
+.admin-action-btn--accent {
+  background: linear-gradient(135deg, rgba(45, 212, 191, 0.18), rgba(20, 184, 166, 0.18));
+  border-color: rgba(45, 212, 191, 0.45);
+  color: #2dd4bf;
+}
+
+.admin-action-btn--accent:hover {
+  background: linear-gradient(135deg, rgba(45, 212, 191, 0.28), rgba(20, 184, 166, 0.28));
+  border-color: rgba(45, 212, 191, 0.7);
+  color: #5eead4;
+}
+
+@media (max-width: 540px) {
+  .alert-composer__choice-row {
+    grid-template-columns: 1fr;
+  }
+  .alert-modal__footer {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .alert-modal__cta {
+    width: 100%;
+    justify-content: center;
+  }
+}

@@ -1,0 +1,514 @@
+/* =============================================
+   Account Page - Light Mode Styling
+   ============================================= */
+
+.account-page {
+  min-height: 100vh;
+  padding: 8rem 0 4rem;
+  background: linear-gradient(180deg, #F7F7F9 0%, #FFFFFF 100%);
+}
+
+.account-page .container {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 0 2rem;
+}
+
+/* Page Title */
+.account-page .page-title {
+  font-size: 3rem;
+  color: #041E42;
+  margin-bottom: 1rem;
+  text-align: center;
+  font-weight: 700;
+  position: relative;
+  padding-bottom: 1rem;
+}
+
+.account-page .page-title::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 120px;
+  height: 4px;
+  background: linear-gradient(90deg, #C8102E, #E31837);
+  border-radius: 2px;
+}
+
+.account-page .page-subtitle {
+  text-align: center;
+  font-size: 1.2rem;
+  color: #546A7B;
+  margin-bottom: 1.5rem;
+  max-width: 600px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* Auth Error Message */
+.auth-error {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.875rem 1.25rem;
+  background: rgba(229, 62, 62, 0.08);
+  border: 1px solid rgba(229, 62, 62, 0.2);
+  border-radius: 8px;
+  color: #C53030;
+  font-weight: 500;
+  font-size: 0.95rem;
+  max-width: 500px;
+  margin: 0 auto 2rem;
+}
+
+.auth-error svg {
+  stroke: #C53030;
+  flex-shrink: 0;
+}
+
+/* Settings Link */
+.settings-link-container {
+  text-align: center;
+  margin-bottom: 3rem;
+}
+
+.settings-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.625rem 1.25rem;
+  background: #FFFFFF;
+  border: 2px solid #E2E8F0;
+  border-radius: 8px;
+  color: #4A5568;
+  font-weight: 600;
+  font-size: 0.95rem;
+  text-decoration: none;
+  transition: all 0.2s ease;
+}
+
+.settings-link svg {
+  stroke: #718096;
+  transition: stroke 0.2s ease;
+}
+
+.settings-link:hover {
+  border-color: #C8102E;
+  color: #C8102E;
+}
+
+.settings-link:hover svg {
+  stroke: #C8102E;
+}
+
+/* Redirect banner — shown when user lands from a protected route */
+.auth-redirect-banner {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  background: linear-gradient(135deg, rgba(100, 181, 246, 0.12) 0%, rgba(25, 118, 210, 0.15) 100%);
+  border: 1px solid rgba(100, 181, 246, 0.4);
+  border-radius: 10px;
+  padding: 0.85rem 1.1rem;
+  margin-bottom: 1.5rem;
+  color: #64b5f6;
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.auth-redirect-banner svg {
+  flex-shrink: 0;
+  stroke: #64b5f6;
+}
+
+/* Auth Container */
+.auth-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 2rem;
+  margin-bottom: 4rem;
+}
+
+/* Auth Card */
+.auth-card {
+  background: #FFFFFF;
+  padding: 2.5rem;
+  border-radius: 16px;
+  border: 1px solid #E2E8F0;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+  text-align: center;
+}
+
+.auth-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 80px;
+  height: 80px;
+  background: linear-gradient(135deg, #041E42 0%, #0A2F5A 100%);
+  border-radius: 50%;
+  margin-bottom: 1.5rem;
+}
+
+.auth-icon svg {
+  stroke: #FFFFFF;
+}
+
+.auth-icon.register {
+  background: linear-gradient(135deg, #C8102E 0%, #E31837 100%);
+}
+
+.auth-card h2 {
+  font-size: 1.5rem;
+  color: #041E42;
+  margin-bottom: 0.75rem;
+  font-weight: 700;
+}
+
+.auth-card > p {
+  font-size: 0.95rem;
+  color: #546A7B;
+  line-height: 1.6;
+  margin-bottom: 1.5rem;
+}
+
+/* Auth Form */
+.auth-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  text-align: left;
+}
+
+.auth-form .form-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.auth-form .form-group label {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #1A202C;
+  margin-bottom: 0.5rem;
+}
+
+.auth-form .form-group input {
+  padding: 0.75rem 1rem;
+  font-size: 1rem;
+  border: 2px solid #E2E8F0;
+  border-radius: 8px;
+  background: #F7F9FC;
+  color: #1A202C;
+  font-family: inherit;
+  transition: all 0.3s ease;
+}
+
+.auth-form .form-group input:disabled {
+  background: #EDF2F7;
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+.auth-form .form-group input::placeholder {
+  color: #A0AEC0;
+}
+
+/* Password reveal toggle */
+.password-input-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.password-input-wrap input {
+  width: 100%;
+  padding-right: 2.75rem;
+}
+
+.password-toggle {
+  position: absolute;
+  right: 0.75rem;
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  color: #A0AEC0;
+  display: flex;
+  align-items: center;
+  transition: color 0.15s ease;
+}
+
+.password-toggle:hover {
+  color: #4A5568;
+}
+
+.password-toggle svg {
+  width: 18px;
+  height: 18px;
+}
+
+/* Auth Buttons */
+.auth-btn {
+  padding: 0.875rem 1.5rem;
+  font-size: 1rem;
+  font-weight: 600;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin-top: 0.5rem;
+}
+
+.auth-btn.primary {
+  background: linear-gradient(135deg, #041E42 0%, #0A2F5A 100%);
+  color: #FFFFFF;
+}
+
+.auth-btn.secondary {
+  background: linear-gradient(135deg, #C8102E 0%, #E31837 100%);
+  color: #FFFFFF;
+}
+
+.auth-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.auth-btn:not(:disabled):hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+}
+
+/* Verify Email page */
+.verify-email-card .auth-btn {
+  width: 100%;
+}
+
+.verify-email-hint {
+  font-size: 0.85rem;
+  color: #8A9BB0;
+  margin-top: -0.5rem;
+  margin-bottom: 1.5rem;
+}
+
+/* Auth Note */
+.auth-note {
+  margin-top: 1.5rem;
+  padding: 0.75rem 1rem;
+  background: #FEF3C7;
+  color: #92400E;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+/* Access Info Section */
+.access-info {
+  margin-bottom: 3rem;
+}
+
+.access-info h3 {
+  font-size: 1.75rem;
+  color: #041E42;
+  text-align: center;
+  margin-bottom: 2rem;
+  font-weight: 700;
+}
+
+.access-tiers {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1.5rem;
+}
+
+.tier-card {
+  background: #FFFFFF;
+  padding: 2rem;
+  border-radius: 16px;
+  border: 2px solid #E2E8F0;
+  text-align: center;
+  transition: all 0.3s ease;
+}
+
+.tier-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.08);
+}
+
+.tier-card h4 {
+  font-size: 1.25rem;
+  color: #041E42;
+  margin-bottom: 0.5rem;
+  font-weight: 700;
+}
+
+.tier-card > p {
+  font-size: 0.9rem;
+  color: #718096;
+  margin-bottom: 1.25rem;
+}
+
+.tier-card ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  text-align: left;
+}
+
+.tier-card ul li {
+  padding: 0.5rem 0;
+  font-size: 0.95rem;
+  color: #4A5568;
+  border-bottom: 1px solid #EDF2F7;
+}
+
+.tier-card ul li:last-child {
+  border-bottom: none;
+}
+
+/* Tier Card Variants */
+.tier-card.guest {
+  border-color: #CBD5E0;
+}
+
+.tier-card.guest h4 {
+  color: #4A5568;
+}
+
+.tier-card.free {
+  border-color: #38A169;
+}
+
+.tier-card.free h4 {
+  color: #276749;
+}
+
+.tier-card.premium {
+  border-color: #C8102E;
+  background: linear-gradient(135deg, rgba(200, 16, 46, 0.02) 0%, rgba(227, 24, 55, 0.02) 100%);
+}
+
+.tier-card.premium h4 {
+  color: #C8102E;
+}
+
+/* CTA */
+.account-cta {
+  text-align: center;
+  padding: 2rem;
+  background: #F7F9FC;
+  border-radius: 12px;
+}
+
+.account-cta p {
+  font-size: 1rem;
+  color: #546A7B;
+}
+
+.account-cta a {
+  color: #C8102E;
+  font-weight: 600;
+  text-decoration: none;
+  transition: color 0.3s ease;
+}
+
+.account-cta a:hover {
+  color: #E31837;
+  text-decoration: underline;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .account-page {
+    padding: 6rem 0 3rem;
+  }
+
+  .account-page .page-title {
+    font-size: 2.25rem;
+  }
+
+  .account-page .page-subtitle {
+    font-size: 1.05rem;
+  }
+
+  .auth-container {
+    gap: 1.5rem;
+  }
+
+  .auth-card {
+    padding: 2rem 1.5rem;
+  }
+
+  .access-info h3 {
+    font-size: 1.5rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .account-page .container {
+    padding: 0 1rem;
+  }
+
+  .account-page .page-title {
+    font-size: 1.75rem;
+  }
+
+  .auth-icon {
+    width: 64px;
+    height: 64px;
+  }
+
+  .auth-icon svg {
+    width: 32px;
+    height: 32px;
+  }
+
+  .tier-card {
+    padding: 1.5rem;
+  }
+}
+
+/* Forgot password */
+.auth-btn-link {
+  display: block;
+  margin: 0.75rem auto 0;
+  background: none;
+  border: none;
+  color: #C41230;
+  font-size: 0.875rem;
+  cursor: pointer;
+  padding: 0;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.auth-btn-link:hover {
+  color: #041E42;
+}
+
+.forgot-password-panel {
+  margin-top: 1rem;
+  border-top: 1px solid #E8ECF0;
+  padding-top: 1rem;
+}
+
+.forgot-label {
+  font-size: 0.875rem;
+  color: #6B7280;
+  margin-bottom: 0.75rem;
+}
+
+.forgot-error {
+  font-size: 0.875rem;
+  color: #C41230;
+  margin-bottom: 0.5rem;
+}
+
+.forgot-success {
+  font-size: 0.875rem;
+  color: #15803D;
+  margin-bottom: 0.75rem;
+}

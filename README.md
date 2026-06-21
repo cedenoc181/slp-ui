@@ -2,7 +2,7 @@
 
 ## 🧠 Overview
 
-**Sandlot Picks Analytics** is a data-driven baseball analytics platform powered by machine learning.  
+**Sandlot Picks Analytics** is a data-driven baseball analytics platform powered by AI and machine learning.  
 This web application provides an overview of the **Sandlot Picks API**, a predictive engine built to forecast baseball player performance metrics — specifically **batter** and **pitcher props**.
 
 By leveraging historical data, rolling metrics, and advanced ML algorithms, the system delivers insights to help identify edges in player matchups and betting markets.

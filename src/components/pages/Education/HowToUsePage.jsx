@@ -1,7 +1,46 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import howToUseData from '../../../data/howToUse.json';
+import howToUseData from '../../../data/staticData/howToUse.json';
 
+import iconPlayerAnalytics      from '../../../assets/icons/player-analytics.png';
+import iconTeamAnalytics        from '../../../assets/icons/team-analytics.png';
+import iconDataScience          from '../../../assets/icons/data-science-and-baseball.png';
+import iconMlbSchedule          from '../../../assets/icons/mlb-schedule.png';
+import iconGlossary             from '../../../assets/icons/glossary.png';
+import iconHowToUse             from '../../../assets/icons/how-to-use.png';
+import iconAnalysis             from '../../../assets/icons/analysis.png';
+import iconMlbStandings         from '../../../assets/icons/mlb-standings.png';
+import iconGameProp             from '../../../assets/icons/game-prop.png';
+import iconBatterProp           from '../../../assets/icons/batter-prop.png';
+import iconPitcherProp          from '../../../assets/icons/pitcher-prop.png';
+import iconSandlotInsider       from '../../../assets/icons/sandlot-insider.png';
+import iconStrategyBlog         from '../../../assets/icons/strategy-blog.png';
+import iconFaq                  from '../../../assets/icons/faq.png';
+import iconResponsibleGaming    from '../../../assets/icons/responsible-gaming.png';
+
+const ICONS = {
+  'player-analytics':          iconPlayerAnalytics,
+  'team-analytics':            iconTeamAnalytics,
+  'data-science-and-baseball': iconDataScience,
+  'mlb-schedule':              iconMlbSchedule,
+  'glossary':                  iconGlossary,
+  'how-to-use':                iconHowToUse,
+  'analysis':                  iconAnalysis,
+  'mlb-standings':             iconMlbStandings,
+  'game-prop':                 iconGameProp,
+  'batter-prop':               iconBatterProp,
+  'pitcher-prop':              iconPitcherProp,
+  'sandlot-insider':           iconSandlotInsider,
+  'strategy-blog':             iconStrategyBlog,
+  'faq':                       iconFaq,
+  'responsible-gaming':        iconResponsibleGaming,
+};
+
+function renderIcon(key) {
+  const src = ICONS[key];
+  if (!src) return key; // fallback to raw text (emoji or unknown key)
+  return <img src={src} alt="" className="how-to-use-icon" />;
+}
 
 function HowToUsePage() {
   const [activeTab, setActiveTab] = useState('getting-started');
@@ -16,7 +55,7 @@ function HowToUsePage() {
         return (
           <div key={section.title}>
             <h2>{section.title}</h2>
-            {section.content && <p>{section.content}</p>}
+            {section.content && <p className="section-subtitle">{section.content}</p>}
           </div>
         );
 
@@ -35,20 +74,15 @@ function HowToUsePage() {
                     ))}
                   </ul>
                   {step.links && step.links.map((link, idx) => (
-                    <Link key={idx} to={link.url} className="inline-link">
+                    <Link 
+                      key={idx} 
+                      to={link.url} 
+                      className="inline-link"
+                      onClick={() => window.scrollTo(0, 0)}
+                    >
                       {link.text}
                     </Link>
                   ))}
-                  {step.cta && (
-                    <a
-                      href={step.cta.url}
-                      target={step.cta.external ? "_blank" : "_self"}
-                      rel={step.cta.external ? "noopener noreferrer" : ""}
-                      className="discord-join-btn"
-                    >
-                      {step.cta.text}
-                    </a>
-                  )}
                 </div>
               </div>
             ))}
@@ -61,7 +95,7 @@ function HowToUsePage() {
             {section.items.map((faq) => (
               <div key={faq.id} className="faq-item">
                 <h3>
-                  {faq.icon} {faq.question}
+                  {renderIcon(faq.icon)} {faq.question}
                 </h3>
                 {faq.subtitle && <p className="faq-subtitle">{faq.subtitle}</p>}
                 <p>
@@ -78,60 +112,6 @@ function HowToUsePage() {
                 {faq.footer && <p>{faq.footer}</p>}
               </div>
             ))}
-          </div>
-        );
-
-      case 'screenshots':
-        return (
-          <div key="screenshots" className="discord-screenshots">
-            <h3>{section.title}</h3>
-            <div className="screenshot-grid">
-              {section.images.map((img, idx) => (
-                <div key={idx} className="screenshot-card">
-                  <div className="screenshot-wrapper">
-                    <img
-                      src={require(`../../../assets/images/${img.src}`)}
-                      alt={img.alt}
-                    />
-                  </div>
-                  <p>{img.caption}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-        );
-
-      case 'cta':
-        return (
-          <div key="cta" className="cta-box">
-            <h3>{section.title}</h3>
-            <p>{section.description}</p>
-            <a
-              href={section.button.url}
-              target={section.button.external ? "_blank" : "_self"}
-              rel={section.button.external ? "noopener noreferrer" : ""}
-              className="discord-cta-btn"
-            >
-              {section.button.text}
-            </a>
-          </div>
-        );
-
-      case 'prediction-example':
-        return (
-          <div key="prediction-example" className="info-card">
-            <h3>{section.title}</h3>
-            <p>{section.description}</p>
-            <div className="prediction-example">
-              <div className="example-header">Example Prediction:</div>
-              <div className="example-content">
-                <p><strong>Player:</strong> {section.example.player}</p>
-                <p><strong>Prop:</strong> {section.example.prop}</p>
-                <p><strong>Prediction:</strong> {section.example.prediction}</p>
-                <p><strong>Confidence:</strong> {section.example.confidence}</p>
-                <p><strong>STD:</strong> {section.example.std}</p>
-              </div>
-            </div>
           </div>
         );
 
@@ -174,7 +154,7 @@ function HowToUsePage() {
           <div key="tips">
             {section.tips.map((tip, idx) => (
               <div key={idx} className="tip-card">
-                <div className="tip-icon">{tip.icon}</div>
+                <div className="tip-icon">{renderIcon(tip.icon)}</div>
                 <h3>{tip.title}</h3>
                 <p>{tip.description}</p>
                 <ul>
@@ -190,7 +170,7 @@ function HowToUsePage() {
       case 'warning':
         return (
           <div key="warning" className="warning-box">
-            <h3>{section.title}</h3>
+            <h3>{section.icon ? renderIcon(section.icon) : null} {section.title}</h3>
             <p>{section.content}</p>
           </div>
         );
@@ -207,7 +187,7 @@ function HowToUsePage() {
       <div className="container">
         <h1 className="page-title">How to Use Sandlot Picks</h1>
         <p className="page-subtitle">
-          Your complete guide to navigating our platform, understanding predictions, and joining our Discord community
+          Your complete guide to navigating our MLB analytics platform and getting the most from our tools
         </p>
 
         {/* Tab Navigation */}

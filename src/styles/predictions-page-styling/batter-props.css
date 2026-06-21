@@ -1,0 +1,1431 @@
+/* ============================================================
+   BATTER PROPS PAGE
+   ============================================================ */
+
+/* ── Matchup selector bar ─────────────────────────────────── */
+.bp-matchup-bar {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+.bp-matchup-scroll {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  overflow-x: auto;
+  flex: 1;
+  padding-bottom: 0.25rem;
+  scrollbar-width: none;
+}
+
+.bp-matchup-scroll::-webkit-scrollbar { display: none; }
+
+.bp-matchup-all {
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.09);
+  border-radius: 10px;
+  color: rgba(255,255,255,0.45);
+  font-size: 0.65rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 0.45rem 0.85rem;
+  cursor: pointer;
+  white-space: nowrap;
+  flex-shrink: 0;
+  transition: all 0.15s ease;
+}
+
+.bp-matchup-all:hover {
+  background: rgba(255,255,255,0.1);
+  color: #fff;
+}
+
+.bp-matchup-all.active {
+  background: rgba(74,222,128,0.14);
+  border-color: rgba(74,222,128,0.35);
+  color: #4ade80;
+}
+
+.bp-matchup-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 12px;
+  padding: 0.55rem 0.85rem;
+  cursor: pointer;
+  color: inherit;
+  font: inherit;
+  flex-shrink: 0;
+  transition: background 0.15s ease, border-color 0.15s ease, transform 0.15s ease;
+}
+
+.bp-matchup-card:hover {
+  background: rgba(255,255,255,0.09);
+  border-color: rgba(255,255,255,0.16);
+  transform: translateY(-1px);
+}
+
+.bp-matchup-card.active {
+  background: rgba(74,222,128,0.1);
+  border-color: rgba(74,222,128,0.35);
+  box-shadow: 0 0 0 1px rgba(74,222,128,0.15);
+}
+
+.bp-matchup-teams {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.bp-matchup-team {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.bp-matchup-logo {
+  width: 28px;
+  height: 28px;
+  object-fit: contain;
+  background: rgba(255,255,255,0.9);
+  border-radius: 6px;
+  padding: 2px;
+}
+
+.bp-matchup-abbr {
+  font-size: 0.58rem;
+  font-weight: 800;
+  color: rgba(255,255,255,0.55);
+  letter-spacing: 0.04em;
+}
+
+.bp-matchup-card.active .bp-matchup-abbr { color: #4ade80; }
+
+.bp-matchup-vs {
+  font-size: 0.55rem;
+  font-weight: 700;
+  color: rgba(255,255,255,0.25);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  padding-bottom: 0.9rem;
+}
+
+/* ── Active matchup label ─────────────────────────────────── */
+.bp-matchup-label {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin-bottom: 0.5rem;
+}
+
+.bp-matchup-label-logo {
+  width: 22px;
+  height: 22px;
+  object-fit: contain;
+  background: rgba(255,255,255,0.85);
+  border-radius: 5px;
+  padding: 2px;
+}
+
+.bp-matchup-label span:not(.bp-matchup-label-vs) {
+  font-size: 0.78rem;
+  font-weight: 800;
+  color: #fff;
+}
+
+.bp-matchup-label-vs {
+  font-size: 0.62rem;
+  color: rgba(255,255,255,0.3);
+  font-weight: 600;
+}
+
+.bp-matchup-label-link {
+  margin-left: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.3rem 0.7rem;
+  background: rgba(74, 222, 128, 0.08);
+  border: 1px solid rgba(74, 222, 128, 0.28);
+  border-radius: 8px;
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  color: #4ade80;
+  cursor: pointer;
+  text-decoration: none;
+  white-space: nowrap;
+  flex-shrink: 0;
+  transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+}
+
+.bp-matchup-label-link:hover {
+  background: rgba(74, 222, 128, 0.16);
+  border-color: rgba(74, 222, 128, 0.5);
+  color: #86efac;
+}
+
+/* ── Section label ────────────────────────────────────────── */
+.bp-section-label {
+  font-size: 0.62rem;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #fff;
+  margin-bottom: 1rem;
+}
+
+/* ── Filter bar ───────────────────────────────────────────── */
+.bp-filters {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 2rem;
+  flex-wrap: wrap;
+}
+
+.bp-filter-teams {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  flex: 1;
+}
+
+.bp-team-chip {
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 20px;
+  color: rgba(255,255,255,0.45);
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  padding: 0.25rem 0.65rem;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.bp-team-chip:hover {
+  background: rgba(255,255,255,0.1);
+  border-color: rgba(255,255,255,0.18);
+  color: #fff;
+}
+
+.bp-team-chip.active {
+  background: rgba(74, 222, 128, 0.14);
+  border-color: rgba(74, 222, 128, 0.35);
+  color: #4ade80;
+}
+
+.bp-filter-hand {
+  display: flex;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 8px;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.bp-hand-btn {
+  background: none;
+  border: none;
+  color: rgba(255,255,255,0.38);
+  font-size: 0.65rem;
+  font-weight: 700;
+  padding: 0.35rem 0.75rem;
+  cursor: pointer;
+  transition: background 0.12s ease, color 0.12s ease;
+}
+
+.bp-hand-btn.active {
+  background: rgba(255,255,255,0.1);
+  color: #fff;
+}
+
+/* Favs = green tint when active, Dawgs = orange tint when active */
+.bp-hand-btn.risk-fav.active {
+  background: rgba(74, 222, 128, 0.15);
+  color: #4ade80;
+}
+
+.bp-hand-btn.risk-dog.active {
+  background: rgba(251, 146, 60, 0.15);
+  color: #fb923c;
+}
+
+.bp-hand-btn:not(.active):hover { color: rgba(255,255,255,0.65); }
+
+/* ── EV Badge ─────────────────────────────────────────────── */
+.bp-ev-badge {
+  font-size: 0.58rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding: 0.18rem 0.5rem;
+  border-radius: 20px;
+  white-space: nowrap;
+}
+
+.bp-ev-badge.pos { background: rgba(74,222,128,0.12); color: #4ade80; border: 1px solid rgba(74,222,128,0.25); }
+.bp-ev-badge.neg { background: rgba(248,113,113,0.08); color: #f87171; border: 1px solid rgba(248,113,113,0.18); }
+
+/* ── Market accent color map ──────────────────────────────── */
+/* Used by: bp-top-card, bp-batter-card, bp-market-panel, strips, chips */
+.accent-green  { --acc: #4ade80; --acc-bg: rgba(74,222,128,0.12);  --acc-bd: rgba(74,222,128,0.28);  }
+.accent-red    { --acc: #f87171; --acc-bg: rgba(248,113,113,0.12); --acc-bd: rgba(248,113,113,0.28); }
+.accent-blue   { --acc: #60a5fa; --acc-bg: rgba(96,165,250,0.12);  --acc-bd: rgba(96,165,250,0.28);  }
+.accent-yellow { --acc: #fbbf24; --acc-bg: rgba(251,191,36,0.12);  --acc-bd: rgba(251,191,36,0.28);  }
+.accent-purple { --acc: #a78bfa; --acc-bg: rgba(167,139,250,0.12); --acc-bd: rgba(167,139,250,0.28); }
+.accent-cyan   { --acc: #22d3ee; --acc-bg: rgba(34,211,238,0.12);  --acc-bd: rgba(34,211,238,0.28);  }
+
+/* ── Top picks grid ───────────────────────────────────────── */
+.bp-top-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.85rem;
+  margin-bottom: 2.5rem;
+}
+
+.bp-top-card {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  background: #1e1e1e;
+  border: 1px solid rgba(255,255,255,0.07);
+  border-left: 3px solid var(--acc);
+  border-radius: 14px;
+  padding: 1rem;
+  cursor: pointer;
+  text-align: left;
+  color: inherit;
+  font: inherit;
+  transition: background 0.15s ease, transform 0.15s ease;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.bp-top-card:hover { background: #242424; transform: translateY(-1px); }
+
+.bp-top-card-left {
+  position: relative;
+  flex-shrink: 0;
+}
+
+.bp-top-card-headshot {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  object-fit: cover;
+  display: block;
+}
+
+.bp-top-card-hs-fallback {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.07);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75rem;
+  font-weight: 800;
+  color: rgba(255,255,255,0.4);
+}
+
+.bp-top-card-logo {
+  position: absolute;
+  bottom: -2px;
+  right: -5px;
+  width: 22px;
+  height: 22px;
+  object-fit: contain;
+  background: rgba(255,255,255,0.9);
+  border-radius: 5px;
+  padding: 2px;
+}
+
+.bp-top-card-body {
+  flex: 1;
+  min-width: 0;
+}
+
+.bp-top-card-name {
+  font-size: 0.85rem;
+  font-weight: 800;
+  color: #fff;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.bp-top-card-matchup {
+  font-size: 0.62rem;
+  color: rgba(255,255,255,0.35);
+  margin: 0.1rem 0 0.45rem;
+}
+
+.bp-top-card-market {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  flex-wrap: wrap;
+}
+
+.bp-market-chip {
+  font-size: 0.58rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding: 0.18rem 0.5rem;
+  border-radius: 20px;
+  background: var(--acc-bg);
+  color: var(--acc);
+  border: 1px solid var(--acc-bd);
+  white-space: nowrap;
+}
+
+.bp-top-card-line {
+  font-size: 0.7rem;
+  color: rgba(255,255,255,0.45);
+  font-weight: 500;
+}
+
+.bp-top-card-right {
+  text-align: right;
+  flex-shrink: 0;
+}
+
+.bp-top-card-prob {
+  font-size: 1.35rem;
+  font-weight: 900;
+  line-height: 1;
+  margin-bottom: 0.3rem;
+}
+
+/* ── Category row ─────────────────────────────────────────── */
+.bp-row {
+  margin-bottom: 2.25rem;
+}
+
+.bp-row-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.85rem;
+}
+
+.bp-row-title {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+}
+
+.bp-row-title-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--acc, rgba(255,255,255,0.4));
+  flex-shrink: 0;
+}
+
+.bp-row-title-label {
+  font-size: 0.88rem;
+  font-weight: 800;
+  color: #fff;
+}
+
+.bp-row-title-count {
+  font-size: 0.62rem;
+  color: rgba(255,255,255,0.28);
+  font-weight: 600;
+}
+
+.bp-row-nav {
+  display: flex;
+  gap: 0.3rem;
+}
+
+.bp-row-nav-btn {
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.09);
+  border-radius: 7px;
+  color: rgba(255,255,255,0.4);
+  font-size: 1.15rem;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  line-height: 1;
+  transition: background 0.12s ease, color 0.12s ease;
+}
+
+.bp-row-nav-btn:hover { background: rgba(255,255,255,0.12); color: #fff; }
+
+.bp-row-scroll {
+  display: flex;
+  gap: 0.75rem;
+  overflow-x: auto;
+  padding-bottom: 0.75rem;
+  scroll-behavior: smooth;
+  scrollbar-width: none;
+}
+
+.bp-row-scroll::-webkit-scrollbar { display: none; }
+
+/* ── Batter card (in rows) ────────────────────────────────── */
+.bp-batter-card {
+  width: 215px;
+  flex-shrink: 0;
+  background: #1e1e1e;
+  border: 1px solid rgba(255,255,255,0.07);
+  border-top: 2px solid var(--acc);
+  border-radius: 14px;
+  overflow: hidden;
+  cursor: pointer;
+  text-align: left;
+  color: inherit;
+  font: inherit;
+  display: flex;
+  flex-direction: column;
+  transition: background 0.15s ease, transform 0.15s ease;
+}
+
+.bp-batter-card:hover { background: #252525; transform: translateY(-2px); }
+
+.bp-batter-card-top {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.6rem;
+  padding: 0.8rem 0.8rem 0.5rem;
+  flex: 1;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.bp-batter-card-headshot {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.bp-batter-card-hs-fallback {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.07);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.6rem;
+  font-weight: 800;
+  color: rgba(255,255,255,0.35);
+  flex-shrink: 0;
+}
+
+.bp-batter-card-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.bp-batter-card-name {
+  font-size: 0.77rem;
+  font-weight: 800;
+  color: #fff;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.bp-batter-card-matchup {
+  font-size: 0.59rem;
+  color: rgba(255,255,255,0.32);
+  margin: 0.1rem 0 0.22rem;
+}
+
+.bp-batter-card-line {
+  font-size: 0.67rem;
+  color: rgba(255,255,255,0.5);
+  font-weight: 600;
+}
+
+.bp-batter-card-logo {
+  width: 24px;
+  height: 24px;
+  object-fit: contain;
+  background: rgba(255,255,255,0.9);
+  border-radius: 6px;
+  padding: 2px;
+  flex-shrink: 0;
+}
+
+.bp-batter-card-stats {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.4rem 0.8rem 0.35rem;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.bp-batter-card-prob {
+  font-size: 1.15rem;
+  font-weight: 900;
+  line-height: 1;
+}
+
+/* Probability bar flush at bottom */
+.bp-batter-card-bar {
+  height: 3px;
+  background: rgba(255,255,255,0.05);
+}
+
+.bp-batter-card-bar-fill {
+  height: 100%;
+  background: var(--acc);
+  transition: width 0.3s ease;
+}
+
+/* ── Modal overlay ────────────────────────────────────────── */
+.bp-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.75);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 1.5rem;
+  backdrop-filter: blur(4px);
+}
+
+.bp-modal-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  width: min(94vw, 780px);
+  max-height: 90vh;
+}
+
+/* ── Full modal ───────────────────────────────────────────── */
+.bp-modal {
+  background: #1a1a1a;
+  border: 1px solid rgba(255,255,255,0.09);
+  border-radius: 18px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  max-height: 88vh;
+  animation: bp-modal-in 0.28s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes bp-modal-in {
+  from { opacity: 0; transform: scale(0.94) translateY(8px); }
+  to   { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+.bp-modal-header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1.1rem 1.25rem;
+  border-bottom: 1px solid rgba(255,255,255,0.07);
+  flex-shrink: 0;
+}
+
+.bp-modal-identity {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex: 1;
+  min-width: 0;
+}
+
+.bp-modal-headshot {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.bp-modal-hs-fallback {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.07);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75rem;
+  font-weight: 800;
+  color: rgba(255,255,255,0.35);
+  flex-shrink: 0;
+}
+
+.bp-modal-info { flex: 1; min-width: 0; }
+
+.bp-modal-name {
+  font-size: 1.05rem;
+  font-weight: 800;
+  color: #fff;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.bp-modal-meta {
+  font-size: 0.72rem;
+  color: rgba(255,255,255,0.38);
+  margin-top: 0.15rem;
+}
+
+.bp-modal-link {
+  display: block;
+  background: none;
+  border: none;
+  padding: 0;
+  margin: 0;
+  cursor: pointer;
+  text-align: left;
+  width: 100%;
+  transition: color 0.15s ease;
+}
+
+.bp-modal-name.bp-modal-link:hover {
+  color: #4ade80;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.bp-modal-meta.bp-modal-link:hover {
+  color: rgba(255,255,255,0.7);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.bp-modal-team-logo-btn {
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  border-radius: 9px;
+  flex-shrink: 0;
+  margin-left: auto;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.bp-modal-team-logo-btn:hover {
+  transform: scale(1.08);
+  box-shadow: 0 0 0 2px rgba(255,255,255,0.25);
+}
+
+.bp-modal-team-logo {
+  display: block;
+  width: 40px;
+  height: 40px;
+  object-fit: contain;
+  background: rgba(255,255,255,0.9);
+  border-radius: 9px;
+  padding: 4px;
+}
+
+.bp-modal-close {
+  flex-shrink: 0;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.07);
+  border: none;
+  color: rgba(255,255,255,0.4);
+  font-size: 0.8rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.bp-modal-close:hover { background: rgba(255,255,255,0.12); color: #fff; }
+
+.bp-modal-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 1.1rem 1.25rem;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255,255,255,0.1) transparent;
+}
+
+.bp-modal-body::-webkit-scrollbar { width: 4px; }
+.bp-modal-body::-webkit-scrollbar-track { background: transparent; }
+.bp-modal-body::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 99px; }
+
+/* ── Markets grid (3-col in modal body) ──────────────────── */
+.bp-markets-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.75rem;
+}
+
+/* ── Market panel (clickable prop card in modal) ─────────── */
+.bp-market-panel {
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.07);
+  border-top: 2px solid var(--acc);
+  border-radius: 12px;
+  padding: 0.85rem;
+  cursor: pointer;
+  text-align: left;
+  color: inherit;
+  font: inherit;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  transition: background 0.15s ease, transform 0.15s ease;
+}
+
+.bp-market-panel:hover { background: rgba(255,255,255,0.06); transform: translateY(-1px); }
+
+.bp-market-panel-header {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.bp-market-panel-icon { font-size: 0.9rem; }
+
+.bp-market-panel-label {
+  font-size: 0.58rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--acc);
+}
+
+.bp-market-panel-line {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.bp-market-panel-side {
+  font-size: 0.6rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  padding: 0.15rem 0.4rem;
+  border-radius: 5px;
+  background: var(--acc-bg);
+  color: var(--acc);
+  border: 1px solid var(--acc-bd);
+}
+
+.bp-market-panel-number {
+  font-size: 1.5rem;
+  font-weight: 900;
+  color: #fff;
+  line-height: 1;
+}
+
+.bp-market-panel-stats {
+  display: flex;
+  gap: 0.4rem;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.bp-market-panel-stat {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.bp-mps-label {
+  font-size: 0.5rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.28);
+}
+
+.bp-mps-value {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: rgba(255,255,255,0.7);
+}
+
+.bp-mps-value.ev.pos { color: #4ade80; }
+.bp-mps-value.ev.neg { color: #f87171; }
+
+.bp-market-panel-hint {
+  font-size: 0.57rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.18);
+  text-align: right;
+  margin-top: auto;
+  transition: color 0.15s ease;
+}
+
+.bp-market-panel:hover .bp-market-panel-hint { color: rgba(255,255,255,0.42); }
+
+/* ── Compact market strip (odds view) ────────────────────── */
+.bp-market-strip {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  background: #1e1e1e;
+  border: 1px solid rgba(255,255,255,0.09);
+  border-left: 3px solid var(--acc);
+  border-radius: 14px;
+  padding: 0.75rem 1rem;
+  animation: bp-modal-in 0.22s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.bp-market-strip-back {
+  background: rgba(255,255,255,0.07);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 8px;
+  color: rgba(255,255,255,0.7);
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 0.3rem 0.65rem;
+  cursor: pointer;
+  white-space: nowrap;
+  flex-shrink: 0;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.bp-market-strip-back:hover { background: rgba(255,255,255,0.12); color: #fff; }
+
+.bp-market-strip-identity {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  flex: 1;
+  min-width: 0;
+}
+
+.bp-market-strip-headshot {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.bp-market-strip-hs-fallback {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.08);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.62rem;
+  font-weight: 800;
+  color: rgba(255,255,255,0.45);
+  flex-shrink: 0;
+}
+
+.bp-market-strip-info { display: flex; flex-direction: column; min-width: 0; }
+
+.bp-market-strip-name {
+  font-size: 0.85rem;
+  font-weight: 800;
+  color: #fff;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.bp-market-strip-meta { font-size: 0.65rem; color: rgba(255,255,255,0.35); }
+
+.bp-market-strip-chip {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  background: var(--acc-bg);
+  border: 1px solid var(--acc-bd);
+  border-radius: 8px;
+  padding: 0.3rem 0.65rem;
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: var(--acc);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.bp-market-strip-chip-line { color: rgba(255,255,255,0.5); font-weight: 600; }
+
+/* ── Odds panel ──────────────────────────────────────────── */
+.bp-odds-panel {
+  background: #1a1a1a;
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 14px;
+  overflow: hidden;
+  animation: bp-modal-in 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.bp-odds-toggle {
+  display: flex;
+  border-bottom: 1px solid rgba(255,255,255,0.07);
+  background: rgba(255,255,255,0.02);
+}
+
+.bp-odds-toggle button {
+  flex: 1;
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  color: rgba(255,255,255,0.38);
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 0.75rem 0.5rem;
+  cursor: pointer;
+  transition: color 0.15s ease, border-color 0.15s ease;
+}
+
+.bp-odds-toggle button.active { color: #fff; border-bottom-color: #4ade80; }
+.bp-odds-toggle button:hover:not(.active) { color: rgba(255,255,255,0.65); }
+
+.bp-odds-panel-body {
+  overflow-y: auto;
+  max-height: 280px;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255,255,255,0.1) transparent;
+}
+
+.bp-odds-panel-body::-webkit-scrollbar { width: 4px; }
+.bp-odds-panel-body::-webkit-scrollbar-track { background: transparent; }
+.bp-odds-panel-body::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 99px; }
+
+/* ── Odds table ──────────────────────────────────────────── */
+.bp-odds-table { display: flex; flex-direction: column; }
+
+.bp-exchange-note {
+  font-size: 0.62rem;
+  color: rgba(255,255,255,0.28);
+  padding: 0.6rem 1rem 0;
+}
+
+.bp-odds-table-head {
+  display: grid;
+  grid-template-columns: 1fr 90px 90px;
+  padding: 0.55rem 1rem;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+  font-size: 0.6rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.28);
+}
+
+.bp-odds-col-active { color: rgba(255,255,255,0.65) !important; }
+
+.bp-odds-row {
+  display: grid;
+  grid-template-columns: 1fr 90px 90px;
+  align-items: center;
+  padding: 0.6rem 1rem;
+  border-bottom: 1px solid rgba(255,255,255,0.04);
+  transition: background 0.12s ease;
+}
+
+.bp-odds-row:last-child { border-bottom: none; }
+.bp-odds-row:hover { background: rgba(255,255,255,0.03); }
+.bp-odds-row.unavailable { opacity: 0.4; }
+
+.bp-odds-platform {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  font-size: 0.8rem;
+  color: rgba(255,255,255,0.72);
+  font-weight: 500;
+}
+
+.bp-platform-logo {
+  width: 22px;
+  height: 22px;
+  object-fit: contain;
+  border-radius: 5px;
+  flex-shrink: 0;
+}
+
+.bp-platform-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 5px;
+  font-size: 0.5rem;
+  font-weight: 800;
+  flex-shrink: 0;
+}
+
+.bp-odds-val {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: rgba(255,255,255,0.4);
+  text-align: right;
+}
+
+.bp-odds-val.best { color: #4ade80; font-weight: 800; }
+.bp-odds-val.side-pick { color: rgba(255,255,255,0.72); }
+.bp-odds-val.best.side-pick { color: #4ade80; }
+
+/* ── Disclaimer ───────────────────────────────────────────── */
+.bp-disclaimer {
+  font-size: 0.68rem;
+  color: rgba(255,255,255,0.2);
+  margin-top: 2rem;
+  line-height: 1.5;
+}
+
+/* ── Pending prediction state ────────────────────────────── */
+.bp-pending-banner {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.85rem;
+  background: rgba(251, 191, 36, 0.06);
+  border: 1px solid rgba(251, 191, 36, 0.2);
+  border-left: 3px solid #fbbf24;
+  border-radius: 10px;
+  padding: 1.25rem 1.4rem;
+  margin-bottom: 1.25rem;
+}
+
+.bp-pending-banner-icon {
+  width: 2.39rem;
+  height: 2.39rem;
+  object-fit: contain;
+  margin-top: 0.1rem;
+  flex-shrink: 0;
+}
+
+.bp-pending-banner-title {
+  font-size: 0.92rem;
+  font-weight: 600;
+  color: #fbbf24;
+  margin-bottom: 0.25rem;
+}
+
+.bp-pending-banner-sub {
+  font-size: 0.8rem;
+  color: #888;
+  line-height: 1.5;
+}
+
+.bp-pending-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+  gap: 0.75rem;
+  margin-top: 0.5rem;
+}
+
+.bp-pending-card {
+  background: #1e1e1e;
+  border: 1px solid rgba(255,255,255,0.07);
+  border-top: 2px solid rgba(251,191,36,0.35);
+  border-radius: 14px;
+  overflow: hidden;
+}
+
+.bp-pending-card-top {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.6rem;
+  padding: 0.8rem;
+}
+
+.bp-pending-card-label {
+  font-size: 0.62rem;
+  font-weight: 600;
+  color: rgba(251,191,36,0.65);
+  margin-top: 0.25rem;
+}
+
+/* ── Coming soon empty state ─────────────────────────────── */
+.bp-coming-soon {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 3rem 1rem;
+  color: rgba(255, 255, 255, 0.4);
+  font-size: 0.9rem;
+}
+
+.bp-coming-soon-icon { font-size: 2rem; }
+
+/* ── Responsive ──────────────────────────────────────────── */
+@media (max-width: 1024px) {
+  .bp-top-grid { grid-template-columns: 1fr 1fr; }
+  .bp-markets-grid { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (max-width: 768px) {
+  .bp-top-grid { grid-template-columns: 1fr; }
+  .bp-filters { flex-direction: column; align-items: flex-start; }
+  .bp-modal-overlay { padding: 1rem; align-items: flex-start; padding-top: 3rem; }
+  .bp-modal-wrapper { width: 96vw; }
+  .bp-market-strip { flex-wrap: wrap; gap: 0.55rem; }
+  .bp-market-strip-chip { order: 3; width: 100%; justify-content: center; }
+  .bp-odds-table-head,
+  .bp-odds-row { grid-template-columns: 1fr 72px 72px; }
+}
+
+@media (max-width: 480px) {
+  .bp-markets-grid { grid-template-columns: 1fr 1fr; }
+}
+
+.scout-label-short { display: none; }
+
+@media (max-width: 425px) {
+  .bp-markets-grid { grid-template-columns: 1fr; }
+  .bp-odds-table-head,
+  .bp-odds-row { grid-template-columns: 1fr 60px 60px; }
+  .bp-top-card-prob { font-size: 1.1rem; }
+
+  /* Modal header — declutter at small sizes */
+  .bp-modal-meta { display: none; }
+  .scout-label-full { display: none; }
+  .scout-label-short { display: inline; }
+}
+
+/* ── Loading state ────────────────────────────────────────── */
+.bp-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  padding: 4rem 1rem;
+  color: rgba(255,255,255,0.4);
+  font-size: 0.9rem;
+}
+
+.bp-loading-spinner {
+  width: 36px;
+  height: 36px;
+  border: 3px solid rgba(74,222,128,0.15);
+  border-top-color: #4ade80;
+  border-radius: 50%;
+  animation: bp-spin 0.8s linear infinite;
+}
+
+@keyframes bp-spin { to { transform: rotate(360deg); } }
+
+/* ── Empty / no-data states ───────────────────────────────── */
+.bp-no-picks {
+  font-size: 0.82rem;
+  color: rgba(255,255,255,0.35);
+  padding: 1rem 0 1.5rem;
+}
+
+.bp-no-markets {
+  padding: 2rem 1rem;
+  text-align: center;
+  font-size: 0.85rem;
+  color: rgba(255,255,255,0.35);
+}
+
+.bp-odds-empty {
+  padding: 1.25rem;
+  text-align: center;
+  font-size: 0.82rem;
+  color: rgba(255,255,255,0.3);
+}
+
+/* ── Team logo fallback (text initials) ───────────────────── */
+.bp-matchup-logo-fallback {
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  background: rgba(255,255,255,0.08);
+  border: 1px solid rgba(255,255,255,0.12);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.5rem;
+  font-weight: 800;
+  color: rgba(255,255,255,0.5);
+  letter-spacing: 0.04em;
+}
+
+/* ── Prediction summary in modal ──────────────────────────── */
+.bp-pred-summary {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0.5rem;
+  margin-bottom: 1.5rem;
+  padding: 0.85rem 1rem;
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.07);
+  border-radius: 12px;
+}
+
+.bp-pred-stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.2rem;
+}
+
+.bp-pred-stat-icon { font-size: 1rem; line-height: 1; }
+
+.bp-pred-stat-label {
+  font-size: 0.55rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.4);
+}
+
+.bp-pred-stat-value {
+  font-size: 1rem;
+  font-weight: 800;
+  color: #fff;
+}
+
+/* ── Scout AI button (small, in modal header) ─────────────── */
+.scout-ai-btn--sm {
+  padding: 0.4rem 0.9rem;
+  font-size: 0.75rem;
+}
+
+@media (max-width: 600px) {
+  .bp-pred-summary { grid-template-columns: repeat(2, 1fr); }
+}
+
+/* ── Scout AI panel (inside modal body) ───────────────────── */
+.bp-scout-panel {
+  margin-bottom: 1.5rem;
+  padding: 1rem 1.2rem;
+  background: rgba(139,92,246,0.06);
+  border: 1px solid rgba(139,92,246,0.25);
+  border-radius: 14px;
+}
+
+.bp-scout-panel-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #a78bfa;
+}
+
+.bp-scout-panel-header img {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+  object-fit: contain;
+}
+
+.bp-scout-panel-close {
+  margin-left: auto;
+  background: none;
+  border: none;
+  color: rgba(255,255,255,0.4);
+  cursor: pointer;
+  font-size: 0.85rem;
+  line-height: 1;
+  padding: 0.1rem 0.3rem;
+}
+.bp-scout-panel-close:hover { color: #fff; }
+
+.bp-scout-summary {
+  font-size: 0.8rem;
+  line-height: 1.5;
+  color: rgba(255,255,255,0.75);
+  margin: 0 0 1rem;
+}
+
+.bp-scout-props {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+}
+
+.bp-scout-prop-row {
+  padding: 0.75rem 0.9rem;
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.07);
+  border-radius: 10px;
+}
+
+.bp-scout-prop-top {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin-bottom: 0.4rem;
+}
+
+.bp-scout-prop-label {
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.55);
+  flex-shrink: 0;
+}
+
+.bp-scout-prop-pick {
+  font-size: 0.8rem;
+  font-weight: 800;
+  padding: 0.15rem 0.55rem;
+  border-radius: 6px;
+  flex-shrink: 0;
+}
+.bp-scout-prop-pick.accent-green  { background: rgba(74,222,128,0.15); color: #4ade80; }
+.bp-scout-prop-pick.accent-red    { background: rgba(248,113,113,0.15); color: #f87171; }
+.bp-scout-prop-pick.accent-blue   { background: rgba(96,165,250,0.15);  color: #60a5fa; }
+.bp-scout-prop-pick.accent-yellow { background: rgba(250,204,21,0.15);  color: #facc15; }
+.bp-scout-prop-pick.accent-purple { background: rgba(167,139,250,0.15); color: #a78bfa; }
+
+.bp-scout-prop-conf {
+  display: flex;
+  gap: 3px;
+  margin-left: auto;
+}
+
+.bp-scout-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.15);
+}
+.bp-scout-dot--on { background: #a78bfa; }
+
+.bp-scout-prop-reasoning {
+  font-size: 0.75rem;
+  line-height: 1.5;
+  color: rgba(255,255,255,0.65);
+  margin: 0 0 0.35rem;
+}
+
+.bp-scout-prop-book {
+  font-size: 0.68rem;
+  color: rgba(255,255,255,0.35);
+  margin: 0;
+}

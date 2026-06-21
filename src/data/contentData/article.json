@@ -1,0 +1,272 @@
+{
+  "schema_version": "2.0",
+  "site": "sandlotpicks.com",
+  "generated_at": "2026-05-26",
+  "pagination": {
+    "current_page": 1,
+    "articles_per_page": 4,
+    "total_articles": 3,
+    "total_pages": 1,
+    "has_more": false
+  },
+  "articles": [
+    {
+      "id": 6,
+      "title": "The Model Sees Nine Runs in Chicago and a Padres Win",
+      "slug": "the-model-sees-nine-runs-in-chicago-and-a-padres-win",
+      "author": "Sandlot Picks Team",
+      "date": "2026-05-26",
+      "status": "Final",
+      "tags": [
+        "MLB",
+        "Sports Betting",
+        "Phillies",
+        "Padres",
+        "Twins",
+        "White Sox",
+        "Moneyline",
+        "Totals"
+      ],
+      "summary": "Joe Ryan's ERA nearly doubles on the road (3.95 vs. 2.15 at home), and Aaron Nola is letting hitters post .884 OPS against him — two starting pitchers the model sees as significantly underpriced by their respective totals. Both games project to run production the lines aren't accounting for.",
+      "read_time_minutes": 2,
+      "estimated_word_count": 493,
+      "hero_image": {
+        "url": "https://ryrlvrbjpwpecxpjicdo.supabase.co/storage/v1/object/public/post-images/hero/the-model-sees-nine-runs-in-chicago-and-a-padres-win/1779828902889-screen-shot-2026-05-26-at-4-54-36-pm.png",
+        "alt": "Twins vs White Sox Over 7.5 runs"
+      },
+      "content": [
+        {
+          "text": "Twins  @ White Sox ",
+          "type": "heading"
+        },
+        {
+          "text": "Pick: Over 7.5 Runs ",
+          "type": "subheading"
+        },
+        {
+          "text": "⚾ Pitching Matchup\nJoe Ryan has elite stuff (3.02 ERA, 9.69 K/9), but his road splits crater: 3.95 ERA and 1.06 WHIP away versus 2.15 ERA and 0.89 WHIP at home. The White Sox hit better at home (.237 AVG, .744 OPS). Sean Burke is the weaker arm (4.08 ERA overall), and he implodes at home (4.73 ERA) versus excels on the road (3.05 ERA). But Burke suppresses right-handed bats (.225 AVG, .649 OPS)—critical against Minnesota's right-heavy lineup. Burke's handedness edge neutralizes the Twins' core, while Ryan's road vulnerability is the real problem.\n\n📊 Splits Edge\nThe White Sox own a clear home offensive edge (.744 OPS at home, .701 on the road). Ryan's road ERA balloons nearly two full runs above his home mark—a punishing swing for a road starter. Burke's home struggles are concerning, but the Twins' road offense (.705 OPS) doesn't have the juice to exploit him enough to flip the advantage.\n\n🔑 Key Factors\nJoe Ryan's road ERA sits at 3.95 versus 2.15 at home—a 1.80-run gap that matters when he takes the mound in Chicago.\nSean Burke holds right-handed hitters to .225 AVG and .649 OPS, a critical split against Minnesota's right-dominant lineup.\nWhite Sox home splits (.744 OPS) versus Twins road splits (.705 OPS) give Chicago a measurable offensive environment edge.\n\n📈 Total Lean OVER\nThe model projects 9.62 runs against a 7.5 total—a two-run buffer. Burke's 4.73 home ERA and Ryan's 3.95 road ERA both point to runs the market underpriced.",
+          "type": "paragraph"
+        },
+        {
+          "text": "Phillies @ Padres",
+          "type": "heading"
+        },
+        {
+          "text": "Pick: Padres Moneyline",
+          "type": "subheading"
+        },
+        {
+          "text": "⚾ Pitching Matchup\nAaron Nola is having a rough go of it — 6.04 ERA, 1.56 WHIP, and neither lefties (.303 AVG, .884 OPS) nor righties (.295 AVG, .825 OPS) are struggling against him. Throw in a 6.10 road ERA and Petco looks like a bad spot. Randy Vásquez is the opposite story: 2.96 ERA, 1.19 WHIP, and he's been nasty against righties (.209 AVG, .630 OPS). That matters here because Philly rolls out mostly right-handed bats.\n\n📊 Splits Edge\nVásquez owns the matchup. His .630 OPS allowed to righties and 1.03 WHIP in that split are elite territory. Nola's splits don't help him either way. San Diego gets the clear edge.\n\n🔑 Key Factors\nNola's numbers are rough — 6.04 ERA, 1.56 WHIP, letting lefties hit .303/.884 OPS. That's bad company.\nVásquez has been sharp everywhere (2.96 ERA, 1.19 WHIP), and even sharper on the road (1.46 ERA, 0.85 WHIP away). Today he's home, which makes him even tougher.\nPhilly's road split is the worst in their profile — .212 AVG, .629 OPS — so they're coming in cold against a guy who's been dealing.\n\n💲 Odds Edge\nPadres -115 implies 53.7%, but the model has San Diego at 57.5% — modest value on the ML. The Phillies +130 on the run line gets interesting if you think this stays tight; the model says a one-run game is very possible.",
+          "type": "paragraph"
+        }
+      ],
+      "seo": {
+        "keywords": [
+          "joe ryan road splits",
+          "aaron nola era",
+          "twins white sox over pick",
+          "padres phillies prediction",
+          "mlb picks today",
+          "pitcher props analysis",
+          "baseball analytics predictions",
+          "run line value"
+        ],
+        "og_image": "https://ryrlvrbjpwpecxpjicdo.supabase.co/storage/v1/object/public/post-images/hero/the-model-sees-nine-runs-in-chicago-and-a-padres-win/1779828902889-screen-shot-2026-05-26-at-4-54-36-pm.png",
+        "title_tag": "Joe Ryan road splits and Aaron Nola props: MLB picks today",
+        "canonical_url": "https://www.sandlotpicks.com/sandlot-insider/the-model-sees-nine-runs-in-chicago-and-a-padres-win",
+        "meta_description": "Twins-White Sox projects to 9.6 runs vs 7.5 total. Padres favored over Phillies. Data-driven picks from Sandlot."
+      },
+      "affiliate_cta": {
+        "link": "https://www.sandlotpicks.com/upgrade",
+        "context": "Claim 7 day free pass!",
+        "enabled": true,
+        "platform": "Sandlot Picks"
+      },
+      "affiliate_disclaimer": "Data and predictions provided for informational and entertainment purposes only.",
+      "related_posts": [
+        "/three-games-three-bets-worth-making-on-todays-mlb-slate"
+      ],
+      "reference_urls": []
+    },
+    {
+      "id": 5,
+      "title": "Three Games Where the Model Beats the Market",
+      "slug": "three-games-three-bets-worth-making-on-todays-mlb-slate",
+      "author": "Sandlot Picks Team",
+      "date": "2026-05-25",
+      "status": "Final",
+      "tags": [
+        "MLB",
+        "Sports Betting",
+        "Baltimore Orioles",
+        "Athletics",
+        "Arizona Diamondbacks",
+        "San Francisco Giants",
+        "Seattle Mariners",
+        "Tampa bay Rays"
+      ],
+      "summary": "Bradish surrenders a .948 OPS to right-handed bats and walks nearly five per nine innings, which is exactly the lineup Tampa brings to Camden Yards. The ML model projects 9.58 runs in that game, while Oakland gets Luis Castillo on the road with a 6.85 ERA against an Athletics offense that hits .267 at home.",
+      "read_time_minutes": 4,
+      "estimated_word_count": 843,
+      "hero_image": {
+        "url": "https://ryrlvrbjpwpecxpjicdo.supabase.co/storage/v1/object/public/post-images/hero/three-games-three-bets-worth-making-on-todays-mlb-slate/1779730776967-screen-shot-2026-05-25-at-12-38-18-pm.png",
+        "alt": "Diamondbacks at Giants"
+      },
+      "content": [
+        {
+          "text": "Rays @ Orioles",
+          "type": "heading"
+        },
+        {
+          "text": "PICK: Over 7.5 runs",
+          "type": "subheading"
+        },
+        {
+          "text": "⚾ Pitching Matchup\nMcClanahan's road ERA jumps to 3.79 versus 2.10 at home. Bradish is a sharp liability against right-handed bats, surrendering a .338 AVG and .948 OPS to RHB. Tampa's lineup is built to exploit it—his 4.82 BB/9 compounds command issues and opens base paths. The Rays have outscored Baltimore 25–10 in three meetings this season.\n\n📊 Splits Edge\nBradish's .948 OPS to RHB is the sharpest offensive lever here. Tampa's road offense (.692 OPS) grades well above Baltimore's approach, giving righties a clear path to damage.\n\n🔑 Key Factors\nBradish's RHB split and walk rate create scoring opportunities. McClanahan's elevated road ERA (3.79) keeps Baltimore in range. Both teams grade as run-scoring threats in this matchup.\n\n📈 Total Lean OVER 7.5\nThe ML model projects 9.58 runs—1.5+ above the line. Bradish's walk rate and RHB vulnerability drive the projection; McClanahan's road splits prevent the Rays from shutting down Baltimore entirely.\n\n⚠ Red Flags\nBaltimore's below-average offense still poses limited ceiling risk. The Rays' season-series dominance is real, but McClanahan's arm talent is sharp enough to suppress total upside if he commands.",
+          "type": "paragraph"
+        },
+        {
+          "text": "Diamondbacks @ Giants",
+          "type": "heading"
+        },
+        {
+          "text": "PICK: Over 7.5 runs",
+          "type": "subheading"
+        },
+        {
+          "text": "⚾ Pitching Matchup\nMerrill Kelly's 5.71 ERA and 1.51 WHIP are concerning, but his road splits (5.32 ERA) play better against a Giants lineup that manages just .682 OPS at home vs. RHP. Landen Roupp is the clear advantage—3.27 ERA, 9.98 K/9—but Arizona's right-heavy lineup exploits his weaker RHB split (.261 AVG, .680 OPS), capping his ceiling.\n\n📊 Splits Edge\nArizona's right-handed bats neutralize Roupp's LHB dominance. Kelly's road ERA edges his home rate, but neither starter shows a decisive offensive disadvantage.\n\n🔑 Key Factors\nArizona swept SF 3-0 this season, outscoring them 17-11.\nKelly's 1.51 WHIP and 3.95 BB/9 signal early trouble—walks fuel run totals.\nSF's home offense (.244 AVG, .679 OPS) ranks among the NL's weakest, but Kelly's volatility and command issues make damage inevitable.\n\n📈 Total Lean OVER 7.5\nThe ML model projects 10.95 runs—3.5 above the line. Kelly's ERA and chronic wildness support aggressive Over action even accounting for variance.\n\n💲 Odds Edge\nArizona at +112 offers value: the model gives the D-backs 58.8% win probability vs. the market's 47.0% implied—a 15+ point gap backed by season-series dominance and Kelly's favorable road numbers.\n\n⚠ Red Flags\nKelly's volatility could result in early removal, limiting Arizona's run-scoring window.\nThe model's ±3.26 standard deviation places 7.5 near the lower bound—sharp variance exists.\n\n🤖 ML Alignment\nModel fully supports the Over at 10.95 projected runs and Arizona's value at +112 given the 58.8% win probability divergence from market consensus.",
+          "type": "paragraph"
+        },
+        {
+          "text": "Mariners @ Athletics ",
+          "type": "heading"
+        },
+        {
+          "text": "PICK: Athletics Moneyline",
+          "type": "subheading"
+        },
+        {
+          "text": "⚾ Pitching Matchup\nLuis Castillo has been a liability in 2026, posting a 6.41 ERA and 1.55 WHIP with splits that are alarming in every direction — .300 AVG vs RHB and a 6.85 ERA on the road. Pitching away from T-Mobile tonight, Castillo faces an Athletics lineup that hits .267/.781 at home, a significant home-field offensive bump. Aaron Civale counters with a far more manageable 3.31 ERA and keeps right-handed hitters in check at .247/.742, giving Oakland a clear edge in the matchup.\n\n📊 Splits Edge\nThe Athletics hold the splits edge on both sides — Civale is sharper at home (3.48 ERA) against a Mariners road offense that slashes just .224/.674, while Castillo's road ERA of 6.85 is a genuine liability against an Athletics offense that elevates at Sutter Health Park.\n\n🔑 Key Factors\nCastillo's road ERA of 6.85 and WHIP of 1.61 makes him one of the most vulnerable road starters in the league right now — the Athletics bat .267 at home.\nCivale holds RHB to a .247 AVG and .742 OPS with a 1.15 WHIP, and the Mariners' road OPS of .674 is the second-lowest split in this matchup.\nAthletics are 27-26 overall and went 3-2 across their last five road games, returning home where they've posted a .267/.781 team slash line.\n\n📈 Total Lean UNDER 10.5\nThe ML model projects 9.92 total runs against a posted line of 10.5 — Civale's 3.31 ERA and the Mariners' .674 road OPS should suppress Seattle's side enough to keep this under the number.\n\n💲 Odds Edge\nThe market has the Mariners as a narrow favorite at -116 (53.8% implied), but the ML model gives the Athletics a 58.2% win probability — that's a meaningful 7+ point gap favoring Oakland that the line doesn't reflect. Civale vs. a struggling road Castillo is a clear edge for the home side.\n\n⚠ Red Flags\nCastillo's strikeout rate (9.13 K/9) suggests he still misses bats, and if he settles in early, the Athletics' low-floor offense could limit run production.\nThe Athletics' team ERA of 4.25 and bullpen usage could become an issue if Civale doesn't go deep, especially with a high 10.5 posted total creating blowout risk.\n\n🤖 ML Alignment\nMy read aligns with the ML model — both favor the Athletics, and the market's slight lean toward Seattle on the moneyline makes Oakland even more attractive as a value play.",
+          "type": "paragraph"
+        }
+      ],
+      "seo": {
+        "keywords": [
+          "mlb predictions",
+          "baseball analytics",
+          "pitching splits",
+          "moneyline picks",
+          "over under picks",
+          "sports betting analytics",
+          "market inefficiencies",
+          "era splits",
+          "lineup matchups"
+        ],
+        "og_image": "https://ryrlvrbjpwpecxpjicdo.supabase.co/storage/v1/object/public/post-images/hero/three-games-three-bets-worth-making-on-todays-mlb-slate/1779730776967-screen-shot-2026-05-25-at-12-38-18-pm.png",
+        "title_tag": "MLB Picks: Three Games Where Analytics Beats the Line",
+        "canonical_url": "https://www.sandlotpicks.com/sandlot-insider/three-games-three-bets-worth-making-on-todays-mlb-slate",
+        "meta_description": "Data-driven MLB picks for Rays-Orioles, Diamondbacks-Giants, and Mariners-Athletics. Model projections vs. market odds."
+      },
+      "affiliate_cta": {
+        "link": "https://www.sandlotpicks.com/upgrade",
+        "context": "Try for 7 Days!",
+        "enabled": true,
+        "platform": "Sandlot Picks"
+      },
+      "affiliate_disclaimer": "Data and predictions provided for informational and entertainment purposes only.",
+      "related_posts": [
+        "five-batter-props-standing-out-on-todays-mlb-schedule-525",
+        "the-model-sees-nine-runs-in-chicago-and-a-padres-win"
+      ],
+      "reference_urls": []
+    },
+    {
+      "id": 4,
+      "title": "Five Batter Props Standing Out on Today's MLB Schedule 5/25",
+      "slug": "five-batter-props-standing-out-on-todays-mlb-schedule-525",
+      "author": "Sandlot Picks Team",
+      "date": "2026-05-25",
+      "status": "Final",
+      "tags": [
+        "Baseball",
+        "MLB",
+        "batter props",
+        "Sports Betting"
+      ],
+      "summary": "Yandy Díaz has gone 10-for-22 against Kyle Bradish with a 1.273 OPS in that sample, and the model projects 4.02 total bases against a 1.5 line. George Springer is the power upside play — 5.84 projected TB against a pitcher surrendering 1.31 HR/9, with Springer's OPS doubling at home.",
+      "read_time_minutes": 3,
+      "estimated_word_count": 681,
+      "hero_image": {
+        "url": "https://ryrlvrbjpwpecxpjicdo.supabase.co/storage/v1/object/public/post-images/hero/five-batter-props-standing-out-on-todays-mlb-schedule-525/1779730901968-screen-shot-2026-05-25-at-10-32-33-am.png",
+        "alt": ""
+      },
+      "content": [
+        {
+          "text": "Today's Best Batter Props to Target",
+          "type": "heading"
+        },
+        {
+          "text": "Rays vs Orioles: Yandy Diaz",
+          "type": "subheading"
+        },
+        {
+          "text": "Yandy Díaz carries a 0.315 AVG and 0.896 OPS on the road against RHP Kyle Bradish, though his splits show 0.302 AVG and 0.805 OPS away from home. That's offset by his dominant 0.455 AVG and 1.273 OPS in 24 career PA against Bradish—elite familiarity despite the venue.\n\nHis 0.455 H2H average (10 H in 22 AB) and season 0.315 AVG exceed the 1.5 hits line. The ML model projects 1.69 hits. Road splits drag slightly, but career dominance and strong recent form (9 H in last 5 games) support the over.\n\nOn total bases, Díaz's 0.503 season SLG yields ~1.94 TB per game. The ML model projects 4.02 TB against the 1.5 consensus line. H2H splits are sharper: 16 TB in 24 PA (1.5 TB per PA), with recent outings of 4 TB (05/24), 6 TB (05/19), and 6 TB (05/18). Road splits present a modest headwind but don't offset his season-long offensive consistency.",
+          "type": "paragraph"
+        },
+        {
+          "text": "Diamondbacks vs Giants — Nolan Arenado",
+          "type": "subheading"
+        },
+        {
+          "text": "Arenado's road splits look great (0.220 AVG, 0.700 OPS), but throw in Landen Roupp and everything changes. He's crushing this guy — 0.667 AVG, 1.000 SLG in head-to-head — and our model sees 2.43 hits coming, way above the 0.5 consensus line.\n\nYeah, he's hitting just 0.220 on the road this year, but his track record against Roupp is legit (2 hits in his last 3 at-bats). The model is projecting 4.28 total bases — nearly nine times the consensus 0.5 line. Add in his 0.47 season SLG and the fact he's been racking up 2–4 TB in three of his last five games, and the over case builds fast.\n\nThe line's heavy (−190), so the market's skeptical. But the model edge is real here.",
+          "type": "paragraph"
+        },
+        {
+          "text": "Marlins vs Blue Jays – George Springer",
+          "type": "subheading"
+        },
+        {
+          "text": "Our model says Springer's hitting 2.43 hits tonight—well clear of that 0.5 line. He's consistently making contact at home (.227 AVG, 17 hits in 75 AB). Junk's giving up 9.33 hits per nine with an ugly 5.07 ERA. That's contact-hitter weather.\n\nThe home run projection is 1.25, nearly doubling the consensus 0.5. Springer's raked in two straight games, sitting at 5 HR in his last 34. He's a flyball pitcher's problem, especially when Springer's hitting at home and Junk's serving up fastballs at a 1.31 HR/9 clip.\n\nTotal bases: 5.84 per our model, crushing that 1.5 line. Springer's been on a power tear—6 TB on 05/23, 4 TB on 05/21—and he's torched Junk for 5 TB in three at-bats on 3/16. Playing at home helps; his OPS jumps from .374 season-wide to .758 at the ballpark. Junk's soft fastball approach (6.55 K/9) is tailor-made for what Springer does.",
+          "type": "paragraph"
+        },
+        {
+          "text": "Mariners vs Athletics - Jeff McNeil",
+          "type": "subheading"
+        },
+        {
+          "text": "McNeil owns a ridiculous .533 AVG with 1.267 SLG in 15 career at-bats against Castillo—but here's the thing: he's hitting .267 on the season and went 0-for-3 his last two games. That's real noise. Still, the matchup matters. Castillo's an RHP with a 6.41 ERA, and McNeil hits .278 against righties. Our model spits out 1.67 hits. The market has him at 0.5. That's mispriced.\n\nMcNeil's 0.533 career AVG against Castillo is the headline, and it holds up. Yeah, he's 3-for-18 his last five games overall, but that H2H sample—8 hits in 16 PA—is exactly what you want to see. The RHP matchup (.278 season AVG vs righties) is another layer. A recent 0-for-6 doesn't erase what this guy does to Castillo.\n\nMcNeil's hit 3 homers in 6 career PA against Castillo, and our model projects .71 homeruns. The 0.5 line looks soft. The caveat: he's only got 2 homers in 50 games this season and none at home. Castillo's allowing 1.36 HR/9, though, and McNeil's power history in this matchup is legit—just not overwhelming conviction.\n\nMcNeil's career 1.267 SLG against Castillo (19 TB in 16 PA) crushes the 1.5 line. His season SLG sits at .360 with 58 TB across 50 games—roughly 1.16 TB per game—but the H2H edge and RHP split push this over. Model and matchup point the same way.",
+          "type": "paragraph"
+        }
+      ],
+      "seo": {
+        "keywords": [
+          "yandy diaz props",
+          "nolan arenado props",
+          "jeff mcneil props",
+          "Geroge Springer props",
+          "mlb batter props",
+          "mlb predictions",
+          "head-to-head splits",
+          "baseball analytics",
+          "prop betting edges"
+        ],
+        "og_image": "https://ryrlvrbjpwpecxpjicdo.supabase.co/storage/v1/object/public/post-images/hero/five-batter-props-standing-out-on-todays-mlb-schedule-525/1779730901968-screen-shot-2026-05-25-at-10-32-33-am.png",
+        "title_tag": "MLB Batter Props 5/25: Yandy Díaz, Arenado, Springer, McNeil Picks",
+        "canonical_url": "https://www.sandlotpicks.com/sandlot-insider/five-batter-props-standing-out-on-todays-mlb-schedule-525",
+        "meta_description": "Five high-value batter props standing out on today's MLB schedule, backed by head-to-head splits and model projections. Find the matchups with edges."
+      },
+      "affiliate_cta": {
+        "link": "https://www.sandlotpicks.com/upgrade",
+        "context": "Enjoy a free 7 day pass using code \"FREE7\" At Checkout!",
+        "enabled": true,
+        "platform": "Sandlot Picks"
+      },
+      "affiliate_disclaimer": "Data and predictions provided for informational and entertainment purposes only.",
+      "related_posts": [
+        "three-games-three-bets-worth-making-on-todays-mlb-slate",
+        "the-model-sees-nine-runs-in-chicago-and-a-padres-win"
+      ],
+      "reference_urls": []
+    }
+  ]
+}

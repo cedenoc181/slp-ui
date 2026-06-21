@@ -1,0 +1,374 @@
+/* ============================================================
+   PREDICTIONS PAGE STYLING
+   ============================================================ */
+
+.predictions-page {
+  min-height: 100vh;
+  background: #121212;
+  color: #fff;
+  padding-bottom: 4rem;
+}
+
+/* ── Page Header ─────────────────────────────────────────── */
+.predictions-header {
+  padding: 2rem 0 1.5rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.predictions-header-inner {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+/* ── Props nav tabs ───────────────────────────────────────── */
+/* Mobile-first: never wrap or spill — scroll horizontally when the tabs
+   (incl. admin tools) exceed the header width. Scrollbar hidden. */
+.predictions-nav {
+  display: flex;
+  gap: 0.25rem;
+  flex-wrap: nowrap;
+  max-width: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+.predictions-nav::-webkit-scrollbar { display: none; }
+
+.predictions-nav-link {
+  flex-shrink: 0;
+  padding: 0.45rem 1rem;
+  border-radius: 8px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.45);
+  text-decoration: none;
+  transition: color 0.15s ease, background 0.15s ease;
+  white-space: nowrap;
+}
+
+.predictions-nav-link:hover {
+  color: rgba(255, 255, 255, 0.8);
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.predictions-nav-link.active {
+  color: #fff;
+  background: rgba(99, 102, 241, 0.18);
+  border: 1px solid rgba(99, 102, 241, 0.3);
+}
+
+/* Admin tools (Bet Library, Lab) — grouped and set apart on the right of the nav */
+.predictions-nav-link--admin {
+  border: 1px solid rgba(99, 102, 241, 0.25);
+  background: rgba(99, 102, 241, 0.06);
+  color: rgba(255, 255, 255, 0.6);
+}
+.predictions-nav-link--admin.active {
+  background: rgba(99, 102, 241, 0.18);
+  border-color: rgba(99, 102, 241, 0.4);
+  color: #fff;
+}
+/* First admin tab draws a divider before it. On desktop it also pushes the
+   whole group to the right; on smaller screens the tabs stay contiguous and
+   scroll (margin-left:auto would create awkward gaps inside a scroll area). */
+.predictions-nav-link--adminstart {
+  position: relative;
+  margin-left: 0.5rem;
+}
+.predictions-nav-link--adminstart::before {
+  content: '';
+  position: absolute;
+  left: -0.4rem;
+  top: 50%;
+  transform: translateY(-50%);
+  height: 60%;
+  width: 1px;
+  background: rgba(255, 255, 255, 0.12);
+}
+@media (min-width: 1025px) {
+  .predictions-nav-link--adminstart { margin-left: auto; }
+  .predictions-nav-link--adminstart::before { left: -0.65rem; }
+}
+
+.predictions-header-tag {
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.3);
+}
+
+.predictions-header h1 {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #fff;
+  margin: 0;
+  letter-spacing: -0.01em;
+}
+
+.predictions-header-sub {
+  display: none;
+}
+
+/* ── Main Content ─────────────────────────────────────────── */
+.predictions-content {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2.5rem 1.5rem 0;
+}
+
+.predictions-section-label {
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.35);
+  margin-bottom: 1.25rem;
+}
+
+/* ── Category Cards Grid ─────────────────────────────────── */
+.predictions-categories-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1.25rem;
+  margin-bottom: 3rem;
+}
+
+.predictions-category-card {
+  background: #1e1e1e;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 16px;
+  padding: 1.75rem;
+  cursor: pointer;
+  transition: border-color 0.2s ease, background 0.2s ease, transform 0.15s ease;
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  text-decoration: none;
+  color: inherit;
+}
+
+.predictions-category-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: var(--card-glow, transparent);
+  opacity: 0;
+  transition: opacity 0.2s ease;
+  pointer-events: none;
+}
+
+.predictions-category-card:hover {
+  border-color: var(--card-accent, rgba(255,255,255,0.2));
+  background: #242424;
+  transform: translateY(-2px);
+}
+
+.predictions-category-card:hover::before {
+  opacity: 1;
+}
+
+/* Card accent colors */
+.predictions-category-card.games {
+  --card-accent: rgba(100, 181, 246, 0.4);
+  --card-glow: radial-gradient(ellipse at top left, rgba(100, 181, 246, 0.07), transparent 60%);
+}
+.predictions-category-card.pitchers {
+  --card-accent: rgba(129, 199, 132, 0.4);
+  --card-glow: radial-gradient(ellipse at top left, rgba(129, 199, 132, 0.07), transparent 60%);
+}
+.predictions-category-card.batters {
+  --card-accent: rgba(255, 183, 77, 0.4);
+  --card-glow: radial-gradient(ellipse at top left, rgba(255, 183, 77, 0.07), transparent 60%);
+}
+.predictions-category-card.arbitrage {
+  --card-accent: rgba(206, 147, 216, 0.4);
+  --card-glow: radial-gradient(ellipse at top left, rgba(206, 147, 216, 0.07), transparent 60%);
+}
+
+/* Card icon */
+.predictions-card-icon-wrap {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.4rem;
+  flex-shrink: 0;
+}
+
+.predictions-category-card.games    .predictions-card-icon-wrap { background: rgba(100, 181, 246, 0.15); }
+.predictions-category-card.pitchers .predictions-card-icon-wrap { background: rgba(129, 199, 132, 0.15); }
+.predictions-category-card.batters  .predictions-card-icon-wrap { background: rgba(255, 183, 77,  0.15); }
+.predictions-category-card.arbitrage .predictions-card-icon-wrap { background: rgba(206, 147, 216, 0.15); }
+
+/* Card body */
+.predictions-card-body {
+  flex: 1;
+}
+
+.predictions-card-title {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: #fff;
+  margin: 0 0 0.35rem;
+}
+
+.predictions-card-desc {
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.5);
+  line-height: 1.5;
+  margin: 0;
+}
+
+/* Card footer */
+.predictions-card-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 0.25rem;
+}
+
+.predictions-card-badge {
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  border-radius: 20px;
+  padding: 0.25rem 0.65rem;
+}
+
+.predictions-card-badge.coming-soon {
+  background: rgba(255, 255, 255, 0.07);
+  color: rgba(255, 255, 255, 0.4);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.predictions-card-badge.live {
+  background: rgba(100, 181, 246, 0.15);
+  color: #64b5f6;
+  border: 1px solid rgba(100, 181, 246, 0.25);
+}
+
+.predictions-card-arrow {
+  font-size: 1rem;
+  color: rgba(255, 255, 255, 0.2);
+  transition: color 0.2s ease, transform 0.2s ease;
+}
+
+.predictions-category-card:hover .predictions-card-arrow {
+  color: rgba(255, 255, 255, 0.6);
+  transform: translateX(3px);
+}
+
+/* ── Coming Soon Banner ───────────────────────────────────── */
+.predictions-coming-soon-banner {
+  background: rgba(100, 181, 246, 0.06);
+  border: 1px solid rgba(100, 181, 246, 0.15);
+  border-radius: 12px;
+  padding: 1.25rem 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+.predictions-coming-soon-banner .banner-icon {
+  font-size: 1.5rem;
+  flex-shrink: 0;
+}
+
+.predictions-coming-soon-banner .banner-text {
+  font-size: 0.85rem;
+  color: rgba(255, 255, 255, 0.6);
+  line-height: 1.5;
+}
+
+.predictions-coming-soon-banner .banner-text strong {
+  color: #64b5f6;
+}
+
+/* ── Responsive ───────────────────────────────────────────── */
+@media (max-width: 768px) {
+  .predictions-header {
+    padding: 1.5rem 0 1.25rem;
+  }
+
+  .predictions-categories-grid {
+    grid-template-columns: 1fr;
+  }
+
+  /* Tighter tabs so more fit before scrolling; nav still scrolls if needed. */
+  .predictions-nav-link {
+    padding: 0.4rem 0.75rem;
+    font-size: 0.78rem;
+  }
+  .predictions-header-inner h1 {
+    white-space: nowrap;
+  }
+}
+
+@media (max-width: 425px) {
+  /* Let the scrollable nav bleed to the screen edges so the first/last tab
+     isn't clipped by the header padding, and you can see it's scrollable. */
+  .predictions-nav {
+    margin: 0 -1rem;
+    padding: 0 1rem;
+  }
+  .predictions-nav-link {
+    padding: 0.4rem 0.7rem;
+    font-size: 0.76rem;
+  }
+}
+
+@media (max-width: 480px) {
+
+  .predictions-content {
+    padding: 1.75rem 1rem 0;
+  }
+
+  .predictions-category-card {
+    padding: 1.25rem;
+  }
+}
+
+/* ── Shared loading banner (BatterProps + PitcherProps) ──────── */
+.pp-loading-banner {
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
+  background: rgba(99, 102, 241, 0.07);
+  border: 1px solid rgba(99, 102, 241, 0.2);
+  border-left: 3px solid #6366f1;
+  border-radius: 12px;
+  padding: 1rem 1.25rem;
+  margin-bottom: 1.5rem;
+}
+
+.pp-loading-text {
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.75);
+}
+
+@keyframes pp-spin {
+  to { transform: rotate(360deg); }
+}
+
+.pp-loading-spinner {
+  width: 18px;
+  height: 18px;
+  border: 2px solid rgba(99, 102, 241, 0.3);
+  border-top-color: #6366f1;
+  border-radius: 50%;
+  flex-shrink: 0;
+  animation: pp-spin 0.8s linear infinite;
+}

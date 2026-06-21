@@ -1,10 +1,9 @@
 import { useState, useEffect } from 'react';
 import ReCAPTCHA from "react-google-recaptcha";
 import contactImage from '../../../assets/images/spa-retro-logo-removebg.png';
-import '../../../styles/contact-page.css';
 
 function ContactPage() {
-  
+
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -28,7 +27,6 @@ function ContactPage() {
   };
 
   const handleCaptchaChange = (value) => {
-    console.log('captcha token', value);
     setCaptchaValue(value);
   };
 
@@ -139,7 +137,7 @@ function ContactPage() {
 
               <div className="form-group captcha-group">
                 <ReCAPTCHA
-                  sitekey={process.env.REACT_APP_RECAPTCHA_SITE_KEY}
+                  sitekey={process.env.SANDLOT_APP_RECAPTCHA_SITE_KEY || process.env.REACT_APP_RECAPTCHA_SITE_KEY}
                   onChange={handleCaptchaChange}
                   theme="light"
                 />

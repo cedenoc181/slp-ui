@@ -1,0 +1,1559 @@
+/* ============================================================
+   Matchup Analysis Page — Advanced Comparisons
+   Dark theme following matchup-detail.css conventions
+   ============================================================ */
+
+/* ── Page Layout ──────────────────────────────────────────── */
+.matchup-analysis-page {
+  min-height: 100vh;
+  background-color: #121212;
+  color: #ffffff;
+  padding: 1.5rem 0 5rem;
+}
+
+.analysis-container {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 2rem;
+}
+
+/* ── Skeleton shimmer ─────────────────────────────────────── */
+@keyframes analysis-shimmer {
+  0%   { background-position: -600px 0; }
+  100% { background-position: 600px 0; }
+}
+
+.analysis-skeleton {
+  background: linear-gradient(90deg,
+    rgba(255,255,255,0.05) 25%,
+    rgba(255,255,255,0.10) 37%,
+    rgba(255,255,255,0.05) 63%
+  );
+  background-size: 600px 100%;
+  animation: analysis-shimmer 1.4s infinite linear;
+  border-radius: 6px;
+}
+
+/* ── Back link ────────────────────────────────────────────── */
+.analysis-back-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  color: #1976D2;
+  text-decoration: none;
+  font-size: 0.875rem;
+  font-weight: 600;
+  margin-bottom: 1.25rem;
+  opacity: 0.85;
+  transition: opacity 0.15s;
+}
+.analysis-back-link:hover { opacity: 1; }
+
+/* ── Loading / Error states ───────────────────────────────── */
+.analysis-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  padding: 6rem 0;
+  color: #aaa;
+  font-size: 0.9rem;
+}
+.analysis-loading-spinner {
+  width: 32px;
+  height: 32px;
+  border: 3px solid rgba(25,118,210,0.2);
+  border-top-color: #1976D2;
+  border-radius: 50%;
+  animation: spin-a 0.8s linear infinite;
+}
+@keyframes spin-a { to { transform: rotate(360deg); } }
+
+/* ── Mini Hero ────────────────────────────────────────────── */
+.analysis-mini-hero {
+  background: #1e1e1e;
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 12px;
+  padding: 0.6rem 1.25rem;
+  margin-bottom: 1.5rem;
+  position: relative;
+  overflow: hidden;
+}
+.analysis-mini-hero::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(25,118,210,0.06) 0%, transparent 60%);
+  pointer-events: none;
+}
+
+.hero-teams-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+}
+
+.hero-team-block {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.2rem;
+  min-width: 70px;
+}
+.hero-team-block.home-block { align-items: center; }
+
+.hero-team-logo {
+  width: 28px;
+  height: 28px;
+  object-fit: contain;
+  background: rgba(255, 255, 255, 0.22);
+  border-radius: 6px;
+  padding: 3px;
+}
+a > .hero-team-logo {
+  cursor: pointer;
+  transition: opacity 0.15s ease;
+}
+a > .hero-team-logo:hover {
+  opacity: 0.75;
+}
+
+.hero-team-abbr {
+  font-size: 0.85rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+}
+
+.hero-team-record {
+  font-size: 0.65rem;
+  color: rgba(255,255,255,0.5);
+  font-weight: 500;
+}
+
+.hero-separator {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.hero-at-sign {
+  font-size: 1rem;
+  font-weight: 300;
+  color: rgba(255,255,255,0.35);
+}
+
+.hero-score {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-size: 1.4rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: rgba(255,255,255,0.6);
+}
+
+.hero-score-winner {
+  color: #4caf50;
+}
+
+.hero-score-dash {
+  font-weight: 300;
+  color: rgba(255,255,255,0.3);
+}
+
+.hero-game-meta {
+  text-align: center;
+  margin-top: 0.4rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.hero-date-label {
+  font-size: 0.7rem;
+  color: rgba(255,255,255,0.5);
+}
+
+.hero-status-badge {
+  font-size: 0.65rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  border-radius: 20px;
+  padding: 0.2rem 0.65rem;
+  text-transform: uppercase;
+}
+.hero-status-badge.scheduled { background: rgba(25,118,210,0.2); color: #64b5f6; }
+.hero-status-badge.live      { background: rgba(244,67,54,0.2);  color: #ef5350; }
+.hero-status-badge.final     { background: rgba(255,255,255,0.08); color: rgba(255,255,255,0.45); }
+
+/* ── Section headers ──────────────────────────────────────── */
+.analysis-section {
+  margin-bottom: 2rem;
+}
+
+.analysis-section-title {
+  font-size: 0.7rem;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.4);
+  margin-bottom: 0.85rem;
+}
+
+.analysis-section-title-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.85rem;
+}
+
+.analysis-section-title-row .analysis-section-title {
+  margin-bottom: 0;
+}
+
+/* Insights fallback season subtitle */
+.analysis-insights-season {
+  margin-top: -0.5rem;
+  margin-bottom: 0.75rem;
+}
+
+/* ── Key Insights Panel (carousel) ───────────────────────── */
+.insights-panel {
+  display: flex;
+  flex-direction: row;
+  gap: 1rem;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+  padding-bottom: 0.5rem; /* room for scrollbar on desktop */
+  /* hide scrollbar visually but keep it functional */
+  scrollbar-width: none;
+}
+.insights-panel::-webkit-scrollbar { display: none; }
+
+.insight-card {
+  flex: 0 0 230px;          /* fixed card width, won't shrink */
+  scroll-snap-align: start;
+  background: #1e1e1e;
+  border-radius: 12px;
+  border: 1px solid rgba(255,255,255,0.08);
+  border-left-width: 3px;
+  padding: 1rem 1.1rem;
+  display: flex;
+  gap: 0.75rem;
+  align-items: flex-start;
+}
+.insight-card--weakness {
+  border-left-color: #f44336;
+  background: rgba(244,67,54,0.05);
+}
+.insight-card--strength {
+  border-left-color: #4caf50;
+  background: rgba(76,175,80,0.05);
+}
+.insight-card--neutral {
+  border-left-color: #ffc107;
+  background: rgba(255,193,7,0.05);
+}
+.insight-card--skeleton {
+  border-left-color: rgba(255,255,255,0.1);
+}
+.insight-card--multi {
+  border-left-color: #d4a017;
+  background: rgba(212,160,23,0.07);
+  box-shadow: 0 0 0 1px rgba(212,160,23,0.18), 0 0 14px rgba(212,160,23,0.35), 0 2px 8px rgba(0,0,0,0.4);
+}
+
+.insight-icon {
+  width: 28px;
+  height: 28px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.insight-team-logo {
+  width: 28px;
+  height: 28px;
+  object-fit: contain;
+  background: rgba(255, 255, 255, 0.22);
+  border-radius: 6px;
+  padding: 3px;
+}
+
+.insight-body { flex: 1; min-width: 0; }
+
+.insight-player-link {
+  display: block;
+  font-size: 0.8rem;
+  font-weight: 700;
+  line-height: 1.35;
+  margin-bottom: 0.3rem;
+  color: #fff;
+  text-decoration: none;
+}
+.insight-player-link:hover { text-decoration: underline; opacity: 0.85; }
+.insight-card--weakness .insight-player-link { color: #ef9a9a; }
+.insight-card--strength .insight-player-link { color: #a5d6a7; }
+.insight-card--neutral  .insight-player-link { color: #ffe082; }
+
+.insight-metrics {
+  display: flex;
+  flex-direction: column;
+  gap: 0.22rem;
+  margin-top: 0.25rem;
+}
+.insight-metric-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 0.5rem;
+}
+.insight-metric-label {
+  font-size: 0.7rem;
+  color: rgba(255,255,255,0.45);
+}
+.insight-metric-value {
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: rgba(255,255,255,0.85);
+  font-variant-numeric: tabular-nums;
+}
+
+.insight-skeleton-line {
+  height: 10px;
+  margin-bottom: 0.4rem;
+  border-radius: 4px;
+}
+.insight-skeleton-line.wide  { width: 80%; }
+.insight-skeleton-line.mid   { width: 55%; }
+.insight-skeleton-line.short { width: 40%; }
+
+/* ── Two-column analysis grid ─────────────────────────────── */
+.analysis-two-col {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+/* ── Offensive Splits + Top Batters combined grid ─────────── */
+.analysis-splits-batters-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-template-areas:
+    "away home"
+    "batters batters";
+  gap: 1rem;
+}
+.asb-away        { grid-area: away; }
+.asb-home        { grid-area: home; }
+.asb-top-batters { grid-area: batters; }
+
+/* ── Split Compare Card (team batting splits) ─────────────── */
+.split-compare-card {
+  background: #1e1e1e;
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 16px;
+  overflow: hidden;
+}
+
+.split-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 1.25rem 0.75rem;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+}
+
+.split-card-title {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.split-card-logo {
+  width: 28px;
+  height: 28px;
+  object-fit: contain;
+  background: rgba(255, 255, 255, 0.22);
+  border-radius: 6px;
+  padding: 3px;
+}
+
+.split-card-team-name {
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+
+.split-card-subtitle {
+  font-size: 0.65rem;
+  color: rgba(255,255,255,0.4);
+  font-weight: 500;
+  margin-top: 0.1rem;
+}
+
+/* Toggle */
+.split-toggle {
+  display: flex;
+  background: rgba(255,255,255,0.06);
+  border-radius: 8px;
+  padding: 2px;
+  gap: 2px;
+}
+
+.split-toggle-btn {
+  background: transparent;
+  border: none;
+  color: rgba(255,255,255,0.45);
+  font-size: 0.68rem;
+  font-weight: 600;
+  padding: 0.3rem 0.65rem;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+  white-space: nowrap;
+}
+.split-toggle-btn.active {
+  background: #1976D2;
+  color: #fff;
+}
+
+.split-toggle--lg .split-toggle-btn {
+  font-size: 0.8rem;
+  padding: 0.5rem 1.2rem;
+  border-radius: 7px;
+}
+
+/* Split columns body */
+.split-cols {
+  display: grid;
+  grid-template-columns: 1fr 1px 1fr;
+  min-height: 200px;
+}
+
+.split-divider {
+  background: rgba(255,255,255,0.06);
+  width: 1px;
+}
+
+.split-col {
+  padding: 0.75rem 1.25rem 1rem;
+}
+
+.split-col-header {
+  font-size: 0.7rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.5);
+  margin-bottom: 0.65rem;
+  text-align: center;
+}
+
+.split-col-header--context {
+  color: #4caf50;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  text-decoration-thickness: 1.5px;
+}
+
+.split-stat-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.28rem 0;
+  border-bottom: 1px solid rgba(255,255,255,0.04);
+}
+.split-stat-row:last-child { border-bottom: none; }
+
+.split-stat-row--flagged {
+  background: rgba(244, 67, 54, 0.09);
+  border-radius: 4px;
+  padding-left: 0.3rem;
+  padding-right: 0.3rem;
+  margin-left: -0.3rem;
+  margin-right: -0.3rem;
+}
+
+.split-stat-label {
+  font-size: 0.72rem;
+  color: rgba(255,255,255,0.4);
+  font-weight: 500;
+}
+
+.split-stat-value {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #fff;
+}
+.split-stat-value.advantage    { color: #4caf50; }
+.split-stat-value.disadvantage { color: #f44336; }
+.split-stat-value.lg-above     { color: #4caf50; }
+.split-stat-value.lg-avg       { color: #fbbf24; }
+.split-stat-value.lg-below     { color: #f44336; }
+
+.split-skeleton-row {
+  height: 14px;
+  margin: 0.4rem 0;
+  border-radius: 4px;
+}
+
+/* ── Pitcher Split Card ────────────────────────────────────── */
+.pitcher-split-card {
+  background: #1e1e1e;
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 16px;
+  overflow: hidden;
+}
+
+.pitcher-split-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 1.25rem 0.75rem;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+}
+
+@media (max-width: 1024px) and (min-width: 601px) {
+  .pitcher-split-header {
+    flex-wrap: wrap;
+    row-gap: 0.4rem;
+  }
+  .pitcher-split-identity {
+    order: 1;
+    flex: 1 1 auto;
+  }
+  .pitcher-split-header .split-toggle {
+    order: 2;
+    flex: 0 0 auto;
+  }
+  .pitcher-split-header .sp-warning-badges {
+    order: 3;
+    flex: 0 0 100%;
+    margin-top: 0;
+    gap: 0.25rem;
+  }
+  .pitcher-split-header .sp-warning-badges .exploitable-tag {
+    font-size: 0.55rem;
+    padding: 0.12rem 0.35rem;
+  }
+}
+
+@media (max-width: 600px) {
+  .pitcher-split-header {
+    flex-wrap: wrap;
+    row-gap: 0.5rem;
+  }
+  .pitcher-split-identity {
+    order: 1;
+    flex: 1 1 auto;
+  }
+  .pitcher-split-header .split-toggle {
+    order: 2;
+    flex: 0 0 auto;
+  }
+  .pitcher-split-header .sp-warning-badges {
+    order: 3;
+    flex: 0 0 100%;
+    margin-top: 0;
+  }
+
+  .analysis-splits-batters-grid {
+    grid-template-columns: 1fr;
+    grid-template-areas:
+      "away"
+      "home"
+      "batters";
+  }
+}
+
+.pitcher-split-identity {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.pitcher-split-logo {
+  width: 28px;
+  height: 28px;
+  object-fit: contain;
+  background: rgba(255, 255, 255, 0.22);
+  border-radius: 6px;
+  padding: 3px;
+}
+
+.pitcher-split-headshot {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  object-fit: cover;
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.pitcher-split-name {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #fff;
+  text-decoration: none;
+}
+
+.sp-handedness-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  font-size: 0.65rem;
+  font-weight: 800;
+  flex-shrink: 0;
+}
+.sp-handedness-badge.lhp { background: rgba(156,39,176,0.25); color: #ce93d8; }
+.sp-handedness-badge.rhp { background: rgba(25,118,210,0.25); color: #90caf9; }
+.sp-handedness-badge.tbd { background: rgba(255,255,255,0.08); color: rgba(255,255,255,0.35); }
+
+.pitcher-split-tbd,
+.split-unavailable {
+  padding: 2rem;
+  text-align: center;
+  color: rgba(255,255,255,0.35);
+  font-size: 0.8rem;
+}
+
+/* Warning badges row */
+.sp-warning-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem;
+  margin-top: 0.35rem;
+}
+
+/* Exploitable tag */
+.exploitable-tag {
+  display: inline-block;
+  font-size: 0.6rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  background: rgba(244,67,54,0.18);
+  color: #ef9a9a;
+  border-radius: 4px;
+  padding: 0.15rem 0.4rem;
+}
+
+/* Fallback season badge */
+.sp-fallback-season-badge {
+  display: inline-block;
+  font-size: 0.6rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  background: rgba(99,102,241,0.12);
+  color: rgba(165,166,246,0.85);
+  border: 1px solid rgba(99,102,241,0.25);
+  border-radius: 4px;
+  padding: 0.15rem 0.4rem;
+  align-self: center;
+}
+
+/* ── Top Batters This Week ────────────────────────────────── */
+.top-batters-card {
+  background: #1e1e1e;
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 16px;
+  padding: 1.1rem 1.2rem;
+}
+
+.top-batters-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.75rem;
+}
+
+.top-batters-title {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.75);
+}
+
+.top-batters-logo {
+  width: 22px;
+  height: 22px;
+  object-fit: contain;
+  background: rgba(255, 255, 255, 0.22);
+  border-radius: 5px;
+  padding: 2px;
+}
+
+.top-batters-metric-toggle {
+  display: flex;
+  gap: 0.35rem;
+  margin-bottom: 0.9rem;
+  flex-wrap: wrap;
+}
+
+.top-batters-metric-btn {
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 6px;
+  color: rgba(255,255,255,0.5);
+  font-size: 0.68rem;
+  font-weight: 600;
+  padding: 0.25rem 0.65rem;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+}
+
+.top-batters-metric-btn:hover {
+  background: rgba(255,255,255,0.1);
+  color: rgba(255,255,255,0.8);
+}
+
+.top-batters-metric-btn.active {
+  background: rgba(25,118,210,0.2);
+  border-color: #1976D2;
+  color: #90caf9;
+}
+
+.top-batters-rows {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.top-batter-row {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  padding: 0.5rem 0.5rem 0.4rem;
+  border-radius: 8px;
+  background: rgba(255,255,255,0.03);
+}
+
+.top-batter-rank {
+  font-size: 0.62rem;
+  font-weight: 700;
+  color: rgba(255,255,255,0.25);
+  width: 18px;
+  text-align: right;
+  flex-shrink: 0;
+}
+
+.top-batter-headshot {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  object-fit: cover;
+  background: rgba(255,255,255,0.06);
+  flex-shrink: 0;
+}
+
+.top-batter-info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.top-batter-name {
+  display: inline;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: #fff;
+  text-decoration: none;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  width: fit-content;
+}
+
+.top-batter-name:hover {
+  text-decoration: underline;
+  opacity: 0.85;
+}
+
+.game-sparkbar {
+  display: flex;
+  align-items: flex-end;
+  gap: 3px;
+  height: 44px;
+}
+
+.game-sparkbar-col {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  flex: 1;
+  gap: 2px;
+  cursor: default;
+}
+
+.game-sparkbar-val {
+  font-size: 0.52rem;
+  font-weight: 800;
+  color: #90caf9;
+  line-height: 1;
+  min-height: 9px;
+}
+
+.game-sparkbar-val.is-zero {
+  visibility: hidden;
+}
+
+.game-sparkbar-track {
+  width: 100%;
+  height: 22px;
+  background: rgba(255,255,255,0.06);
+  border-radius: 2px 2px 0 0;
+  display: flex;
+  align-items: flex-end;
+  overflow: hidden;
+}
+
+.game-sparkbar-fill {
+  width: 100%;
+  background: #1976D2;
+  border-radius: 2px 2px 0 0;
+  transition: height 0.2s ease;
+}
+
+.game-sparkbar-fill.is-hot {
+  background: #42a5f5;
+}
+
+.game-sparkbar-fill.is-empty {
+  height: 0 !important;
+}
+
+.game-sparkbar-date {
+  font-size: 0.48rem;
+  color: rgba(255,255,255,0.28);
+  line-height: 1;
+}
+
+.top-batter-total {
+  font-size: 1rem;
+  font-weight: 800;
+  color: #fff;
+  min-width: 24px;
+  text-align: right;
+  flex-shrink: 0;
+}
+
+/* skeletons */
+.top-batter-skeleton-avatar { width: 32px; height: 32px; border-radius: 50%; flex-shrink: 0; }
+.top-batter-skeleton-name   { width: 110px; height: 11px; border-radius: 4px; margin-bottom: 4px; }
+.top-batter-skeleton-dots   { width: 100%; height: 44px; border-radius: 4px; }
+.top-batter-skeleton-total  { width: 22px; height: 18px; border-radius: 4px; margin-left: auto; }
+
+/* ── Edge Indicators ──────────────────────────────────────── */
+.edge-indicators-card {
+  background: #1e1e1e;
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 16px;
+  padding: 1.25rem 1.5rem;
+}
+
+.edge-bar-row {
+  margin-bottom: 1.1rem;
+}
+.edge-bar-row:last-child { margin-bottom: 0; }
+
+.edge-bar-labels {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 0.4rem;
+}
+
+.edge-label-team {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: rgba(255,255,255,0.7);
+}
+
+.edge-label-category {
+  font-size: 0.68rem;
+  font-weight: 600;
+  color: rgba(255,255,255,0.35);
+  text-align: center;
+}
+
+.edge-bar {
+  height: 10px;
+  background: rgba(255,255,255,0.06);
+  border-radius: 10px;
+  display: flex;
+  overflow: hidden;
+  gap: 2px;
+}
+
+.edge-fill {
+  border-radius: 10px;
+  transition: width 0.6s ease;
+}
+.edge-fill.away-fill { background: #1976D2; border-radius: 10px 0 0 10px; }
+.edge-fill.home-fill { background: #e53935; border-radius: 0 10px 10px 0; }
+.edge-fill.skeleton-fill { background: rgba(255,255,255,0.08); }
+
+.edge-bar-values {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 0.3rem;
+}
+.edge-value {
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: rgba(255,255,255,0.5);
+}
+.edge-value.winner { color: #fff; font-weight: 800; }
+
+.edge-bar-skeleton {
+  height: 10px;
+  border-radius: 10px;
+  width: 100%;
+}
+
+/* ── Top nav row (back link + Deep Dive button) ───────────── */
+.matchup-detail-top-nav {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  margin-bottom: 1.25rem;
+}
+
+.matchup-detail-top-nav__center {
+  display: flex;
+  justify-content: center;
+}
+
+.matchup-detail-top-nav__right {
+  display: flex;
+  justify-content: flex-end;
+}
+
+/* Override the plain text back-link to match the button style */
+.matchup-detail-top-nav .back-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  justify-self: start;
+  background: transparent;
+  color: #fff;
+  text-decoration: none;
+  font-size: 0.875rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  padding: 0.75rem 1.75rem;
+  border-radius: 50px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  transition: background 0.15s, border-color 0.15s;
+  opacity: 1;
+  margin-bottom: 0;
+}
+.matchup-detail-top-nav .back-link:hover {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(255, 255, 255, 0.35);
+  opacity: 1;
+}
+
+/* ── Analysis page back button — matches matchup-detail back-link ── */
+.analysis-back-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  justify-self: start;
+  background: transparent;
+  color: #fff;
+  text-decoration: none;
+  font-size: 0.875rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  padding: 0.75rem 1.75rem;
+  border-radius: 50px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  transition: background 0.15s, border-color 0.15s;
+}
+.analysis-back-btn:hover {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(255, 255, 255, 0.35);
+}
+
+/* ── Deep Dive CTA button ─────────────────────────────────── */
+.deep-dive-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: linear-gradient(135deg, #1565C0 0%, #1976D2 100%);
+  color: #fff;
+  text-decoration: none;
+  font-size: 0.875rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  padding: 0.75rem 1.75rem;
+  border-radius: 50px;
+  border: 1px solid rgba(255,255,255,0.15);
+  transition: opacity 0.15s, transform 0.15s;
+  box-shadow: 0 4px 16px rgba(25,118,210,0.3);
+}
+.deep-dive-btn:hover {
+  opacity: 0.9;
+  transform: translateY(-1px);
+}
+.deep-dive-btn svg {
+  width: 16px;
+  height: 16px;
+}
+.deep-dive-btn--locked {
+  background: rgba(255,255,255,0.07);
+  border: 1px solid rgba(255,255,255,0.12);
+  box-shadow: none;
+  cursor: pointer;
+  position: relative;
+}
+.deep-dive-btn--locked:hover {
+  opacity: 1;
+  transform: none;
+  background: rgba(255,255,255,0.11);
+}
+.deep-dive-btn--locked::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  bottom: calc(100% + 6px);
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(20,20,20,0.95);
+  color: rgba(255,255,255,0.85);
+  font-size: 0.72rem;
+  white-space: nowrap;
+  padding: 0.3rem 0.65rem;
+  border-radius: 6px;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.15s;
+}
+.deep-dive-btn--locked:hover::after {
+  opacity: 1;
+}
+
+/* ── H2H Pitcher Cards ────────────────────────────────────── */
+.h2h-card {
+  background: #1e1e1e;
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 16px;
+  padding: 1rem 1.25rem;
+  display: flex;
+  flex-direction: column;
+}
+
+.h2h-card-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+}
+
+.h2h-card-logo {
+  width: 24px;
+  height: 24px;
+  object-fit: contain;
+  background: rgba(255, 255, 255, 0.22);
+  border-radius: 5px;
+  padding: 2px;
+}
+
+.h2h-card-title {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #fff;
+  flex: 1;
+}
+
+.h2h-game-count {
+  font-size: 0.62rem;
+  color: rgba(255,255,255,0.35);
+  font-weight: 500;
+}
+
+.h2h-group-label {
+  font-size: 0.69rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #ffffff;
+  margin: 0.6rem 0 0.25rem;
+}
+
+.h2h-pitcher-row {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  padding: 0.5rem 0.4rem;
+  border-bottom: 1px solid rgba(255,255,255,0.04);
+  border-radius: 6px;
+  transition: background 0.15s;
+}
+
+.h2h-pitcher-row:hover {
+  background: rgba(255,255,255,0.05);
+}
+
+.h2h-pitcher-row:last-child {
+  border-bottom: none;
+}
+
+.h2h-pitcher-row--sp {
+  background: rgba(25,118,210,0.08);
+  border: 1px solid rgba(25,118,210,0.2);
+  border-radius: 8px;
+  padding: 0.5rem 0.6rem;
+  margin-bottom: 0.25rem;
+}
+
+.h2h-pitcher-main {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.h2h-pitcher-headshot {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  object-fit: cover;
+  background: rgba(255,255,255,0.05);
+  flex-shrink: 0;
+}
+
+.h2h-pitcher-identity {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  min-width: 0;
+}
+
+.h2h-pitcher-meta {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+}
+
+.h2h-pitcher-name {
+  display: inline;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #fff;
+  text-decoration: none;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  width: fit-content;
+}
+
+.h2h-pitcher-name:hover { color: #90caf9; text-decoration: underline; }
+
+.h2h-sp-badge {
+  display: inline-block;
+  font-size: 0.55rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  background: rgba(25,118,210,0.25);
+  color: #64B5F6;
+  border: 1px solid rgba(25,118,210,0.4);
+  border-radius: 4px;
+  padding: 0.1rem 0.35rem;
+  white-space: nowrap;
+}
+
+.h2h-app-label {
+  font-size: 0.62rem;
+  color: rgba(255,255,255,0.35);
+}
+
+/* ── H2H Batter row layout ────────────────────────────────── */
+.h2h-batter-row {
+  flex-direction: column;
+  align-items: flex-start;
+  margin-bottom: 0.35rem;
+}
+
+.h2h-batter-stats-grid {
+  display: flex;
+  flex-wrap: nowrap;
+  gap: 0;
+  width: 100%;
+  margin-top: 0.15rem;
+}
+
+.h2h-batter-stats-grid .h2h-pstat {
+  flex: 1;
+  min-width: 0;
+}
+
+.h2h-batter-stats-grid .h2h-pstat-val {
+  font-size: 0.75rem;
+}
+
+.h2h-batter-stats-grid .h2h-pstat-lbl {
+  font-size: 0.5rem;
+}
+
+/* ── H2H Batter leader highlights ────────────────────────── */
+.h2h-batter-row--leader {
+  background: rgba(25, 118, 210, 0.08);
+  border: 1px solid rgba(25, 118, 210, 0.2);
+  border-radius: 8px;
+  padding: 0.5rem 0.6rem;
+}
+
+.h2h-batter-name-row {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  flex-wrap: wrap;
+}
+
+.h2h-batter-leader-badge {
+  display: inline-block;
+  font-size: 0.5rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  background: rgba(25, 118, 210, 0.25);
+  color: #64B5F6;
+  border: 1px solid rgba(25, 118, 210, 0.4);
+  border-radius: 3px;
+  padding: 0.08rem 0.28rem;
+  white-space: nowrap;
+}
+
+.h2h-pstat-val--leader {
+  color: #90caf9;
+  font-weight: 700;
+}
+
+.h2h-bullpen-toggle {
+  display: block;
+  width: 100%;
+  margin-top: 0.5rem;
+  padding: 0.45rem 0;
+  background: transparent;
+  border: 1px solid #ffffff;
+  border-radius: 8px;
+  color: #ffffff;
+  font-size: 0.72rem;
+  letter-spacing: 0.03em;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+.h2h-bullpen-toggle:hover {
+  background: rgba(255,255,255,0.08);
+  color: #ffffff;
+}
+
+/* ── Pitcher Log Modal ────────────────────────────────────────────────────── */
+.pitcher-log-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.72);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 1rem;
+}
+
+.pitcher-log-modal {
+  background: #1e1e1e;
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 16px;
+  width: 100%;
+  max-width: 620px;
+  max-height: 80vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.pitcher-log-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 1.25rem;
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+  flex-shrink: 0;
+}
+
+.pitcher-log-modal-title {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #ffffff;
+}
+
+.pitcher-log-headshot {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  object-fit: cover;
+  background: rgba(255,255,255,0.06);
+}
+
+.pitcher-log-close {
+  background: transparent;
+  border: none;
+  color: rgba(255,255,255,0.5);
+  font-size: 1rem;
+  cursor: pointer;
+  padding: 0.25rem 0.5rem;
+  border-radius: 6px;
+  transition: background 0.15s, color 0.15s;
+}
+.pitcher-log-close:hover {
+  background: rgba(255,255,255,0.08);
+  color: #ffffff;
+}
+
+.pitcher-log-loading,
+.pitcher-log-empty {
+  padding: 2rem;
+  text-align: center;
+  color: rgba(255,255,255,0.4);
+  font-size: 0.8rem;
+}
+
+.pitcher-log-table-wrap {
+  overflow-y: auto;
+  flex: 1;
+}
+
+.pitcher-log-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.78rem;
+}
+
+.pitcher-log-table th {
+  position: sticky;
+  top: 0;
+  background: #1e1e1e;
+  color: rgba(255,255,255,0.45);
+  font-weight: 600;
+  text-transform: uppercase;
+  font-size: 0.62rem;
+  letter-spacing: 0.06em;
+  padding: 0.55rem 0.75rem;
+  text-align: center;
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+}
+.pitcher-log-table th:first-child { text-align: left; }
+
+.pitcher-log-table td {
+  padding: 0.5rem 0.75rem;
+  text-align: center;
+  color: rgba(255,255,255,0.8);
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+}
+.pitcher-log-table td:first-child { text-align: left; color: rgba(255,255,255,0.5); font-size: 0.72rem; }
+
+.pitcher-log-table tbody tr:hover {
+  background: rgba(255,255,255,0.03);
+}
+
+.pitcher-log-totals td {
+  background: rgba(255,255,255,0.04);
+  color: #ffffff;
+  font-weight: 600;
+  border-top: 1px solid rgba(255,255,255,0.12);
+}
+.pitcher-log-totals td:first-child {
+  color: rgba(255,255,255,0.7);
+  font-size: 0.7rem;
+}
+
+.pl-win  { color: #4caf50; font-weight: 700; }
+.pl-loss { color: #f44336; font-weight: 700; }
+.pl-nd   { color: rgba(255,255,255,0.3); }
+
+@media (max-width: 430px) {
+  .deep-dive-btn {
+    font-size: 0.72rem;
+    padding: 0.5rem 1rem;
+    gap: 0.35rem;
+    letter-spacing: 0.02em;
+  }
+  .deep-dive-btn svg {
+    width: 13px;
+    height: 13px;
+  }
+  .matchup-detail-top-nav .back-link {
+    font-size: 0.72rem;
+    padding: 0.5rem 1rem;
+    gap: 0.35rem;
+    letter-spacing: 0.02em;
+  }
+
+  .pitcher-log-modal {
+    border-radius: 12px;
+    max-height: 88vh;
+  }
+  .pitcher-log-modal-header {
+    padding: 0.75rem 1rem;
+  }
+  .pitcher-log-modal-title {
+    font-size: 0.8rem;
+  }
+  .pitcher-log-table {
+    font-size: 0.7rem;
+  }
+  .pitcher-log-table th {
+    padding: 0.4rem 0.4rem;
+    font-size: 0.58rem;
+  }
+  .pitcher-log-table td {
+    padding: 0.4rem 0.4rem;
+  }
+}
+
+.h2h-pitcher-stats {
+  display: flex;
+  gap: 0;
+  width: 100%;
+  margin-top: 0.15rem;
+}
+
+.h2h-pitcher-stats .h2h-pstat {
+  flex: 1;
+  min-width: 0;
+}
+
+.h2h-pstat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 2.4rem;
+}
+
+.h2h-pstat-val {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: #fff;
+}
+
+.h2h-pstat-lbl {
+  font-size: 0.55rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: rgba(255,255,255,0.35);
+}
+
+/* ── Responsive ───────────────────────────────────────────── */
+@media (max-width: 768px) {
+  .analysis-container { padding: 0 1rem; }
+
+  .analysis-two-col {
+    grid-template-columns: 1fr;
+  }
+
+  .insight-card { flex: 0 0 200px; }
+
+  .hero-team-logo { width: 22px; height: 22px; }
+  .hero-team-abbr { font-size: 0.8rem; }
+
+  .split-cols {
+    grid-template-columns: 1fr;
+  }
+  .split-divider { display: none; }
+  .split-col:first-child {
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+  }
+}
+
+
+/* ── Analysis top nav responsive sizing — mirrors matchup-detail ── */
+.analysis-nav-short { display: none; }
+
+@media (max-width: 650px) {
+  .analysis-back-btn,
+  .analysis-scout-wrap .scout-ai-btn {
+    font-size: 0.68rem;
+    padding: 0.4rem 0.75rem;
+  }
+
+  .analysis-scout-wrap .scout-ai-btn__icon {
+    width: 13px;
+    height: 13px;
+  }
+}
+
+@media (max-width: 425px) {
+  .analysis-nav-full  { display: none; }
+  .analysis-nav-short { display: inline; }
+
+  .analysis-scout-wrap .scout-ai-btn span:not(.scout-ai-btn__spinner) {
+    font-size: 0;
+  }
+  .analysis-scout-wrap .scout-ai-btn span:not(.scout-ai-btn__spinner)::after {
+    content: 'Scouting';
+    font-size: 0.72rem;
+  }
+
+  .pitcher-split-headshot {
+    width: 38px;
+    height: 38px;
+  }
+
+  .pitcher-split-identity {
+    order: 0;
+  }
+
+  .pitcher-split-header .sp-fallback-season-badge {
+    order: 1;
+    margin-left: auto;
+  }
+
+  /* Prevent insights carousel from causing page-level horizontal overflow */
+  .matchup-analysis-page {
+    overflow-x: hidden;
+  }
+
+  .insights-panel {
+    max-width: 100%;
+  }
+
+  .insight-card {
+    flex: 0 0 160px;
+    padding-left: 0.85rem;
+    padding-right: 0.85rem;
+  }
+
+  .insight-metric-row {
+    gap: 0;
+  }
+
+  .insight-metric-row:not(:last-child) {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.50);
+    padding-bottom: 0.35rem;
+    margin-bottom: 0.35rem;
+  }
+}
