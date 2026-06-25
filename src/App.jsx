@@ -38,6 +38,7 @@ import VerifyEmailPage from './components/pages/Account/VerifyEmailPage';
 import AdminPage from './components/pages/Admin/AdminPage';
 import ArticleEditor from './components/pages/Admin/ArticleEditor';
 import ModelPerformancePage from './components/pages/Admin/ModelPerformancePage';
+import PredictionAuditPage from './components/pages/Admin/PredictionAuditPage';
 import CampaignsPage from './components/pages/Admin/CampaignsPage';
 
 // Education page imports//
@@ -71,9 +72,9 @@ import PredictionsOverview from './components/pages/predictions/PredictionsOverv
 import GameProps from './components/pages/predictions/GameProps';
 import PitcherProps from './components/pages/predictions/PitcherProps';
 import BatterProps from './components/pages/predictions/BatterProps';
-import ScoutAIChat from './components/pages/predictions/ScoutAIChat';
 import BetLibrary from './components/pages/predictions/BetLibrary';
 import Lab from './components/pages/predictions/Lab';
+import ScoutDesk from './components/pages/predictions/ScoutDesk';
 import UpgradePage from './components/pages/Account/UpgradePage';
 import CheckoutSuccessPage from './components/pages/Account/CheckoutSuccessPage';
 
@@ -167,13 +168,14 @@ const PAGE_TITLES = [
   { path: '/admin',                    title: 'Admin' },
   { path: '/admin/new',               title: 'Admin – New Article' },
   { path: '/admin/edit/:id',          title: 'Admin – Edit Article' },
+  { path: '/admin/prediction-audit',  title: 'Admin – Prediction Audit' },
   { path: '/predictions',             title: 'Predictions' },
   { path: '/predictions/games',       title: 'Game Props' },
   { path: '/predictions/pitchers',    title: 'Pitcher Props' },
   { path: '/predictions/batters',     title: 'Batter Props' },
-  { path: '/predictions/scout-ai',    title: 'Scout AI' },
   { path: '/predictions/bet-library', title: 'Bet Library' },
   { path: '/predictions/lab',          title: 'Lab' },
+  { path: '/predictions/scout-desk',   title: 'Scout AI' },
   { path: '/unsubscribe',             title: 'Unsubscribe' },
   { path: '/verify-email',            title: 'Verify Email' },
 ];
@@ -263,9 +265,9 @@ function App() {
           <Route path="/predictions/games" element={<ProtectedRoute require="premium"><GameProps /></ProtectedRoute>} />
           <Route path="/predictions/pitchers" element={<ProtectedRoute require="premium"><PitcherProps /></ProtectedRoute>} />
           <Route path="/predictions/batters" element={<ProtectedRoute require="premium"><BatterProps /></ProtectedRoute>} />
-          <Route path="/predictions/scout-ai" element={<ProtectedRoute require="premium"><ScoutAIChat /></ProtectedRoute>} />
           <Route path="/predictions/bet-library" element={<ProtectedRoute require="admin-tools"><BetLibrary /></ProtectedRoute>} />
           <Route path="/predictions/lab" element={<ProtectedRoute require="admin-tools"><Lab /></ProtectedRoute>} />
+          <Route path="/predictions/scout-desk" element={<ProtectedRoute require="admin-tools"><ScoutDesk /></ProtectedRoute>} />
 
           {/* Education routes */}
           <Route path="/glossary" element={<Glossary />} />
@@ -289,6 +291,7 @@ function App() {
           <Route path="/admin/new" element={<ArticleEditor />} />
           <Route path="/admin/edit/:id" element={<ArticleEditor />} />
           <Route path="/admin/model-performance" element={<ModelPerformancePage />} />
+          <Route path="/admin/prediction-audit" element={<PredictionAuditPage />} />
           <Route path="/admin/campaigns" element={<CampaignsPage />} />
 
           {/* Unsubscribe route */}

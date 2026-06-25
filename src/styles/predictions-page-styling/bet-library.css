@@ -701,3 +701,101 @@ select.bl-input { appearance: none; cursor: pointer; }
 @media (max-width: 480px) {
   .bl-summary { grid-template-columns: 1fr 1fr; }
 }
+
+/* ── Live bet tracker (temporary strip while the game is in progress) ────────── */
+
+.bl-row.is-live { border-color: rgba(248, 113, 113, 0.35); }
+
+/* Flush top band inside the (overflow:hidden, rounded) card */
+.bl-live {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+  padding: 0.5rem 1.1rem;
+  background: rgba(248, 113, 113, 0.09);
+  border-bottom: 1px solid rgba(248, 113, 113, 0.22);
+  font-size: 0.8rem;
+}
+.bl-live.tone-good { background: rgba(74, 222, 128, 0.1);  border-bottom-color: rgba(74, 222, 128, 0.32); }
+.bl-live.tone-bad  { background: rgba(248, 113, 113, 0.11); border-bottom-color: rgba(248, 113, 113, 0.34); }
+
+.bl-live-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-size: 0.64rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  color: #f87171;
+  text-transform: uppercase;
+}
+.bl-live-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #f87171;
+  box-shadow: 0 0 0 0 rgba(248, 113, 113, 0.6);
+  animation: bl-live-pulse 1.6s infinite;
+}
+@keyframes bl-live-pulse {
+  0%   { box-shadow: 0 0 0 0 rgba(248, 113, 113, 0.55); }
+  70%  { box-shadow: 0 0 0 6px rgba(248, 113, 113, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(248, 113, 113, 0); }
+}
+
+.bl-live-inning {
+  font-size: 0.72rem;
+  color: #cbd5e1;
+  white-space: nowrap;
+}
+.bl-live-half { color: #94a3b8; text-transform: uppercase; font-size: 0.64rem; }
+
+.bl-live-body {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  flex-wrap: wrap;
+  margin-left: auto;
+}
+
+.bl-live-metric { color: #e2e8f0; }
+.bl-live-metric strong { font-size: 1.05rem; font-weight: 800; color: #fff; margin-right: 0.15rem; }
+
+.bl-live-target {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: #cbd5e1;
+  padding: 0.1rem 0.45rem;
+  border-radius: 5px;
+  background: rgba(255, 255, 255, 0.08);
+  white-space: nowrap;
+}
+
+.bl-live-score { display: inline-flex; align-items: center; gap: 0.4rem; font-variant-numeric: tabular-nums; }
+.bl-live-team { color: #b6c0d0; }
+.bl-live-team strong { color: #e2e8f0; }
+.bl-live-team.lead strong { color: #fff; }
+.bl-live-team.pick { color: #fbbf24; }
+.bl-live-team.pick strong { color: #fbbf24; }
+.bl-live-score-sep { color: #64748b; }
+
+.bl-live-tag {
+  font-size: 0.66rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  padding: 0.12rem 0.45rem;
+  border-radius: 5px;
+  background: rgba(255, 255, 255, 0.08);
+  color: #cbd5e1;
+}
+.bl-live.tone-good .bl-live-tag { background: rgba(74, 222, 128, 0.18);  color: #4ade80; }
+.bl-live.tone-bad  .bl-live-tag { background: rgba(248, 113, 113, 0.18); color: #f87171; }
+
+.bl-live-note { font-size: 0.68rem; color: #94a3b8; font-style: italic; }
+
+@media (max-width: 680px) {
+  .bl-live-body { margin-left: 0; width: 100%; }
+}
+

@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../../context/AuthContext';
@@ -6,9 +6,13 @@ import PredictionsNav from './PredictionsNav';
 import betLibraryService, { unitProfit, betPL, summarize } from '../../../data/services/betLibraryService';
 import predictionsService from '../../../data/services/predictionsService';
 import scheduleService from '../../../data/services/scheduleService';
+import gamesService from '../../../data/services/gamesService';
 import { buildMatchupCandidates } from '../../../data/services/matchupBets';
 import { gradeBet, isGameFinal, isSettleDue, gameStartEpoch } from '../../../data/services/betGrader';
+import { buildLiveTracker, isGameLive } from '../../../data/services/liveBetTracker';
+import { aggregatePlayers, mapSeasonType } from '../Stats/mlb-schedule/utils';
 import { getTeamById } from '../../../data/constants/apiConstants';
+import LiveBetTracker from './LiveBetTracker';
 import '../../../styles/predictions-page-styling/predictions.css';
 import '../../../styles/predictions-page-styling/bet-library.css';
 
@@ -407,14 +411,15 @@ function AddBetModal({ onClose, onSave, matchups = [], gamesById = {} }) {
 
 // ── Bet row ───────────────────────────────────────────────────────────────────
 
-function BetRow({ bet, onStatus, onRemove }) {
+function BetRow({ bet, onStatus, onRemove, liveTracker }) {
   const [open, setOpen] = useState(false);
   const pl = betPL(bet);
   const settled = bet.status === 'won' || bet.status === 'lost' || bet.status === 'push';
   const status = STATUS_META[bet.status] ?? STATUS_META.pending;
 
   return (
-    <div className={`bl-row corr-${bet.correlation} status-${bet.status}`}>
+    <div className={`bl-row corr-${bet.correlation} status-${bet.status}${liveTracker ? ' is-live' : ''}`}>
+      {liveTracker && <LiveBetTracker tracker={liveTracker} />}
       <div className="bl-row-main">
         {/* Correlation badge */}
         <span className={`bl-corr-badge corr-${bet.correlation}`}>
@@ -536,6 +541,7 @@ export default function BetLibrary() {
   const [matchups, setMatchups] = useState([]);
   const [gamesById, setGamesById] = useState({});
   const [loadError, setLoadError] = useState(null);
+  const [liveByPk, setLiveByPk] = useState({}); // gamePk → { game, boxscore, batters, pitchers }
 
   useEffect(() => { window.scrollTo(0, 0); }, []);
 
@@ -635,6 +641,75 @@ export default function BetLibrary() {
     const id = setInterval(attemptGrading, 10 * 60 * 1000);
     return () => clearInterval(id);
   }, [attemptGrading]);
+
+  // ── Live tracking: poll live game + H2H box scores for pending bets ───────────
+  // Reads current bets via a ref so unrelated bet edits don't restart the timer;
+  // the effect only re-subscribes when the set of pending games/markets changes.
+  const betsRef = useRef(bets);
+  betsRef.current = bets;
+  const liveSig = useMemo(
+    () => bets
+      .filter(b => b.status === 'pending' && b.gamePk != null)
+      .map(b => `${b.gamePk}:${b.grade?.type || ''}`)
+      .sort()
+      .join('|'),
+    [bets]
+  );
+
+  useEffect(() => {
+    const pending = betsRef.current.filter(b => b.status === 'pending' && b.gamePk != null);
+    if (!pending.length) { setLiveByPk({}); return; }
+
+    let cancelled = false;
+    // Bypass the API TTL cache so each poll reflects the latest in-game state.
+    const fresh = { ttl: 0 };
+
+    const poll = async () => {
+      try {
+        const todays = await scheduleService.getTodayGames(fresh).catch(() => []);
+        const byPk = {};
+        for (const g of (Array.isArray(todays) ? todays : [])) {
+          const pk = g.game_pk ?? g.id;
+          if (pk != null) byPk[pk] = g;
+        }
+        const livePks = [...new Set(pending.map(b => b.gamePk))]
+          .filter(pk => byPk[pk] && isGameLive(byPk[pk]));
+        if (!livePks.length) { if (!cancelled) setLiveByPk({}); return; }
+
+        // Only games carrying a player-prop bet need the per-player H2H box scores.
+        const needPlayers = new Set(
+          pending
+            .filter(b => b.grade?.type === 'pitcher_prop' || b.grade?.type === 'batter_prop')
+            .map(b => b.gamePk)
+        );
+
+        const entries = await Promise.all(livePks.map(async (pk) => {
+          const game = byPk[pk];
+          const season = game.season || new Date().getFullYear();
+          const seasonType = mapSeasonType(game.season_type);
+          const wantPlayers = needPlayers.has(pk);
+          const [boxRes, batRes, pitRes] = await Promise.allSettled([
+            gamesService.getBoxscore(pk, fresh),
+            wantPlayers ? gamesService.getHeadToHeadBatters(game.away_team_id, game.home_team_id, { season: String(season), seasonType, limit: 10, gamePk: pk }, fresh) : Promise.resolve(null),
+            wantPlayers ? gamesService.getHeadToHeadPitchers(game.away_team_id, game.home_team_id, { season: String(season), seasonType, limit: 10, gamePk: pk }, fresh) : Promise.resolve(null),
+          ]);
+          const boxscore = boxRes.status === 'fulfilled' ? boxRes.value : null;
+          const batGames = batRes.status === 'fulfilled' && batRes.value?.games ? batRes.value.games : [];
+          const pitGames = pitRes.status === 'fulfilled' && pitRes.value?.games ? pitRes.value.games : [];
+          const batters  = [...aggregatePlayers(batGames, 'team_a'), ...aggregatePlayers(batGames, 'team_b')];
+          const pitchers = [...aggregatePlayers(pitGames, 'team_a'), ...aggregatePlayers(pitGames, 'team_b')];
+          return [pk, { game, boxscore, batters, pitchers }];
+        }));
+        if (!cancelled) setLiveByPk(Object.fromEntries(entries));
+      } catch {
+        // Non-fatal — the next poll retries.
+      }
+    };
+
+    poll();
+    const id = setInterval(poll, 60_000);
+    return () => { cancelled = true; clearInterval(id); };
+  }, [liveSig]);
 
   const handleAdd = useCallback(async (data) => {
     try { await betLibraryService.add(data); }
@@ -783,7 +858,15 @@ export default function BetLibrary() {
         ) : (
           <div className="bl-list">
             {visible.map(bet => (
-              <BetRow key={bet.id} bet={bet} onStatus={handleStatus} onRemove={handleRemove} />
+              <BetRow
+                key={bet.id}
+                bet={bet}
+                onStatus={handleStatus}
+                onRemove={handleRemove}
+                liveTracker={bet.gamePk != null && bet.status === 'pending'
+                  ? buildLiveTracker(bet, liveByPk[bet.gamePk])
+                  : null}
+              />
             ))}
           </div>
         )}

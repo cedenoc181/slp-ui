@@ -24,7 +24,7 @@
  * { value } for select, { value } for boolean.
  */
 
-export const GROUPS = ['Odds', 'Model', 'Pitcher', 'Team', 'Opponent'];
+export const GROUPS = ['Odds', 'Model', 'Pitcher', 'Last start', 'Team', 'Opponent'];
 
 const SIDE_OPTS = [
   { value: 'fav', label: 'Favorite',  test: v => v === true },
@@ -80,10 +80,26 @@ export const FILTER_CATALOG = [
   { id: 'daysRest', label: 'Days of rest', group: 'Pitcher', type: 'range',
     accessor: r => r.daysRest, min: 0, max: 7, step: 1, unit: ' d', available: true,
     hint: 'Computed from the last start in the pitcher\'s game logs.' },
-  // backend-pending
   { id: 'pitcherSeasonEra', label: 'Season ERA', group: 'Pitcher', type: 'range',
-    accessor: r => r.pitcherSeasonEra, min: 0, max: 8, step: 0.1, decimals: 2, available: false,
-    note: 'Needs `season_era` on the pitcher payload.' },
+    accessor: r => r.pitcherSeasonEra, min: 0, max: 8, step: 0.1, decimals: 2, available: true,
+    hint: 'Current-season ERA from the player profile.' },
+
+  // ── Last start (most recent outing from the pitcher's game logs) ─────────────
+  { id: 'lastPitchCount', label: 'Last start pitch count', group: 'Last start', type: 'range',
+    accessor: r => r.lastPitchCount, min: 0, max: 130, step: 5, available: true,
+    hint: 'Total pitches thrown in the pitcher\'s most recent outing.' },
+  { id: 'lastEarnedRuns', label: 'Last start earned runs', group: 'Last start', type: 'range',
+    accessor: r => r.lastEarnedRuns, min: 0, max: 10, step: 1, available: true,
+    hint: 'Earned runs allowed last time out.' },
+  { id: 'lastHitsAllowed', label: 'Last start hits allowed', group: 'Last start', type: 'range',
+    accessor: r => r.lastHitsAllowed, min: 0, max: 15, step: 1, available: true,
+    hint: 'Hits allowed in the most recent start.' },
+  { id: 'lastStrikeouts', label: 'Last start strikeouts', group: 'Last start', type: 'range',
+    accessor: r => r.lastStrikeouts, min: 0, max: 18, step: 1, available: true,
+    hint: 'Strikeouts recorded last time out.' },
+  { id: 'lastWalks', label: 'Last start walks', group: 'Last start', type: 'range',
+    accessor: r => r.lastWalks, min: 0, max: 10, step: 1, available: true,
+    hint: 'Walks given up in the most recent start.' },
 
   // ── Team form ───────────────────────────────────────────────────────────────
   { id: 'teamWinPct', label: 'Team win %', group: 'Team', type: 'range',
@@ -110,6 +126,15 @@ export const FILTER_CATALOG = [
   { id: 'oppRispAvg', label: 'Opp AVG w/ RISP', group: 'Opponent', type: 'range',
     accessor: r => r.oppRispAvg, min: 0.1, max: 0.35, step: 0.005, decimals: 3, available: false,
     note: 'Needs situational splits (RISP) per team.' },
+  { id: 'oppOpsL5', label: 'Opp OPS (L5)', group: 'Opponent', type: 'range',
+    accessor: r => r.oppOpsL5, min: 0.5, max: 1.0, step: 0.005, decimals: 3, available: false,
+    note: 'Needs last-5-game opponent OPS.' },
+  { id: 'oppRunsL5', label: 'Opp runs/G (L5)', group: 'Opponent', type: 'range',
+    accessor: r => r.oppRunsL5, min: 0, max: 12, step: 0.5, decimals: 1, available: false,
+    note: 'Needs last-5-game opponent runs.' },
+  { id: 'oppAvgL5', label: 'Opp AVG (L5)', group: 'Opponent', type: 'range',
+    accessor: r => r.oppAvgL5, min: 0.15, max: 0.35, step: 0.005, decimals: 3, available: false,
+    note: 'Needs last-5-game opponent batting average.' },
 ];
 
 export const CATALOG_BY_ID = Object.fromEntries(FILTER_CATALOG.map(f => [f.id, f]));

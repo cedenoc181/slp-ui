@@ -1676,19 +1676,26 @@ away_pitcher objects), add:
   throws       text      -- 'L' | 'R'
   (optional)   recent form flags for "hot/struggling" screens
 
-Per-team situational splits (for opponent-coldness screens like
-"1-for-24 with RISP"), on /teams/standings rows or a lightweight slate
-endpoint keyed by team:
+Per-team situational + recent (last-5-game) offense, on /teams/standings
+rows or a lightweight slate endpoint keyed by team. No existing endpoint
+exposes rolling team offense (getTeamLast10 is game records only), so
+these power the opponent recent-form screens:
   risp_avg     numeric   -- team AVG with runners in scoring position
   key_injury   boolean   -- notable lineup/rotation injury flag
+  ops_l5       numeric   -- team OPS over last 5 games        (mapped → oppOpsL5)
+  runs_l5      numeric   -- team runs/game over last 5 games   (mapped → oppRunsL5)
+  avg_l5       numeric   -- team batting AVG over last 5 games (mapped → oppAvgL5)
 
 FRONTEND
 --------
 No new service needed — labSlate.js already reads these field names off
-the pitcher node (age, days_rest, season_era, throws) and team form
-(rispAvg). Ship the fields and the matching Lab filters (Pitcher age,
-Days of rest, Season ERA, Throwing hand, Opp AVG w/ RISP) activate with
-zero FE changes. Confirm field names or tell me yours and I'll map them.
+the pitcher node (age, days_rest, season_era, throws) and the opponent's
+team form (rispAvg, opsL5, runsL5, avgL5). Ship the fields and the
+matching Lab filters (Pitcher age, Days of rest, Season ERA, Throwing
+hand, Opp AVG w/ RISP, Opp OPS/runs/AVG L5) activate with zero FE
+changes. The L5 stats map: ops_l5→oppFm.opsL5, runs_l5→oppFm.runsL5,
+avg_l5→oppFm.avgL5 in src/data/services/labSlate.js. Confirm field names
+or tell me yours and I'll map them.
 
 
 ============================================================

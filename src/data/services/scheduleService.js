@@ -6,8 +6,8 @@ class ScheduleService {
    * Endpoint: GET /scheduled-games/today
    * @returns {Promise<Array>} List of today's games (GameLogSchema)
    */
-  async getTodayGames() {
-    return await api.get('/scheduled-games/today');
+  async getTodayGames(reqOptions = {}) {
+    return await api.get('/scheduled-games/today', reqOptions);
   }
 
   /**

@@ -112,7 +112,7 @@ class GamesService {
    * @param {boolean} totals - If true, return per-player totals across all matched games instead of game-by-game
    * @returns {Promise<Array>} Head-to-head batter logs
    */
-  async getHeadToHeadBatters(teamAId, teamBId, { season = null, seasonType = null, limit = 10, gamePk = null, totals = false } = {}) {
+  async getHeadToHeadBatters(teamAId, teamBId, { season = null, seasonType = null, limit = 10, gamePk = null, totals = false } = {}, reqOptions = {}) {
     const params = new URLSearchParams();
     params.append('team_a_id', teamAId);
     params.append('team_b_id', teamBId);
@@ -121,7 +121,7 @@ class GamesService {
     if (limit) params.append('limit', limit);
     if (gamePk != null) params.append('game_pk', gamePk);
     if (totals) params.append('totals', 'true');
-    return await api.get(`/games/head-to-head/batters?${params.toString()}`);
+    return await api.get(`/games/head-to-head/batters?${params.toString()}`, reqOptions);
   }
 
   /**
@@ -135,7 +135,7 @@ class GamesService {
    * @param {boolean} totals - If true, return per-player totals across all matched games instead of game-by-game
    * @returns {Promise<Array>} Head-to-head pitcher logs
    */
-  async getHeadToHeadPitchers(teamAId, teamBId, { season = null, seasonType = null, limit = 10, gamePk = null, totals = false } = {}) {
+  async getHeadToHeadPitchers(teamAId, teamBId, { season = null, seasonType = null, limit = 10, gamePk = null, totals = false } = {}, reqOptions = {}) {
     const params = new URLSearchParams();
     params.append('team_a_id', teamAId);
     params.append('team_b_id', teamBId);
@@ -144,7 +144,7 @@ class GamesService {
     if (limit) params.append('limit', limit);
     if (gamePk != null) params.append('game_pk', gamePk);
     if (totals) params.append('totals', 'true');
-    return await api.get(`/games/head-to-head/pitchers?${params.toString()}`);
+    return await api.get(`/games/head-to-head/pitchers?${params.toString()}`, reqOptions);
   }
 
   /**
@@ -152,8 +152,8 @@ class GamesService {
    * @param {number} gamePk - MLB game_pk identifier
    * @returns {Promise<Object>} Box score with game context and per-inning runs, hits, and errors
    */
-  async getBoxscore(gamePk) {
-    return await api.get(`/games/boxscore?game_pk=${gamePk}`);
+  async getBoxscore(gamePk, reqOptions = {}) {
+    return await api.get(`/games/boxscore?game_pk=${gamePk}`, reqOptions);
   }
 }
 
