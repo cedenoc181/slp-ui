@@ -18,7 +18,9 @@
   flex-wrap: wrap;
 }
 .sd-tag {
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
   font-size: 0.62rem;
   font-weight: 800;
   letter-spacing: 0.12em;
@@ -30,6 +32,7 @@
   padding: 0.25rem 0.7rem;
   margin-bottom: 0.6rem;
 }
+.sd-tag-icon { width: 0.95rem; height: 0.95rem; object-fit: contain; }
 .sd-desk-title { font-size: 1.5rem; font-weight: 800; color: #fff; margin: 0 0 0.4rem; letter-spacing: -0.02em; }
 .sd-desk-sub { font-size: 0.85rem; color: rgba(255, 255, 255, 0.55); margin: 0; max-width: 560px; line-height: 1.5; }
 .sd-mood {
@@ -136,7 +139,8 @@
   border-radius: 9px;
   padding: 0.55rem 0.65rem;
 }
-.sd-lead-icon { flex-shrink: 0; }
+.sd-lead-icon { flex-shrink: 0; display: inline-flex; align-items: center; }
+.sd-lead-icon-img { width: 1.1rem; height: 1.1rem; object-fit: contain; }
 .sd-lead-take { font-size: 0.76rem; color: rgba(255,255,255,0.7); line-height: 1.45; }
 
 /* ── War Room drawer ──────────────────────────────────────── */
@@ -193,16 +197,41 @@
   background: rgba(74,222,128,0.06); border: 1px solid rgba(74,222,128,0.2);
   border-radius: 10px; padding: 0.7rem 0.9rem; margin-bottom: 0.8rem;
 }
-.sd-audit-basis-lbl { font-size: 0.6rem; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase; color: #4ade80; }
+.sd-audit-basis-lbl { font-size: 0.6rem; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase; color: #4ade80; display: inline-flex; align-items: center; gap: 0.35rem; }
+.sd-audit-basis-icon { width: 0.95rem; height: 0.95rem; object-fit: contain; }
 .sd-audit-basis p { margin: 0.25rem 0 0; font-size: 0.82rem; line-height: 1.5; color: rgba(255,255,255,0.78); }
 
 /* Stage-2 context chips */
 .sd-context { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-bottom: 1.1rem; }
+
+/* Pitcher last-5 starts box-score card (sits under the opponent form) */
+.sd-recent-starts {
+  background: rgba(0,0,0,0.18);
+  border: 1px solid rgba(255,255,255,0.07);
+  border-radius: 10px;
+  padding: 0.6rem 0.75rem;
+  margin-bottom: 1.1rem;
+}
+.sd-recent-starts-head { display: flex; align-items: center; gap: 0.4rem; margin-bottom: 0.5rem; }
+.sd-recent-starts-title {
+  font-size: 0.6rem; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase;
+  color: rgba(255,255,255,0.55);
+}
+.sd-recent-starts-name { margin-left: auto; font-size: 0.78rem; font-weight: 700; color: #fff; }
+.sd-recent-starts-grid { display: flex; flex-wrap: wrap; gap: 0.4rem; }
+.sd-recent-start {
+  font-size: 0.72rem; font-weight: 600; font-variant-numeric: tabular-nums;
+  color: rgba(255,255,255,0.78);
+  background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 6px; padding: 0.28rem 0.5rem; white-space: nowrap;
+}
 .sd-ctx-chip {
   font-size: 0.72rem; color: rgba(255,255,255,0.7);
   background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);
   border-radius: 7px; padding: 0.3rem 0.55rem;
+  display: inline-flex; align-items: center; gap: 0.35rem;
 }
+.sd-ctx-chip-icon { width: 0.95rem; height: 0.95rem; object-fit: contain; }
 
 /* Pitcher profile link in drawer */
 .sd-pitcher-link {
@@ -218,9 +247,9 @@
   border-radius: 14px; padding: 0.9rem 1.1rem;
 }
 .sd-cuts-title { font-size: 0.7rem; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase; color: rgba(255,255,255,0.4); margin-bottom: 0.6rem; }
-.sd-cut { display: flex; gap: 0.7rem; align-items: baseline; padding: 0.35rem 0; border-top: 1px solid rgba(255,255,255,0.05); }
+.sd-cut { display: flex; flex-direction: column; gap: 0.15rem; padding: 0.45rem 0; border-top: 1px solid rgba(255,255,255,0.05); }
 .sd-cut:first-of-type { border-top: none; }
-.sd-cut-sel { font-size: 0.82rem; font-weight: 700; color: rgba(255,255,255,0.82); flex-shrink: 0; }
+.sd-cut-sel { font-size: 0.82rem; font-weight: 700; color: rgba(255,255,255,0.82); }
 .sd-cut-reason { font-size: 0.78rem; line-height: 1.4; }
 
 .sd-room-title { font-size: 0.7rem; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; color: rgba(255,255,255,0.4); margin-bottom: 0.7rem; }
@@ -233,7 +262,8 @@
 }
 .sd-analyst.advisory { background: rgba(255,255,255,0.02); border-style: dashed; }
 .sd-analyst-head { display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.4rem; }
-.sd-analyst-icon { font-size: 1.05rem; }
+.sd-analyst-icon { font-size: 1.05rem; display: inline-flex; align-items: center; }
+.sd-analyst-icon-img { width: 1.1rem; height: 1.1rem; object-fit: contain; }
 .sd-analyst-name { font-size: 0.84rem; font-weight: 700; color: #fff; }
 .sd-vote { font-size: 0.58rem; font-weight: 800; letter-spacing: 0.05em; border-radius: 5px; padding: 0.12rem 0.4rem; }
 .sd-vote.play { color: #4ade80; background: rgba(74,222,128,0.14); }
@@ -263,7 +293,8 @@
   padding: 1.1rem 1.25rem;
 }
 .sd-record-head { display: flex; align-items: baseline; justify-content: space-between; gap: 0.8rem; margin-bottom: 0.9rem; flex-wrap: wrap; }
-.sd-record-title { font-size: 0.95rem; font-weight: 800; color: #fff; }
+.sd-record-title { font-size: 0.95rem; font-weight: 800; color: #fff; display: inline-flex; align-items: center; gap: 0.45rem; }
+.sd-record-title-icon { width: 1.15rem; height: 1.15rem; object-fit: contain; }
 .sd-record-stats {
   display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.7rem; margin-bottom: 1rem;
 }
@@ -293,6 +324,8 @@
 .sd-record-toggle:hover { text-decoration: underline; }
 
 .sd-dayslog { margin-top: 0.7rem; display: flex; flex-direction: column; gap: 0.7rem; }
+.sd-dayslog-pager { display: flex; align-items: center; gap: 1rem; }
+.sd-dayslog-pager .sd-record-toggle { margin-top: 0.2rem; }
 .sd-day { background: rgba(0,0,0,0.18); border: 1px solid rgba(255,255,255,0.06); border-radius: 10px; padding: 0.6rem 0.75rem; }
 .sd-day-head { display: flex; align-items: center; gap: 0.6rem; margin-bottom: 0.4rem; }
 .sd-day-date { font-size: 0.8rem; font-weight: 700; color: #fff; }
@@ -339,6 +372,20 @@
 .sd-loading { display: flex; align-items: center; gap: 0.8rem; color: rgba(255,255,255,0.6); font-size: 0.88rem; padding: 2.5rem 0; }
 .sd-error { background: rgba(248,113,113,0.08); border: 1px solid rgba(248,113,113,0.3); border-radius: 12px; padding: 0.9rem 1.1rem; color: #f87171; font-size: 0.85rem; }
 .sd-empty { display: flex; flex-direction: column; align-items: center; gap: 0.5rem; text-align: center; padding: 3rem 1rem; background: #1a1a1a; border: 1px dashed rgba(255,255,255,0.1); border-radius: 16px; }
+
+/* "available by X" pending banner (mirrors the predictions page) */
+.sd-pending-banner {
+  display: flex;
+  align-items: center;
+  gap: 1.1rem;
+  background: linear-gradient(135deg, rgba(34,211,238,0.07), #1a1a1a 65%);
+  border: 1px solid rgba(34,211,238,0.22);
+  border-radius: 16px;
+  padding: 1.25rem 1.4rem;
+}
+.sd-pending-icon { width: 44px; height: 44px; flex-shrink: 0; object-fit: contain; opacity: 0.9; }
+.sd-pending-title { font-size: 1.02rem; font-weight: 800; color: #fff; margin-bottom: 0.3rem; }
+.sd-pending-sub { font-size: 0.84rem; line-height: 1.55; color: rgba(255,255,255,0.6); max-width: 640px; }
 .sd-empty-icon { font-size: 2rem; }
 .sd-empty p { margin: 0; color: rgba(255,255,255,0.6); font-size: 0.9rem; }
 .sd-disclaimer { margin-top: 1.75rem; font-size: 0.7rem; line-height: 1.5; color: rgba(255,255,255,0.3); }
@@ -354,6 +401,17 @@
 }
 
 @media (max-width: 600px) {
-  .sd-board { grid-template-columns: 1fr; }
+  /* minmax(0,1fr) lets the column shrink to the viewport instead of being
+     floored at the card's min-content (which was overflowing < ~390px). */
+  .sd-board { grid-template-columns: minmax(0, 1fr); }
   .sd-mood { max-width: none; }
+  /* Let the badge / lock-tag / hist-chip row wrap instead of forcing card width. */
+  .sd-card-top { flex-wrap: wrap; row-gap: 0.35rem; }
+}
+
+@media (max-width: 400px) {
+  .sd-card { padding: 0.8rem 0.85rem; }
+  .sd-card-sel { font-size: 0.9rem; }
+  .sd-card-prob { font-size: 0.95rem; }
+  .sd-card-lead { padding: 0.5rem 0.55rem; }
 }

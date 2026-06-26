@@ -1018,6 +1018,8 @@
     align-items: flex-start;
     gap: 0.5rem;
   }
+  /* Span the full row so the subject ellipsis-truncates instead of overflowing. */
+  .admin-campaign-row__main { width: 100%; }
   .admin-campaigns__header-right {
     flex-direction: column;
     align-items: flex-end;
@@ -1120,6 +1122,8 @@
     align-items: flex-start;
     gap: 0.6rem;
   }
+  /* Span the full row so the subject ellipsis-truncates instead of overflowing. */
+  .admin-alert-row__main { width: 100%; }
   .admin-alert-row__actions {
     align-self: flex-end;
   }

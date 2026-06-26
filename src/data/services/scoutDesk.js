@@ -19,8 +19,51 @@
 import { API_BASE_URL } from '../config/apiConfig';
 import { getAccessToken } from './userAuthService';
 import betLibraryService, { summarize, unitProfit } from './betLibraryService';
+import { settlePendingBets } from './betSettlement';
+import predictionsService from './predictionsService';
 
 const ENDPOINT = '/api/v1/predictions/scout-desk';
+
+// ── "available by" unlock time — mirrors GameProps (2h before first pitch) ─────
+
+const UNLOCK_CAP_MINS = 16 * 60; // never later than 4:00 PM ET
+
+function isFinalRow(r) {
+  const s = (r.status || '').toLowerCase();
+  return s === 'final' || s === 'game over' || s === 'completed' || s === 'completed early';
+}
+function gameMins(g) {
+  const t = g.game_time_et || g.game_time || '';
+  const m = t.match(/(\d+):(\d+)\s*(AM|PM)/i);
+  if (m) {
+    let h = parseInt(m[1], 10); const min = parseInt(m[2], 10); const mer = m[3].toUpperCase();
+    if (mer === 'PM' && h !== 12) h += 12;
+    if (mer === 'AM' && h === 12) h = 0;
+    return h * 60 + min;
+  }
+  const p = t.split(':');
+  return p.length >= 2 ? parseInt(p[0], 10) * 60 + parseInt(p[1], 10) : 9999;
+}
+function unlockMins(games) {
+  const mins = games.map(gameMins).filter(m => m < 9999);
+  if (!mins.length) return null;
+  return Math.min(Math.min(...mins) - 120, UNLOCK_CAP_MINS);
+}
+function readyLabelFor(games) {
+  const u = unlockMins(games);
+  if (u === null) return null;
+  const h = Math.floor((((u % 1440) + 1440) % 1440) / 60);
+  const min = String(u % 60).padStart(2, '0');
+  const period = h >= 12 ? 'PM' : 'AM';
+  return `${h % 12 || 12}:${min} ${period} ET`;
+}
+function isUnlocked(games) {
+  const u = unlockMins(games);
+  if (u === null) return true; // no scheduled games → nothing to wait on
+  const now = new Date();
+  const [h, m] = now.toLocaleString('en-US', { timeZone: 'America/New_York', hour: 'numeric', minute: 'numeric', hour12: false }).split(':');
+  return (parseInt(h, 10) * 60 + parseInt(m, 10)) >= u;
+}
 
 // Persona → icon (server returns key/name/vote/confidence/take)
 export const PERSONA_ICON = {
@@ -74,12 +117,20 @@ function deskMood(picks) {
  * @param {boolean} [opts.refresh] — admin force re-pick (?refresh=true)
  */
 export async function buildScoutDesk({ refresh = false } = {}) {
-  const [deskRes, bets] = await Promise.all([
+  // Settle any due tracked bets first (runs in parallel with the desk fetch) so
+  // the Bet Autopsy reflects freshly-final results even if the user never opens
+  // the Bet Library page.
+  const [deskRes, settleRes, todayRes] = await Promise.all([
     scoutDeskFetch(`${ENDPOINT}${refresh ? '?refresh=true' : ''}`),
-    betLibraryService.list().catch(() => []),
+    settlePendingBets().catch(() => null),
+    predictionsService.getToday().catch(() => []),
   ]);
+  const bets = settleRes?.bets ?? await betLibraryService.list().catch(() => []);
 
   const board = Array.isArray(deskRes?.picks) ? deskRes.picks.map(mapPick) : [];
+  const games = (Array.isArray(todayRes) ? todayRes : [])
+    .filter(g => g.season_type !== 'spring' && g.season_type !== 'S' && !isFinalRow(g));
+
   return {
     date: fmtDate(deskRes?.date),
     board,
@@ -89,6 +140,8 @@ export async function buildScoutDesk({ refresh = false } = {}) {
     autopsy: buildAutopsy(bets),
     locked: !!deskRes?.lockedAt,
     lockedAt: deskRes?.lockedAt || null,
+    readyLabel: readyLabelFor(games),       // "10:10 AM ET" — when picks unlock
+    unlocked: isUnlocked(games),
   };
 }
 

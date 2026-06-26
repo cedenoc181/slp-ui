@@ -94,6 +94,23 @@ export function gradeBet(bet, game) {
       return (meta.side === 'over') === wentOver ? 'won' : 'lost';
     }
     default:
-      return null; // pitcher_prop / batter_prop — graded server-side from game logs
+      return null; // pitcher_prop / batter_prop — settle via gradePlayerProp()
   }
+}
+
+/**
+ * Settle a player prop from the player's actual final stat for the game.
+ * The value comes from the per-game H2H box score (see liveBetTracker
+ * getPlayerPropActual); this just compares it to the bet's line + side.
+ *   meta = { type:'pitcher_prop'|'batter_prop', side:'Over'|'Under', line, ... }
+ * @returns {'won'|'lost'|'push'|null}  null = not gradable (no value / bad meta)
+ */
+export function gradePlayerProp(meta, value) {
+  if (!meta || (meta.type !== 'pitcher_prop' && meta.type !== 'batter_prop')) return null;
+  const v = num(value);
+  if (v == null || meta.line == null || !meta.side) return null;
+  if (v === meta.line) return 'push'; // integer line landed exactly (e.g. line 6, value 6)
+  const isOver   = meta.side === 'Over' || meta.side === 'over';
+  const wentOver = v > meta.line;
+  return isOver === wentOver ? 'won' : 'lost';
 }

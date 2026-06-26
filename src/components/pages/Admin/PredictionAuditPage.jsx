@@ -485,34 +485,36 @@ export default function PredictionAuditPage() {
                 Win% shown is the best {view === 'hc' ? 'high-conviction ' : ''}line × side slice by edge. Click a row for the full line grid.
               </span>
             </div>
-            <table className="pa-table">
-              <thead>
-                <tr>
-                  <th>Model</th>
-                  <th className="pa-num">Sample n</th>
-                  <th className="pa-num">Win% (best slice)</th>
-                  <th className="pa-num">Base%</th>
-                  <th className="pa-num">Edge</th>
-                  <th>Corr</th>
-                </tr>
-              </thead>
-              <tbody>
-                {visibleModels.length === 0 ? (
-                  <tr><td colSpan={6} className="pa-table-empty">No models in this family.</td></tr>
-                ) : (
-                  visibleModels.map(m => (
-                    <ModelRow
-                      key={m.key}
-                      model={m}
-                      view={view}
-                      expanded={expanded === m.key}
-                      onToggle={() => toggle(m.key)}
-                      topRank={rankByKey[m.key]}
-                    />
-                  ))
-                )}
-              </tbody>
-            </table>
+            <div className="pa-table-scroll">
+              <table className="pa-table">
+                <thead>
+                  <tr>
+                    <th>Model</th>
+                    <th className="pa-num">Sample n</th>
+                    <th className="pa-num">Win% (best slice)</th>
+                    <th className="pa-num">Base%</th>
+                    <th className="pa-num">Edge</th>
+                    <th>Corr</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {visibleModels.length === 0 ? (
+                    <tr><td colSpan={6} className="pa-table-empty">No models in this family.</td></tr>
+                  ) : (
+                    visibleModels.map(m => (
+                      <ModelRow
+                        key={m.key}
+                        model={m}
+                        view={view}
+                        expanded={expanded === m.key}
+                        onToggle={() => toggle(m.key)}
+                        topRank={rankByKey[m.key]}
+                      />
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
           </div>
 
           {/* ── Moneyline (special shape) ── */}

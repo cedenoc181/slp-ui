@@ -239,7 +239,10 @@
 .pa-table-title { font-size: 1rem; font-weight: 700; color: #fff; }
 .pa-table-sub { font-size: 0.76rem; color: #8b97ab; }
 
-.pa-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+/* Horizontal scroll so all columns stay reachable on narrow screens. */
+.pa-table-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+
+.pa-table { width: 100%; min-width: 560px; border-collapse: collapse; font-size: 0.85rem; }
 .pa-table thead th {
   text-align: left;
   font-size: 0.7rem;

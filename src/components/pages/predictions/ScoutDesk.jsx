@@ -6,8 +6,26 @@ import PredictionsNav from './PredictionsNav';
 import { buildScoutDesk, getScoutDeskPerformance, toPct } from '../../../data/services/scoutDesk';
 import betLibraryService from '../../../data/services/betLibraryService';
 import playerStatsService from '../../../data/services/playerStatsServices';
+import loadingPredictionsIcon from '../../../assets/icons/loading-predictions.png';
+import profitAndLossIcon from '../../../assets/icons/profit-and-loss.png';
+import predictiveAnalyticsIcon from '../../../assets/icons/predictive-analytics.png';
+import binocularsIcon from '../../../assets/icons/binoculars.png';
+import targetIcon from '../../../assets/icons/target.png';
+import machineIcon from '../../../assets/icons/machine.png';
+import baseballStadiumIcon from '../../../assets/icons/baseball-stadium.png';
+import mlbScheduleIcon from '../../../assets/icons/mlb-schedule.png';
+import playerRosterIcon from '../../../assets/icons/player-roster.png';
+import aiMlIcon from '../../../assets/icons/ai-ml.png';
+import commandCentreIcon from '../../../assets/icons/command-centre.png';
 import '../../../styles/predictions-page-styling/predictions.css';
 import '../../../styles/predictions-page-styling/scout-desk.css';
+
+// Personas with a custom image icon (rest fall back to their PERSONA_ICON emoji).
+const PERSONA_IMG = {
+  quant: predictiveAnalyticsIcon,
+  scout: binocularsIcon,
+  sharp: targetIcon,
+};
 
 function fmtOdds(n) { return n == null ? '—' : n > 0 ? `+${n}` : String(n); }
 function trim(s, n) { return !s ? '' : s.length > n ? `${s.slice(0, n - 1).trimEnd()}…` : s; }
@@ -102,7 +120,10 @@ function WarRoom({ play, onClose, onTrack, onPitcher, tracked }) {
         {/* Stage 1 — why we trust it (the audit) */}
         {auditLine(play.audit) && (
           <div className="sd-audit-basis">
-            <span className="sd-audit-basis-lbl">📊 Audit basis</span>
+            <span className="sd-audit-basis-lbl">
+              <img src={machineIcon} alt="" className="sd-audit-basis-icon" />
+              Audit basis
+            </span>
             <p>{auditLine(play.audit)}</p>
           </div>
         )}
@@ -116,12 +137,30 @@ function WarRoom({ play, onClose, onTrack, onPitcher, tracked }) {
           const last5 = ctxText(ctx.last5Summary);
           const opp = ctxText(ctx.opponentForm);
           if (!park && !last5 && !opp) return null;
+          const starts = last5 ? last5.split('·').map(s => s.trim()).filter(Boolean) : [];
           return (
-            <div className="sd-context">
-              {park && <span className="sd-ctx-chip">🏟 {park}</span>}
-              {last5 && <span className="sd-ctx-chip">📅 {last5}</span>}
-              {opp && <span className="sd-ctx-chip">🆚 {opp}</span>}
-            </div>
+            <>
+              {(park || opp) && (
+                <div className="sd-context">
+                  {park && <span className="sd-ctx-chip"><img src={baseballStadiumIcon} alt="" className="sd-ctx-chip-icon" />{park}</span>}
+                  {opp && <span className="sd-ctx-chip"><img src={playerRosterIcon} alt="" className="sd-ctx-chip-icon" />{opp}</span>}
+                </div>
+              )}
+              {starts.length > 0 && (
+                <div className="sd-recent-starts">
+                  <div className="sd-recent-starts-head">
+                    <img src={mlbScheduleIcon} alt="" className="sd-ctx-chip-icon" />
+                    <span className="sd-recent-starts-title">Last 5 starts</span>
+                    <span className="sd-recent-starts-name">{play.pitcherName}</span>
+                  </div>
+                  <div className="sd-recent-starts-grid">
+                    {starts.map((g, i) => (
+                      <span key={i} className="sd-recent-start">{g}</span>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </>
           );
         })()}
 
@@ -131,7 +170,11 @@ function WarRoom({ play, onClose, onTrack, onPitcher, tracked }) {
           {play.analysts.map((a, i) => (
             <div key={a.key || i} className={`sd-analyst${a.vote ? '' : ' advisory'}`}>
               <div className="sd-analyst-head">
-                <span className="sd-analyst-icon">{a.icon}</span>
+                <span className="sd-analyst-icon">
+                  {PERSONA_IMG[a.key]
+                    ? <img src={PERSONA_IMG[a.key]} alt="" className="sd-analyst-icon-img" />
+                    : a.icon}
+                </span>
                 <span className="sd-analyst-name">{a.name}</span>
                 {a.vote
                   ? <span className={`sd-vote ${(VOTE_META[a.vote] || VOTE_META.pass).cls}`}>{(VOTE_META[a.vote] || VOTE_META.pass).label}</span>
@@ -181,7 +224,7 @@ function BoardCard({ play, onOpen, lock }) {
         </div>
       </div>
       <div className="sd-card-lead">
-        <span className="sd-lead-icon">🧠</span>
+        <span className="sd-lead-icon"><img src={aiMlIcon} alt="" className="sd-lead-icon-img" /></span>
         <span className="sd-lead-take">{trim(lead, 170)}</span>
       </div>
     </button>
@@ -224,10 +267,15 @@ function Breakdown({ title, data }) {
   );
 }
 
+const DAYS_PAGE = 3;
+
 function DaysLog({ days }) {
+  const [visible, setVisible] = useState(DAYS_PAGE);
+  const shown = days.slice(0, visible);
+  const remaining = days.length - shown.length;
   return (
     <div className="sd-dayslog">
-      {days.map((d, i) => (
+      {shown.map((d, i) => (
         <div key={d.date || i} className="sd-day">
           <div className="sd-day-head">
             <span className="sd-day-date">{d.date}</span>
@@ -244,6 +292,20 @@ function DaysLog({ days }) {
           ))}
         </div>
       ))}
+      {(remaining > 0 || visible > DAYS_PAGE) && (
+        <div className="sd-dayslog-pager">
+          {remaining > 0 && (
+            <button className="sd-record-toggle" onClick={() => setVisible(v => v + DAYS_PAGE)}>
+              Show {Math.min(DAYS_PAGE, remaining)} more ({remaining} left)
+            </button>
+          )}
+          {visible > DAYS_PAGE && (
+            <button className="sd-record-toggle" onClick={() => setVisible(DAYS_PAGE)}>
+              Show less
+            </button>
+          )}
+        </div>
+      )}
     </div>
   );
 }
@@ -257,7 +319,10 @@ function TrackRecord({ perf, showDays, onToggleDays }) {
   return (
     <div className="sd-record">
       <div className="sd-record-head">
-        <span className="sd-record-title">📈 Scout AI Track Record</span>
+        <span className="sd-record-title">
+          <img src={profitAndLossIcon} alt="" className="sd-record-title-icon" />
+          Scout AI Track Record
+        </span>
         <span className="sd-muted">
           {s.boards ?? '—'} boards · {s.picks ?? '—'} graded{s.pending ? ` · ${s.pending} pending` : ''}
         </span>
@@ -410,7 +475,7 @@ export default function ScoutDesk() {
       <div className="predictions-content">
         <div className="sd-desk-head">
           <div>
-            <span className="sd-tag">✨ Scout AI - War Room</span>
+            <span className="sd-tag"><img src={commandCentreIcon} alt="" className="sd-tag-icon" />Scout AI - War Room</span>
             <h2 className="sd-desk-title">Three pitcher props with a proven edge.</h2>
             <p className="sd-desk-sub">We start from the bet types our model is proven to win — the exact lines and sides with the strongest historical hit rate — then read the matchup, weighing ballpark, recent form, and the opponent to settle on the three most convincing plays. Open any play for the full breakdown.</p>
           </div>
@@ -427,32 +492,49 @@ export default function ScoutDesk() {
           <div className="sd-error">⚠ {error}</div>
         ) : busy ? (
           <div className="sd-loading"><span className="pp-loading-spinner" /><span>The desk is breaking down today's pitcher props…</span></div>
-        ) : !desk || desk.board.length === 0 ? (
-          <div className="sd-empty"><span className="sd-empty-icon">🗓️</span><p>No pitcher props cleared the audit gate today — check back closer to first pitch.</p></div>
+        ) : !desk ? (
+          <div className="sd-empty"><span className="sd-empty-icon">🗓️</span><p>No board available right now — check back closer to first pitch.</p></div>
         ) : (
           <>
-            <div className="sd-board-head">
-              <span className="sd-board-title">
-                Today's Three
-                {desk.locked && <span className="sd-locked-tag" title="Picks are locked for the day">🔒 locked in</span>}
-              </span>
-            </div>
-            <div className="sd-board">
-              {desk.board.map(play => (
-                <BoardCard key={play.id} play={play} lock={!!desk.lock && play.id === desk.lock.id} onOpen={setOpenPlay} />
-              ))}
-            </div>
+            {desk.board.length > 0 ? (
+              <>
+                <div className="sd-board-head">
+                  <span className="sd-board-title">
+                    Today's Three
+                    {desk.locked && <span className="sd-locked-tag" title="Picks are locked for the day">🔒 locked in</span>}
+                  </span>
+                </div>
+                <div className="sd-board">
+                  {desk.board.map(play => (
+                    <BoardCard key={play.id} play={play} lock={!!desk.lock && play.id === desk.lock.id} onOpen={setOpenPlay} />
+                  ))}
+                </div>
 
-            {desk.cut.length > 0 && (
-              <div className="sd-cuts">
-                <div className="sd-cuts-title">Honorable Mentions</div>
-                {desk.cut.map((c, i) => (
-                  <div key={i} className="sd-cut">
-                    <span className="sd-cut-sel">{c.selection}</span>
-                    <span className="sd-cut-reason sd-muted">{c.reason}</span>
+                {desk.cut.length > 0 && (
+                  <div className="sd-cuts">
+                    <div className="sd-cuts-title">Honorable Mentions</div>
+                    {desk.cut.map((c, i) => (
+                      <div key={i} className="sd-cut">
+                        <span className="sd-cut-sel">{c.selection}</span>
+                        <span className="sd-cut-reason sd-muted">{c.reason}</span>
+                      </div>
+                    ))}
                   </div>
-                ))}
+                )}
+              </>
+            ) : (!desk.unlocked && desk.readyLabel) ? (
+              <div className="sd-pending-banner">
+                <img src={loadingPredictionsIcon} alt="" className="sd-pending-icon" aria-hidden="true" />
+                <div>
+                  <div className="sd-pending-title">Scout AI available by {desk.readyLabel}</div>
+                  <div className="sd-pending-sub">
+                    Our model and Scout AI analysis will be ready approximately 2 hours before first pitch.
+                    Come back at {desk.readyLabel} for the day's picks and the full War Room breakdown.
+                  </div>
+                </div>
               </div>
+            ) : (
+              <div className="sd-empty"><span className="sd-empty-icon">🗓️</span><p>No pitcher props cleared the audit gate today — check back closer to first pitch.</p></div>
             )}
 
             <TrackRecord perf={perf} showDays={showDays} onToggleDays={() => setShowDays(v => !v)} />

@@ -96,6 +96,24 @@ function matchPlayer(players, bet) {
 }
 
 /**
+ * The player's actual stat for a player-prop bet, pulled from aggregated H2H
+ * box-score players. Same matching + stat getters the live tracker uses, so a
+ * FINAL game's box score yields the final number for settling the bet.
+ * @param {Object} bet  — tracked bet (carries `grade`, `selection`)
+ * @param {Object} data — { batters, pitchers } aggregated for the game
+ * @returns {number|null}
+ */
+export function getPlayerPropActual(bet, data) {
+  const meta = bet?.grade;
+  if (!meta) return null;
+  const isPitcher = meta.type === 'pitcher_prop';
+  if (!isPitcher && meta.type !== 'batter_prop') return null;
+  const getter = (isPitcher ? PITCHER_STAT : BATTER_STAT)[meta.statType];
+  const player = matchPlayer(isPitcher ? data?.pitchers : data?.batters, bet);
+  return player && getter ? getter(player) : null;
+}
+
+/**
  * Build the live tracker descriptor for one bet.
  * @param {Object} bet  — tracked bet (carries `grade`, `selection`, `gamePk`)
  * @param {Object} live — { game, boxscore, batters, pitchers } for bet.gamePk

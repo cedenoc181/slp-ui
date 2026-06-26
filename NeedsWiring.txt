@@ -1616,21 +1616,28 @@ flip live games to Final) ~2.5h after first pitch and grades from
 status + winning_team_id + home/away_runs_score. Each bet stores a
 `grade` descriptor + `gameStartEpoch` to drive this.
 
-STILL NEEDED FROM THE SERVER — player-prop grading:
-Pitcher/batter props can't be settled from the team box score. Each
-prop bet stores grade = { type:'pitcher_prop'|'batter_prop', side,
-line, statType, playerId }. Options:
-  (a) A nightly job that matches tracked_bets to per-player game-log
-      results (the existing /games/pitcher and /games/batter logs
-      carry per-game stats by player_id) and sets status/settled_at;
-      OR
-  (b) Expose a settle endpoint, e.g.
-      GET /api/v1/bet-library/result?game_pk=&stat_type=&player_id=
-      returning the player's actual stat for that game so the client
-      can compare to line/side.
-Until then, player props remain 'pending' and settle manually.
-When the backend owns persistence, fold the game-market grading into
-the same job so settlement is server-authoritative across markets.
+Player props (pitcher / batter) ALSO auto-settle on the client now.
+Each prop bet stores grade = { type:'pitcher_prop'|'batter_prop',
+side, line, statType, playerId }. betGrader.gradePlayerProp() compares
+the bet's line/side to the player's actual final stat, which the page
+reads from the per-game H2H box scores already used by the live
+tracker (gamesService.getHeadToHeadBatters/Pitchers scoped by game_pk
+→ aggregatePlayers → liveBetTracker.getPlayerPropActual). No new
+endpoint required. A prop with no resolvable stat (player DNP, data
+delay, name not matched) stays 'pending' and retries / settles
+manually.
+
+OPTIONAL SERVER UPGRADE (robustness only — not required):
+Client grading only runs while someone has the Bet Library open. For
+authoritative settlement that doesn't depend on a viewer, a nightly
+job could settle every market server-side and stamp status/settled_at:
+  - game markets from the final game record (status + winning_team_id
+    + home/away_runs_score), and
+  - player props from per-player game-log results (the existing
+    /games/pitcher and /games/batter logs carry per-game stats by
+    player_id) vs the bet's line/side.
+If/when the backend owns settlement, it becomes the source of truth
+across all markets and the client grading can be retired.
 
 CONFIRMATION TO SEND BACK
 -------------------------
