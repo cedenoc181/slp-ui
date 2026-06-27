@@ -60,9 +60,13 @@ const CONSENSUS_META = {
   pass:      { cls: 'pass',      icon: '·',  label: 'No edge' },
 };
 const VOTE_META = {
-  play: { cls: 'play', label: 'PLAY' },
-  fade: { cls: 'fade', label: 'FADE' },
-  pass: { cls: 'pass', label: 'PASS' },
+  play:  { cls: 'play', label: 'PLAY' },
+  fade:  { cls: 'fade', label: 'FADE' },
+  pass:  { cls: 'pass', label: 'PASS' },
+  // Side leans (used by the Honorable Mentions' persona votes).
+  over:  { cls: 'lean', label: 'OVER' },
+  under: { cls: 'lean', label: 'UNDER' },
+  lean:  { cls: 'lean', label: 'LEAN' },
 };
 
 function Dots({ n }) {
@@ -513,12 +517,31 @@ export default function ScoutDesk() {
                 {desk.cut.length > 0 && (
                   <div className="sd-cuts">
                     <div className="sd-cuts-title">Honorable Mentions</div>
-                    {desk.cut.map((c, i) => (
-                      <div key={i} className="sd-cut">
-                        <span className="sd-cut-sel">{c.selection}</span>
-                        <span className="sd-cut-reason sd-muted">{c.reason}</span>
-                      </div>
-                    ))}
+                    {desk.cut.map((c, i) => {
+                      // Clickable (opens the War Room) only when the play carries
+                      // the analyst breakdown — never open an empty drawer.
+                      const clickable = Array.isArray(c.analysts) && c.analysts.length > 0;
+                      const text = (
+                        <span className="sd-cut-text">
+                          <span className="sd-cut-sel">{c.selection}</span>
+                          <span className="sd-cut-reason sd-muted">{c.reason}</span>
+                        </span>
+                      );
+                      return clickable ? (
+                        <button
+                          key={c.id || i}
+                          type="button"
+                          className="sd-cut sd-cut--button"
+                          onClick={() => setOpenPlay(c)}
+                          title="Open the War Room for this play"
+                        >
+                          {text}
+                          <span className="sd-cut-arrow" aria-hidden="true">→</span>
+                        </button>
+                      ) : (
+                        <div key={c.id || i} className="sd-cut">{text}</div>
+                      );
+                    })}
                   </div>
                 )}
               </>

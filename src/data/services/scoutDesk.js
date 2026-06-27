@@ -13,6 +13,12 @@
  * context{last5Summary,parkFactor,opponentForm}}, scoutReasoning, analysts[],
  * consensus{level,label} }; plus cut[] and lockedAt.
  *
+ * cut[] carries the same full play shape as picks[] (incl. analysts[]) plus a
+ * cut-specific `reason`, so the Honorable Mentions open the same War Room drawer
+ * — the FE maps cut[] through mapPick and makes a row clickable when analysts[]
+ * is present. (Boards frozen before this shipped keep the old trimmed cut[]
+ * until regenerated / an admin ?refresh=true.)
+ *
  * The Bet Autopsy is layered in client-side from the user's Bet Library.
  */
 
@@ -135,7 +141,9 @@ export async function buildScoutDesk({ refresh = false } = {}) {
     date: fmtDate(deskRes?.date),
     board,
     lock: board[0] || null,                 // server returns them ranked; the lead is the lock
-    cut: Array.isArray(deskRes?.cut) ? deskRes.cut : [],
+    // Cut plays carry the same shape as picks (analysts/consensus/reasoning) so
+    // they open the same War Room drawer; normalize them the same way.
+    cut: Array.isArray(deskRes?.cut) ? deskRes.cut.map(mapPick) : [],
     mood: deskMood(board),
     autopsy: buildAutopsy(bets),
     locked: !!deskRes?.lockedAt,

@@ -247,10 +247,34 @@
   border-radius: 14px; padding: 0.9rem 1.1rem;
 }
 .sd-cuts-title { font-size: 0.7rem; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase; color: rgba(255,255,255,0.4); margin-bottom: 0.6rem; }
-.sd-cut { display: flex; flex-direction: column; gap: 0.15rem; padding: 0.45rem 0; border-top: 1px solid rgba(255,255,255,0.05); }
+.sd-cut { padding: 0.45rem 0; border-top: 1px solid rgba(255,255,255,0.05); }
 .sd-cut:first-of-type { border-top: none; }
+.sd-cut-text { display: flex; flex-direction: column; gap: 0.15rem; min-width: 0; }
 .sd-cut-sel { font-size: 0.82rem; font-weight: 700; color: rgba(255,255,255,0.82); }
 .sd-cut-reason { font-size: 0.78rem; line-height: 1.4; }
+
+/* Clickable honorable mention — opens the War Room like a board card */
+.sd-cut--button {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  width: 100%;
+  padding: 0.45rem 0.5rem;
+  background: none;
+  border: none;
+  border-top: 1px solid rgba(255,255,255,0.05);
+  border-radius: 8px;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+.sd-cut--button .sd-cut-text { flex: 1; }
+.sd-cut--button:hover { background: rgba(34, 211, 238, 0.06); }
+.sd-cut--button:hover .sd-cut-sel { color: #fff; }
+.sd-cut-arrow { color: rgba(255,255,255,0.35); flex-shrink: 0; transition: transform 0.15s ease, color 0.15s ease; }
+.sd-cut--button:hover .sd-cut-arrow { color: #67e8f9; transform: translateX(2px); }
 
 .sd-room-title { font-size: 0.7rem; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; color: rgba(255,255,255,0.4); margin-bottom: 0.7rem; }
 .sd-analyst {
@@ -269,6 +293,7 @@
 .sd-vote.play { color: #4ade80; background: rgba(74,222,128,0.14); }
 .sd-vote.fade { color: #f87171; background: rgba(248,113,113,0.14); }
 .sd-vote.pass { color: rgba(255,255,255,0.5); background: rgba(255,255,255,0.07); }
+.sd-vote.lean { color: #fbbf24; background: rgba(251,191,36,0.14); }
 .sd-vote.advisory { color: #67e8f9; background: rgba(34,211,238,0.12); }
 .sd-analyst-take { font-size: 0.8rem; color: rgba(255,255,255,0.72); line-height: 1.5; margin: 0; }
 

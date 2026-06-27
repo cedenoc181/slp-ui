@@ -1706,5 +1706,73 @@ or tell me yours and I'll map them.
 
 
 ============================================================
+FEATURE — SCOUT DESK: CUT PLAYS OPEN THE WAR ROOM   ✅ DONE (2026-06-27)
+============================================================
+
+RESOLVED: GET /api/v1/predictions/scout-desk now returns cut[] with the
+full picks[] shape (incl. analysts[], consensus, reasoning, audit, +
+the cut-specific `reason`). No migration, no new endpoint — it just
+stopped trimming (live on main, commit 9eae373). FE was already built:
+Honorable Mentions are now clickable and open the War Room. Note: boards
+frozen before this change keep the old trimmed cut[] until regenerated;
+new days get the full shape, or an admin can hit ?refresh=true to
+upgrade today's board immediately.
+
+WHAT IT WAS
+-----------
+The Scout Desk shows the day's top 3 pitcher-prop picks plus an
+"Honorable Mentions" list — the shortlisted-but-cut plays. Each top
+pick opens a "War Room" drawer with the 4 analyst personas' takes,
+audit basis, matchup context, and Track/Fade actions. We want the
+Honorable Mentions to open that SAME drawer, so a user who disagrees
+with the top 3 can dig into the next-best options.
+
+CURRENT STATE
+-------------
+The frontend is already done and will light up with zero FE changes
+the moment the data arrives:
+  - src/data/services/scoutDesk.js maps cut[] through the same mapPick()
+    as picks[].
+  - src/components/pages/predictions/ScoutDesk.jsx renders each cut row
+    as a clickable button that opens the War Room — but ONLY when the
+    play carries analysts[] (so we never open an empty drawer).
+Right now the rows are NOT clickable because the server trims cut[]
+to roughly { selection, reason } — there is no analysts[] / reasoning /
+audit / consensus on them, and the client cannot reconstruct the
+multi-agent reasoning (it's generated server-side).
+
+WHAT'S NEEDED FROM THE SERVER
+-----------------------------
+GET /api/v1/predictions/scout-desk
+
+Return each entry in cut[] with the SAME full play shape as picks[],
+not a trimmed object. Concretely, a cut entry should include all the
+fields a pick has:
+
+  { id, gamePk, playerId, pitcherName, market, statType, side, line,
+    selection, odds, modelProb, ev, projection, gap, conviction,
+    audit { winPct, basePct, gapVsBase, sample, ... },
+    reasoning { rationale, context { last5Summary, parkFactor, opponentForm } },
+    scoutReasoning,
+    analysts: [ { key, name, vote, confidence, take }, ... ],   // ← the gating field
+    consensus { level, label },
+    reason }                                                    // keep the cut-specific "why cut"
+
+Notes:
+  - analysts[] is the field the FE checks to enable the click, and is
+    the whole point (the persona breakdown). It must be present.
+  - Keep the existing `reason` string (shown under the selection).
+  - Same camelCase shape and the same admin/allowlist gating as picks[]
+    — these are the same plays, just ranked below the top 3.
+  - No new endpoint; just stop trimming cut[] in the existing response.
+
+CONFIRMATION TO SEND BACK
+-------------------------
+Reply that cut[] now returns the full picks[] shape (incl. analysts[]).
+Nothing else changes on the FE — the Honorable Mentions become
+clickable and open the War Room automatically.
+
+
+============================================================
 END OF DOCUMENT
 ============================================================
