@@ -34,6 +34,7 @@
  */
 
 import React from 'react';
+import { inningsToBox } from '../shared/utils/statsFormatters';
 
 /**
  * RecentFormSection - Displays rolling averages and trend analysis
@@ -196,7 +197,7 @@ const RecentFormSection = React.memo(function RecentFormSection({
                       <td className={recentFormStats.l5.whip < (recentFormStats.season?.whip || 99) ? 'pps-above' : recentFormStats.l5.whip > (recentFormStats.season?.whip || 0) ? 'pps-below' : ''}>
                         {recentFormStats.l5.whip.toFixed(2)}
                       </td>
-                      <td>{recentFormStats.l5.inningsPitched.toFixed(1)}</td>
+                      <td>{inningsToBox(recentFormStats.l5.inningsPitched)}</td>
                       <td>{recentFormStats.l5.strikeouts}</td>
                       <td>{recentFormStats.l5.walks}</td>
                       <td>{recentFormStats.l5.kPer9.toFixed(2)}</td>
@@ -214,7 +215,7 @@ const RecentFormSection = React.memo(function RecentFormSection({
                       <td className={recentFormStats.l10.whip < (recentFormStats.season?.whip || 99) ? 'pps-above' : recentFormStats.l10.whip > (recentFormStats.season?.whip || 0) ? 'pps-below' : ''}>
                         {recentFormStats.l10.whip.toFixed(2)}
                       </td>
-                      <td>{recentFormStats.l10.inningsPitched.toFixed(1)}</td>
+                      <td>{inningsToBox(recentFormStats.l10.inningsPitched)}</td>
                       <td>{recentFormStats.l10.strikeouts}</td>
                       <td>{recentFormStats.l10.walks}</td>
                       <td>{recentFormStats.l10.kPer9.toFixed(2)}</td>
@@ -230,7 +231,7 @@ const RecentFormSection = React.memo(function RecentFormSection({
                       <td>{recentFormStats.season.games}</td>
                       <td>{recentFormStats.season.era.toFixed(2)}</td>
                       <td>{recentFormStats.season.whip.toFixed(2)}</td>
-                      <td>{recentFormStats.season.inningsPitched.toFixed(1)}</td>
+                      <td>{recentFormStats.season.inningsDisplay || recentFormStats.season.inningsPitched.toFixed(1)}</td>
                       <td>{recentFormStats.season.strikeouts}</td>
                       <td>{recentFormStats.season.walks}</td>
                       <td>{recentFormStats.season.kPer9.toFixed(2)}</td>

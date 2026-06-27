@@ -288,6 +288,7 @@ export const buildPitcherSeasonBaseline = (seasonStats) => {
     bbPer9: seasonStats.bb_per_9 || 0,
     kPerGame: gs > 0 ? strikeouts / gs : 0,
     ipPerGame: gs > 0 ? ip / gs : 0,
+    inningsDisplay: seasonStats.innings_display ?? null, // API box-score IP when present
     isRegularSeasonBaseline: true,
   };
 };

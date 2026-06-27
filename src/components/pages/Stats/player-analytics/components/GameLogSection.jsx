@@ -185,7 +185,7 @@ const GameLogSection = memo(function GameLogSection({
                           {showPitchingStats ? (
                             <>
                               <td className={`pps-decision ${decisionClass}`}>{pitcherDecision}</td>
-                              <td className={game.innings_pitched >= 6 ? 'pps-highlight' : ''}>{game.innings_pitched?.toFixed(1) || '-'}</td>
+                              <td className={game.innings_pitched >= 6 ? 'pps-highlight' : ''}>{game.innings_display || game.innings_pitched?.toFixed(1) || '-'}</td>
                               <td>{game.hits_allowed ?? game.hits ?? '-'}</td>
                               <td>{game.runs ?? game.runs_allowed ?? '-'}</td>
                               <td className={(game.earned_runs ?? game.earned_runs_allowed) === 0 ? 'pps-highlight' : ''}>{game.earned_runs ?? game.earned_runs_allowed ?? '-'}</td>

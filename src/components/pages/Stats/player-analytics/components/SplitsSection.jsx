@@ -91,7 +91,7 @@ const PitcherHomeRoadStats = ({ split }) => (
     <SplitStat value={split?.era?.toFixed(2) || '-'} label="ERA" />
     <SplitStat value={split?.whip?.toFixed(2) || '-'} label="WHIP" />
     <SplitStat value={split?.avg?.toFixed(3)?.replace(/^0/, '') || '-'} label="OPP AVG" />
-    <SplitStat value={split?.innings_pitched?.toFixed(1) || '-'} label="IP" />
+    <SplitStat value={split?.innings_display || split?.innings_pitched?.toFixed(1) || '-'} label="IP" />
     <SplitStat value={split?.strikeouts || '-'} label="K" />
     <SplitStat value={split?.walks_allowed || split?.walks || '-'} label="BB" />
     <SplitStat value={split?.k_per_9?.toFixed(1) || '-'} label="K/9" />
