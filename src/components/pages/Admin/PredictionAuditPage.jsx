@@ -122,7 +122,11 @@ function normalize(audit) {
       rmse: c.rmse ?? null,
       meanPredicted: c.mean_predicted ?? null,
       meanActual: c.mean_actual ?? null,
-      lineGrid: Array.isArray(m.line_grid) ? m.line_grid : [],
+      // Prefer the book-conditioned posted-line grid (honest win%/base/sample at
+      // real sportsbook lines) when the server provides it; else the raw grid.
+      lineGrid: Array.isArray(m.posted_line_grid) ? m.posted_line_grid
+        : (Array.isArray(m.line_grid) ? m.line_grid : []),
+      posted: Array.isArray(m.posted_line_grid),
     });
   }
 
@@ -165,6 +169,7 @@ function LineGridTable({ lineGrid }) {
   if (!lineGrid.length) {
     return <div className="pa-grid-empty">No per-line data for this model.</div>;
   }
+  const isPosted = lineGrid.some(r => r.posted_starts != null);
   const cell = (winpct, base) => {
     if (winpct == null) return <span className="pa-muted">—</span>;
     const edge = winpct - (base ?? 0);
@@ -180,7 +185,7 @@ function LineGridTable({ lineGrid }) {
       <table className="pa-grid-table">
         <thead>
           <tr>
-            <th rowSpan={2} className="pa-grid-line-col">Line</th>
+            <th rowSpan={2} className="pa-grid-line-col">Line{isPosted && <span className="pa-grid-starts-hd"> · posted</span>}</th>
             <th colSpan={3}>Over</th>
             <th colSpan={2} className="pa-grid-hc pa-grid-divider">High-conviction Over</th>
             <th colSpan={3} className="pa-grid-divider pa-grid-divider--side">Under</th>
@@ -196,7 +201,10 @@ function LineGridTable({ lineGrid }) {
         <tbody>
           {lineGrid.map((r, i) => (
             <tr key={r.line ?? i}>
-              <td className="pa-grid-line-col">{r.line}</td>
+              <td className="pa-grid-line-col">
+                {r.line}
+                {r.posted_starts != null && <span className="pa-grid-starts">{fmtInt(r.posted_starts)} starts</span>}
+              </td>
               <td>{fmtInt(r.over_picks)}</td>
               <td>{cell(r.over_winpct, r.base_over)}</td>
               <td className="pa-muted">{fmtPct(r.base_over)}</td>
@@ -214,6 +222,7 @@ function LineGridTable({ lineGrid }) {
       <p className="pa-grid-note">
         High-conviction = the picks the engine actually makes (model edge ≥ 1.0 off the line).
         Win% is colored by its gap over the base rate.
+        {isPosted && ' Rows are book-conditioned on the real posted sportsbook line — “starts” is how many games were posted at that line.'}
       </p>
     </div>
   );
@@ -231,6 +240,7 @@ function ModelRow({ model, view, expanded, onToggle, topRank }) {
           <div className="pa-row-model-text">
             <span className="pa-row-model-name">{model.label}</span>
             <span className="pa-row-model-family" data-family={model.family}>{FAMILY_LABELS[model.family] || model.family}</span>
+            {model.posted && <span className="pa-posted-tag" title="Book-conditioned on real posted sportsbook lines">posted</span>}
           </div>
         </td>
         <td className="pa-num">{fmtInt(model.n)}</td>
