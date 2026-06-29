@@ -1,7 +1,7 @@
 {
   "files": {
-    "main.css": "/static/css/main.524c3b7a.css",
-    "main.js": "/static/js/main.a63abab4.js",
+    "main.css": "/static/css/main.0d3bd4d5.css",
+    "main.js": "/static/js/main.74f49efc.js",
     "static/media/world-series-logo.png": "/static/media/world-series-logo.27072f25221f4fb42833.png",
     "static/media/spa-retro-logo-removebg.png": "/static/media/spa-retro-logo-removebg.328337a4fd7c56aeefbe.png",
     "static/media/pitcher-prop-page.png": "/static/media/pitcher-prop-page.809ebb174b38b01c3363.png",
@@ -42,11 +42,11 @@
     "static/media/mlb-standings.png": "/static/media/mlb-standings.5646a1371a9af7e91e83.png",
     "static/media/sandlot-insider.png": "/static/media/sandlot-insider.ee83f40d3c32f5e670ee.png",
     "index.html": "/index.html",
-    "main.524c3b7a.css.map": "/static/css/main.524c3b7a.css.map",
-    "main.a63abab4.js.map": "/static/js/main.a63abab4.js.map"
+    "main.0d3bd4d5.css.map": "/static/css/main.0d3bd4d5.css.map",
+    "main.74f49efc.js.map": "/static/js/main.74f49efc.js.map"
   },
   "entrypoints": [
-    "static/css/main.524c3b7a.css",
-    "static/js/main.a63abab4.js"
+    "static/css/main.0d3bd4d5.css",
+    "static/js/main.74f49efc.js"
   ]
 }
