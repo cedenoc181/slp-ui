@@ -256,7 +256,7 @@ function ResultBadge({ result }) {
   return <span className={className}>{result.toUpperCase()}</span>;
 }
 
-function PickCard({ type, pick }) {
+function PickCard({ type, pick, aiPick, agree }) {
   if (!pick || pick.pick == null) return null;
   const meta = PICK_TYPE_META[type];
   const prob = pick.model_prob != null ? Math.round(pick.model_prob * 100) : null;
@@ -303,22 +303,159 @@ function PickCard({ type, pick }) {
           </div>
         )}
       </div>
+      {aiPick && (
+        <div className="admin-pick__scout">
+          <span className="admin-pick__scout-text">
+            <span className="admin-pick__scout-label">Scout AI:</span> {aiPick}
+          </span>
+          {agree != null && (
+            <span className={`admin-pick__scout-badge ${agree ? 'agree' : 'differ'}`}>
+              {agree ? '= Model' : '≠ Model'}
+            </span>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ─── Scout AI pick helpers (compared against the model pick on each card) ──────
+
+// scout_ai may arrive as a structured object or as { raw: "<json string>" }.
+function parseScoutAi(node) {
+  const sa = node?.scout_ai;
+  if (!sa) return null;
+  if (typeof sa === 'string') { try { return JSON.parse(sa); } catch { return null; } }
+  if (typeof sa.raw === 'string') { try { return JSON.parse(sa.raw); } catch { return null; } }
+  return typeof sa === 'object' ? sa : null;
+}
+
+// Which side a pick string points to, by matching team names / abbreviations.
+function pickTeamSide(text, game) {
+  if (!text) return null;
+  const t = String(text).toLowerCase();
+  const hit = (name, abbr) => {
+    if (name && t.includes(name.toLowerCase())) return true;
+    if (abbr && t.includes(String(abbr).toLowerCase())) return true;
+    const nick = name ? name.toLowerCase().split(/\s+/).pop() : null;
+    return !!nick && t.includes(nick);
+  };
+  const away = hit(game.away_team_name, game.away_team);
+  const home = hit(game.home_team_name, game.home_team);
+  if (away && !home) return 'away';
+  if (home && !away) return 'home';
+  return null;
+}
+const overUnderSide = (text) => {
+  const t = String(text || '').toLowerCase();
+  return t.includes('over') ? 'over' : t.includes('under') ? 'under' : null;
+};
+
+function ScoutSection({ icon, title, children, warning }) {
+  if (!children) return null;
+  return (
+    <div className="admin-scout-sec">
+      <div className={`admin-scout-sec__title${warning ? ' warn' : ''}`}>{icon} {title}</div>
+      <div className="admin-scout-sec__body">{children}</div>
+    </div>
+  );
+}
+
+// The expandable full scouting report shown under the prediction cards.
+function ScoutReport({ scout, pred }) {
+  const [open, setOpen] = useState(false);
+  const a = scout;
+  const hasReport = a && (a.headline || a.totalLean || a.oddsEdge || a.mlAlignment ||
+    a.pitchingMatchup || a.splitsEdge || a.keyFactors?.length || a.redFlags?.length || pred);
+  if (!hasReport) return null;
+
+  return (
+    <div className="admin-scout-report">
+      <button className="admin-scout-report__toggle" onClick={() => setOpen(v => !v)} aria-expanded={open}>
+        🧠 {open ? '▴ Hide scouting report' : '▾ Show scouting report'}
+      </button>
+      {open && (
+        <div className="admin-scout-report__body">
+          {a.headline && <p className="admin-scout-report__headline">{a.headline}</p>}
+          {pred && (
+            <div className="admin-scout-model">
+              <div className="admin-scout-model__title">📊 Model prediction</div>
+              <div className="admin-scout-model__grid">
+                {(pred.blended_p_home_win ?? pred.p_home_win) != null && (
+                  <div><span>Home win%</span><strong>{Math.round((pred.blended_p_home_win ?? pred.p_home_win) * 100)}%</strong></div>
+                )}
+                {(pred.blended_predicted_margin ?? pred.predicted_margin) != null && (
+                  <div><span>Pred. margin</span><strong>{(pred.blended_predicted_margin ?? pred.predicted_margin) > 0 ? '+' : ''}{Number(pred.blended_predicted_margin ?? pred.predicted_margin).toFixed(1)}</strong></div>
+                )}
+                {(pred.blended_predicted_total ?? pred.predicted_total) != null && (
+                  <div><span>Pred. total</span><strong>{Number(pred.blended_predicted_total ?? pred.predicted_total).toFixed(1)}</strong></div>
+                )}
+              </div>
+            </div>
+          )}
+          <ScoutSection icon="📈" title="Total Lean">{a.totalLean ? `${a.totalLean.lean ? `${a.totalLean.lean} — ` : ''}${a.totalLean.reason || ''}`.trim() : null}</ScoutSection>
+          <ScoutSection icon="💲" title="Odds Edge">{a.oddsEdge}</ScoutSection>
+          <ScoutSection icon="🤖" title="ML Alignment">{a.mlAlignment}</ScoutSection>
+          <ScoutSection icon="⚾" title="Pitching Matchup">{a.pitchingMatchup}</ScoutSection>
+          <ScoutSection icon="📊" title="Splits Edge">{a.splitsEdge}</ScoutSection>
+          {Array.isArray(a.keyFactors) && a.keyFactors.length > 0 && (
+            <ScoutSection icon="🔑" title="Key Factors">
+              <ul className="admin-scout-bullets">{a.keyFactors.map((f, i) => <li key={i}>{f}</li>)}</ul>
+            </ScoutSection>
+          )}
+          {Array.isArray(a.redFlags) && a.redFlags.length > 0 && (
+            <ScoutSection icon="⚠" title="Red Flags" warning>
+              <ul className="admin-scout-bullets warn">{a.redFlags.map((f, i) => <li key={i}>{f}</li>)}</ul>
+            </ScoutSection>
+          )}
+        </div>
+      )}
     </div>
   );
 }
 
 function GamePicksSideModal({ game, date, onClose }) {
+  const [predData, setPredData] = useState(null);
+
   useEffect(() => {
     const handleKey = (e) => { if (e.key === 'Escape') onClose(); };
     document.addEventListener('keydown', handleKey);
     return () => document.removeEventListener('keydown', handleKey);
   }, [onClose]);
 
+  // Pull the game's Scout AI scouting report to compare against the model pick.
+  const gamePk = game?.game_pk;
+  useEffect(() => {
+    if (gamePk == null) { setPredData(null); return; }
+    let cancelled = false;
+    predictionsService.getByGamePk(gamePk)
+      .then(d => { if (!cancelled) setPredData(d || null); })
+      .catch(() => { if (!cancelled) setPredData(null); });
+    return () => { cancelled = true; };
+  }, [gamePk]);
+
   if (!game) return null;
 
   const awayId = teamMlbId(game.away_team);
   const homeId = teamMlbId(game.home_team);
   const awayWon = game.away_score > game.home_score;
+
+  // Scout AI pick per market + whether it agrees with the model's pick side.
+  const a = parseScoutAi(predData);
+  const aiByType = {};
+  for (const p of (Array.isArray(a?.picks) ? a.picks : [])) if (p?.type) aiByType[p.type] = p;
+  if (!aiByType['Total'] && a?.totalLean?.lean) aiByType['Total'] = { type: 'Total', pick: a.totalLean.lean };
+
+  const aiInfo = (market, ml) => {
+    const ai = aiByType[market];
+    if (!ai?.pick) return { aiPick: null, agree: null };
+    const mlSide = market === 'Total'
+      ? (overUnderSide(ml?.pick) || ml?.pick_side)
+      : (pickTeamSide(ml?.pick, game) || ml?.pick_side);
+    const aiSide = market === 'Total' ? overUnderSide(ai.pick) : pickTeamSide(ai.pick, game);
+    const agree = (mlSide && aiSide) ? mlSide === aiSide : null;
+    return { aiPick: ai.pick, agree };
+  };
 
   return (
     <div className="admin-side-overlay" onClick={onClose}>
@@ -357,9 +494,10 @@ function GamePicksSideModal({ game, date, onClose }) {
         </div>
 
         <div className="admin-side__body">
-          <PickCard type="Moneyline" pick={game.moneyline} />
-          <PickCard type="Run Line"  pick={game.run_line}  />
-          <PickCard type="Total"     pick={game.totals}    />
+          <PickCard type="Moneyline" pick={game.moneyline} {...aiInfo('Moneyline', game.moneyline)} />
+          <PickCard type="Run Line"  pick={game.run_line}  {...aiInfo('Run Line', game.run_line)} />
+          <PickCard type="Total"     pick={game.totals}    {...aiInfo('Total', game.totals)} />
+          <ScoutReport scout={a} pred={predData?.prediction || null} />
         </div>
       </aside>
     </div>
