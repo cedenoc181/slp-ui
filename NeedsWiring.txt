@@ -1774,5 +1774,180 @@ clickable and open the War Room automatically.
 
 
 ============================================================
+FEATURE — ANALYTICS LAB (CHART EXPLORER)
+============================================================
+
+WHAT IT IS
+----------
+A new Stats page at /analytics-explorer ("Analytics Lab", in the
+Stats nav dropdown, signed-in users only). It's a semantic chart
+builder: the user picks dimensions (grouping/labels), measures (the
+numbers plotted), and filters (ranges, toggles, season windows)
+through a friendly UI — never tables or SQL — and sees teams plotted
+as scatter / horizontal-bar / line charts. Switching chart type is a
+pure client re-render of the same payload (never a refetch).
+
+Headline query the UI must support end-to-end:
+  "Average height and weight of World Series-winning teams 2010-2015,
+   sorted heaviest-to-lightest."
+
+CURRENT STATE
+-------------
+The entire frontend is built and will light up with ZERO FE changes
+the moment these two endpoints return data. Until then the page shows
+a clean "Couldn't load the analytics schema" state with a retry. No
+mock data, no synthetic fallbacks — it renders only real responses.
+
+  - Client service:  src/data/services/analyticsChartService.js
+      getSchema()           -> GET  /analytics/schema
+      runQuery(spec)        -> POST /analytics/query
+  - Page + components: src/components/pages/Stats/chart-explorer/
+  - Charts: Recharts (newly added dependency).
+  - All controls (filters, axis pickers, group-by, units, sliders,
+    chart-type switch) are generated FROM the schema response. Nothing
+    is hardcoded — add a metric server-side and it appears in the UI.
+
+API CONVENTIONS (match existing endpoints)
+------------------------------------------
+Bare paths under the same host the other services use (e.g.
+predictionsService calls "/predictions/today" — NOT "/api/v1/...").
+JWT Bearer auth, { "detail": "<msg>" } error shape. The POST spec is a
+good backend cache key — identical specs should resolve from cache.
+
+WHAT'S NEEDED FROM THE SERVER
+-----------------------------
+
+1) GET /analytics/schema   (discovery — called once on page load)
+
+   Returns the full registry of what's queryable so the UI can build
+   itself. v1 grain is team-season (one team in one year); a future
+   player grain is planned (same contract, different grain value), so
+   return `grains` as a list.
+
+   {
+     "grains": ["team_season"],
+     "dimensions": [
+       { "field": "team",       "label": "Team",     "type": "string",
+         "operators": ["eq"] },
+       { "field": "season",     "label": "Season",   "type": "season",
+         "operators": ["eq","between"], "min": 2000, "max": 2025 },
+       { "field": "league",     "label": "League",    "type": "enum",
+         "operators": ["eq"], "values": ["AL","NL"] },
+       { "field": "division",   "label": "Division",  "type": "enum",
+         "operators": ["eq"],
+         "values": ["AL East","AL Central","AL West",
+                    "NL East","NL Central","NL West"] },
+       { "field": "ws_result",  "label": "WS Winner", "type": "boolean",
+         "operators": ["eq"] }
+     ],
+     "measures": [
+       { "field": "avg_height", "label": "Avg Height", "unit": "in",
+         "operators": ["between","gt","lt"], "default_sort": "desc",
+         "min": 70.0, "max": 76.0 },
+       { "field": "avg_weight", "label": "Avg Weight", "unit": "lbs",
+         "operators": ["between","gt","lt"], "default_sort": "desc",
+         "min": 195, "max": 230 },
+       { "field": "avg_age",    "label": "Avg Age",    "unit": "yrs",
+         "operators": ["between","gt","lt"], "default_sort": "desc",
+         "min": 24, "max": 32 },
+       { "field": "team_avg",   "label": "Team AVG",   "unit": "",
+         "operators": ["between","gt","lt"], "default_sort": "desc" },
+       { "field": "team_ops",   "label": "Team OPS",   "unit": "",
+         "operators": ["between","gt","lt"], "default_sort": "desc" },
+       { "field": "team_era",   "label": "Team ERA",   "unit": "ERA",
+         "operators": ["between","gt","lt"], "default_sort": "asc" },
+       { "field": "whip",       "label": "WHIP",       "unit": "",
+         "operators": ["between","gt","lt"], "default_sort": "asc" },
+       { "field": "wins",       "label": "Wins",       "unit": "W",
+         "operators": ["between","gt","lt"], "default_sort": "desc" },
+       { "field": "run_differential","label":"Run Diff","unit": "",
+         "operators": ["between","gt","lt"], "default_sort": "desc" }
+     ]
+   }
+
+   Per-field contract the FE relies on:
+     - field         : id used in the query spec + as the row key
+     - label         : display name
+     - type          : one of string | enum | boolean | season | number
+                       (drives which control renders; if omitted the FE
+                        infers from operators/values, but please send it)
+     - unit          : "lbs","in","ERA","yrs",... or "" (drives display +
+                       axis labels; unit "in" is rendered as 6'1")
+     - operators     : subset of ["eq","between","gt","lt"]
+     - default_sort  : "asc" | "desc" (measures)
+     - values        : required for enum fields (the pickable options)
+     - min / max     : numeric bounds for measures/season — used to render
+                       range SLIDERS. Omit and the FE falls back to free
+                       min/max number inputs, so sliders need these.
+
+2) POST /analytics/query   (the data)
+
+   Request body (only touched fields are sent; partial ranges are
+   dropped client-side so you never get a half-built filter):
+
+   {
+     "grain": "team_season",
+     "filters": [
+       {"field": "ws_result", "op": "eq",      "value": true},
+       {"field": "season",    "op": "between", "value": [2010, 2015]}
+     ],
+     "dimensions": ["team", "season"],
+     "measures": ["avg_weight", "avg_height"],
+     "sort": [{"field": "avg_weight", "dir": "desc"}],
+     "limit": 30
+   }
+
+   Notes on the request:
+     - filters[].op is always one of eq | between | gt | lt. For
+       between, value is a 2-element [lo, hi] array.
+     - measures = the plotted numbers (X first, then Y if present).
+     - dimensions = grouping/labels for each row.
+     - limit cap is 500 (FE slider maxes at 500).
+     - Unknown field -> 400 with { "detail": "..." }.
+
+   Response:
+
+   {
+     "rows": [
+       {"team":"Red Sox","season":2013,"avg_height":73.4,"avg_weight":207.1}
+     ],
+     "meta": {
+       "x": {"field":"avg_weight","label":"Avg Weight","unit":"lbs",
+             "min":198,"max":224},
+       "y": {"field":"avg_height","label":"Avg Height","unit":"in",
+             "min":70.2,"max":75.1},
+       "measures":[{"field":"avg_weight","label":"Avg Weight","unit":"lbs",
+                    "default_sort":"desc"}],
+       "suggested_charts":["scatter","horizontal_bar","line"],
+       "row_count": 1
+     }
+   }
+
+   Notes on the response the FE depends on:
+     - rows are FLAT records keyed by the exact dimension/measure field
+       ids that were requested.
+     - meta.x / meta.y carry label + unit (axis labels) and min/max
+       (axis scaling). meta.y may be omitted for single-measure queries.
+     - meta.suggested_charts drives the chart-type switcher. Send the
+       chart types that make sense for the payload; the FE only offers
+       those and renders the first by default. Use the literal values
+       "scatter", "horizontal_bar", "line".
+     - meta.row_count is shown as the result count.
+     - Heights come back as inches (numeric); the FE formats to 6'1".
+     - age is age-in-that-season, not current age.
+
+   Drill-in (future): each point/bar is already wired to carry its full
+   row (team + season + measures) into a detail drawer. A later
+   team -> roster -> player layer can hang off the same row with no
+   chart changes — no endpoint needed yet, just noting the direction.
+
+CONFIRMATION TO SEND BACK
+-------------------------
+Reply when GET /analytics/schema and POST /analytics/query are live
+with the shapes above. The Analytics Lab page will then render real
+charts with no further FE work.
+
+
+============================================================
 END OF DOCUMENT
 ============================================================

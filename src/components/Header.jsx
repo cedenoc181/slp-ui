@@ -75,6 +75,7 @@ function Header() {
     { type: 'page', label: 'MLB Standings', path: '/mlb-standings', keywords: ['standings', 'rankings', 'division', 'wild card', 'leaderboard'] },
     { type: 'page', label: 'Team Analytics', path: '/team-analytics', keywords: ['team', 'analytics', 'stats', 'statistics'] },
     { type: 'page', label: 'Player Analytics', path: '/player-analytics', keywords: ['player', 'batter', 'pitcher', 'stats', 'analytics'] },
+    { type: 'page', label: 'Analytics Lab', path: '/analytics-explorer', keywords: ['chart', 'explorer', 'analytics', 'lab', 'scatter', 'bar', 'line', 'custom', 'sql', 'query', 'builder', 'visualize'] },
     { type: 'page', label: 'Sandlot Insider', path: '/sandlot-insider', keywords: ['articles', 'news', 'insider', 'analysis', 'commentary'] },
     { type: 'page', label: 'Strategy Blog', path: '/blogs', keywords: ['blog', 'strategy', 'tips', 'betting', 'advice'] },
     { type: 'page', label: 'Data Science & Baseball', path: '/data-science', keywords: ['data', 'science', 'ml', 'machine learning', 'models', 'algorithm'] },
@@ -511,6 +512,7 @@ function Header() {
       '/mlb-standings':      iconMlbStandings,
       '/team-analytics':     iconTeamAnalytics,
       '/player-analytics':   iconPlayerAnalytics,
+      '/analytics-explorer': iconTeamAnalytics,
       '/sandlot-insider':    iconSandlotInsider,
       '/blogs':              iconStrategyBlog,
       '/data-science':       iconDataScience,
@@ -645,7 +647,7 @@ function Header() {
           >
             <button 
               type="button" 
-              className={`nav-button ${location.pathname.startsWith('/team-analytics') || location.pathname.startsWith('/batter-analytics') || location.pathname.startsWith('/pitcher-analytics') || location.pathname.startsWith('/mlb-schedule') || location.pathname.startsWith('/mlb-standings') || location.pathname.startsWith('/player-analytics') ? 'active' : ''}`}
+              className={`nav-button ${location.pathname.startsWith('/team-analytics') || location.pathname.startsWith('/batter-analytics') || location.pathname.startsWith('/pitcher-analytics') || location.pathname.startsWith('/mlb-schedule') || location.pathname.startsWith('/mlb-standings') || location.pathname.startsWith('/player-analytics') || location.pathname.startsWith('/analytics-explorer') ? 'active' : ''}`}
               onClick={() => toggleDropdown('stats')}
             >
               Stats
@@ -680,6 +682,13 @@ function Header() {
                 <div>
                   <div className="dropdown-title">Player Analytics</div>
                   <div className="dropdown-desc">Player performance metrics</div>
+                </div>
+              </button>
+              <button onClick={() => handleNavClick('/analytics-explorer')} className="dropdown-item">
+                <img src={iconTeamAnalytics} alt="" className="dropdown-icon" />
+                <div>
+                  <div className="dropdown-title">Analytics Lab</div>
+                  <div className="dropdown-desc">Build custom charts from any metric</div>
                 </div>
               </button>
             </div>

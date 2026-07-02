@@ -66,6 +66,7 @@ import MatchupDetailAnalysis from './components/pages/Stats/mlb-schedule/Matchup
 import TeamAnalytics from './components/pages/Stats/team-analytics/teamAnalytics';
 import PlayerAnalytics from './components/pages/Stats/player-analytics/playerAnalytics';
 import PlayerProfileStats from './components/pages/Stats/player-analytics/playerProfileStats';
+import AnalyticsLab from './components/pages/Stats/chart-explorer/analyticsLab';
 
 // Predictions
 import PredictionsOverview from './components/pages/predictions/PredictionsOverview';
@@ -97,6 +98,7 @@ import './styles/stats-page-styling/mlb-standings.css';
 import './styles/stats-page-styling/player-analytics.css';
 import './styles/stats-page-styling/batter-stats.css';
 import './styles/stats-page-styling/player-profile.css';
+import './styles/stats-page-styling/chart-explorer.css';
 
 
 //Insights-page-styles//
@@ -148,6 +150,7 @@ const PAGE_TITLES = [
   { path: '/team-analytics',           title: 'Team Analytics' },
   { path: '/team-analytics/:teamName', title: 'Team Analytics', param: 'teamName' },
   { path: '/player-analytics',         title: 'Player Analytics' },
+  { path: '/analytics-explorer',       title: 'Analytics Lab' },
   { path: '/player/:nameSlug',         title: 'Player Profile', param: 'nameSlug' },
   { path: '/sandlot-insider',          title: 'Sandlot Insider' },
   { path: '/sandlot-insider/:slug',    title: 'Sandlot Insider Article' },
@@ -258,6 +261,7 @@ function App() {
           <Route path="/team-analytics" element={<TeamAnalytics />} />
           <Route path="/team-analytics/:teamName" element={<TeamAnalytics />} />
           <Route path="/player-analytics" element={<PlayerAnalytics />} />
+          <Route path="/analytics-explorer" element={<ProtectedRoute><AnalyticsLab /></ProtectedRoute>} />
           <Route path="/player/:nameSlug" element={<PlayerProfileStats />} />
 
           {/* Predictions routes */}

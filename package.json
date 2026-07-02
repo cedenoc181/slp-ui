@@ -21,6 +21,7 @@
     "react-router-dom": "^7.9.5",
     "react-scripts": "5.0.1",
     "react-snap": "^1.23.0",
+    "recharts": "^3.9.1",
     "web-vitals": "^2.1.4"
   },
   "scripts": {
