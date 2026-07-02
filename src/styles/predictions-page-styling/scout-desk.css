@@ -240,6 +240,51 @@
 }
 .sd-pitcher-link:hover { text-decoration: underline; }
 
+/* Game-prop headline (no player profile to link to) */
+.sd-subject { color: #fff; font-weight: 700; font-size: 0.9rem; }
+
+/* Game-matchup panel (drawer) — two lineups + bullpens + park */
+.sd-gm { margin-bottom: 1.1rem; }
+.sd-gm-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 0.7rem; }
+.sd-gm-col {
+  background: rgba(0,0,0,0.22); border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 10px; padding: 0.6rem 0.65rem;
+}
+.sd-gm-col-head { display: flex; align-items: baseline; gap: 0.4rem; margin-bottom: 0.5rem; }
+.sd-gm-side { font-size: 0.58rem; font-weight: 800; letter-spacing: 0.05em; text-transform: uppercase; color: #67e8f9; }
+.sd-gm-team { font-size: 0.82rem; font-weight: 700; color: #fff; }
+.sd-gm-empty { font-size: 0.72rem; padding: 0.2rem 0 0.5rem; }
+.sd-gm-metrics { display: flex; flex-direction: column; gap: 0.4rem; }
+.sd-gm-metric { display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 0.15rem 0.4rem; }
+.sd-gm-metric-lbl { grid-column: 1 / 2; font-size: 0.66rem; color: rgba(255,255,255,0.7); }
+.sd-gm-metric-lbl em { color: rgba(255,255,255,0.4); font-style: normal; }
+.sd-gm-metric-val { grid-column: 2 / 3; font-size: 0.72rem; font-weight: 700; color: #fff; white-space: nowrap; }
+.sd-gm-pct { font-size: 0.54rem; font-weight: 600; color: rgba(255,255,255,0.45); margin-left: 0.1rem; }
+.sd-gm-bar { grid-column: 1 / 3; height: 5px; border-radius: 3px; background: rgba(255,255,255,0.1); overflow: hidden; }
+.sd-gm-bar-fill { display: block; height: 100%; border-radius: 3px; background: linear-gradient(90deg, #22d3ee, #4ade80); }
+.sd-gm-pen { margin-top: 0.6rem; padding-top: 0.5rem; border-top: 1px solid rgba(255,255,255,0.07); }
+.sd-gm-pen-lbl { font-size: 0.56rem; font-weight: 800; letter-spacing: 0.05em; text-transform: uppercase; color: rgba(255,255,255,0.5); }
+.sd-gm-pen-stats { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 0.25rem; }
+.sd-gm-pen-stat { font-size: 0.72rem; font-weight: 700; color: #fff; }
+.sd-gm-pen-stat em { font-style: normal; font-size: 0.54rem; color: rgba(255,255,255,0.45); margin-right: 0.2rem; }
+.sd-gm-pen-avail { display: flex; flex-wrap: wrap; gap: 0.3rem; margin-top: 0.3rem; }
+.sd-gm-avail { font-size: 0.6rem; font-weight: 700; border-radius: 4px; padding: 0.05rem 0.35rem; }
+.sd-gm-avail.ok { color: #4ade80; background: rgba(74,222,128,0.12); }
+.sd-gm-avail.warn { color: #facc15; background: rgba(250,204,21,0.12); }
+.sd-gm-avail.down { color: #f87171; background: rgba(248,113,113,0.12); }
+.sd-gm-park {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 0.45rem;
+  margin-top: 0.6rem; padding: 0.45rem 0.6rem;
+  background: rgba(0,0,0,0.22); border: 1px solid rgba(255,255,255,0.08); border-radius: 10px;
+}
+.sd-gm-park-venue { font-size: 0.75rem; font-weight: 700; color: #fff; }
+.sd-gm-pf { font-size: 0.64rem; font-weight: 700; color: #67e8f9; background: rgba(34,211,238,0.12); border-radius: 5px; padding: 0.1rem 0.4rem; }
+.sd-gm-tilt { font-size: 0.66rem; color: rgba(255,255,255,0.6); }
+
+@media (max-width: 560px) {
+  .sd-gm-cols { grid-template-columns: 1fr; }
+}
+
 /* Cuts (shortlisted-but-dropped) */
 .sd-cuts {
   margin-top: 1.5rem;
@@ -342,11 +387,15 @@
 .sd-bd-u { font-weight: 700; font-variant-numeric: tabular-nums; min-width: 48px; text-align: right; }
 .sd-bd-u.pos { color: #4ade80; } .sd-bd-u.neg { color: #f87171; }
 
-.sd-record-toggle {
-  margin-top: 0.9rem; font-size: 0.76rem; font-weight: 700; color: #67e8f9;
-  background: transparent; border: none; cursor: pointer; padding: 0.2rem 0;
+.sd-record-daily { margin-top: 0.9rem; }
+.sd-record-daily-head {
+  display: flex; align-items: baseline; justify-content: space-between;
+  margin-bottom: 0.5rem;
 }
-.sd-record-toggle:hover { text-decoration: underline; }
+.sd-record-daily-title {
+  font-size: 0.76rem; font-weight: 700; letter-spacing: 0.02em;
+  text-transform: uppercase; color: #67e8f9;
+}
 
 .sd-dayslog { margin-top: 0.7rem; display: flex; flex-direction: column; gap: 0.7rem; }
 .sd-dayslog-pager { display: flex; align-items: center; gap: 1rem; }
@@ -366,9 +415,61 @@
 .sd-day-pnl { margin-left: auto; font-weight: 700; font-variant-numeric: tabular-nums; }
 .sd-day-pnl.pos { color: #4ade80; } .sd-day-pnl.neg { color: #f87171; }
 
+/* ── Track record calendar ────────────────────────────────── */
+.sd-cal { margin-top: 0.8rem; }
+.sd-cal-head { display: flex; align-items: center; justify-content: center; gap: 1rem; margin-bottom: 0.7rem; }
+.sd-cal-title { font-size: 0.95rem; font-weight: 800; color: #fff; letter-spacing: -0.01em; min-width: 9.5rem; text-align: center; }
+.sd-cal-nav {
+  width: 30px; height: 30px; border-radius: 8px; cursor: pointer;
+  background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);
+  color: #fff; font-size: 1.1rem; line-height: 1; display: flex; align-items: center; justify-content: center;
+  transition: background 0.15s, border-color 0.15s;
+}
+.sd-cal-nav:hover:not(:disabled) { background: rgba(34,211,238,0.12); border-color: rgba(34,211,238,0.4); color: #67e8f9; }
+.sd-cal-nav:disabled { opacity: 0.3; cursor: not-allowed; }
+
+/* 7-day week strip — one row, horizontal scroll on small screens */
+.sd-week-strip {
+  display: flex; gap: 0.35rem; overflow-x: auto; padding-bottom: 0.25rem;
+  scroll-snap-type: x proximity; -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin; scrollbar-color: rgba(255,255,255,0.18) transparent;
+}
+.sd-week-strip::-webkit-scrollbar { height: 5px; }
+.sd-week-strip::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.18); border-radius: 999px; }
+.sd-week-box {
+  flex: 1 0 3.6rem; min-width: 3.6rem; scroll-snap-align: start;
+  border-radius: 8px; padding: 0.3rem 0.25rem; box-sizing: border-box;
+  display: flex; flex-direction: column; align-items: center; gap: 0.12rem;
+  cursor: pointer; font-family: inherit;
+  background: rgba(0,0,0,0.22); border: 1px solid rgba(255,255,255,0.08);
+  transition: transform 0.12s ease, border-color 0.15s ease, background 0.15s ease;
+}
+.sd-week-box:hover { transform: translateY(-2px); border-color: rgba(34,211,238,0.4); }
+.sd-cal-cell--win  { background: rgba(74,222,128,0.09);  border-color: rgba(74,222,128,0.28); }
+.sd-cal-cell--loss { background: rgba(248,113,113,0.09); border-color: rgba(248,113,113,0.28); }
+.sd-cal-cell--even { background: rgba(250,204,21,0.08);  border-color: rgba(250,204,21,0.24); }
+.sd-cal-cell--sel { outline: 2px solid #22d3ee; outline-offset: -1px; border-color: transparent; }
+
+.sd-week-dow { font-size: 0.56rem; font-weight: 800; letter-spacing: 0.04em; text-transform: uppercase; color: rgba(255,255,255,0.4); }
+.sd-week-date { font-size: 0.66rem; font-weight: 700; color: rgba(255,255,255,0.85); }
+.sd-cal-rec { font-size: 0.72rem; font-weight: 800; color: #fff; margin-top: 0.1rem; font-variant-numeric: tabular-nums; line-height: 1.1; }
+.sd-cal-u { font-size: 0.6rem; font-weight: 800; font-variant-numeric: tabular-nums; line-height: 1.15; }
+.sd-cal-u.pos { color: #4ade80; } .sd-cal-u.neg { color: #f87171; }
+
+.sd-cal-detail { margin-top: 0.85rem; background: rgba(0,0,0,0.2); border: 1px solid rgba(34,211,238,0.18); border-radius: 12px; padding: 0.7rem 0.85rem; animation: sd-cal-detail-in 0.18s ease; }
+@keyframes sd-cal-detail-in { from { opacity: 0; transform: translateY(-4px); } }
+.sd-cal-detail-head { display: flex; align-items: center; gap: 0.6rem; margin-bottom: 0.3rem; }
+.sd-cal-detail-date { font-size: 0.9rem; font-weight: 800; color: #fff; }
+.sd-cal-nopicks { padding: 0.4rem 0; font-size: 0.78rem; }
+
+.sd-cal-unplaced { margin-top: 0.9rem; display: flex; flex-direction: column; gap: 0.6rem; }
+.sd-cal-unplaced-title { font-size: 0.62rem; font-weight: 800; letter-spacing: 0.05em; text-transform: uppercase; }
+
 @media (max-width: 640px) {
   .sd-record-stats { grid-template-columns: repeat(2, 1fr); }
   .sd-record-splits { grid-template-columns: 1fr; }
+  /* On small screens boxes keep their min-width and the row scrolls sideways */
+  .sd-week-box { flex: 0 0 3.4rem; }
 }
 
 /* ── Autopsy ──────────────────────────────────────────────── */

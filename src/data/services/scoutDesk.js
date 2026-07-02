@@ -110,7 +110,7 @@ function fmtDate(iso) {
 }
 
 function deskMood(picks) {
-  if (!picks.length) return { label: 'Quiet board', text: 'No pitcher props cleared the audit gate today — it\'s strict on purpose.' };
+  if (!picks.length) return { label: 'Quiet board', text: 'No props cleared the audit gate today — it\'s strict on purpose.' };
   const consensus = picks.filter(p => p.consensus?.level === 'consensus').length;
   const wins = picks.map(p => toPct(p.audit?.winPct)).filter(v => v != null);
   const avgWin = wins.length ? Math.round(wins.reduce((a, b) => a + b, 0) / wins.length) : null;
