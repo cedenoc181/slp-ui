@@ -1,18 +1,95 @@
 {
   "schema_version": "2.0",
   "site": "sandlotpicks.com",
-  "generated_at": "2026-05-26",
+  "generated_at": "2026-06-29",
   "pagination": {
     "current_page": 1,
     "articles_per_page": 4,
-    "total_articles": 3,
+    "total_articles": 4,
     "total_pages": 1,
     "has_more": false
   },
   "articles": [
     {
+      "id": 7,
+      "title": "Three MLB Unders and Moneylines Worth Tracking Today",
+      "slug": "three-mlb-unders-and-moneylines-worth-tracking-today",
+      "author": "Sandlot Picks Team",
+      "date": "2026-05-28",
+      "status": "Final",
+      "tags": [
+        "MLB",
+        "Sports Betting",
+        "Red Sox",
+        "Braves",
+        "White Sox",
+        "Twins",
+        "Moneyline"
+      ],
+      "summary": "Sale's 1.89 ERA meets a Boston lineup hitting .233/.659 at home, while the Braves carry a .776 road OPS into Fenway — both starters are suppressing runs at an elite clip, and the ML model's 7.18-run projection barely clears the posted total, making the Under 7.5 the cleanest number on the board tonight.",
+      "read_time_minutes": 4,
+      "estimated_word_count": 755,
+      "hero_image": {
+        "url": "https://ryrlvrbjpwpecxpjicdo.supabase.co/storage/v1/object/public/post-images/hero/three-mlb-unders-and-moneylines-worth-tracking-today/1779984821899-screen-shot-2026-05-28-at-12-13-11-pm.png",
+        "alt": "Baltimore orioles moneyline"
+      },
+      "content": [
+        {
+          "text": "Braves @ Redsox - Under 7.5",
+          "type": "subheading"
+        },
+        {
+          "text": "⚾ Pitching Matchup **Chris Sale** has been nearly untouchable in 2026 with a 1.89 ERA and 0.87 WHIP, suppressing both lefties (.207 AVG) and righties (.172 AVG). His road ERA of 3.09 is his one weakness—still elite, but noticeably higher. **Payton Tolle's** 2.45 ERA and 0.82 WHIP look strong on paper, but his 2.65 home ERA doesn't match **Sale's** all-around dominance. **Sale's** 10.45 K/9 underscores the gap; **Tolle's** 9.57 K/9 is respectable but a tier below.\n\n📊 Splits Edge **Sale** heavily favors Atlanta. He holds both handedness groups under .210 AVG, while Boston's home lineup posts just .233 AVG and .659 OPS—a poor matchup for any pitcher, let alone this one. Atlanta's road OPS of .776 (their season high) gives them a legitimate shot against a less-tested starter in **Tolle**.\n\n🔑 Key Factors Boston's home lineup is exactly what **Sale** destroys. Atlanta leads the season series 3-2, including a 7-6 win on 05/26 in Boston, proving they can compete despite yesterday's 8-0 loss. **Tolle's** home ERA of 2.65 with a 0.94 WHIP is solid, but **Sale's** track record against this specific lineup is damning.\n\n📈 Total Lean UNDER 7.5 Both starters carry sub-2.50 ERAs and sub-0.95 WHIPs. The ML model projects 7.18 runs, barely clearing the posted 7.0 total. The market's slight lean toward the Under (-110) reflects the pitching quality in play.",
+          "type": "paragraph"
+        },
+        {
+          "text": "Blue Jays @ Orioles - Orioles Moneyline",
+          "type": "subheading"
+        },
+        {
+          "text": "⚾ Pitching Matchup **Patrick Corbin** favors lefties (.306 AVG, .694 OPS) but bleeds to righties (.286 AVG, .797 OPS, 1.49 WHIP)—a real problem against Baltimore's right-heavy core of **Gunnar Henderson** and **Pete Alonso**. **Chris Bassitt** is the deeper concern: his 5.51 ERA and 1.67 WHIP mask a brutal split. Lefties crush him (.322 AVG, .917 OPS, 1.88 WHIP), yet his home ERA (3.46) towers over his road mark (8.02). He's essentially a different pitcher at Camden Yards.\n\n📊 Splits Edge **Bassitt's** 4.56-run home/road ERA gap is the night's defining factor. Baltimore bats .249/.743 at home vs. .222/.670 on the road. **Corbin** flips the script: his road ERA (3.20, 1.26 WHIP) partially neutralizes Toronto's venue disadvantage.\n\n🔑 Key Factors **Bassitt's** Camden Yards split (3.46 vs. 8.02 ERA on the road) is the single biggest edge in this matchup. Baltimore's four-game streak (outscoring opponents 31-13) enters with real offensive momentum. **Corbin's** .797 OPS allowed to righties remains a leak, but his 3.20 road ERA keeps the Blue Jays in it if he avoids early damage.\n\n💲 Odds Edge Baltimore at -130 (56.6% implied) sits just 2.5 points below the model's 58.1% win probability—no edge. Toronto at +108 (47.9% implied) exceeds their 41.9% model probability, making them slightly overvalued.\n\n⚠️ Red Flags **Bassitt's** 3.61 BB/9 and 1.67 WHIP mean command lapses escalate quickly. Toronto's .684 OPS and .309 OBP—among the AL's weakest—struggle to bail out **Corbin** if he struggles early.\n\n🤖 ML Alignment The model favors Baltimore at 58.1%. **Bassitt's** home split and the Orioles' four-game run justify the lean.",
+          "type": "paragraph"
+        },
+        {
+          "text": "Twins @ White Sox - White Sox Moneyline",
+          "type": "subheading"
+        },
+        {
+          "text": "⚾ Pitching Matchup **Davis Martin** owns a 1.14 ERA and 0.86 WHIP at home against lefties—a sharp advantage given **Minnesota's** lineup. **Kendry Rojas** counters with a 1.26 ERA but a bloated 6.28 BB/9 that worsens on the road, where his WHIP balloons to 1.80 despite the better ERA at home.\n\n📊 Splits Edge **Martin's** home/away split is the sharpest knife in this game: 1.14 ERA at Guaranteed Rate versus 2.61 on the road (1.47-run gap). His .186 AVG and 0.552 OPS allowed against lefties compound **Chicago's** edge. **Rojas's** 6.28 BB/9 on the road meets a **White Sox** home lineup posting .756 OPS—a direct mismatch.\n\n🔑 Key Factors **CWS** leads the season series 2-1, including 3-1 and 15-2 wins in consecutive home games. **Martin's** home splits have moved the needle all season. **Rojas's** walk rate creates variance: he could unravel early, inflating pitch counts and pushing totals well past the 8.73 projection.\n\n💲 Odds Edge The market prices **CWS** at -146 (59.4% implied), but the model gives **Chicago** only 53.0%—roughly 6 points of overpricing. **Minnesota** at +121 offers mild value, though home field and SP splits still favor the **Sox**.\n\n⚠️ Red Flags The model's projected margin is just +0.61 runs with a ±2.24 band—this is a coin flip masked by a favorite's line. **Rojas's** road WHIP and walk rate create tail risk; a blowout either direction is in play.\n\n🤖 ML Alignment **CWS** is the lean, but -146 overstates it. The sharper play is **Minnesota** at +121 or staying off the run line entirely.",
+          "type": "paragraph"
+        }
+      ],
+      "seo": {
+        "keywords": [
+          "mlb picks today",
+          "chris sale era splits",
+          "baseball moneyline picks",
+          "pitcher home road splits",
+          "orioles white sox predictions",
+          "mlb under bets",
+          "baseball analytics predictions"
+        ],
+        "og_image": "https://ryrlvrbjpwpecxpjicdo.supabase.co/storage/v1/object/public/post-images/hero/three-mlb-unders-and-moneylines-worth-tracking-today/1779984821899-screen-shot-2026-05-28-at-12-13-11-pm.png",
+        "title_tag": "MLB Under Picks Today: Sale vs Braves, Orioles & White Sox M",
+        "canonical_url": "https://www.sandlotpicks.com/sandlot-insider/three-mlb-unders-and-moneylines-worth-tracking-today",
+        "meta_description": "Sharp MLB picks for today: unders and moneylines backed by ERA splits, lineup matchups, and projection models. Braves-Red Sox under 7.5, Orioles ML."
+      },
+      "affiliate_cta": {
+        "link": "https://www.sandlotpicks.com/upgrade",
+        "context": "claim free 7 day pass!",
+        "enabled": true,
+        "platform": "Sandlot Picks"
+      },
+      "affiliate_disclaimer": "Data and predictions provided for informational and entertainment purposes only.",
+      "related_posts": [
+        "three-games-three-bets-worth-making-on-todays-mlb-slate",
+        "the-model-sees-nine-runs-in-chicago-and-a-padres-win"
+      ],
+      "reference_urls": []
+    },
+    {
       "id": 6,
-      "title": "The Model Sees Nine Runs in Chicago and a Padres Win",
+      "title": "Ryan's Road ERA and Nola's OPS Splits Point to Runs",
       "slug": "the-model-sees-nine-runs-in-chicago-and-a-padres-win",
       "author": "Sandlot Picks Team",
       "date": "2026-05-26",
@@ -84,7 +161,7 @@
       },
       "affiliate_disclaimer": "Data and predictions provided for informational and entertainment purposes only.",
       "related_posts": [
-        "/three-games-three-bets-worth-making-on-todays-mlb-slate"
+        "three-games-three-bets-worth-making-on-todays-mlb-slate"
       ],
       "reference_urls": []
     },
