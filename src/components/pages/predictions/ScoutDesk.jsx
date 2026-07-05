@@ -3,7 +3,7 @@ import { createPortal } from 'react-dom';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../../context/AuthContext';
 import PredictionsNav from './PredictionsNav';
-import { buildScoutDesk, getScoutDeskPerformance, toPct } from '../../../data/services/scoutDesk';
+import { buildScoutDesk, getScoutDeskPerformance, buildAutopsy, toPct } from '../../../data/services/scoutDesk';
 import betLibraryService from '../../../data/services/betLibraryService';
 import playerStatsService from '../../../data/services/playerStatsServices';
 import loadingPredictionsIcon from '../../../assets/icons/loading-predictions.png';
@@ -636,6 +636,7 @@ export default function ScoutDesk() {
 
   const [desk, setDesk] = useState(null);
   const [perf, setPerf] = useState(null);
+  const [autopsy, setAutopsy] = useState(null);
   const [busy, setBusy] = useState(true);
   const [error, setError] = useState(null);
   const [openPlay, setOpenPlay] = useState(null);
@@ -651,11 +652,22 @@ export default function ScoutDesk() {
 
   const loadDesk = useCallback(() => {
     setBusy(true);
-    Promise.allSettled([buildScoutDesk(), getScoutDeskPerformance()])
-      .then(([deskR, perfR]) => {
+    // Track record (the desk's graded history) and the Bet Autopsy (the user's
+    // own tracked bets) are independent of whether today's board is released —
+    // load them alongside the desk so they render even when picks are pending
+    // or the desk fetch fails.
+    Promise.allSettled([buildScoutDesk(), getScoutDeskPerformance(), betLibraryService.list()])
+      .then(([deskR, perfR, betsR]) => {
         if (deskR.status === 'fulfilled') { setDesk(deskR.value); setError(null); }
-        else setError(deskR.reason?.message || 'Failed to load the desk.');
+        else { setDesk(null); setError(deskR.reason?.message || 'Failed to load the desk.'); }
         setPerf(perfR.status === 'fulfilled' ? perfR.value : null);
+        // Prefer the desk's autopsy (built after settling due bets); otherwise
+        // build it directly from the bet library so it still shows on failure.
+        if (deskR.status === 'fulfilled' && deskR.value?.autopsy) {
+          setAutopsy(deskR.value.autopsy);
+        } else {
+          setAutopsy(buildAutopsy(betsR.status === 'fulfilled' ? betsR.value : []));
+        }
       })
       .finally(() => setBusy(false));
   }, []);
@@ -789,10 +801,15 @@ export default function ScoutDesk() {
             ) : (
               <div className="sd-empty"><span className="sd-empty-icon">🗓️</span><p>No props cleared the audit gate today — check back closer to first pitch.</p></div>
             )}
+          </>
+        )}
 
+        {/* Track record + autopsy are constant — they don't depend on today's
+            board, so they render even while picks are pending or errored. */}
+        {!busy && (
+          <>
             <TrackRecord perf={perf} />
-
-            <Autopsy data={desk.autopsy} />
+            <Autopsy data={autopsy} />
           </>
         )}
 
