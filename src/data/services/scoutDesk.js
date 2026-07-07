@@ -78,15 +78,28 @@ export const PERSONA_ICON = {
 };
 
 // Authenticated fetch (apiService doesn't attach the Bearer token).
-async function scoutDeskFetch(path) {
+async function scoutDeskFetch(path, { method = 'GET' } = {}) {
   const token = getAccessToken();
   const headers = { 'Content-Type': 'application/json' };
   if (token) headers['Authorization'] = `Bearer ${token}`;
-  const res = await fetch(`${API_BASE_URL}${path}`, { headers });
+  const res = await fetch(`${API_BASE_URL}${path}`, { method, headers });
   if (res.status === 204) return null;
   const data = await res.json().catch(() => ({}));
   if (!res.ok) throw new Error(data.detail || data.message || `Request failed (${res.status})`);
   return data;
+}
+
+/**
+ * Admin-only: force-regenerate the day's board with the latest data + code,
+ * overwriting the frozen row. Runs the full funnel (audit → AI selection →
+ * news/injury checks) so it can take up to ~a minute.
+ * POST /api/v1/predictions/scout-desk/refresh[?date=YYYY-MM-DD]
+ * @param {string} [date] — YYYY-MM-DD; defaults to today ET server-side.
+ * @returns {Promise<{ date, picks, cut, lockedAt, refreshed } | { picks: [], message, refreshed }>}
+ */
+export async function refreshScoutDesk(date) {
+  const q = date ? `?date=${encodeURIComponent(date)}` : '';
+  return scoutDeskFetch(`${ENDPOINT}/refresh${q}`, { method: 'POST' });
 }
 
 // Win%/prob fields may arrive as fractions (0.842) or percents (84.2) — normalize.

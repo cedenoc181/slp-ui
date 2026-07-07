@@ -13,6 +13,7 @@ import {
   formatAlertDate,
 } from '../../../data/services/alertsService';
 import { listCampaigns } from '../../../data/services/campaignsService';
+import { refreshScoutDesk } from '../../../data/services/scoutDesk';
 import CampaignDetailDrawer from './CampaignDetailDrawer';
 import AlertComposerModal from './AlertComposerModal';
 import '../../../styles/admin-page-styling/admin.css';
@@ -836,6 +837,32 @@ function AdminPage() {
   const [campaignsError, setCampaignsError] = useState(null);
   const [openCampaign, setOpenCampaign] = useState(null); // lightweight summary; drawer fetches full row
 
+  // Scout AI Desk refresh (admin force re-pick)
+  const [deskRefreshing, setDeskRefreshing] = useState(false);
+  const [deskRefreshMsg, setDeskRefreshMsg] = useState(null); // { tone: 'ok'|'empty'|'error', text }
+
+  const handleRefreshDesk = async () => {
+    if (deskRefreshing) return;
+    setDeskRefreshing(true);
+    setDeskRefreshMsg(null);
+    try {
+      const board = await refreshScoutDesk();
+      const picks = Array.isArray(board?.picks) ? board.picks : [];
+      if (picks.length === 0) {
+        setDeskRefreshMsg({
+          tone: 'empty',
+          text: board?.message || 'No props cleared the audit gate yet — lines likely haven’t posted. Try again closer to first pitch.',
+        });
+      } else {
+        setDeskRefreshMsg({ tone: 'ok', text: `Scout AI Desk rebuilt — ${picks.length} pick${picks.length === 1 ? '' : 's'} on the board.` });
+      }
+    } catch (e) {
+      setDeskRefreshMsg({ tone: 'error', text: e?.message || 'Refresh failed. Please try again.' });
+    } finally {
+      setDeskRefreshing(false);
+    }
+  };
+
   useEffect(() => {
     window.scrollTo(0, 0);
   }, []);
@@ -975,13 +1002,6 @@ function AdminPage() {
               </svg>
               Prediction Audit
             </Link>
-            <Link to="/admin/campaigns" className="admin-action-btn">
-              <svg className="admin-action-btn__icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
-                <polyline points="22,6 12,13 2,6" />
-              </svg>
-              Campaigns
-            </Link>
             <button
               type="button"
               className="admin-action-btn admin-action-btn--accent"
@@ -993,15 +1013,31 @@ function AdminPage() {
               </svg>
               New Alert
             </button>
-            <Link to="/admin/new" className="admin-action-btn">
-              <svg className="admin-action-btn__icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                <line x1="12" y1="5" x2="12" y2="19" />
-                <line x1="5"  y1="12" x2="19" y2="12" />
+            <button
+              type="button"
+              className="admin-action-btn admin-action-btn--accent"
+              onClick={handleRefreshDesk}
+              disabled={deskRefreshing}
+              aria-busy={deskRefreshing}
+            >
+              <svg
+                className={`admin-action-btn__icon${deskRefreshing ? ' is-spinning' : ''}`}
+                width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"
+              >
+                <polyline points="23 4 23 10 17 10" />
+                <polyline points="1 20 1 14 7 14" />
+                <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15" />
               </svg>
-              New Post
-            </Link>
+              {deskRefreshing ? 'Refreshing…' : 'Refresh Scout AI Desk'}
+            </button>
           </div>
         </div>
+
+        {deskRefreshMsg && (
+          <div className={`admin-desk-refresh-note admin-desk-refresh-note--${deskRefreshMsg.tone}`} role="status">
+            {deskRefreshMsg.text}
+          </div>
+        )}
 
         {/* ── Row 1: Status hero ── */}
         <div className="admin-hero-grid">

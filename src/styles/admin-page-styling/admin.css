@@ -118,6 +118,52 @@
   opacity: 1;
 }
 
+/* Accent (primary) action buttons — Scout Desk refresh, New Alert */
+.admin-action-btn--accent {
+  background: rgba(45, 212, 191, 0.12);
+  border-color: rgba(45, 212, 191, 0.4);
+  color: #2dd4bf;
+}
+.admin-action-btn--accent:hover {
+  background: rgba(45, 212, 191, 0.18);
+  border-color: rgba(45, 212, 191, 0.6);
+  color: #5eead4;
+}
+.admin-action-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+.admin-action-btn__icon.is-spinning {
+  animation: ai-spin 0.8s linear infinite;
+  opacity: 1;
+}
+
+/* Result note under the header after a Scout Desk refresh */
+.admin-desk-refresh-note {
+  margin: -0.25rem 0 1rem;
+  padding: 0.6rem 0.9rem;
+  border-radius: 8px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  border: 1px solid transparent;
+}
+.admin-desk-refresh-note--ok {
+  color: #5eead4;
+  background: rgba(45, 212, 191, 0.1);
+  border-color: rgba(45, 212, 191, 0.32);
+}
+.admin-desk-refresh-note--empty {
+  color: #fcd34d;
+  background: rgba(250, 204, 21, 0.1);
+  border-color: rgba(250, 204, 21, 0.28);
+}
+.admin-desk-refresh-note--error {
+  color: #fca5a5;
+  background: rgba(248, 113, 113, 0.1);
+  border-color: rgba(248, 113, 113, 0.3);
+}
+
 /* ── Command Center Dashboard ─────────────────────────────── */
 .admin-hero-grid {
   display: grid;
