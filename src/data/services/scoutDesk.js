@@ -30,8 +30,9 @@ import predictionsService from './predictionsService';
 
 const ENDPOINT = '/api/v1/predictions/scout-desk';
 
-// ── "available by" unlock time — mirrors GameProps (2h before first pitch) ─────
+// ── "available by" unlock time — 4h before first pitch ────────────────────────
 
+const UNLOCK_LEAD_MINS = 240;    // predictions render 4 hours before first pitch
 const UNLOCK_CAP_MINS = 16 * 60; // never later than 4:00 PM ET
 
 function isFinalRow(r) {
@@ -53,7 +54,7 @@ function gameMins(g) {
 function unlockMins(games) {
   const mins = games.map(gameMins).filter(m => m < 9999);
   if (!mins.length) return null;
-  return Math.min(Math.min(...mins) - 120, UNLOCK_CAP_MINS);
+  return Math.min(Math.min(...mins) - UNLOCK_LEAD_MINS, UNLOCK_CAP_MINS);
 }
 function readyLabelFor(games) {
   const u = unlockMins(games);

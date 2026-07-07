@@ -860,7 +860,7 @@ export default function ScoutDesk() {
                 <div>
                   <div className="sd-pending-title">Scout AI available by {desk.readyLabel}</div>
                   <div className="sd-pending-sub">
-                    Our model and Scout AI analysis will be ready approximately 2 hours before first pitch.
+                    Our model and Scout AI analysis will be ready approximately 4 hours before first pitch.
                     Come back at {desk.readyLabel} for the day's picks and the full War Room breakdown.
                   </div>
                 </div>
