@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../../context/AuthContext';
 import PredictionsNav from './PredictionsNav';
 import { buildScoutDesk, getScoutDeskPerformance, buildAutopsy, toPct } from '../../../data/services/scoutDesk';
+import { loadGameSplitInsights } from '../../../data/services/gameSplitInsights';
 import betLibraryService from '../../../data/services/betLibraryService';
 import playerStatsService from '../../../data/services/playerStatsServices';
 import loadingPredictionsIcon from '../../../assets/icons/loading-predictions.png';
@@ -196,15 +197,67 @@ function lineupMetrics(lineup) {
   return rows.slice(0, 6);
 }
 
-function LineupColumn({ side, team, lineup, pen }) {
+// Starting-pitcher splits — the venue + platoon splits flagged strong /
+// exploitable (same signal as the Advanced Analysis pitcher split card).
+function PitcherSplit({ pitcher }) {
+  if (!pitcher || !pitcher.lines?.length) return null;
+  const throwsL = pitcher.throws ? (pitcher.throws.toUpperCase() === 'L' ? 'LHP' : 'RHP') : null;
+  return (
+    <div className="sd-gm-psplit">
+      <div className="sd-gm-psplit-head">
+        <span className="sd-gm-splits-lbl">Pitcher splits</span>
+        {pitcher.spName && <span className="sd-gm-psplit-name">{pitcher.spName}{throwsL ? ` · ${throwsL}` : ''}</span>}
+      </div>
+      {pitcher.lines.map((ln, i) => (
+        <div key={i} className={`sd-gm-psplit-line tone-${ln.tone}`}>
+          <span className="sd-gm-psplit-lbl">{ln.label}</span>
+          <span className="sd-gm-psplit-val">{ln.value}</span>
+          {ln.tone !== 'neutral' && (
+            <span className="sd-gm-psplit-tag" title={ln.tone === 'strong' ? 'Strong' : 'Exploitable'}>
+              {ln.tone === 'strong' ? 'Strong' : 'Exp'}
+            </span>
+          )}
+        </div>
+      ))}
+    </div>
+  );
+}
+
+// Top matchup-split performers (same data as the Advanced Analysis "Key Matchup
+// Insights" panel) — the best batters for this game's splits (vs the opposing
+// starter's hand + home/road).
+function SplitInsights({ cards }) {
+  return (
+    <div className="sd-gm-splits">
+      <div className="sd-gm-splits-lbl">Top matchup splits</div>
+      {cards.map((ins, i) => (
+        <div key={i} className={`sd-gm-split${ins.type === 'strength' ? ' is-strength' : ''}`}>
+          <span className="sd-gm-split-name">{ins.headline}</span>
+          <div className="sd-gm-split-metrics">
+            {ins.metrics.map((m, j) => (
+              <span key={j} className="sd-gm-split-metric"><em>{m.label}</em> {m.value}</span>
+            ))}
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function LineupColumn({ side, team, lineup, pen, insights }) {
   const rows = lineupMetrics(lineup);
+  const loading = insights == null;
+  const pitcher = insights?.pitcher || null;
+  const batters = Array.isArray(insights?.batters) ? insights.batters : [];
+  const hasPitcher = !!(pitcher && pitcher.lines?.length);
+  const hasBatters = batters.length > 0;
   return (
     <div className="sd-gm-col">
       <div className="sd-gm-col-head">
         <span className="sd-gm-side">{side}</span>
         <span className="sd-gm-team">{teamName(team)}</span>
       </div>
-      {rows.length > 0 ? (
+      {rows.length > 0 && (
         <div className="sd-gm-metrics">
           {rows.map((r, i) => (
             <div key={i} className="sd-gm-metric">
@@ -214,7 +267,19 @@ function LineupColumn({ side, team, lineup, pen }) {
             </div>
           ))}
         </div>
-      ) : <div className="sd-muted sd-gm-empty">Lineup strength unavailable.</div>}
+      )}
+      {/* Pitcher splits, then best matchup-split batters. */}
+      {loading ? (
+        rows.length === 0 && <div className="sd-muted sd-gm-empty">Loading matchup splits…</div>
+      ) : (
+        <>
+          {hasPitcher && <PitcherSplit pitcher={pitcher} />}
+          {hasBatters && <SplitInsights cards={batters} />}
+          {rows.length === 0 && !hasPitcher && !hasBatters && (
+            <div className="sd-muted sd-gm-empty">Lineup strength unavailable.</div>
+          )}
+        </>
+      )}
       <Bullpen pen={pen} />
     </div>
   );
@@ -248,7 +313,21 @@ function Bullpen({ pen }) {
 
 // Game props: both lineups side by side (strength by percentile) + both bullpens
 // + the park, in place of the pitcher profile panel.
-function GameMatchupPanel({ gm, park }) {
+function GameMatchupPanel({ gm, park, gamePk }) {
+  // Top matchup-split performers per team (Advanced Analysis insights), loaded
+  // by game_pk. null while loading; { away, home } once resolved.
+  const [splitInsights, setSplitInsights] = useState(null);
+  useEffect(() => {
+    const empty = { away: { pitcher: null, batters: [] }, home: { pitcher: null, batters: [] } };
+    if (gamePk == null) { setSplitInsights(empty); return; }
+    let cancelled = false;
+    setSplitInsights(null);
+    loadGameSplitInsights(gamePk)
+      .then(r => { if (!cancelled) setSplitInsights(r || empty); })
+      .catch(() => { if (!cancelled) setSplitInsights(empty); });
+    return () => { cancelled = true; };
+  }, [gamePk]);
+
   if (!gm || typeof gm !== 'object') {
     const pf = ctxText(park);
     return pf ? (
@@ -259,8 +338,8 @@ function GameMatchupPanel({ gm, park }) {
   return (
     <div className="sd-gm">
       <div className="sd-gm-cols">
-        <LineupColumn side="Away" team={gm.away} lineup={gm.lineups?.away} pen={gm.bullpens?.away} />
-        <LineupColumn side="Home" team={gm.home} lineup={gm.lineups?.home} pen={gm.bullpens?.home} />
+        <LineupColumn side="Away" team={gm.away} lineup={gm.lineups?.away} pen={gm.bullpens?.away} insights={splitInsights?.away ?? null} />
+        <LineupColumn side="Home" team={gm.home} lineup={gm.lineups?.home} pen={gm.bullpens?.home} insights={splitInsights?.home ?? null} />
       </div>
       {p && (
         <div className="sd-gm-park">
@@ -346,7 +425,7 @@ function WarRoom({ play, onClose, onTrack, onPitcher, tracked }) {
           <div className="sd-verdict"><strong>Why this, now:</strong> {play.reasoning.rationale}</div>
         )}
         {isGame(play)
-          ? <GameMatchupPanel gm={ctx.gameMatchup} park={ctx.parkFactor} />
+          ? <GameMatchupPanel gm={ctx.gameMatchup} park={ctx.parkFactor} gamePk={play.gamePk} />
           : <PitcherContext ctx={ctx} pitcherName={play.pitcherName} />}
 
         {/* The panel */}

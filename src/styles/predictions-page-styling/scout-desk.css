@@ -255,6 +255,49 @@
 .sd-gm-team { font-size: 0.82rem; font-weight: 700; color: #fff; }
 .sd-gm-empty { font-size: 0.72rem; padding: 0.2rem 0 0.5rem; }
 .sd-gm-metrics { display: flex; flex-direction: column; gap: 0.4rem; }
+
+/* Starting-pitcher splits (strong / exploitable) */
+.sd-gm-psplit { display: flex; flex-direction: column; gap: 0.3rem; margin: 0.15rem 0 0.5rem; }
+.sd-gm-psplit-head { display: flex; align-items: baseline; justify-content: space-between; gap: 0.4rem; }
+.sd-gm-psplit-name { font-size: 0.66rem; font-weight: 700; color: rgba(255,255,255,0.7); text-align: right; }
+.sd-gm-psplit-line {
+  display: flex; align-items: center; gap: 0.4rem;
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.07);
+  border-left: 2px solid rgba(255,255,255,0.14);
+  border-radius: 7px; padding: 0.3rem 0.5rem;
+}
+.sd-gm-psplit-line.tone-strong      { border-left-color: #4ade80; }
+.sd-gm-psplit-line.tone-exploitable { border-left-color: #f87171; }
+.sd-gm-psplit-lbl { font-size: 0.68rem; color: rgba(255,255,255,0.72); flex: 1; min-width: 0; }
+.sd-gm-psplit-val { font-size: 0.78rem; font-weight: 800; color: #fff; font-variant-numeric: tabular-nums; }
+.sd-gm-psplit-line.tone-strong .sd-gm-psplit-val      { color: #4ade80; }
+.sd-gm-psplit-line.tone-exploitable .sd-gm-psplit-val { color: #f87171; }
+.sd-gm-psplit-tag {
+  font-size: 0.5rem; font-weight: 800; letter-spacing: 0.04em; text-transform: uppercase;
+  padding: 0.08rem 0.3rem; border-radius: 4px; white-space: nowrap;
+}
+.sd-gm-psplit-line.tone-strong .sd-gm-psplit-tag      { color: #4ade80; background: rgba(74,222,128,0.15); }
+.sd-gm-psplit-line.tone-exploitable .sd-gm-psplit-tag { color: #f87171; background: rgba(248,113,113,0.15); }
+
+/* Top matchup-split performers (best batters for this game's splits) */
+.sd-gm-splits { display: flex; flex-direction: column; gap: 0.4rem; margin: 0.15rem 0 0.4rem; }
+.sd-gm-splits-lbl {
+  font-size: 0.55rem; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase;
+  color: rgba(255,255,255,0.4); margin-bottom: 0.05rem;
+}
+.sd-gm-split {
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.07);
+  border-left: 2px solid rgba(255,255,255,0.14);
+  border-radius: 7px;
+  padding: 0.35rem 0.5rem;
+}
+.sd-gm-split.is-strength { border-left-color: #4ade80; }
+.sd-gm-split-name { display: block; font-size: 0.74rem; font-weight: 700; color: #fff; }
+.sd-gm-split-metrics { display: flex; flex-wrap: wrap; gap: 0.15rem 0.7rem; margin-top: 0.15rem; }
+.sd-gm-split-metric { font-size: 0.66rem; font-weight: 700; color: rgba(255,255,255,0.82); white-space: nowrap; }
+.sd-gm-split-metric em { font-style: normal; font-weight: 600; color: rgba(255,255,255,0.45); }
 .sd-gm-metric { display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 0.15rem 0.4rem; }
 .sd-gm-metric-lbl { grid-column: 1 / 2; font-size: 0.66rem; color: rgba(255,255,255,0.7); }
 .sd-gm-metric-lbl em { color: rgba(255,255,255,0.4); font-style: normal; }
