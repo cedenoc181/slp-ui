@@ -845,8 +845,13 @@ function AdminPage() {
     if (deskRefreshing) return;
     setDeskRefreshing(true);
     setDeskRefreshMsg(null);
+    // The funnel (audit → AI selection → news/injury web checks) can run ~a
+    // minute; cap the wait so a hung request fails gracefully instead of
+    // spinning forever.
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), 150000); // 2.5 min
     try {
-      const board = await refreshScoutDesk();
+      const board = await refreshScoutDesk(undefined, { signal: controller.signal });
       const picks = Array.isArray(board?.picks) ? board.picks : [];
       if (picks.length === 0) {
         setDeskRefreshMsg({
@@ -857,8 +862,14 @@ function AdminPage() {
         setDeskRefreshMsg({ tone: 'ok', text: `Scout AI Desk rebuilt — ${picks.length} pick${picks.length === 1 ? '' : 's'} on the board.` });
       }
     } catch (e) {
-      setDeskRefreshMsg({ tone: 'error', text: e?.message || 'Refresh failed. Please try again.' });
+      setDeskRefreshMsg({
+        tone: 'error',
+        text: e?.name === 'AbortError'
+          ? 'Refresh timed out after 2.5 minutes. The board may still be rebuilding server-side — reload in a moment to check.'
+          : (e?.message || 'Refresh failed. Please try again.'),
+      });
     } finally {
+      clearTimeout(timer);
       setDeskRefreshing(false);
     }
   };
@@ -1033,7 +1044,11 @@ function AdminPage() {
           </div>
         </div>
 
-        {deskRefreshMsg && (
+        {deskRefreshing ? (
+          <div className="admin-desk-refresh-note admin-desk-refresh-note--busy" role="status">
+            Rebuilding the board — running the full funnel (audit → AI selection → news/injury checks). This can take up to a minute…
+          </div>
+        ) : deskRefreshMsg && (
           <div className={`admin-desk-refresh-note admin-desk-refresh-note--${deskRefreshMsg.tone}`} role="status">
             {deskRefreshMsg.text}
           </div>

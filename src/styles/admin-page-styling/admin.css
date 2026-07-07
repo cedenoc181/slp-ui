@@ -148,6 +148,11 @@
   font-weight: 600;
   border: 1px solid transparent;
 }
+.admin-desk-refresh-note--busy {
+  color: #a5b4fc;
+  background: rgba(129, 140, 248, 0.1);
+  border-color: rgba(129, 140, 248, 0.28);
+}
 .admin-desk-refresh-note--ok {
   color: #5eead4;
   background: rgba(45, 212, 191, 0.1);
