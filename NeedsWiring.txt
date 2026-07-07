@@ -1949,5 +1949,71 @@ charts with no further FE work.
 
 
 ============================================================
+FEATURE — SCOUT DESK TRACK RECORD: OPEN THE WAR ROOM MATCHUP
+============================================================
+
+WHAT IT IS
+----------
+On the Scout AI Desk page, the Track Record "Daily log" calendar lists
+each graded desk pick per day. Each pick row is now a button that opens
+the same War Room drawer used by today's board — so a user can review the
+game matchup (lineups, bullpens, park) and analyst breakdown behind any
+historical pick, not just today's.
+
+The FE is already wired: clicking a daily-log pick calls the drawer with
+that pick object. The drawer degrades gracefully — it renders whatever
+fields are present and hides empty sections — but to show the FULL
+matchup it needs the performance endpoint to return the same rich pick
+shape the board endpoint returns.
+
+ENDPOINT AFFECTED
+-----------------
+GET /api/v1/predictions/scout-desk/performance[?from=&to=]
+  → { summary, days: [ { date, record, unitsPnl, picks: [ ... ] } ] }
+
+WHAT THE FE NEEDS ON EACH days[].picks[] ENTRY
+----------------------------------------------
+Today it carries the graded summary fields:
+  selection, market, side, line, projection, actual, status, pnl
+
+To render the War Room matchup for a graded pick, also include the SAME
+fields the board's picks[] already return (persist them on the frozen
+board pick and echo them back here):
+
+  - kind          "pitcher" | "game"
+  - subject       game headline for game props ("Angels @ Mariners")
+  - pitcherName   for pitcher props (null for game props)
+  - playerId      for pitcher props (enables the player-profile link)
+  - gamePk        the MLB game PK
+  - statType      "strikeouts" | "game_moneyline" | ...
+  - odds, modelProb, ev, conviction
+  - audit         { winPct, basePct, gapVsBase, sample, ... }
+  - reasoning     { rationale, context: { ... } }
+        pitcher context: last5Summary, parkFactor, opponentForm,
+                         matchup, pitcherProfile, restSplits, ...
+        game context:    gameMatchup { home, away,
+                         lineups:{home,away}, bullpens:{home,away},
+                         park, form }, parkFactor
+  - analysts[]    same shape as the board (key,name,vote,confidence,take)
+  - consensus     { level, label }
+
+NOTES
+-----
+  - These are the exact fields the board's picks already produce — the
+    ask is to STORE them on the frozen pick and return them here, not to
+    recompute anything. If a legacy graded pick predates this, omit the
+    fields; the drawer will just show the header + result and skip the
+    empty matchup/analyst sections (no FE change needed).
+  - status is already returned; the FE uses it to hide the track/fade
+    actions on settled picks (shows the settled result instead).
+
+CONFIRMATION TO SEND BACK
+-------------------------
+Reply when days[].picks[] carries the fields above. The daily-log →
+War Room matchup drawer will then render the full breakdown with no
+further FE work.
+
+
+============================================================
 END OF DOCUMENT
 ============================================================

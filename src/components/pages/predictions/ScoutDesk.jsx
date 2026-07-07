@@ -74,7 +74,20 @@ const VOTE_META = {
 
 // Every board item now carries kind: "pitcher" | "game". Branch all rendering
 // on it — never assume a pick is a pitcher.
-function isGame(play) { return play?.kind === 'game'; }
+function isGame(play) {
+  // Board picks carry an explicit kind; graded track-record picks may not, so
+  // fall back to "has a game subject and no pitcher".
+  return play?.kind === 'game' || (!play?.pitcherName && !!play?.subject);
+}
+// Normalize a track-record pick into the shape the War Room drawer expects so a
+// graded pick can open the same matchup drawer without crashing.
+function toDrawerPlay(p) {
+  return {
+    ...p,
+    analysts: Array.isArray(p.analysts) ? p.analysts : [],
+    consensus: p.consensus || { level: 'pass', label: '' },
+  };
+}
 // Headline: pitchers use pitcherName; game props use the ready-made `subject`
 // ("Angels @ Mariners"). `selection` is server-formatted and safe either way.
 function headlineName(play) { return isGame(play) ? (play.subject || '') : (play.pitcherName || ''); }
@@ -265,6 +278,7 @@ function GameMatchupPanel({ gm, park }) {
 // ── War Room drawer ───────────────────────────────────────────────────────────
 
 function WarRoom({ play, onClose, onTrack, onPitcher, tracked }) {
+  const navigate = useNavigate();
   useEffect(() => {
     const onKey = (e) => { if (e.key === 'Escape') onClose(); };
     document.addEventListener('keydown', onKey);
@@ -272,8 +286,25 @@ function WarRoom({ play, onClose, onTrack, onPitcher, tracked }) {
     return () => { document.removeEventListener('keydown', onKey); document.body.style.overflow = ''; };
   }, [onClose]);
 
-  const cm = CONSENSUS_META[play.consensus.level] || CONSENSUS_META.pass;
+  const cm = CONSENSUS_META[play.consensus?.level] || CONSENSUS_META.pass;
   const ctx = play.reasoning?.context || {};
+  const analysts = Array.isArray(play.analysts) ? play.analysts : [];
+  // Track-record picks are already graded — they open the drawer to view the
+  // matchup, not to be re-tracked, so hide the track/fade actions once settled.
+  const settled = play.status && play.status !== 'pending';
+  // Whether we have anything beyond the header to show. Graded track-record
+  // picks currently arrive without the frozen matchup/analyst context, so fall
+  // back to a deep-link to the full game page instead of a barren drawer.
+  const hasContext = isGame(play)
+    ? !!ctx.gameMatchup || !!ctxText(ctx.parkFactor)
+    : !!ctxText(ctx.parkFactor) || !!ctxText(ctx.last5Summary) || !!ctxText(ctx.opponentForm);
+  const hasBreakdown = hasContext || analysts.length > 0 || !!play.reasoning?.rationale;
+  const openGame = () => {
+    if (play.gamePk == null) return;
+    onClose();
+    navigate(`/mlb-schedule/${play.gamePk}`);
+    window.scrollTo(0, 0);
+  };
 
   return createPortal(
     <div className="sd-drawer-overlay" onClick={onClose} role="dialog" aria-modal="true">
@@ -281,13 +312,13 @@ function WarRoom({ play, onClose, onTrack, onPitcher, tracked }) {
         <button className="sd-drawer-close" onClick={onClose} aria-label="Close">✕</button>
 
         <div className="sd-drawer-head">
-          <span className={`sd-badge ${cm.cls}`}>{cm.icon} {play.consensus.label}</span>
+          <span className={`sd-badge ${cm.cls}`}>{cm.icon} {play.consensus?.label}</span>
           <h2 className="sd-drawer-sel">{play.selection}</h2>
           <div className="sd-drawer-meta">
             {isGame(play)
-              ? <span className="sd-subject">{play.subject}</span>
-              : <button className="sd-pitcher-link" onClick={() => onPitcher(play)} title="View player profile">{play.pitcherName}</button>}
-            <span className="sd-pill">{play.market}</span>
+              ? (play.subject && <span className="sd-subject">{play.subject}</span>)
+              : (play.pitcherName && <button className="sd-pitcher-link" onClick={() => onPitcher(play)} title="View player profile">{play.pitcherName}</button>)}
+            {play.market && <span className="sd-pill">{play.market}</span>}
           </div>
           <div className="sd-drawer-nums">
             <div><span className="sd-num-lbl">Odds</span><span className={`sd-num ${play.odds > 0 ? 'pos' : 'neg'}`}>{fmtOdds(play.odds)}</span></div>
@@ -319,9 +350,10 @@ function WarRoom({ play, onClose, onTrack, onPitcher, tracked }) {
           : <PitcherContext ctx={ctx} pitcherName={play.pitcherName} />}
 
         {/* The panel */}
+        {analysts.length > 0 && (
         <div className="sd-room">
           <div className="sd-room-title">The War Room</div>
-          {play.analysts.map((a, i) => (
+          {analysts.map((a, i) => (
             <div key={a.key || i} className={`sd-analyst${a.vote ? '' : ' advisory'}`}>
               <div className="sd-analyst-head">
                 <span className="sd-analyst-icon">
@@ -339,15 +371,35 @@ function WarRoom({ play, onClose, onTrack, onPitcher, tracked }) {
             </div>
           ))}
         </div>
+        )}
 
-        <div className="sd-drawer-actions">
-          <button className="sd-btn primary" disabled={tracked} onClick={() => onTrack(play, 'taken')}>
-            {tracked ? '✓ Tracked' : '+ Track with the desk'}
-          </button>
-          <button className="sd-btn ghost" disabled={tracked} onClick={() => onTrack(play, 'fade')}>
-            Fade the desk
-          </button>
-        </div>
+        {!hasBreakdown && (
+          <div className="sd-drawer-empty">
+            <p className="sd-muted">The full matchup breakdown isn’t stored for this graded pick yet.</p>
+            {play.gamePk != null && (
+              <button type="button" className="sd-btn ghost" onClick={openGame}>
+                View full game matchup →
+              </button>
+            )}
+          </div>
+        )}
+
+        {settled ? (
+          <div className="sd-drawer-settled">
+            <span className={`sd-day-status ${play.status}`}>{play.status}</span>
+            {play.pnl != null && <span className={`sd-day-pnl ${plCls(play.pnl)}`}>{fmtUnits(play.pnl)}</span>}
+            <span className="sd-muted">Graded desk pick — settled result.</span>
+          </div>
+        ) : (
+          <div className="sd-drawer-actions">
+            <button className="sd-btn primary" disabled={tracked} onClick={() => onTrack(play, 'taken')}>
+              {tracked ? '✓ Tracked' : '+ Track with the desk'}
+            </button>
+            <button className="sd-btn ghost" disabled={tracked} onClick={() => onTrack(play, 'fade')}>
+              Fade the desk
+            </button>
+          </div>
+        )}
       </div>
     </div>,
     document.body
@@ -438,23 +490,38 @@ function longDate(d) { return d.toLocaleDateString('en-US', { weekday: 'long', m
 function shortDow(d) { return d.toLocaleDateString('en-US', { weekday: 'short' }); }
 function monthDay(d) { return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }); }
 
-function DayPicks({ picks }) {
+function DayPicks({ picks, onOpenPlay }) {
   if (!Array.isArray(picks) || !picks.length) {
     return <div className="sd-muted sd-cal-nopicks">No graded picks this day.</div>;
   }
-  return picks.map((p, j) => (
-    <div key={j} className="sd-day-pick">
-      <span className="sd-day-sel">{p.selection || `${p.market || ''} ${p.side || ''} ${p.line ?? ''}`.trim() || '—'}</span>
-      <span className="sd-muted">proj {p.projection ?? '—'} · actual {p.actual ?? '—'}</span>
-      <span className={`sd-day-status ${p.status || 'pending'}`}>{p.status || 'pending'}</span>
-      {p.pnl != null && <span className={`sd-day-pnl ${plCls(p.pnl)}`}>{fmtUnits(p.pnl)}</span>}
-    </div>
-  ));
+  return picks.map((p, j) => {
+    const inner = (
+      <>
+        <span className="sd-day-sel">{p.selection || `${p.market || ''} ${p.side || ''} ${p.line ?? ''}`.trim() || '—'}</span>
+        <span className="sd-muted">proj {p.projection ?? '—'} · actual {p.actual ?? '—'}</span>
+        <span className={`sd-day-status ${p.status || 'pending'}`}>{p.status || 'pending'}</span>
+        {p.pnl != null && <span className={`sd-day-pnl ${plCls(p.pnl)}`}>{fmtUnits(p.pnl)}</span>}
+      </>
+    );
+    if (!onOpenPlay) return <div key={j} className="sd-day-pick">{inner}</div>;
+    return (
+      <button
+        key={j}
+        type="button"
+        className="sd-day-pick sd-day-pick--button"
+        onClick={() => onOpenPlay(toDrawerPlay(p))}
+        title="Open the War Room matchup for this pick"
+      >
+        {inner}
+        <span className="sd-day-matchup" aria-hidden="true">Matchup →</span>
+      </button>
+    );
+  });
 }
 
 const WEEK_SIZE = 7;
 
-function TrackCalendar({ days }) {
+function TrackCalendar({ days, onOpenPlay }) {
   // Parse + sort day-entries ascending; retain any unparseable ones as a fallback.
   const { parsed, unplaced } = useMemo(() => {
     const list = []; const extra = [];
@@ -521,7 +588,7 @@ function TrackCalendar({ days }) {
             <span className="sd-muted">{recordStr(sel.record)}</span>
             {sel.unitsPnl != null && <span className={`sd-day-u ${plCls(sel.unitsPnl)}`}>{fmtUnits(sel.unitsPnl)}</span>}
           </div>
-          <DayPicks picks={sel.picks} />
+          <DayPicks picks={sel.picks} onOpenPlay={onOpenPlay} />
         </div>
       )}
 
@@ -535,7 +602,7 @@ function TrackCalendar({ days }) {
                 <span className="sd-muted">{recordStr(d.record)}</span>
                 {d.unitsPnl != null && <span className={`sd-day-u ${plCls(d.unitsPnl)}`}>{fmtUnits(d.unitsPnl)}</span>}
               </div>
-              <DayPicks picks={d.picks} />
+              <DayPicks picks={d.picks} onOpenPlay={onOpenPlay} />
             </div>
           ))}
         </div>
@@ -544,7 +611,7 @@ function TrackCalendar({ days }) {
   );
 }
 
-function TrackRecord({ perf }) {
+function TrackRecord({ perf, onOpenPlay }) {
   if (!perf?.summary) return null;
   const s = perf.summary;
   const win = toPct(s.winPct);
@@ -577,7 +644,7 @@ function TrackRecord({ perf }) {
             <span className="sd-record-daily-title">Daily log</span>
             <span className="sd-muted">{days.length} days</span>
           </div>
-          <TrackCalendar days={days} />
+          <TrackCalendar days={days} onOpenPlay={onOpenPlay} />
         </div>
       )}
     </div>
@@ -808,7 +875,7 @@ export default function ScoutDesk() {
             board, so they render even while picks are pending or errored. */}
         {!busy && (
           <>
-            <TrackRecord perf={perf} />
+            <TrackRecord perf={perf} onOpenPlay={setOpenPlay} />
             <Autopsy data={autopsy} />
           </>
         )}

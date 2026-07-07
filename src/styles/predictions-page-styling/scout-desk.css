@@ -347,6 +347,11 @@
 .sd-dot.on { background: #22d3ee; }
 
 .sd-drawer-actions { display: flex; gap: 0.6rem; margin-top: 1.2rem; }
+.sd-drawer-empty {
+  display: flex; flex-direction: column; align-items: flex-start; gap: 0.7rem;
+  margin: 0.4rem 0 0.2rem; padding: 0.9rem 1rem;
+  background: rgba(0,0,0,0.22); border: 1px dashed rgba(255,255,255,0.12); border-radius: 12px;
+}
 .sd-btn { font-size: 0.82rem; font-weight: 700; border-radius: 10px; padding: 0.6rem 1rem; cursor: pointer; border: 1px solid transparent; transition: all 0.15s ease; }
 .sd-btn:disabled { opacity: 0.6; cursor: default; }
 .sd-btn.primary { background: #22d3ee; color: #062a30; flex: 1; }
@@ -414,6 +419,29 @@
 .sd-day-status.pending { color: rgba(255,255,255,0.5); background: rgba(255,255,255,0.07); }
 .sd-day-pnl { margin-left: auto; font-weight: 700; font-variant-numeric: tabular-nums; }
 .sd-day-pnl.pos { color: #4ade80; } .sd-day-pnl.neg { color: #f87171; }
+
+/* Clickable daily-log pick → opens the War Room matchup drawer */
+.sd-day-pick--button {
+  width: 100%; margin: 0; text-align: left; cursor: pointer;
+  background: transparent; border: none; border-top: 1px solid rgba(255,255,255,0.04);
+  border-radius: 6px; font-family: inherit; color: inherit;
+  transition: background 0.12s;
+}
+.sd-day-pick--button:hover { background: rgba(34,211,238,0.06); }
+.sd-day-matchup {
+  margin-left: auto; font-size: 0.62rem; font-weight: 700; letter-spacing: 0.03em;
+  text-transform: uppercase; color: rgba(103,232,249,0.7); white-space: nowrap;
+}
+.sd-day-pick--button:hover .sd-day-matchup { color: #67e8f9; text-decoration: underline; }
+/* When both a P/L and the matchup link are present, keep P/L left of the link */
+.sd-day-pick--button .sd-day-pnl { margin-left: auto; }
+.sd-day-pick--button .sd-day-pnl + .sd-day-matchup { margin-left: 0.6rem; }
+
+/* Settled-pick footer in the drawer (replaces the track/fade actions) */
+.sd-drawer-settled {
+  display: flex; align-items: center; gap: 0.6rem; flex-wrap: wrap;
+  margin-top: 1.2rem; padding-top: 0.9rem; border-top: 1px solid rgba(255,255,255,0.08);
+}
 
 /* ── Track record calendar ────────────────────────────────── */
 .sd-cal { margin-top: 0.8rem; }
