@@ -395,7 +395,11 @@ function WarRoom({ play, onClose, onTrack, onPitcher, tracked }) {
           <h2 className="sd-drawer-sel">{play.selection}</h2>
           <div className="sd-drawer-meta">
             {isGame(play)
-              ? (play.subject && <span className="sd-subject">{play.subject}</span>)
+              ? (play.subject && (
+                  play.gamePk != null
+                    ? <button type="button" className="sd-subject sd-subject--link" onClick={openGame} title="View the full matchup">{play.subject}</button>
+                    : <span className="sd-subject">{play.subject}</span>
+                ))
               : (play.pitcherName && <button className="sd-pitcher-link" onClick={() => onPitcher(play)} title="View player profile">{play.pitcherName}</button>)}
             {play.market && <span className="sd-pill">{play.market}</span>}
           </div>

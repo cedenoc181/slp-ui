@@ -242,6 +242,14 @@
 
 /* Game-prop headline (no player profile to link to) */
 .sd-subject { color: #fff; font-weight: 700; font-size: 0.9rem; }
+/* Game-prop headline that links to the full matchup page */
+.sd-subject--link {
+  background: transparent; border: none; padding: 0; margin: 0;
+  font: inherit; font-weight: 700; font-size: 0.9rem;
+  color: #67e8f9; cursor: pointer; display: inline-flex; align-items: center; gap: 0.25rem;
+}
+.sd-subject--link::after { content: '↗'; font-size: 0.72rem; opacity: 0.7; }
+.sd-subject--link:hover { color: #a5f3fc; text-decoration: underline; }
 
 /* Game-matchup panel (drawer) — two lineups + bullpens + park */
 .sd-gm { margin-bottom: 1.1rem; }
