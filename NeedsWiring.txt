@@ -2015,5 +2015,255 @@ further FE work.
 
 
 ============================================================
+FEATURE — BETSLIP DEEP LINKS ON SCOUT AI GAME PICKS
+============================================================
+
+WHAT IT IS
+----------
+Users pick a preferred sportsbook in settings; each Scout AI game pick
+(Moneyline / Run Line / Total) then shows a one-tap "Add to {book} slip"
+button that opens their book with that exact bet pre-loaded. The FE for
+this is BUILT and fails safe — but it needs deep_links on the predictions
+payload to ever render a button.
+
+CURRENT STATE (verified against production 2026-07-18)
+------------------------------------------------------
+The FE is fully wired and deployed-ready:
+  - Preferred Sportsbook setting persists via PATCH/GET /api/v1/users/me
+    (preferred_book: string|null) — endpoint confirmed live, auth-gated.
+  - src/lib/betslipLinks.js resolves pick.deep_links[preferred_book],
+    sanitizing {state} (user state code, lowercase) and {stake}/{wager}/
+    {amount} (→ empty); any unresolved {...} → button hidden, no error.
+  - ScoutAiModal renders the button on ML/RL/Total picks only.
+
+THE BLOCKER: the deployed predictions payload is NOT returning deep_links.
+A live check of all four endpoints found 0 of 45 picks carrying the field:
+
+  GET /predictions/today            15 games / 45 picks / 0 with deep_links
+  GET /predictions/moneyline/today  0 with deep_links
+  GET /predictions/spread/today     0 with deep_links
+  GET /predictions/totals/today     0 with deep_links
+
+best_odds / best_odds_book ARE populated on these same picks, so odds data
+exists — only the deep_links map is absent. As a result the button renders
+for zero users today (every pick hits the graceful "no link" fallback).
+
+ENDPOINT AFFECTED
+-----------------
+GET /predictions/today
+GET /predictions/moneyline/today
+GET /predictions/spread/today
+GET /predictions/totals/today
+  → each game's scout_ai.picks[] entry, for ML / Run Line / Total picks
+
+WHAT THE FE NEEDS ON EACH scout_ai.picks[] ENTRY (ML/RL/Total only)
+-------------------------------------------------------------------
+Add a deep_links object mapping bookmaker key → betslip URL for that
+pick's exact side:
+
+  "deep_links": {
+    "draftkings":     "https://sportsbook.draftkings.com/?outcomes=...",
+    "fanduel":        "https://sportsbook.fanduel.com/addToBetslip?...",
+    "betmgm":         "https://sports.{state}.betmgm.com/en/sports?...",
+    "williamhill_us": "https://sportsbook.caesars.com/us/{state}/bet/...",
+    "betrivers":      "https://...",
+    "fanatics":       "https://...",
+    "hardrockbet":    "https://app.hardrock.bet/?deep_link_value=..."
+  }
+
+  - Bookmaker keys must match the supported set exactly (note Caesars'
+    key is williamhill_us). A book may be omitted if it has no link for
+    that game — the FE just hides the button for that book.
+  - {state} placeholders (Caesars/BetMGM) are passed through raw — the
+    predictions endpoints are public/cached with no per-user context, so
+    they can't inject state. RESOLVED APPROACH: a user.state field (see
+    below). The FE substitutes it; links still containing {state} (no
+    state set) are hidden, no error.
+  - {stake}/{wager}/{amount} placeholders are stripped to empty by the FE.
+  - Do NOT add deep_links to pitcher/batter prop picks — game props only.
+
+SECOND ASK — user.state FIELD (unblocks Caesars + BetMGM)
+---------------------------------------------------------
+Add a `state` field to the user profile, mirroring how preferred_book
+was added:
+  - GET  /api/v1/users/me  → include  state: string | null  (2-letter,
+    e.g. "NJ"; case-insensitive — FE lowercases for the URL)
+  - PATCH /api/v1/users/me → accept { "state": "NJ" } to set,
+    { "state": null } to clear.
+FE side is ALREADY BUILT (branch spa-team-dash): a "State" select sits
+next to Preferred Sportsbook, reads user.state, PATCHes it, and
+betslipLinks.js substitutes it into {state}. It lights up the moment
+GET /users/me returns the field.
+
+THIRD ASK — deep_links ON BEST GAME PROPS (War Room drawer)
+-----------------------------------------------------------
+GET /predictions/today/best-game-props  →  { ..., picks: [ ... ] }
+
+The "Best Game Props" board on the Game Predictions page opens a War Room
+side drawer per pick. We want the same "Add to {book} slip" button in
+that drawer. These picks are the Scout-Desk shape (gamePk, market,
+statType, side, selection, odds, ...) — a DIFFERENT payload from
+scout_ai.picks — and currently carry NO deep_links (verified live: 0 of 3).
+
+Add the same deep_links map to each GAME pick in picks[] (kind === 'game'
+/ statType in game_moneyline | game_total | game_spread). Critically, the
+URL must be for THAT pick's exact side (the deep link is side-specific —
+best-game-props can pick a different side than scout_ai.picks for the same
+game, so the FE must NOT reuse scout_ai's links; attach the correct-side
+link here server-side). Same bookmaker keys, same {state}/{stake} rules as
+above. Do NOT attach to pitcher props (kind === 'pitcher').
+
+FE side is ALREADY BUILT (branch spa-team-dash): the War Room drawer
+(ScoutWarRoom.jsx) reads play.deep_links via resolveBetslipUrl and renders
+the button; absent today, so it simply doesn't show. Lights up the moment
+best-game-props picks[] carry deep_links.
+
+NOTES
+-----
+  - No FE change is needed for the base feature when deep_links lands —
+    DraftKings/FanDuel/HardRock (clean URLs) render immediately for any
+    user with preferred_book set.
+  - Caesars/BetMGM need BOTH deep_links (this feature) AND user.state
+    (second ask) before their buttons appear.
+  - Task text referenced base host sandlotpicksanalytics.com; the app
+    actually uses www.sandlotpicksanalytics.com (apex does not resolve).
+    Not blocking, just noting.
+
+LIVE VERIFICATION (2026-07-18) — TWO GAPS FOUND
+-----------------------------------------------
+Verified against live www.sandlotpicksanalytics.com after the deploy:
+
+  A) /predictions/today  ✅ WORKING. scout_ai.picks[] carry deep_links,
+     6-book maps, keys correct (Caesars = williamhill_us). DraftKings/
+     FanDuel/HardRock resolve clean; BetMGM/Caesars carry {state} (need
+     user.state). Button live for those on the Scout AI modal.
+
+  B) /predictions/today/best-game-props  ❌ NO deep_links on the live
+     www endpoint — 0 of 3 picks (all Moneyline), response byte-identical
+     to the pre-deploy body. Those same moneyline picks DO get links on
+     scout_ai.picks, so the data exists. Looks like a stale cache or the
+     deploy didn't cover this route/path. Please check caching + that the
+     serve-time attach runs on the PUBLIC www best-game-props path.
+
+  C) /api/v1/predictions/scout-desk  — 403 (admin/user_id-gated), could
+     not verify without creds. Per your note it uses the same shared
+     helper, so likely fine; confirm on your side.
+
+  D) BetRivers link contains an unresolved {pickType} token (full form:
+     ".../coupon={pickType}|<selectionId>|{wagerAmount}"). The FE now
+     strips stake-family tokens incl. {wagerAmount}, but it CANNOT guess
+     {pickType} — so BetRivers stays hidden on ALL surfaces until it's
+     pre-resolved server-side. Either fill {pickType} with the correct
+     coupon type or drop BetRivers from the map. (Only {state} and stake
+     placeholders are FE-resolvable; anything else must be pre-filled.)
+
+RE-VERIFICATION (2026-07-19) — PUBLIC BOARD ENDPOINTS STILL DRY
+---------------------------------------------------------------
+After the pitcher-prop deploy, re-checked live www. Grep for the link
+fields across each public payload:
+
+  /predictions/today                deep_links: PRESENT (45 picks) ✅
+  /predictions/today/best-game-props   deep_links: 0  ❌ (2nd recheck)
+  /predictions/today/best-pitcher-props deep_links: 0 ❌
+  /predictions/pitchers/today          deep_links/over_link/under_link: 0 ❌
+
+Only /predictions/today reflects links. best-game-props GREW in size
+(new scoutReasoning/breakEven fields) but has ZERO occurrences of the
+string "deep_links" anywhere (picks, cut, shortlist). Since the game
+moneyline/total picks on that board are the SAME selections that DO get
+links on /predictions/today, the data exists — the board endpoints just
+aren't emitting it publicly.
+
+Most likely a CDN/HTTP cache in front of the board routes serving bodies
+from before the serve-time attach, OR www routing those paths to an
+instance without the new code. Please check: does the PUBLIC www
+response for these three endpoints include deep_links (not just an
+internal/origin check)? A cache purge on the board routes may be all
+it needs. (scout-desk is 403/gated — can't verify from FE; trusting the
+shared-helper claim.)
+
+FE IS READY: the shared War Room drawer button (ScoutWarRoom.jsx) now
+renders for BOTH game and pitcher picks (isGame gate removed) — it lights
+up the moment these endpoints actually carry deep_links on www.
+
+UPDATE (2026-07-19, 2nd deploy LANDED) — re-verified live www:
+  - /best-game-props (B): ✅ NOW LIVE. 3/3 picks carry deep_links;
+    resolve clean for DK/FD/HardRock, BetMGM/Caesars need state.
+    BetRivers correctly DROPPED (sanitizer). War Room button renders.
+  - /best-pitcher-props: ✅ deployed (deep_links key present) but today's
+    lone pick is {} (no book posted a link) → no button, fail-safe OK.
+  - /pitchers/today: deep_links present (Scout AI prop picks). BUT
+    over_link/under_link = 0 occurrences — the per-sportsbook-line
+    over/under links you described aren't on this payload (only the
+    pick-level deep_links maps are). Not used by the drawer button, but
+    flag if you intended prop-line links for the PitcherProps line table.
+  - /scout-desk (C): still 403-gated — can't FE-verify; trusting shared
+    helper. Origin-side confirm welcome.
+  - BetRivers: ✅ absent from ALL deep_links maps on /today (0 as a key).
+
+CONFIRMATION TO SEND BACK
+-------------------------
+1) scout_ai.picks[] deep_links — ✅ confirmed live and rendering.
+2) Reply when GET/PATCH /api/v1/users/me carries `state` — Caesars and
+   BetMGM buttons then light up for users who set both preferred_book
+   and state (FE already built).
+3) Reply when the PUBLIC www responses for /best-game-props,
+   /best-pitcher-props, and /pitchers/today actually include deep_links
+   (they don't as of 2026-07-19) — the War Room drawer + prop surfaces
+   then render with no further FE work.
+4) Reply when the BetRivers {pickType} token is pre-resolved (or
+   BetRivers is dropped) — BetRivers then renders on all surfaces.
+
+
+============================================================
+FEATURE — DROP deep_links FOR FINAL GAMES (all surfaces)
+============================================================
+
+STATUS: OPTIONAL / no longer required. The FE now hides the betslip
+button on final games itself — the shared War Room drawer looks up the
+pick's gamePk in scheduleService.getTodayGames() (same schedule data used
+to settle bets) and hides the button when isGameFinal. Covers Best Game
+Props, Scout Desk, and Pitcher Props from one place. The server-side drop
+below is still a nice belt-and-suspenders (and would let the client stop
+the lookup), but is not needed for correctness.
+
+WHAT / WHY
+----------
+The betslip "Add to {book} slip" button must not show once a game is
+final — you can't add a settled game to a slip. Verified live: picks on
+FINAL games STILL return a populated deep_links map (e.g. today every
+game is Final yet best-game-props picks carry draftkings/fanduel/etc.
+links). The FE hides the button when it can determine the game is final,
+but it only can where the surface has today's games loaded to match by
+gamePk (Best Game Props). The SAME shared War Room drawer also opens from
+the Scout Desk board and Pitcher Props, which have no games-status list —
+so the button still renders there. Rather than thread game status into
+every surface (fragile: breaks on mock-data fallback / load races), fix
+it once at the source.
+
+THE ASK
+-------
+When attaching deep_links (the shared deep_links helper), if the pick's
+game is final/over, return an EMPTY map ({}) — i.e. skip the attach.
+Applies to every surface that emits deep_links:
+  - /predictions/today  (scout_ai.picks[])
+  - /predictions/today/best-game-props   (picks + cut)
+  - /predictions/today/best-pitcher-props
+  - /predictions/pitchers/today
+  - /api/v1/predictions/scout-desk        (game + pitcher picks)
+Use the same game-final signal the schedule/status pipeline already has
+(status in Final / Game Over / Completed Early, incl. variants like
+"Final/7"). Deep links attach at serve time already, so this is a serve-
+time guard next to the existing attach — no schema change.
+
+CONFIRMATION TO SEND BACK
+-------------------------
+Reply when deep_links is {} for final-game picks. The FE button then
+disappears on every surface automatically (it already treats an empty /
+absent map as "no button"), and the client-side final check becomes a
+redundant backstop.
+
+
+============================================================
 END OF DOCUMENT
 ============================================================

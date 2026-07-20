@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../../context/AuthContext';
 import userProfileService from '../../../data/services/userProfileService';
 import stripeService from '../../../data/services/stripeService';
-import { TEAMS } from '../../../data/constants/apiConstants';
+import { TEAMS, SPORTSBOOKS, US_STATES } from '../../../data/constants/apiConstants';
 import AlertInbox from '../../AlertInbox';
 
 function SettingsPage() {
@@ -23,7 +23,7 @@ function SettingsPage() {
   // -------------------------------------------------------------------------
   // Profile + preferences form state (seeded from user object)
   // -------------------------------------------------------------------------
-  const [profile, setProfile] = useState({ displayName: '', favoriteTeamId: '' });
+  const [profile, setProfile] = useState({ displayName: '', favoriteTeamId: '', preferredBook: '', state: '' });
   const [prefs, setPrefs] = useState({ emailUpdates: true, weeklyDigest: false, breakingNews: true });
 
   useEffect(() => {
@@ -31,6 +31,8 @@ function SettingsPage() {
       setProfile({
         displayName: user.displayName || '',
         favoriteTeamId: user.favoriteTeamId ?? '',
+        preferredBook: user.preferredBook ?? '',
+        state: user.stateCode ?? '',
       });
       setPrefs({
         emailUpdates: user.emailUpdates ?? true,
@@ -171,6 +173,8 @@ function SettingsPage() {
       await updateProfile({
         display_name: profile.displayName.trim() || null,
         favorite_team_id: profile.favoriteTeamId !== '' ? Number(profile.favoriteTeamId) : null,
+        preferred_book: profile.preferredBook !== '' ? profile.preferredBook : null,
+        state: profile.state !== '' ? profile.state : null,
       });
       await updatePreferences({
         email_updates: prefs.emailUpdates,
@@ -358,6 +362,34 @@ function SettingsPage() {
                     ))}
                   </select>
                   <span className="setting-hint">Personalize your experience with team highlights</span>
+                </div>
+                <div className="setting-item">
+                  <label htmlFor="preferredBook">Preferred Sportsbook</label>
+                  <select
+                    id="preferredBook"
+                    value={profile.preferredBook}
+                    onChange={(e) => setProfile(p => ({ ...p, preferredBook: e.target.value }))}
+                  >
+                    <option value="">No preference</option>
+                    {SPORTSBOOKS.map(book => (
+                      <option key={book.value} value={book.value}>{book.label}</option>
+                    ))}
+                  </select>
+                  <span className="setting-hint">Used to tailor "add to betslip" links to your book</span>
+                </div>
+                <div className="setting-item">
+                  <label htmlFor="state">State</label>
+                  <select
+                    id="state"
+                    value={profile.state}
+                    onChange={(e) => setProfile(p => ({ ...p, state: e.target.value }))}
+                  >
+                    <option value="">Select a state...</option>
+                    {US_STATES.map(s => (
+                      <option key={s.value} value={s.value}>{s.label}</option>
+                    ))}
+                  </select>
+                  <span className="setting-hint">Required for Caesars &amp; BetMGM betslip links</span>
                 </div>
               </div>
             </section>

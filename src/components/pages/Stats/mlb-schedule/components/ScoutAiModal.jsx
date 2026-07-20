@@ -1,4 +1,11 @@
 import { useEffect, useCallback } from 'react';
+import { Link } from 'react-router-dom';
+import { useAuth } from '../../../../../context/AuthContext';
+import { getSportsbookLabel } from '../../../../../data/constants/apiConstants';
+import { resolveBetslipUrl } from '../../../../../lib/betslipLinks';
+
+// Scout AI game markets that carry betslip deep links (never pitcher/batter props).
+const GAME_PICK_TYPES = ['Moneyline', 'Run Line', 'Total'];
 
 // ── Inline markdown: **bold** ─────────────────────────────────────────────────
 function renderInline(text) {
@@ -87,6 +94,12 @@ const PICK_TYPE_META = {
 
 // ── Structured analysis renderer ─────────────────────────────────────────────
 function StructuredAnalysis({ analysis: raw }) {
+  const { user } = useAuth();
+  const preferredBook = user?.preferredBook ?? null;
+  // No US-state code is carried on the user object today; {state} links (Caesars,
+  // BetMGM) will resolve as unavailable until one exists.
+  const stateCode = user?.stateCode ?? null;
+
   // Server may return the structured object as a JSON string — parse if needed
   let a = raw;
   if (typeof a === 'string') {
@@ -94,6 +107,15 @@ function StructuredAnalysis({ analysis: raw }) {
   }
   // Still a string after parse attempt → render as markdown
   if (!a || typeof a !== 'object') return <MarkdownAnalysis text={String(raw)} />;
+
+  // Show a subtle "set your sportsbook" nudge only if the user has no book set
+  // but at least one game pick actually offers betslip links.
+  const hasBetslipCapablePick =
+    Array.isArray(a.picks) &&
+    a.picks.some(p =>
+      GAME_PICK_TYPES.includes(p.type) &&
+      p.deep_links && Object.keys(p.deep_links).length > 0
+    );
 
   return (
     <div className="scout-structured">
@@ -112,6 +134,12 @@ function StructuredAnalysis({ analysis: raw }) {
           <div className="scout-picks-row">
             {a.picks.map((p, i) => {
               const meta = PICK_TYPE_META[p.type] ?? PICK_TYPE_META._default;
+              // Betslip button: game picks only, user has a preferred book, and a
+              // usable (fully-resolved) URL exists for that book on this pick.
+              const betslipUrl = GAME_PICK_TYPES.includes(p.type)
+                ? resolveBetslipUrl(p.deep_links, preferredBook, { stateCode })
+                : null;
+              const bookLabel = betslipUrl ? getSportsbookLabel(preferredBook) : null;
               return (
                 <div key={i} className="scout-pick-card" style={{ borderColor: meta.borderColor }}>
                   <span className="scout-pick-type" style={{ color: meta.color }}>
@@ -129,10 +157,25 @@ function StructuredAnalysis({ analysis: raw }) {
                       )}
                     </div>
                   )}
+                  {betslipUrl && bookLabel && (
+                    <a
+                      className="scout-pick-betslip-btn"
+                      href={betslipUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      Add to {bookLabel} slip
+                    </a>
+                  )}
                 </div>
               );
             })}
           </div>
+          {!preferredBook && hasBetslipCapablePick && (
+            <Link to="/account/settings" className="scout-picks-setbook-hint">
+              Set your sportsbook to add these to your betslip →
+            </Link>
+          )}
         </div>
       )}
 

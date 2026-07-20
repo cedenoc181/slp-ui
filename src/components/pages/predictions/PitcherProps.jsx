@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../../context/AuthContext';
 import { TEAM_METADATA, getTeamById } from '../../../data/constants/apiConstants';
 import predictionsService from '../../../data/services/predictionsService';
+import { WarRoom, BestPropsBoard } from './ScoutWarRoom';
 import playerStatsService from '../../../data/services/playerStatsServices';
 import api from '../../../data/services/apiService';
 import PredictionsNav from './PredictionsNav';
@@ -345,15 +346,6 @@ function arePredictionsUnlocked(pitchers) {
   return new Date() >= unlock;
 }
 
-// ─── Composite score: 40% EV, 35% model probability, 25% Scout AI confidence ──
-function compositeScore(prop) {
-  const ev      = Math.min(Math.max(parseFloat(prop.ev), -20), 40);
-  const evNorm  = (ev + 20) / 60 * 100;        // −20 → 0,  +40 → 100
-  const probNorm = prop.modelProb;              // already 0–100
-  const confNorm = (prop.scoutConf ?? 0) * 20; // 0–5 → 0–100
-  return evNorm * 0.40 + probNorm * 0.35 + confNorm * 0.25;
-}
-
 // Filter helper: classify a prop by its best price.
 //   Favs  = heavy favorite at -120 or shorter (e.g. -120, -150, -200)
 //   Dawgs = any positive (plus) odds
@@ -363,30 +355,6 @@ function propPassesRisk(prop, riskFilter) {
   if (riskFilter === 'fav') return prop?.bestOdds != null && prop.bestOdds <= -120;
   if (riskFilter === 'dog') return prop?.bestOdds != null && prop.bestOdds > 0;
   return true;
-}
-
-function getTopPicks(pitchers, unlocked, adminOverride = false) {
-  const candidates = [];
-  for (const pitcher of pitchers.filter(p => unlocked && !!p.prediction && (adminOverride || !!p.prediction.scout_ai))) {
-    const { props } = buildPitcherProps(pitcher);
-    for (const prop of props) {
-      candidates.push({ pitcher, bestProp: prop, score: compositeScore(prop) });
-    }
-  }
-
-  // Sort by score, then keep only the best-scoring prop per pitcher so the
-  // top-picks row never shows the same pitcher twice.
-  candidates.sort((a, b) => b.score - a.score);
-  const seen = new Set();
-  const unique = [];
-  for (const c of candidates) {
-    const key = pitcherKey(c.pitcher);
-    if (seen.has(key)) continue;
-    seen.add(key);
-    unique.push(c);
-    if (unique.length === 4) break;
-  }
-  return unique;
 }
 
 // ─── Shared sub-components ────────────────────────────────────────────────────
@@ -430,36 +398,6 @@ function PlatformLogo({ name, metaMap }) {
 
 // ─── Top pick card ────────────────────────────────────────────────────────────
 
-function TopPitcherCard({ pitcher, bestProp, onClick }) {
-  return (
-    <button className="pp-top-card" onClick={onClick}>
-      {/* Header row: small headshot + big team logo */}
-      <div className="pp-top-card-header">
-        <Headshot pitcher={pitcher} className="pp-top-card-headshot" />
-        <img
-          src={teamLogoUrl(pitcher.teamMlbId)}
-          alt={pitcher.teamAbbr}
-          className="pp-top-card-team-logo"
-        />
-      </div>
-
-      {/* Info */}
-      <div className="pp-top-card-info">
-        <div className="pp-top-card-name">{pitcher.name}</div>
-        <div className="pp-top-card-matchup">{pitcher.teamAbbr} · vs {pitcher.opponent}</div>
-
-        <div className="pp-top-card-prop">
-          <span className="pp-top-card-prop-label">{bestProp.label}</span>
-          <span className="pp-top-card-prop-line">
-            {bestProp.side} {bestProp.line} · {fmtOdds(bestProp.bestOdds)}
-          </span>
-        </div>
-
-        <EVBadge ev={bestProp.ev} />
-      </div>
-    </button>
-  );
-}
 
 // ─── Pitcher list card ────────────────────────────────────────────────────────
 
@@ -1051,6 +989,24 @@ export default function PitcherProps() {
   const [selectedKey, setSelectedKey] = useState(null);
   const [activeGamePk, setActiveGamePk] = useState(null);
   const [riskFilter, setRiskFilter] = useState('all'); // 'all' | 'fav' | 'dog'
+  const [bestProps, setBestProps] = useState([]);   // server-frozen best pitcher props (often 0)
+  const [openPick, setOpenPick]   = useState(null);  // War Room drawer
+
+  // Best Pitcher Props — additive sibling to /predictions/today. Often empty;
+  // hide the panel on empty/error (never block the page).
+  useEffect(() => {
+    predictionsService.getBestPitcherProps()
+      .then(res => setBestProps(Array.isArray(res?.picks) ? res.picks : []))
+      .catch(() => setBestProps([]));
+  }, []);
+
+  // Open the pitcher's profile from the War Room (route resolves an MLB id).
+  const goToPitcher = useCallback((play) => {
+    if (play?.playerId == null) return;
+    setOpenPick(null);
+    navigate(`/player/${play.playerId}`);
+    window.scrollTo(0, 0);
+  }, [navigate]);
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -1152,7 +1108,6 @@ export default function PitcherProps() {
 
   const predictionTime       = getPredictionReadyTime(pitchers);
   const predictionsUnlocked  = isAdmin || arePredictionsUnlocked(pitchers);
-  const topPicks             = getTopPicks(pitchers, predictionsUnlocked, isAdmin);
 
   const games = useMemo(() => {
     const seen = new Set();
@@ -1186,11 +1141,6 @@ export default function PitcherProps() {
     ? pitchers.filter(p => p.gamePk === activeGamePk)
     : pitchers
   ).filter(pitcherHasMatchingProp);
-
-  const visibleTopPicks = (activeGamePk
-    ? topPicks.filter(({ pitcher }) => pitcher.gamePk === activeGamePk)
-    : topPicks
-  ).filter(({ bestProp }) => propPassesRisk(bestProp, riskFilter));
 
   const activeMatchup = activeGamePk ? games.find(m => m.gamePk === activeGamePk) : null;
 
@@ -1301,22 +1251,12 @@ export default function PitcherProps() {
               </div>
             )}
 
-            {/* ── Top picks ───────────────────────────────────────── */}
-            {visibleTopPicks.length > 0 || isAdmin ? (
-              <>
-                <div className="pp-section-label">Top Picks Today</div>
-                <div className="pp-top-grid">
-                  {visibleTopPicks.map(({ pitcher, bestProp }) => (
-                    <TopPitcherCard
-                      key={pitcherKey(pitcher)}
-                      pitcher={pitcher}
-                      bestProp={bestProp}
-                      onClick={() => handleSelect(pitcherKey(pitcher))}
-                    />
-                  ))}
-                </div>
-              </>
-            ) : (
+            {/* ── Best Pitcher Props (server-frozen; replaces the old client
+                   "Top Picks Today". Hidden when the board has no picks). ─── */}
+            <BestPropsBoard title="Best Pitcher Props" subtitle="Scout AI · frozen for today" picks={bestProps} onOpen={setOpenPick} />
+
+            {/* Pending banner while predictions haven't unlocked yet */}
+            {!predictionsUnlocked && !isAdmin && (
               <div className="pp-pending-banner pp-pending-banner--page">
                 <img src={loadingPredictionsIcon} alt="" className="pp-pending-banner-icon" aria-hidden="true" />
                 <div>
@@ -1367,6 +1307,9 @@ export default function PitcherProps() {
           isAdmin={isAdmin}
         />
       )}
+
+      {/* Shared Scout Desk War Room — opened from a Best Pitcher Props card */}
+      {openPick && <WarRoom play={openPick} onClose={() => setOpenPick(null)} onPitcher={goToPitcher} />}
     </div>
   );
 }

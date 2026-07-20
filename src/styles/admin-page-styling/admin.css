@@ -326,6 +326,32 @@
   padding-left: 0;
 }
 
+/* Link to open the per-pitcher daily scorecard from the player-prop wedge */
+.admin-pp-report-link {
+  margin-top: 0.9rem;
+  width: 100%;
+  padding: 0.55rem 0.75rem;
+  background: rgba(45, 212, 191, 0.1);
+  border: 1px solid rgba(45, 212, 191, 0.32);
+  border-radius: 8px;
+  color: #2dd4bf;
+  font-size: 0.78rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
+}
+.admin-pp-report-link:hover:not(:disabled) {
+  background: rgba(45, 212, 191, 0.18);
+  border-color: rgba(45, 212, 191, 0.55);
+}
+.admin-pp-report-link:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  color: rgba(255, 255, 255, 0.4);
+  background: rgba(255, 255, 255, 0.04);
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
 .admin-hitrate__stat-label {
   font-size: 0.62rem;
   font-weight: 700;
@@ -969,6 +995,130 @@
   text-align: center;
   color: rgba(255, 255, 255, 0.35);
   font-size: 0.9rem;
+}
+
+/* ── Pitcher-prop report modal ─────────────────────────────── */
+.admin-pp-refresh {
+  margin-top: 0.75rem;
+  display: inline-flex; align-items: center; gap: 0.4rem;
+  padding: 0.4rem 0.8rem;
+  background: rgba(45, 212, 191, 0.12);
+  border: 1px solid rgba(45, 212, 191, 0.32);
+  border-radius: 8px;
+  color: #2dd4bf;
+  font-size: 0.76rem; font-weight: 700;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+}
+.admin-pp-refresh:hover:not(:disabled) {
+  background: rgba(45, 212, 191, 0.2);
+  border-color: rgba(45, 212, 191, 0.55);
+}
+.admin-pp-refresh:disabled { opacity: 0.6; cursor: not-allowed; }
+.admin-pp-refresh__icon.is-spinning { animation: ai-spin 0.8s linear infinite; }
+.admin-pp-populating {
+  margin: 0.6rem 0 0;
+  font-size: 0.74rem;
+  color: #fcd34d;
+  background: rgba(250, 204, 21, 0.1);
+  border: 1px solid rgba(250, 204, 21, 0.24);
+  border-radius: 8px;
+  padding: 0.5rem 0.7rem;
+}
+.admin-pp-list {
+  overflow-y: auto;
+  flex: 1;
+  padding: 1rem 1.75rem 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+.admin-pp-card {
+  background: rgba(0, 0, 0, 0.2);
+  border: 1px solid rgba(148, 163, 184, 0.1);
+  border-radius: 12px;
+  padding: 0.85rem 1rem;
+}
+.admin-pp-card--pending { opacity: 0.82; }
+.admin-pp-card__head {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  margin-bottom: 0.7rem;
+}
+.admin-pp-card__avatar {
+  position: relative;
+  width: 42px; height: 42px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  overflow: hidden;
+  background: linear-gradient(135deg, rgba(45,212,191,0.25), rgba(45,212,191,0.08));
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  display: flex; align-items: center; justify-content: center;
+}
+.admin-pp-card__avatar-fallback {
+  font-size: 0.82rem; font-weight: 800; color: rgba(255, 255, 255, 0.85);
+  letter-spacing: 0.02em;
+}
+.admin-pp-card__avatar-img {
+  position: absolute; inset: 0;
+  width: 100%; height: 100%;
+  /* Fit the whole head-and-shoulders portrait inside the circle (no chopped
+     chin), bottom-anchored, with a slight zoom so it still fills the frame. */
+  object-fit: contain;
+  object-position: center bottom;
+  transform: scale(1.12);
+  transform-origin: center bottom;
+}
+.admin-pp-card__id { display: flex; flex-direction: column; gap: 0.15rem; min-width: 0; flex: 1; }
+.admin-pp-card__name { font-size: 0.92rem; font-weight: 800; color: #fff; }
+.admin-pp-card__matchup { font-size: 0.72rem; color: rgba(255, 255, 255, 0.45); }
+.admin-pp-card__status {
+  font-size: 0.6rem; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.5); background: rgba(255, 255, 255, 0.06);
+  border-radius: 5px; padding: 0.15rem 0.45rem; white-space: nowrap; align-self: flex-start;
+}
+.admin-pp-card__status.is-final {
+  color: #4ade80; background: rgba(74, 222, 128, 0.12);
+}
+.admin-pp-card__props {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.6rem;
+}
+.admin-pp-prop {
+  min-width: 0;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-left-width: 3px;
+  border-radius: 9px;
+  padding: 0.55rem 0.6rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+.admin-pp-prop--win  { border-left-color: #4ade80; }
+.admin-pp-prop--loss { border-left-color: #f87171; }
+.admin-pp-prop--push { border-left-color: #fbbf24; }
+.admin-pp-prop--pending { border-left-color: rgba(255, 255, 255, 0.15); }
+.admin-pp-prop__top { display: flex; align-items: center; justify-content: space-between; gap: 0.35rem; min-width: 0; }
+.admin-pp-prop__label {
+  min-width: 0; overflow-wrap: anywhere;
+  font-size: 0.58rem; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.45);
+}
+.admin-pp-prop__top .admin-pick__result { flex-shrink: 0; }
+.admin-pp-prop__pick { overflow-wrap: anywhere; }
+.admin-pp-prop__pick { font-size: 0.85rem; font-weight: 800; color: #fff; }
+.admin-pp-prop__nums {
+  display: flex; flex-direction: column; gap: 0.1rem;
+  font-size: 0.68rem; color: rgba(255, 255, 255, 0.4);
+}
+.admin-pp-prop__nums strong { color: rgba(255, 255, 255, 0.75); font-weight: 700; }
+
+@media (max-width: 600px) {
+  .admin-pp-list { padding: 0.85rem 1rem 1.25rem; }
+  .admin-pp-card__props { grid-template-columns: 1fr 1fr; }
 }
 
 @media (max-width: 600px) {

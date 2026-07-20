@@ -483,6 +483,48 @@
   font-weight: 500;
 }
 
+/* One-tap "Add to betslip" deep-link button — outline / ghost */
+.scout-pick-betslip-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 0.5rem;
+  margin-bottom: 0.9rem;
+  padding: 0.5rem 0.75rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  text-align: center;
+  text-decoration: none;
+  color: #4ade80;
+  background: transparent;
+  border: 1.5px solid #22c55e;
+  border-radius: 8px;
+  transition: background-color 0.15s ease, color 0.15s ease, transform 0.15s ease;
+}
+
+.scout-pick-betslip-btn:hover {
+  background: #22c55e;
+  color: #062a2a;
+  transform: translateY(-1px);
+}
+
+/* Subtle nudge shown when no preferred sportsbook is set */
+.scout-picks-setbook-hint {
+  display: inline-block;
+  margin-top: 0.6rem;
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: #90caf9;
+  text-decoration: none;
+  opacity: 0.85;
+}
+
+.scout-picks-setbook-hint:hover {
+  opacity: 1;
+  text-decoration: underline;
+}
+
 /* Confidence dots */
 .scout-confidence {
   display: flex;

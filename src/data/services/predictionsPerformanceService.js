@@ -90,6 +90,42 @@ class PredictionsPerformanceService {
   }
 
   /**
+   * Pitcher-prop daily report — the pitcher-prop equivalent of the daily game
+   * report. Per-pitcher scorecard of which props landed on the winning side,
+   * plus per-stat summary hit rates.
+   * GET /api/v1/admin/pitcher-props-daily-report?date={YYYY-MM-DD} (defaults to yesterday ET)
+   *
+   * Response shape:
+   * {
+   *   date: "2026-07-08",
+   *   summary: {
+   *     strikeouts:   { picks, hits, pushes, accuracy },
+   *     earned_runs:  { picks, hits, pushes, accuracy },
+   *     hits_allowed: { picks, hits, pushes, accuracy },
+   *     outs:         { picks, hits, pushes, accuracy }
+   *   },
+   *   pitchers: [
+   *     {
+   *       pitcher_name, team, opponent, home_away, game_pk, status,
+   *       strikeouts:   { pick, line, projection, actual, result, odds },
+   *       earned_runs:  { pick, line, projection, actual, result, odds },
+   *       hits_allowed: { pick, line, projection, actual, result, odds },
+   *       outs:         { pick, line, projection, actual, result, odds }
+   *     }
+   *   ]
+   * }
+   *
+   * @param {string} [date] — ISO date "YYYY-MM-DD"
+   * @returns {Promise<Object>}
+   */
+  async getPitcherPropsDailyReport(date, options = {}) {
+    const qs = date ? `?date=${date}` : '';
+    // Pass { ttl: 0 } to bypass the cache (force a fresh pull) when the report
+    // was first fetched before all predictions had populated.
+    return api.get(`/api/v1/admin/pitcher-props-daily-report${qs}`, options);
+  }
+
+  /**
    * Player prop hit-rate comparison for today vs. yesterday, grouped by
    * pitcher and batter markets.
    * GET /api/v1/admin/player-props-today-vs-yesterday

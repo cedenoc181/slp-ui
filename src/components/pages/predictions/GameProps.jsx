@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../../context/AuthContext';
 import loadingPredictionsIcon from '../../../assets/icons/loading-predictions.png';
 import predictionsService from '../../../data/services/predictionsService';
+import { WarRoom, BestPropsBoard } from './ScoutWarRoom';
 import { getTeamById } from '../../../data/constants/apiConstants';
 import ScoutAiButton from '../Stats/mlb-schedule/components/ScoutAiButton';
 import ScoutAiModal  from '../Stats/mlb-schedule/components/ScoutAiModal';
@@ -343,14 +344,6 @@ function buildPick(row) {
   };
 }
 
-// ─── Probability / edge helpers ───────────────────────────────────────────────
-
-function calcEV(modelProbPct, odds) {
-  const prob    = modelProbPct / 100;
-  const decimal = odds < 0 ? 1 + 100 / Math.abs(odds) : 1 + odds / 100;
-  return ((prob * decimal - 1) * 100).toFixed(1);
-}
-
 // ─── Sportsbook config ────────────────────────────────────────────────────────
 
 const BOOK_META = {
@@ -387,180 +380,23 @@ function findBestBook(rows, colIndex) {
   , 0);
 }
 
-// ─── Top Pick ─────────────────────────────────────────────────────────────────
-// Finds the single highest-edge bet across all games and all markets.
-
-// Returns the top N picks across all games sorted by model probability (highest first).
-// Probabilities are derived directly from the prediction object, not mock fallbacks.
-// Markets are skipped when no book has real (non-null) odds for that column.
-function getTopPicks(games, n = 3, unlocked = false, adminOverride = false) {
-  const candidates = [];
-
-  for (const game of games) {
-    // All 3 conditions must be met before we surface any picks
-    if (!isReadyToShow(game, unlocked, adminOverride)) continue;
-
-    const pick = buildPick(game);
-    const pred = game.prediction;
-
-    // Need real books and a prediction to evaluate
-    if (!pick.books.length || !pred) continue;
-
-    const awayName   = getTeamById(game.away_team_id)?.name || game.away_team_name;
-    const homeName   = getTeamById(game.home_team_id)?.name || game.home_team_name;
-    const pickedTeam = pick.pick === 'away' ? awayName : homeName;
-    const pickedId   = pick.pick === 'away' ? game.away_team_id : game.home_team_id;
-
-    // Best real odds for a column across all books — returns null if every book is null
-    const bestReal = (key) => {
-      const valid = pick.books.map(b => b[key]).filter(v => v != null);
-      return valid.length ? Math.max(...valid) : null;
-    };
-
-    // 1. Moneyline — probability from blended_p_home_win, fallback to p_home_win
-    const pHome  = pred.blended_p_home_win ?? pred.p_home_win ?? 0.5;
-    const mlProb = Math.round(Math.max(pHome, 1 - pHome) * 100);
-    const mlOdds = bestReal('mlPick');
-    if (mlOdds != null) {
-      candidates.push({
-        game, pick, marketKey: 'mlPick', label: 'ML',
-        bestOdds: mlOdds, modelProb: mlProb,
-        ev: parseFloat(calcEV(mlProb, mlOdds)),
-        displayName: pickedTeam, displayId: pickedId,
-      });
-    }
-
-    // 2. Run Line — confidence from blended_predicted_margin, fallback to predicted_margin
-    const margin    = Math.abs(pred.blended_predicted_margin ?? pred.predicted_margin ?? 0);
-    const marginStd = pred.margin_std_dev ?? 4;
-    const rlProb    = Math.min(80, Math.round(50 + (margin / marginStd) * 15));
-    const rlOdds    = bestReal('rlPick');
-    if (rlOdds != null) {
-      candidates.push({
-        game, pick, marketKey: 'rlPick', label: 'Run Line',
-        bestOdds: rlOdds, modelProb: rlProb,
-        ev: parseFloat(calcEV(rlProb, rlOdds)),
-        displayName: pickedTeam, displayId: pickedId,
-      });
-    }
-
-    // 3. Total — confidence from blended_predicted_total, fallback to predicted_total
-    const ouLine    = game.odds?.over_under_line_game ?? pred.blended_predicted_total ?? pred.predicted_total;
-    const predTotal = pred.blended_predicted_total ?? pred.predicted_total ?? ouLine;
-    const totalStd  = pred.total_std_dev ?? 4;
-    const totalProb = Math.min(70, Math.round(50 + (Math.abs(predTotal - ouLine) / totalStd) * 15));
-    const totalOdds = bestReal('total');
-    if (totalOdds != null) {
-      candidates.push({
-        game, pick, marketKey: 'total', label: `${pick.totalSide} ${pick.totalLine}`,
-        bestOdds: totalOdds, modelProb: totalProb,
-        ev: parseFloat(calcEV(totalProb, totalOdds)),
-        displayName: `${awayName} @ ${homeName}`, displayId: null,
-      });
-    }
-
-    // 4. F5 ML — only when real odds exist across books
-    const f5Odds = bestReal('f5Pick');
-    if (f5Odds != null) {
-      const f5Prob = Math.min(80, Math.round(50 + (margin / marginStd) * 12));
-      candidates.push({
-        game, pick, marketKey: 'f5Pick', label: 'F5 ML',
-        bestOdds: f5Odds, modelProb: f5Prob,
-        ev: parseFloat(calcEV(f5Prob, f5Odds)),
-        displayName: pickedTeam, displayId: pickedId,
-      });
-    }
-
-    // NRFI — not yet wired; skip until prediction model supports it
-  }
-
-  return candidates
-    .sort((a, b) => b.modelProb - a.modelProb)
-    .slice(0, n);
-}
-
-function TopPick({ games, unlocked, predReadyLabel, adminOverride = false }) {
+// ─── Predictions-pending banner ───────────────────────────────────────────────
+// Shown before predictions unlock; the old client-derived "Top 3" is gone — the
+// board now comes from the server (see BestGameProps).
+function PredictionsPending({ games, unlocked, predReadyLabel, adminOverride = false }) {
   const eligibleGames = games.filter(g => isReadyToShow(g, unlocked, adminOverride));
-
-  if (!eligibleGames.length) {
-    if (adminOverride) return null;
-    return (
-      <div className="gp-pending-banner">
-        <img src={loadingPredictionsIcon} alt="" className="gp-pending-banner-icon" aria-hidden="true" />
-        <div>
-          <div className="gp-pending-banner-title">
-            {predReadyLabel ? `Predictions available by ${predReadyLabel}` : 'Predictions Coming Soon'}
-          </div>
-          <div className="gp-pending-banner-sub">
-            Our model and Scout AI analysis will be ready approximately 2 hours before first pitch.
-            {predReadyLabel ? ` Come back at ${predReadyLabel} for full game predictions and analysis.` : ' Check back closer to game time.'}
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  const tops = getTopPicks(eligibleGames, 3, unlocked, adminOverride);
-  if (!tops.length) return null;
-
+  if (eligibleGames.length || adminOverride) return null;
   return (
-    <div className="gp-top-picks-section">
-      <div className="gp-top-picks-header">
-        <span className="gp-top-pick-dot" />
-        Top Picks
-      </div>
-
-      <div className="gp-top-picks-grid">
-        {tops.map((top, i) => {
-          const isTotal  = top.marketKey === 'total';
-          const mlbId    = top.displayId ? getTeamMlbId(top.displayId) : null;
-          const awayMlbId = isTotal ? getTeamMlbId(top.game.away_team_id) : null;
-          const homeMlbId = isTotal ? getTeamMlbId(top.game.home_team_id) : null;
-          const evPos = top.ev > 0;
-          return (
-            <div key={i} className="gp-top-pick-card">
-              {/* Identity */}
-              <div className="gp-top-pick-identity">
-                {isTotal ? (
-                  <>
-                    {awayMlbId && <img src={logoUrl(awayMlbId)} alt={top.game.away_team_name} className="gp-top-pick-logo" />}
-                    <span className="gp-top-pick-vs">@</span>
-                    {homeMlbId && <img src={logoUrl(homeMlbId)} alt={top.game.home_team_name} className="gp-top-pick-logo" />}
-                  </>
-                ) : (
-                  <>
-                    {mlbId && <img src={logoUrl(mlbId)} alt={top.displayName} className="gp-top-pick-logo" />}
-                    <span className="gp-top-pick-name">{top.displayName}</span>
-                  </>
-                )}
-              </div>
-
-              <div className="gp-top-pick-divider" />
-
-              {/* Stats */}
-              <div className="gp-top-pick-stats">
-                <div className="gp-top-pick-stat">
-                  <span className="gp-top-pick-stat-label">Market</span>
-                  <span className="gp-top-pick-stat-value">{top.label}</span>
-                </div>
-                <div className="gp-top-pick-stat">
-                  <span className="gp-top-pick-stat-label">Odds</span>
-                  <span className="gp-top-pick-stat-value odds">{fmtOdds(top.bestOdds)}</span>
-                </div>
-                <div className="gp-top-pick-stat">
-                  <span className="gp-top-pick-stat-label">Probability</span>
-                  <span className="gp-top-pick-stat-value">{top.modelProb}%</span>
-                </div>
-                <div className="gp-top-pick-stat">
-                  <span className="gp-top-pick-stat-label">EV</span>
-                  <span className={`gp-top-pick-stat-value edge ${evPos ? 'pos' : 'neg'}`}>
-                    {evPos ? '+' : ''}{top.ev}%
-                  </span>
-                </div>
-              </div>
-            </div>
-          );
-        })}
+    <div className="gp-pending-banner">
+      <img src={loadingPredictionsIcon} alt="" className="gp-pending-banner-icon" aria-hidden="true" />
+      <div>
+        <div className="gp-pending-banner-title">
+          {predReadyLabel ? `Predictions available by ${predReadyLabel}` : 'Predictions Coming Soon'}
+        </div>
+        <div className="gp-pending-banner-sub">
+          Our model and Scout AI analysis will be ready approximately 2 hours before first pitch.
+          {predReadyLabel ? ` Come back at ${predReadyLabel} for full game predictions and analysis.` : ' Check back closer to game time.'}
+        </div>
       </div>
     </div>
   );
@@ -1176,6 +1012,16 @@ export default function GameProps() {
   const [games, setGames]           = useState([]);
   const [loading, setLoading]       = useState(true);
   const [selectedId, setSelectedId] = useState(null);
+  const [bestProps, setBestProps]   = useState([]);   // server-frozen top 3 game props
+  const [openPick, setOpenPick]     = useState(null);  // War Room drawer
+
+  useEffect(() => {
+    // Best Game Props board — additive sibling to /predictions/today. Empty until
+    // the day's board generates; hide the panel on empty/error (never block).
+    predictionsService.getBestGameProps()
+      .then(res => setBestProps(Array.isArray(res?.picks) ? res.picks : []))
+      .catch(() => setBestProps([]));
+  }, []);
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -1271,8 +1117,11 @@ export default function GameProps() {
           );
         })()}
 
-        {/* Top Pick */}
-        {!loading && !profileLoading && games.length > 0 && <TopPick games={games} unlocked={predictionsUnlocked} predReadyLabel={predReadyLabel} adminOverride={isAdmin} />}
+        {/* Best Game Props (server-frozen top 3) + predictions-pending banner */}
+        {!loading && !profileLoading && games.length > 0 && (
+          <PredictionsPending games={games} unlocked={predictionsUnlocked} predReadyLabel={predReadyLabel} adminOverride={isAdmin} />
+        )}
+        <BestPropsBoard title="Best Game Props" subtitle="Scout AI · frozen for today" picks={bestProps} onOpen={setOpenPick} />
 
         {/* Card grid */}
         {loading || profileLoading ? (
@@ -1328,6 +1177,9 @@ export default function GameProps() {
       {selectedGame && (
         <OddsDrawer game={selectedGame} onClose={handleClose} unlocked={predictionsUnlocked} adminOverride={isAdmin} />
       )}
+
+      {/* Shared Scout Desk War Room — opened from a Best Game Props card */}
+      {openPick && <WarRoom play={openPick} onClose={() => setOpenPick(null)} />}
     </div>
   );
 }

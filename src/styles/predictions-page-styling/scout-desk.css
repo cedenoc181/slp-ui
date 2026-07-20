@@ -398,6 +398,24 @@
 .sd-dot.on { background: #22d3ee; }
 
 .sd-drawer-actions { display: flex; gap: 0.6rem; margin-top: 1.2rem; }
+
+/* One-tap "Add to betslip" deep-link button in the War Room drawer — outline / ghost */
+.sd-betslip-btn {
+  display: block;
+  margin-top: 1rem;
+  margin-bottom: 0.9rem;
+  padding: 0.7rem 1rem;
+  font-size: 0.85rem;
+  font-weight: 800;
+  text-align: center;
+  text-decoration: none;
+  color: #4ade80;
+  background: transparent;
+  border: 1.5px solid #22c55e;
+  border-radius: 10px;
+  transition: background-color 0.15s ease, color 0.15s ease, transform 0.15s ease;
+}
+.sd-betslip-btn:hover { background: #22c55e; color: #062a2a; transform: translateY(-1px); }
 .sd-drawer-empty {
   display: flex; flex-direction: column; align-items: flex-start; gap: 0.7rem;
   margin: 0.4rem 0 0.2rem; padding: 0.9rem 1rem;
@@ -620,3 +638,62 @@
   .sd-card-prob { font-size: 0.95rem; }
   .sd-card-lead { padding: 0.5rem 0.55rem; }
 }
+
+/* ── Best Props board (shared: Best Game Props / Best Pitcher Props) ─────────── */
+.sd-bp { margin-bottom: 2rem; }
+.sd-bp-head {
+  display: flex; align-items: center; gap: 0.5rem;
+  font-size: 0.62rem; font-weight: 800; letter-spacing: 0.14em; text-transform: uppercase;
+  color: #67e8f9; margin-bottom: 0.75rem;
+}
+.sd-bp-dot {
+  width: 6px; height: 6px; border-radius: 50%;
+  background: #22d3ee; box-shadow: 0 0 6px rgba(34, 211, 238, 0.7); flex-shrink: 0;
+}
+.sd-bp-sub {
+  margin-left: auto; font-size: 0.6rem; font-weight: 600; letter-spacing: 0.03em;
+  text-transform: none; color: rgba(255, 255, 255, 0.4);
+}
+.sd-bp-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.75rem; }
+@media (max-width: 720px) { .sd-bp-grid { grid-template-columns: 1fr; } }
+
+.sd-bp-card {
+  text-align: left; cursor: pointer; font: inherit; color: inherit;
+  border: 1px solid rgba(251, 191, 36, 0.22); border-top: 3px solid #fbbf24;
+  border-radius: 12px; background: rgba(251, 191, 36, 0.06);
+  padding: 0.9rem 1rem; display: flex; flex-direction: column; gap: 0.6rem;
+  transition: transform 0.12s ease, border-color 0.15s ease, background 0.15s ease;
+}
+.sd-bp-card:hover { transform: translateY(-2px); border-color: rgba(251, 191, 36, 0.55); background: rgba(251, 191, 36, 0.1); }
+.sd-bp-card.consensus { border-top-color: #fbbf24; }
+.sd-bp-card.fade { border-top-color: #f87171; }
+
+.sd-bp-card-top { display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; }
+.sd-bp-conv { display: inline-flex; gap: 3px; flex-shrink: 0; }
+.sd-bp-cdot { width: 7px; height: 7px; border-radius: 50%; background: rgba(255, 255, 255, 0.15); }
+.sd-bp-cdot.on { background: #fbbf24; }
+
+.sd-bp-sel { font-size: 1rem; font-weight: 800; color: #fff; line-height: 1.25; }
+.sd-bp-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 0.4rem; }
+.sd-bp-market {
+  font-size: 0.6rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.03em;
+  color: #67e8f9; background: rgba(34, 211, 238, 0.12); border-radius: 5px; padding: 0.1rem 0.4rem;
+}
+.sd-bp-subject { font-size: 0.72rem; color: rgba(255, 255, 255, 0.5); }
+
+.sd-bp-stats {
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.4rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.07); padding-top: 0.6rem;
+}
+.sd-bp-stat { display: flex; flex-direction: column; gap: 0.1rem; min-width: 0; }
+.sd-bp-stat > span {
+  font-size: 0.56rem; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.4);
+}
+.sd-bp-stat > strong { font-size: 0.82rem; font-weight: 800; color: #fff; }
+.sd-bp-stat > strong.pos { color: #4ade80; }
+.sd-bp-stat > strong.neg { color: #f87171; }
+.sd-bp-stat > strong em { font-style: normal; font-size: 0.64rem; font-weight: 600; color: rgba(255, 255, 255, 0.4); }
+
+.sd-bp-cta { font-size: 0.66rem; font-weight: 700; color: #67e8f9; letter-spacing: 0.02em; }
+.sd-bp-card:hover .sd-bp-cta { text-decoration: underline; }

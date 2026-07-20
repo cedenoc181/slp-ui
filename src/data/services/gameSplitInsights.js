@@ -60,7 +60,7 @@ async function pitcherSplitSummary(spId, spName, side, season, priorSeason) {
   const era = fmt2(locCtx?.era);
   if (era) lines.push({ label: `ERA ${side === 'Away' ? 'on road' : 'at home'}`, value: era, tone: spTone(locCtx.era, SP_THRESH.era) });
   const ops = fmt3(handCtx?.ops);
-  if (ops) lines.push({ label: `Opp OPS vs ${handKey === 'vs_lhb' ? 'LHB' : 'RHB'}`, value: ops, tone: spTone(handCtx.ops, SP_THRESH.ops) });
+  if (ops) lines.push({ label: `Opp OPS (vs ${handKey === 'vs_lhb' ? 'LHB' : 'RHB'})`, value: ops, tone: spTone(handCtx.ops, SP_THRESH.ops) });
 
   return { spName: spName || null, throws, lines: lines.slice(0, 2) };
 }

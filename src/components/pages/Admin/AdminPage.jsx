@@ -1,9 +1,10 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../../context/AuthContext';
 import * as contentService from '../../../data/services/contentService';
 import predictionsService from '../../../data/services/predictionsService';
 import predictionsPerformanceService from '../../../data/services/predictionsPerformanceService';
+import playerStatsService from '../../../data/services/playerStatsServices';
 import { TEAM_METADATA } from '../../../data/constants/apiConstants';
 import { audienceMeta, formatCampaignSentAt } from '../../../data/constants/campaignsConstants';
 import {
@@ -597,6 +598,198 @@ function DailyGameReportModal({ data, title, onClose, onSelectGame }) {
   );
 }
 
+// ─── Pitcher-prop daily report (hit rate wedge + scorecard modal) ─────────────
+
+const PITCHER_PROP_META = [
+  { key: 'strikeouts',   label: 'Strikeouts',   short: 'K'   },
+  { key: 'earned_runs',  label: 'Earned Runs',  short: 'ER'  },
+  { key: 'hits_allowed', label: 'Hits Allowed', short: 'H'   },
+  { key: 'outs',         label: 'Pitcher Outs', short: 'OUT' },
+];
+
+const GRADED_RESULTS = new Set(['win', 'loss', 'push']);
+const propIsGraded = (prop) => !!prop && GRADED_RESULTS.has(prop.result);
+// A pitcher counts as graded once any of its props has a final result.
+const pitcherIsGraded = (p) => PITCHER_PROP_META.some(({ key }) => propIsGraded(p[key]));
+
+// A pitcher with no renderable prop (all picks missing) is still populating.
+const pitcherHasNoProps = (p) => !PITCHER_PROP_META.some(({ key }) => p[key] && p[key].pick != null);
+// The report is incomplete if it has any pitcher whose props haven't loaded yet.
+function reportIsIncomplete(report) {
+  const pitchers = Array.isArray(report?.pitchers) ? report.pitchers : [];
+  return pitchers.length === 0 || pitchers.some(pitcherHasNoProps);
+}
+
+// ET-local YYYY-MM-DD, offsetDays back from today.
+function etDateStr(offsetDays = 0) {
+  const d = new Date();
+  if (offsetDays) d.setDate(d.getDate() + offsetDays);
+  return d.toLocaleDateString('en-CA', { timeZone: 'America/New_York' });
+}
+
+// Headshot needs the MLB person id specifically — only trust fields that are
+// explicitly the MLB id (never an internal player_id/pitcher_id, which would
+// 404 the CDN). Everything else is resolved from the name via /players/lookup.
+function pitcherMlbId(p) {
+  return p.pitcher_mlb_id ?? p.player_mlb_id ?? p.mlb_id ?? null;
+}
+function pitcherHeadshotUrl(id) {
+  // Same URL the player profile header builds from player_mlb_id.
+  return `https://img.mlbstatic.com/mlb-photos/image/upload/w_120,q_100/v1/people/${id}/headshot/67/current`;
+}
+function pitcherInitials(name) {
+  return String(name || '').split(/\s+/).filter(Boolean).map(w => w[0]).slice(0, 2).join('').toUpperCase() || '?';
+}
+
+function PitcherPropReportModal({ data, title, onClose, onRefresh, refreshing }) {
+  // Resolve each pitcher's MLB id by name (the report rows don't carry one) so we
+  // can render the same headshot the player profile page uses.
+  const [idByName, setIdByName] = useState({});
+
+  useEffect(() => {
+    let cancelled = false;
+    const rows = Array.isArray(data?.pitchers) ? data.pitchers : [];
+    const names = [...new Set(
+      rows.filter(p => pitcherMlbId(p) == null && p.pitcher_name).map(p => p.pitcher_name),
+    )];
+    if (names.length === 0) return undefined;
+    Promise.all(names.map(name =>
+      playerStatsService.lookupPlayer({ fullName: name })
+        .then(res => [name, res?.mlb_id ?? null])
+        .catch(() => [name, null]),
+    )).then(pairs => {
+      if (cancelled) return;
+      const map = {};
+      for (const [name, id] of pairs) if (id != null) map[name] = id;
+      setIdByName(map);
+    });
+    return () => { cancelled = true; };
+  }, [data]);
+
+  if (!data) return null;
+  const raw = Array.isArray(data.pitchers) ? data.pitchers : [];
+  // Graded pitchers at the top, pending at the bottom (stable within each group).
+  const pitchers = [...raw].sort((a, b) => (pitcherIsGraded(b) ? 1 : 0) - (pitcherIsGraded(a) ? 1 : 0));
+  const missingCount = pitchers.filter(pitcherHasNoProps).length;
+
+  return (
+    <div className="admin-modal-overlay" onClick={onClose}>
+      <div className="admin-modal" onClick={e => e.stopPropagation()}>
+        <button className="admin-modal__close" onClick={onClose} aria-label="Close">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <line x1="18" y1="6" x2="6" y2="18"/>
+            <line x1="6" y1="6" x2="18" y2="18"/>
+          </svg>
+        </button>
+
+        <div className="admin-modal__header">
+          <h3 className="admin-modal__title">{title}</h3>
+          <p className="admin-modal__sub">
+            {data.date} · {pitchers.length} pitcher{pitchers.length !== 1 ? 's' : ''}
+          </p>
+          {onRefresh && (
+            <button
+              type="button"
+              className="admin-pp-refresh"
+              onClick={onRefresh}
+              disabled={refreshing}
+              aria-busy={refreshing}
+            >
+              <svg className={`admin-pp-refresh__icon${refreshing ? ' is-spinning' : ''}`} width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <polyline points="23 4 23 10 17 10" />
+                <polyline points="1 20 1 14 7 14" />
+                <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15" />
+              </svg>
+              {refreshing ? 'Refreshing…' : 'Refresh'}
+            </button>
+          )}
+          {missingCount > 0 && (
+            <p className="admin-pp-populating">
+              {missingCount} pitcher{missingCount !== 1 ? 's' : ''} still populating — predictions load closer to first pitch. {onRefresh ? 'Hit Refresh to pull the latest.' : ''}
+            </p>
+          )}
+          {data.summary && (
+            <div className="admin-modal__summary">
+              {PITCHER_PROP_META.map(({ key, short }) => {
+                const s = data.summary[key];
+                if (!s) return null;
+                return (
+                  <div key={key} className="admin-modal__summary-item">
+                    <span className="admin-modal__summary-label">{short}</span>
+                    <strong>{s.accuracy}%</strong>
+                    <span className="admin-modal__summary-sub">{s.hits}/{s.picks}</span>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
+
+        {pitchers.length === 0 ? (
+          <div className="admin-modal__empty">No graded pitcher props for this date.</div>
+        ) : (
+          <div className="admin-pp-list">
+            {pitchers.map((p, i) => {
+              const mlbId = pitcherMlbId(p) ?? idByName[p.pitcher_name] ?? null;
+              const graded = pitcherIsGraded(p);
+              // Within a card, graded prop tiles first, pending last.
+              const props = PITCHER_PROP_META
+                .filter(({ key }) => p[key] && p[key].pick != null)
+                .sort((a, b) => (propIsGraded(p[b.key]) ? 1 : 0) - (propIsGraded(p[a.key]) ? 1 : 0));
+              return (
+              <div key={p.game_pk ? `${p.game_pk}-${p.pitcher_name}` : i} className={`admin-pp-card${graded ? '' : ' admin-pp-card--pending'}`}>
+                <div className="admin-pp-card__head">
+                  <div className="admin-pp-card__avatar">
+                    <span className="admin-pp-card__avatar-fallback">{pitcherInitials(p.pitcher_name)}</span>
+                    {mlbId != null && (
+                      <img
+                        src={pitcherHeadshotUrl(mlbId)}
+                        alt=""
+                        className="admin-pp-card__avatar-img"
+                        loading="lazy"
+                        onError={e => { e.currentTarget.style.display = 'none'; }}
+                      />
+                    )}
+                  </div>
+                  <div className="admin-pp-card__id">
+                    <span className="admin-pp-card__name">{p.pitcher_name}</span>
+                    <span className="admin-pp-card__matchup">
+                      {p.team} {p.home_away === 'home' ? 'vs' : '@'} {p.opponent}
+                    </span>
+                  </div>
+                  {p.status && <span className={`admin-pp-card__status${graded ? ' is-final' : ''}`}>{p.status}</span>}
+                </div>
+                <div className="admin-pp-card__props">
+                  {props.map(({ key, label }) => {
+                    const prop = p[key];
+                    return (
+                      <div key={key} className={`admin-pp-prop admin-pp-prop--${prop.result || 'pending'}`}>
+                        <div className="admin-pp-prop__top">
+                          <span className="admin-pp-prop__label">{label}</span>
+                          <ResultBadge result={prop.result} />
+                        </div>
+                        <div className="admin-pp-prop__pick">
+                          {prop.pick != null ? String(prop.pick).toUpperCase() : '—'}
+                          {prop.line != null ? ` ${prop.line}` : ''}
+                        </div>
+                        <div className="admin-pp-prop__nums">
+                          <span>proj <strong>{prop.projection ?? '—'}</strong></span>
+                          <span>actual <strong>{prop.actual ?? '—'}</strong></span>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+              );
+            })}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
 // ─── Wedge: Player prop hit rate (pitcher / batter, today / yesterday) ────────
 
 function PlayerPropRow({ row }) {
@@ -621,12 +814,15 @@ function PlayerPropRow({ row }) {
   );
 }
 
-function PlayerPropsWedge({ data, loading, error }) {
+function PlayerPropsWedge({ data, loading, error, onOpenPitcherReport, pitcherReportReady }) {
   const [day, setDay] = useState('yesterday');       // 'today' | 'yesterday'
   const [category, setCategory] = useState('pitcher'); // 'pitcher' | 'batter'
 
   const dayData = data?.[day] ?? null;
   const rows    = dayData?.[category] ?? [];
+  // The daily pitcher-prop scorecard modal only applies to the pitcher category.
+  const canOpenReport = category === 'pitcher' && !!onOpenPitcherReport;
+  const reportReady = !!pitcherReportReady?.[day];
 
   return (
     <div className="admin-wedge admin-wedge--player-props">
@@ -683,6 +879,20 @@ function PlayerPropsWedge({ data, loading, error }) {
         <div className="admin-prop-list">
           {rows.map(row => <PlayerPropRow key={row.key} row={row} />)}
         </div>
+      )}
+
+      {canOpenReport && !loading && !error && (
+        <button
+          type="button"
+          className="admin-pp-report-link"
+          onClick={() => onOpenPitcherReport(day)}
+          disabled={!reportReady}
+          title={reportReady ? 'Open the per-pitcher scorecard' : 'No graded pitcher props for this date yet'}
+        >
+          {reportReady
+            ? `View ${day === 'today' ? "today's" : "yesterday's"} pitcher scorecard →`
+            : 'No pitcher scorecard for this date yet'}
+        </button>
       )}
     </div>
   );
@@ -819,7 +1029,51 @@ function AdminPage() {
   const [playerPropsLoading, setPlayerPropsLoading] = useState(true);
   const [playerPropsError, setPlayerPropsError] = useState(null);
 
+  // Pitcher-prop daily report (today / yesterday) — opened from the player-prop
+  // section; on fetch failure the data stays null and the trigger shows disabled.
+  const [pitcherToday, setPitcherToday] = useState(null);
+  const [pitcherYesterday, setPitcherYesterday] = useState(null);
+  const [pitcherRefreshing, setPitcherRefreshing] = useState(false);
+
+  // Fetch one day's pitcher-prop report; pass force to bypass the cache.
+  const loadPitcherReport = useCallback((which, { force = false } = {}) => {
+    const date = which === 'today' ? etDateStr(0) : etDateStr(-1);
+    const setter = which === 'today' ? setPitcherToday : setPitcherYesterday;
+    return predictionsPerformanceService
+      .getPitcherPropsDailyReport(date, force ? { ttl: 0 } : {})
+      .then(data => { setter(data || null); return data || null; })
+      .catch(() => null);
+  }, []);
+
+  // Manual refresh from inside the modal — always cache-bypassing.
+  const refreshPitcherReport = useCallback(async (which) => {
+    setPitcherRefreshing(true);
+    try { await loadPitcherReport(which, { force: true }); }
+    finally { setPitcherRefreshing(false); }
+  }, [loadPitcherReport]);
+
+  // Initial load + auto-retry: if a report comes back incomplete (predictions
+  // still populating), refetch fresh a couple times with backoff.
+  useEffect(() => {
+    let cancelled = false;
+    let attempt = 0;
+    const run = async (force) => {
+      const [t, y] = await Promise.all([
+        loadPitcherReport('today', { force }),
+        loadPitcherReport('yesterday', { force }),
+      ]);
+      if (cancelled) return;
+      attempt += 1;
+      if ((reportIsIncomplete(t) || reportIsIncomplete(y)) && attempt < 3) {
+        setTimeout(() => { if (!cancelled) run(true); }, attempt * 5000); // 5s, 10s
+      }
+    };
+    run(false);
+    return () => { cancelled = true; };
+  }, [loadPitcherReport]);
+
   const [reportModal, setReportModal] = useState(null); // null | 'today' | 'yesterday'
+  const [pitcherReportModal, setPitcherReportModal] = useState(null); // null | 'today' | 'yesterday'
   const [selectedGame, setSelectedGame] = useState(null); // { game, date } | null
   const [alertComposerOpen, setAlertComposerOpen] = useState(false);
 
@@ -1095,6 +1349,11 @@ function AdminPage() {
             data={playerProps}
             loading={playerPropsLoading}
             error={playerPropsError}
+            onOpenPitcherReport={(d) => setPitcherReportModal(d)}
+            pitcherReportReady={{
+              today: Array.isArray(pitcherToday?.pitchers) && pitcherToday.pitchers.length > 0,
+              yesterday: Array.isArray(pitcherYesterday?.pitchers) && pitcherYesterday.pitchers.length > 0,
+            }}
           />
         </div>
 
@@ -1368,6 +1627,16 @@ function AdminPage() {
           game={selectedGame.game}
           date={selectedGame.date}
           onClose={() => setSelectedGame(null)}
+        />
+      )}
+
+      {pitcherReportModal && (
+        <PitcherPropReportModal
+          data={pitcherReportModal === 'today' ? pitcherToday : pitcherYesterday}
+          title={pitcherReportModal === 'today' ? "Today's Pitcher Prop Report" : "Yesterday's Pitcher Prop Report"}
+          onClose={() => setPitcherReportModal(null)}
+          onRefresh={() => refreshPitcherReport(pitcherReportModal)}
+          refreshing={pitcherRefreshing}
         />
       )}
 
