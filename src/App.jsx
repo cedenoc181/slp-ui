@@ -271,7 +271,7 @@ function App() {
           <Route path="/predictions/batters" element={<ProtectedRoute require="premium"><BatterProps /></ProtectedRoute>} />
           <Route path="/predictions/bet-library" element={<ProtectedRoute require="admin-tools"><BetLibrary /></ProtectedRoute>} />
           <Route path="/predictions/lab" element={<ProtectedRoute require="admin-tools"><Lab /></ProtectedRoute>} />
-          <Route path="/predictions/scout-desk" element={<ProtectedRoute require="admin-tools"><ScoutDesk /></ProtectedRoute>} />
+          <Route path="/predictions/scout-desk" element={<ProtectedRoute require="premium"><ScoutDesk /></ProtectedRoute>} />
 
           {/* Education routes */}
           <Route path="/glossary" element={<Glossary />} />

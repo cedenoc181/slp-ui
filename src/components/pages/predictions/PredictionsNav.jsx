@@ -8,16 +8,22 @@ const LINKS = [
 ];
 
 export default function PredictionsNav() {
-  const { hasAdminToolsAccess } = useAuth();
-  // Admin tools (admins + explicitly-granted users), grouped on the right.
+  const { isPremium, hasAdminToolsAccess } = useAuth();
+  // Scout AI — available to premium subscribers (and admins).
+  const SCOUT_LINK = { to: '/predictions/scout-desk', label: 'Scout AI' };
+  // Admin tools (admins + explicitly-granted users).
   const ADMIN_LINKS = [
-    { to: '/predictions/scout-desk',  label: 'Scout AI' },
     { to: '/predictions/bet-library', label: 'Bet Library' },
     { to: '/predictions/lab',         label: 'Lab' },
   ];
-  const links = hasAdminToolsAccess
-    ? [...LINKS, ...ADMIN_LINKS.map((l, i) => ({ ...l, admin: true, groupStart: i === 0 }))]
-    : LINKS;
+  const special = [
+    ...(isPremium ? [SCOUT_LINK] : []),
+    ...(hasAdminToolsAccess ? ADMIN_LINKS : []),
+  ];
+  const links = [
+    ...LINKS,
+    ...special.map((l, i) => ({ ...l, admin: true, groupStart: i === 0 })),
+  ];
 
   return (
     <nav className="predictions-nav">

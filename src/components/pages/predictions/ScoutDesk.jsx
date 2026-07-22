@@ -325,7 +325,7 @@ function Autopsy({ data }) {
 
 export default function ScoutDesk() {
   const navigate = useNavigate();
-  const { isAuthenticated, hasAdminToolsAccess, loading } = useAuth();
+  const { isAuthenticated, isPremium, loading } = useAuth();
 
   const [desk, setDesk] = useState(null);
   const [perf, setPerf] = useState(null);
@@ -340,8 +340,8 @@ export default function ScoutDesk() {
   useEffect(() => {
     if (loading) return;
     if (!isAuthenticated) { navigate('/account', { state: { from: { pathname: '/predictions/scout-desk' } } }); return; }
-    if (!hasAdminToolsAccess) navigate('/predictions');
-  }, [loading, isAuthenticated, hasAdminToolsAccess, navigate]);
+    if (!isPremium) navigate('/predictions');
+  }, [loading, isAuthenticated, isPremium, navigate]);
 
   const loadDesk = useCallback(() => {
     setBusy(true);
@@ -400,7 +400,7 @@ export default function ScoutDesk() {
     } catch { /* no-op */ }
   }, [navigate]);
 
-  if (loading || !isAuthenticated || !hasAdminToolsAccess) return null;
+  if (loading || !isAuthenticated || !isPremium) return null;
 
   return (
     <div className="predictions-page">

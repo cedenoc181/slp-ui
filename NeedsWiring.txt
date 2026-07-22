@@ -2265,5 +2265,40 @@ redundant backstop.
 
 
 ============================================================
+FEATURE — OPEN SCOUT DESK TO PREMIUM USERS
+============================================================
+
+WHAT / WHY
+----------
+Scout AI Desk was restricted to admins + user_id 16. We're opening it to
+PREMIUM subscribers (subscription_tier === 'premium', admins included).
+The FE is already changed (branch spa-team-dash): route + page + nav now
+gate on isPremium instead of admin-tools.
+
+THE BLOCKER (must ship together)
+--------------------------------
+GET /api/v1/predictions/scout-desk is still server-gated to
+"admin OR user_id in {16}". Until the backend also allows premium, a
+premium user loads the page and the data fetch 403s → broken page.
+
+THE ASK
+-------
+Widen the read dependency on:
+  GET /api/v1/predictions/scout-desk
+to allow: admin OR subscription_tier === 'premium' (drop / keep the
+user_id 16 grant as you prefer — FE no longer relies on it for Scout AI).
+KEEP admin-only on the write/force path:
+  GET /api/v1/predictions/scout-desk?refresh=true   (admin only)
+  POST /api/v1/predictions/scout-desk/refresh        (admin only)
+No schema change — just the access dependency on the read route.
+
+CONFIRMATION TO SEND BACK
+-------------------------
+Reply when GET /predictions/scout-desk returns 200 for a premium
+(non-admin) user. The Scout Desk page then works for premium accounts
+with no further FE change.
+
+
+============================================================
 END OF DOCUMENT
 ============================================================
