@@ -1,7 +1,7 @@
 {
   "files": {
-    "main.css": "/static/css/main.62b9b8ff.css",
-    "main.js": "/static/js/main.e61b4070.js",
+    "main.css": "/static/css/main.59b2a92b.css",
+    "main.js": "/static/js/main.5f8aae09.js",
     "static/media/world-series-logo.png": "/static/media/world-series-logo.27072f25221f4fb42833.png",
     "static/media/spa-retro-logo-removebg.png": "/static/media/spa-retro-logo-removebg.328337a4fd7c56aeefbe.png",
     "static/media/pitcher-prop-page.png": "/static/media/pitcher-prop-page.809ebb174b38b01c3363.png",
@@ -15,9 +15,11 @@
     "static/media/baseball-stadium.png": "/static/media/baseball-stadium.7b7b340ca8aa105ae6c7.png",
     "static/media/target.png": "/static/media/target.006be2cd422082aaf4e6.png",
     "static/media/data-science-and-baseball.png": "/static/media/data-science-and-baseball.654a9f0052480ee0b2d3.png",
+    "static/media/hitsallowed-prop.png": "/static/media/hitsallowed-prop.e002bb478ddcb37e88a9.png",
     "static/media/team-analytics.png": "/static/media/team-analytics.0bb9bb2ed3a19391fcda.png",
     "static/media/player-accolade.png": "/static/media/player-accolade.b2ae0c67a5400f3b709c.png",
     "static/media/player-injury.png": "/static/media/player-injury.db7646555ff9b858adf1.png",
+    "static/media/strikeouts-prop.png": "/static/media/strikeouts-prop.105b84429650d5a29e94.png",
     "static/media/strategy-blog.png": "/static/media/strategy-blog.4de1997762c18e17e1fa.png",
     "static/media/machine.png": "/static/media/machine.e36efc21071dc2fedcb1.png",
     "static/media/profit-and-loss.png": "/static/media/profit-and-loss.f8920428cb5f8645be97.png",
@@ -39,14 +41,15 @@
     "static/media/player-roster.png": "/static/media/player-roster.64e01057798ac763bead.png",
     "static/media/trophy.png": "/static/media/trophy.12e325e962bd90fc9e15.png",
     "static/media/statcast.png": "/static/media/statcast.eff2a4c5182f6bdbf45a.png",
+    "static/media/earnedruns-prop.png": "/static/media/earnedruns-prop.b057f574e99d22e6d59f.png",
     "static/media/mlb-standings.png": "/static/media/mlb-standings.5646a1371a9af7e91e83.png",
     "static/media/sandlot-insider.png": "/static/media/sandlot-insider.ee83f40d3c32f5e670ee.png",
     "index.html": "/index.html",
-    "main.62b9b8ff.css.map": "/static/css/main.62b9b8ff.css.map",
-    "main.e61b4070.js.map": "/static/js/main.e61b4070.js.map"
+    "main.59b2a92b.css.map": "/static/css/main.59b2a92b.css.map",
+    "main.5f8aae09.js.map": "/static/js/main.5f8aae09.js.map"
   },
   "entrypoints": [
-    "static/css/main.62b9b8ff.css",
-    "static/js/main.e61b4070.js"
+    "static/css/main.59b2a92b.css",
+    "static/js/main.5f8aae09.js"
   ]
 }
