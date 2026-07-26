@@ -1,29 +1,26 @@
 import { NavLink } from 'react-router-dom';
 import { useAuth } from '../../../context/AuthContext';
 
+// Scout AI leads the standard prediction tabs (all premium-gated at the route,
+// but shown to everyone here as an upsell — same as the others).
 const LINKS = [
-  { to: '/predictions/games',    label: 'Game Predictions' },
-  { to: '/predictions/pitchers', label: 'Pitcher Props' },
-  { to: '/predictions/batters',  label: 'Batter Props' },
+  { to: '/predictions/scout-desk', label: 'Scout AI' },
+  { to: '/predictions/games',      label: 'Game Props' },
+  { to: '/predictions/pitchers',   label: 'Pitcher Props' },
+  { to: '/predictions/batters',    label: 'Batter Props' },
 ];
 
 export default function PredictionsNav() {
-  const { isPremium, hasAdminToolsAccess } = useAuth();
-  // Scout AI — available to premium subscribers (and admins).
-  const SCOUT_LINK = { to: '/predictions/scout-desk', label: 'Scout AI' };
-  // Admin tools (admins + explicitly-granted users).
-  const ADMIN_LINKS = [
-    { to: '/predictions/bet-library', label: 'Bet Library' },
-    { to: '/predictions/lab',         label: 'Lab' },
-  ];
-  const special = [
-    ...(isPremium ? [SCOUT_LINK] : []),
-    ...(hasAdminToolsAccess ? ADMIN_LINKS : []),
-  ];
-  const links = [
-    ...LINKS,
-    ...special.map((l, i) => ({ ...l, admin: true, groupStart: i === 0 })),
-  ];
+  const { hasAdminToolsAccess } = useAuth();
+  const links = [...LINKS];
+  // Admin tools (admins + explicitly-granted users), grouped/set apart on the right.
+  if (hasAdminToolsAccess) {
+    const ADMIN_LINKS = [
+      { to: '/predictions/bet-library', label: 'Bet Library' },
+      { to: '/predictions/lab',         label: 'Lab' },
+    ];
+    links.push(...ADMIN_LINKS.map((l, i) => ({ ...l, admin: true, groupStart: i === 0 })));
+  }
 
   return (
     <nav className="predictions-nav">

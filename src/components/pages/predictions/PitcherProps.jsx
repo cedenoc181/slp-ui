@@ -13,6 +13,10 @@ import '../../../styles/predictions-page-styling/pitcher-props.css';
 import '../../../styles/stats-page-styling/scout-ai.css';
 import analysisIcon from '../../../assets/icons/analysis.png';
 import loadingPredictionsIcon from '../../../assets/icons/loading-predictions.png';
+import iconStrikeouts from '../../../assets/icons/strikeouts-prop.png';
+import iconEarnedRuns from '../../../assets/icons/earnedruns-prop.png';
+import iconHitsAllowed from '../../../assets/icons/hitsallowed-prop.png';
+import iconOuts from '../../../assets/icons/pitcher-prop.png';
 
 // ─── URL helpers ──────────────────────────────────────────────────────────────
 
@@ -138,28 +142,28 @@ function getMockPitcherProps(pitcher) {
 
   const raw = [
     {
-      key: 'strikeouts', label: 'Strikeouts',  icon: '🔥',
+      key: 'strikeouts', label: 'Strikeouts',  icon: iconStrikeouts,
       line:      4.5 + (s % 4),
       side:      s % 3 !== 0 ? 'Over' : 'Under',
       modelProb: 56 + (s % 22),
       baseOdds:  -120 + (s % 35),
     },
     {
-      key: 'hits',       label: 'Hits Allowed', icon: '🎯',
+      key: 'hits',       label: 'Hits Allowed', icon: iconHitsAllowed,
       line:      4.5 + ((s * 3) % 4),
       side:      s % 2 === 0 ? 'Under' : 'Over',
       modelProb: 53 + (s % 18),
       baseOdds:  -125 + ((s * 2) % 40),
     },
     {
-      key: 'outs',       label: 'Pitcher Outs', icon: '⚾',
+      key: 'outs',       label: 'Pitcher Outs', icon: iconOuts,
       line:      14.5 + (s % 5),
       side:      s % 2 === 0 ? 'Over' : 'Under',
       modelProb: 54 + (s % 20),
       baseOdds:  -115 + ((s * 4) % 30),
     },
     {
-      key: 'earnedRuns', label: 'Earned Runs',  icon: '📊',
+      key: 'earnedRuns', label: 'Earned Runs',  icon: iconEarnedRuns,
       line:      1.5 + (s % 3),
       side:      'Under',
       modelProb: 57 + (s % 19),
@@ -202,10 +206,10 @@ function getMockPitcherProps(pitcher) {
 
 // Maps API stat_type → component key + display metadata
 const STAT_MAP = {
-  strikeouts:   { key: 'strikeouts', label: 'Strikeouts',   icon: '🔥', blendedKey: 'blended_strikeouts',   stdKey: 'strikeouts_std_dev'   },
-  hits_allowed: { key: 'hits',       label: 'Hits Allowed', icon: '🎯', blendedKey: 'blended_hits_allowed',  stdKey: 'hits_allowed_std_dev'  },
-  outs:         { key: 'outs',       label: 'Pitcher Outs', icon: '⚾', blendedKey: 'blended_outs',          stdKey: 'outs_std_dev'          },
-  earned_runs:  { key: 'earnedRuns', label: 'Earned Runs',  icon: '📊', blendedKey: 'blended_earned_runs',   stdKey: 'earned_runs_std_dev'   },
+  strikeouts:   { key: 'strikeouts', label: 'Strikeouts',   icon: iconStrikeouts,  blendedKey: 'blended_strikeouts',   stdKey: 'strikeouts_std_dev'   },
+  hits_allowed: { key: 'hits',       label: 'Hits Allowed', icon: iconHitsAllowed, blendedKey: 'blended_hits_allowed',  stdKey: 'hits_allowed_std_dev'  },
+  outs:         { key: 'outs',       label: 'Pitcher Outs', icon: iconOuts,        blendedKey: 'blended_outs',          stdKey: 'outs_std_dev'          },
+  earned_runs:  { key: 'earnedRuns', label: 'Earned Runs',  icon: iconEarnedRuns,  blendedKey: 'blended_earned_runs',   stdKey: 'earned_runs_std_dev'   },
 };
 
 function buildPitcherProps(pitcher) {
@@ -495,7 +499,7 @@ function PropPanel({ prop, onClick }) {
   return (
     <button className={`pp-prop-panel accent-${accent}`} onClick={onClick}>
       <div className="pp-prop-header">
-        <span className="pp-prop-icon">{prop.icon}</span>
+        <img src={prop.icon} className="pp-prop-icon-img" alt="" />
         <span className="pp-prop-label">{prop.label}</span>
       </div>
 
@@ -629,10 +633,10 @@ function PropDFSTable({ prop }) {
 // ─── Pitcher Scout AI modal ───────────────────────────────────────────────────
 
 const PITCHER_PROP_META = {
-  strikeouts:   { label: 'Strikeouts',   icon: '🔥' },
-  earned_runs:  { label: 'Earned Runs',  icon: '📊' },
-  hits_allowed: { label: 'Hits Allowed', icon: '🎯' },
-  outs:         { label: 'Pitcher Outs', icon: '⚾' },
+  strikeouts:   { label: 'Strikeouts',   icon: iconStrikeouts  },
+  earned_runs:  { label: 'Earned Runs',  icon: iconEarnedRuns  },
+  hits_allowed: { label: 'Hits Allowed', icon: iconHitsAllowed },
+  outs:         { label: 'Pitcher Outs', icon: iconOuts        },
 };
 
 function PitcherConfidenceDots({ value }) {
@@ -662,8 +666,7 @@ function PitcherScoutModal({ scoutAi, pitcherName, onClose }) {
               <path d="M9.5 2A2.5 2.5 0 0 1 12 4.5v15a2.5 2.5 0 0 1-4.96-.46 2.5 2.5 0 0 1-2.96-3.08 3 3 0 0 1-.34-5.58 2.5 2.5 0 0 1 1.32-4.24 2.5 2.5 0 0 1 4.44-1.14Z"/>
               <path d="M14.5 2A2.5 2.5 0 0 0 12 4.5v15a2.5 2.5 0 0 0 4.96-.46 2.5 2.5 0 0 0 2.96-3.08 3 3 0 0 0 .34-5.58 2.5 2.5 0 0 0-1.32-4.24 2.5 2.5 0 0 0-4.44-1.14Z"/>
             </svg>
-            <span>Scout AI</span>
-            <span className="scout-modal__beta">BETA</span>
+            <span>Scouting Report</span>
           </div>
           <button className="scout-modal__close" onClick={onClose} aria-label="Close">✕</button>
         </div>
@@ -674,11 +677,11 @@ function PitcherScoutModal({ scoutAi, pitcherName, onClose }) {
           )}
 
           {scoutAi.props && Object.entries(scoutAi.props).map(([key, data]) => {
-            const meta = PITCHER_PROP_META[key] ?? { label: key, icon: '📌' };
+            const meta = PITCHER_PROP_META[key] ?? { label: key, icon: analysisIcon };
             return (
               <div key={key} className="scout-section">
                 <h4 className="scout-section-title">
-                  <span className="scout-section-icon">{meta.icon}</span>
+                  <img src={meta.icon} className="scout-section-icon-img" alt="" />
                   {meta.label}
                   <span className="pp-scout-prop-pick">{data.pick}</span>
                   <PitcherConfidenceDots value={data.confidence ?? 0} />

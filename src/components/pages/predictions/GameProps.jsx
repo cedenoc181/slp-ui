@@ -824,7 +824,7 @@ function OddsDrawer({ game, onClose, unlocked, adminOverride = false }) {
             <span className="gp-drawer-time">{statusLabel(game)}</span>
             {ready && (
               <div className="gp-drawer-pick-chip">
-                <span className="gp-pick-badge">PICK</span>
+                <span className="gp-pick-badge">LEAN</span>
                 <span className="gp-drawer-pick-name">{pickedName}</span>
                 <span className="gp-drawer-conf">{pick.confidence}%</span>
               </div>
@@ -943,7 +943,7 @@ function GamePickCard({ game, isSelected, onSelect, unlocked, predReadyLabel, ad
               {fmtOdds(pick.moneyline.away)}
             </span>
           )}
-          {awayIsPick && <span className="gp-pick-badge">PICK</span>}
+          {awayIsPick && <span className="gp-pick-badge">LEAN</span>}
         </div>
 
         <div className="gp-card-vs">
@@ -952,7 +952,7 @@ function GamePickCard({ game, isSelected, onSelect, unlocked, predReadyLabel, ad
         </div>
 
         <div className={`gp-card-side right ${homeIsPick ? 'is-pick' : ''}`}>
-          {homeIsPick && <span className="gp-pick-badge">PICK</span>}
+          {homeIsPick && <span className="gp-pick-badge">LEAN</span>}
           {pick.moneyline.home != null && (
             <span className={`gp-card-odds ${pick.moneyline.home > 0 ? 'pos' : 'neg'}`}>
               {fmtOdds(pick.moneyline.home)}
@@ -1093,7 +1093,7 @@ export default function GameProps() {
       {/* Header */}
       <div className="predictions-header">
         <div className="predictions-header-inner">
-          <h1>Game Predictions</h1>
+          <h1>Game Props</h1>
           <PredictionsNav />
         </div>
       </div>

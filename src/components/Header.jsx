@@ -15,6 +15,7 @@ import iconPlayerAnalytics from '../assets/icons/player-analytics.png';
 import iconGameProp from '../assets/icons/game-prop.png';
 import iconPitcherProp from '../assets/icons/pitcher-prop.png';
 import iconBatterProp from '../assets/icons/batter-prop.png';
+import iconScoutAi from '../assets/icons/ai-ml.png';
 import iconSandlotInsider from '../assets/icons/sandlot-insider.png';
 import iconStrategyBlog from '../assets/icons/strategy-blog.png';
 import iconDataScience from '../assets/icons/data-science-and-baseball.png';
@@ -711,6 +712,13 @@ function Header() {
               </svg>
             </button>
             <div className={`dropdown-menu ${activeDropdown === 'predictions' ? 'show' : ''}`}>
+              <button onClick={() => handleNavClick('/predictions/scout-desk')} className="dropdown-item">
+                <img src={iconScoutAi} alt="" className="dropdown-icon" />
+                <div>
+                  <div className="dropdown-title">Scout AI</div>
+                  <div className="dropdown-desc">High-conviction props with a proven edge</div>
+                </div>
+              </button>
               <button onClick={() => handleNavClick('/predictions/games')} className="dropdown-item">
                 <img src={iconGameProp} alt="" className="dropdown-icon" />
                 <div>

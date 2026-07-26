@@ -415,8 +415,8 @@ export default function ScoutDesk() {
         <div className="sd-desk-head">
           <div>
             <span className="sd-tag"><img src={commandCentreIcon} alt="" className="sd-tag-icon" />Scout AI - War Room</span>
-            <h2 className="sd-desk-title">Three high-conviction props with a proven edge.</h2>
-            <p className="sd-desk-sub">We start from the bet types our model is proven to win — pitcher props and game props (moneyline, totals, run line) — taking the exact lines and sides with the strongest historical hit rate, then read the matchup to settle on the three most convincing plays. Every board mixes at least one pitcher prop and one game prop. Open any play for the full breakdown.</p>
+            <h2 className="sd-desk-title">The best high-conviction props with a proven edge.</h2>
+            <p className="sd-desk-sub">We start from the bet types our model is proven to win — pitcher props and game props (moneyline, totals, run line) — taking the exact lines and sides with the strongest historical hit rate, then read the matchup to settle on the most convincing plays. Every board mixes at least one pitcher prop and one game prop. Open any play for the full breakdown.</p>
           </div>
           {desk?.mood && (
             <div className="sd-mood">

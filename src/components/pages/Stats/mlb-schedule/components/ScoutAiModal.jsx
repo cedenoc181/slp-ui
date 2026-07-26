@@ -3,6 +3,16 @@ import { Link } from 'react-router-dom';
 import { useAuth } from '../../../../../context/AuthContext';
 import { getSportsbookLabel } from '../../../../../data/constants/apiConstants';
 import { resolveBetslipUrl } from '../../../../../lib/betslipLinks';
+import iconTarget from '../../../../../assets/icons/target.png';
+import iconPitcher from '../../../../../assets/icons/pitcher-prop.png';
+import iconStatcast from '../../../../../assets/icons/statcast.png';
+import iconSabermetric from '../../../../../assets/icons/sabermetric.png';
+import iconPredictive from '../../../../../assets/icons/predictive-analytics.png';
+import iconProfitLoss from '../../../../../assets/icons/profit-and-loss.png';
+import iconMoneyball from '../../../../../assets/icons/moneyball.png';
+import iconGamePropChip from '../../../../../assets/icons/game-prop.png';
+import iconMl from '../../../../../assets/icons/ai-ml.png';
+import iconAnalysis from '../../../../../assets/icons/analysis.png';
 
 // Scout AI game markets that carry betslip deep links (never pitcher/batter props).
 const GAME_PICK_TYPES = ['Moneyline', 'Run Line', 'Total'];
@@ -38,19 +48,21 @@ function MarkdownAnalysis({ text }) {
     if (line.startsWith('### ') || line.startsWith('## ')) {
       flushList();
       const heading = line.replace(/^#{2,3}\s/, '');
-      // Map heading text to an icon
-      const icon =
-        /key factor/i.test(heading) ? '🔑' :
-        /red flag/i.test(heading)   ? '⚠' :
-        /total/i.test(heading)      ? '📈' :
-        /pitch/i.test(heading)      ? '⚾' :
-        /split/i.test(heading)      ? '📊' :
-        /ml|model/i.test(heading)   ? '🤖' :
-        /lean|pick|scout/i.test(heading) ? '🎯' : '📌';
+      // Map heading text to an asset icon (Red Flags keeps its emoji)
       const isWarning = /red flag/i.test(heading);
+      const icon =
+        /key factor/i.test(heading) ? iconSabermetric :
+        /total/i.test(heading)      ? iconPredictive :
+        /pitch/i.test(heading)      ? iconPitcher :
+        /split/i.test(heading)      ? iconStatcast :
+        /ml|model/i.test(heading)   ? iconMl :
+        /lean|pick|scout/i.test(heading) ? iconTarget : iconAnalysis;
       elements.push(
         <h4 key={k++} className={`scout-section-title${isWarning ? ' scout-section-title--warning' : ''}`}>
-          <span className="scout-section-icon">{icon}</span>{heading}
+          {isWarning
+            ? <span className="scout-section-icon">⚠</span>
+            : <img src={icon} className="scout-section-icon-img" alt="" />}
+          {heading}
         </h4>
       );
     } else if (line.startsWith('- ') || line.startsWith('* ')) {
@@ -86,10 +98,10 @@ function ConfidenceDots({ value }) {
 
 // ── Pick type visual metadata ─────────────────────────────────────────────────
 const PICK_TYPE_META = {
-  'Moneyline': { icon: '💰', color: '#64b5f6', borderColor: 'rgba(100,181,246,0.4)' },
-  'Run Line':  { icon: '📏', color: '#4ade80', borderColor: 'rgba(74,222,128,0.4)'  },
-  'Total':     { icon: '📈', color: '#fbbf24', borderColor: 'rgba(251,191,36,0.4)'  },
-  '_default':  { icon: '🎯', color: '#a78bfa', borderColor: 'rgba(167,139,250,0.4)' },
+  'Moneyline': { icon: iconMoneyball,   color: '#64b5f6', borderColor: 'rgba(100,181,246,0.4)' },
+  'Run Line':  { icon: iconGamePropChip, color: '#4ade80', borderColor: 'rgba(74,222,128,0.4)'  },
+  'Total':     { icon: iconPredictive,  color: '#fbbf24', borderColor: 'rgba(251,191,36,0.4)'  },
+  '_default':  { icon: iconTarget,      color: '#a78bfa', borderColor: 'rgba(167,139,250,0.4)' },
 };
 
 // ── Structured analysis renderer ─────────────────────────────────────────────
@@ -129,7 +141,7 @@ function StructuredAnalysis({ analysis: raw }) {
       {Array.isArray(a.picks) && a.picks.length > 0 && (
         <div className="scout-picks-section">
           <h4 className="scout-section-title">
-            <span className="scout-section-icon">🎯</span> Recommended Plays
+            <img src={iconTarget} className="scout-section-icon-img" alt="" /> Recommended Plays
           </h4>
           <div className="scout-picks-row">
             {a.picks.map((p, i) => {
@@ -143,7 +155,7 @@ function StructuredAnalysis({ analysis: raw }) {
               return (
                 <div key={i} className="scout-pick-card" style={{ borderColor: meta.borderColor }}>
                   <span className="scout-pick-type" style={{ color: meta.color }}>
-                    {meta.icon} {p.type ?? '—'}
+                    <img src={meta.icon} className="scout-pick-type-icon" alt="" /> {p.type ?? '—'}
                   </span>
                   <span className="scout-pick-value">{p.pick ?? '—'}</span>
                   <ConfidenceDots value={p.confidence ?? 0} />
@@ -183,7 +195,7 @@ function StructuredAnalysis({ analysis: raw }) {
       {a.pitchingMatchup && (
         <div className="scout-section">
           <h4 className="scout-section-title">
-            <span className="scout-section-icon">⚾</span> Pitching Matchup
+            <img src={iconPitcher} className="scout-section-icon-img" alt="" /> Pitching Matchup
           </h4>
           <p className="scout-section-body">{a.pitchingMatchup}</p>
         </div>
@@ -193,7 +205,7 @@ function StructuredAnalysis({ analysis: raw }) {
       {a.splitsEdge && (
         <div className="scout-section">
           <h4 className="scout-section-title">
-            <span className="scout-section-icon">📊</span> Splits Edge
+            <img src={iconStatcast} className="scout-section-icon-img" alt="" /> Splits Edge
           </h4>
           <p className="scout-section-body">{a.splitsEdge}</p>
         </div>
@@ -203,7 +215,7 @@ function StructuredAnalysis({ analysis: raw }) {
       {Array.isArray(a.keyFactors) && a.keyFactors.length > 0 && (
         <div className="scout-section">
           <h4 className="scout-section-title">
-            <span className="scout-section-icon">🔑</span> Key Factors
+            <img src={iconSabermetric} className="scout-section-icon-img" alt="" /> Key Factors
           </h4>
           <ul className="scout-bullets">
             {a.keyFactors.map((f, i) => (
@@ -217,7 +229,7 @@ function StructuredAnalysis({ analysis: raw }) {
       {a.totalLean && (
         <div className="scout-section">
           <h4 className="scout-section-title">
-            <span className="scout-section-icon">📈</span> Total Lean
+            <img src={iconPredictive} className="scout-section-icon-img" alt="" /> Total Lean
           </h4>
           <div className="scout-lean">
             <span className={`scout-lean-badge scout-lean-badge--${(a.totalLean.lean || '').toLowerCase()}`}>
@@ -232,7 +244,7 @@ function StructuredAnalysis({ analysis: raw }) {
       {a.oddsEdge && (
         <div className="scout-section scout-section--odds">
           <h4 className="scout-section-title scout-section-title--odds">
-            <span className="scout-section-icon">💲</span> Odds Edge
+            <img src={iconProfitLoss} className="scout-section-icon-img" alt="" /> Odds Edge
           </h4>
           <p className="scout-section-body">{a.oddsEdge}</p>
         </div>
@@ -256,7 +268,7 @@ function StructuredAnalysis({ analysis: raw }) {
       {a.mlAlignment && (
         <div className="scout-section">
           <h4 className="scout-section-title">
-            <span className="scout-section-icon">🤖</span> ML Alignment
+            <img src={iconMl} className="scout-section-icon-img" alt="" /> ML Alignment
           </h4>
           <p className="scout-section-body">{a.mlAlignment}</p>
         </div>
@@ -305,8 +317,7 @@ export default function ScoutAiModal({
               <path d="M9.5 2A2.5 2.5 0 0 1 12 4.5v15a2.5 2.5 0 0 1-4.96-.46 2.5 2.5 0 0 1-2.96-3.08 3 3 0 0 1-.34-5.58 2.5 2.5 0 0 1 1.32-4.24 2.5 2.5 0 0 1 4.44-1.14Z"/>
               <path d="M14.5 2A2.5 2.5 0 0 0 12 4.5v15a2.5 2.5 0 0 0 4.96-.46 2.5 2.5 0 0 0 2.96-3.08 3 3 0 0 0 .34-5.58 2.5 2.5 0 0 0-1.32-4.24 2.5 2.5 0 0 0-4.44-1.14Z"/>
             </svg>
-            <span>Scout AI</span>
-            <span className="scout-modal__beta">BETA</span>
+            <span>Scouting Report</span>
           </div>
           <button className="scout-modal__close" onClick={onClose} aria-label="Close">✕</button>
         </div>
