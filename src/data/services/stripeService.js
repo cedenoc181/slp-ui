@@ -2,7 +2,7 @@ import { getAccessToken } from './userAuthService';
 import { API_BASE_URL } from '../config/apiConfig';
 
 // Internal fetch helper — supports GET and POST
-async function subFetch(endpoint, { method = 'GET', body = null } = {}) {
+async function subFetch(endpoint, { method = 'GET', body = null, signal } = {}) {
   const token = getAccessToken();
   const headers = { 'Content-Type': 'application/json' };
   if (token) headers['Authorization'] = `Bearer ${token}`;
@@ -11,6 +11,7 @@ async function subFetch(endpoint, { method = 'GET', body = null } = {}) {
     method,
     headers,
     body: body !== null ? JSON.stringify(body) : undefined,
+    signal,
   });
 
   const data = await res.json().catch(() => ({}));
@@ -71,10 +72,11 @@ const stripeService = {
    * @param {string} code
    * @returns {Promise<{ checkout_url: string }>}
    */
-  redeemPromo(code) {
+  redeemPromo(code, { signal } = {}) {
     return subFetch('/api/v1/subscriptions/redeem-promo', {
       method: 'POST',
       body: { code },
+      signal,
     });
   },
 

@@ -572,6 +572,17 @@ The /api/v1/subscriptions/redeem-promo endpoint should reject the
 request with 400 { "detail": "You've already redeemed a promotional
 code." } when free_week_claimed_at IS NOT NULL.
 
+BUG (observed 2026-08-02): redeeming an already-used promo currently
+returns HTTP 502 (Bad Gateway) — the endpoint appears to crash/throw on
+the already-redeemed path instead of returning the 400 above. Because a
+502 has no JSON { detail }, the client can only show a generic fallback
+("It may already have been used, or the service is briefly
+unavailable"). To display the precise "already redeemed" reason, the
+endpoint must catch that case and return 400 with the detail string
+(not 5xx). Same applies to other expected rejections (invalid code,
+already subscribed) — return 400 with a human-readable detail, never a
+5xx. The client already renders err.detail verbatim on 4xx.
+
 ALSO ON STRIPE'S SIDE
 ---------------------
 Set on the FREE7 coupon:

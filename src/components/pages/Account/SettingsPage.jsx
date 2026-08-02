@@ -125,14 +125,28 @@ function SettingsPage() {
     }
     setFreeWeekLoading(true);
     setPromoError('');
+    // Hard timeout so a hanging/crashing gateway (the 502 path) can't leave the
+    // button stuck spinning with no message.
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), 15000);
     try {
-      const { checkout_url } = await stripeService.redeemPromo(code);
-      window.location.href = checkout_url;
+      const { checkout_url } = await stripeService.redeemPromo(code, { signal: controller.signal });
+      window.location.href = checkout_url; // success — page leaves; keep spinner
     } catch (err) {
-      // Backend returns { detail: "..." } on 400 — most fetch wrappers copy
-      // detail onto err.message. Fall back to a generic message otherwise.
-      setPromoError(err?.message || 'Unable to redeem code. Please try again.');
+      // A 400 carries a human-readable `detail` (e.g. "You've already redeemed a
+      // promotional code.") which we surface directly. Aborts (timeout), gateway/5xx,
+      // or network failures have no useful detail — show a friendly fallback.
+      const raw = err?.message || '';
+      const isTechnical = err?.name === 'AbortError'
+        || /request failed|failed to fetch|networkerror/i.test(raw);
+      setPromoError(
+        isTechnical
+          ? 'We couldn’t redeem that code. It may already have been used, or the service is briefly unavailable — please try again.'
+          : (raw || 'Unable to redeem code. Please try again.')
+      );
       setFreeWeekLoading(false);
+    } finally {
+      clearTimeout(timer);
     }
   };
 
