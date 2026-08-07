@@ -2897,3 +2897,6 @@ button:disabled,
   .posts-table th:nth-child(4),
   .posts-table td:nth-child(4) { display: none; }
 }
+
+/* "New Post" create button sits at the end of the Content Manager filters row */
+.admin-filters__create { margin-left: auto; }

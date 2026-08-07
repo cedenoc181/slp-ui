@@ -794,7 +794,7 @@ function PitcherModal({ pitcher, onClose, predictionTime, predictionsUnlocked, i
               </div>
 
               <div className={`pp-prop-strip-chip accent-${accent}`}>
-                <span>{selectedProp.icon}</span>
+                <img src={selectedProp.icon} className="pp-prop-icon-img" alt="" />
                 <span>{selectedProp.label}</span>
                 <span className="pp-prop-strip-chip-line">
                   {selectedProp.scoutPick ?? `${selectedProp.side} ${selectedProp.line}`}

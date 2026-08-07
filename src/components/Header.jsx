@@ -59,7 +59,7 @@ function Header() {
   const scheduleGamesRef = useRef(null); // cache today/upcoming games for matchup search
   const navigate = useNavigate();
   const location = useLocation();
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, isPremium } = useAuth();
 
   // Use all 30 MLB teams from apiConstants
   const teamOptions = useMemo(() => 
@@ -162,6 +162,24 @@ function Header() {
     
     navigate(path);
     window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  // Predictions tabs: premium users go to the real (gated) page; everyone else
+  // lands on the overview and scrolls to that feature's info section — the
+  // pages redirect non-premium users back to the overview anyway.
+  const handlePredictionNav = (path) => {
+    const hash = {
+      '/predictions/scout-desk': '#pov-feature-scout',
+      '/predictions/games':      '#pov-feature-games',
+      '/predictions/pitchers':   '#pov-feature-pitchers',
+      '/predictions/batters':    '#pov-feature-batters',
+    }[path];
+    if (!isPremium && hash) {
+      closeMenu();
+      navigate(`/predictions${hash}`); // overview scrolls via its hash effect
+      return;
+    }
+    handleNavClick(path);
   };
 
   const toggleDropdown = (dropdown) => {
@@ -712,28 +730,28 @@ function Header() {
               </svg>
             </button>
             <div className={`dropdown-menu ${activeDropdown === 'predictions' ? 'show' : ''}`}>
-              <button onClick={() => handleNavClick('/predictions/scout-desk')} className="dropdown-item">
+              <button onClick={() => handlePredictionNav('/predictions/scout-desk')} className="dropdown-item">
                 <img src={iconScoutAi} alt="" className="dropdown-icon" />
                 <div>
                   <div className="dropdown-title">Scout AI</div>
                   <div className="dropdown-desc">High-conviction props with a proven edge</div>
                 </div>
               </button>
-              <button onClick={() => handleNavClick('/predictions/games')} className="dropdown-item">
+              <button onClick={() => handlePredictionNav('/predictions/games')} className="dropdown-item">
                 <img src={iconGameProp} alt="" className="dropdown-icon" />
                 <div>
                   <div className="dropdown-title">Game Props</div>
                   <div className="dropdown-desc">Win/loss, totals & spread projections</div>
                 </div>
               </button>
-              <button onClick={() => handleNavClick('/predictions/pitchers')} className="dropdown-item">
+              <button onClick={() => handlePredictionNav('/predictions/pitchers')} className="dropdown-item">
                 <img src={iconPitcherProp} alt="" className="dropdown-icon" />
                 <div>
                   <div className="dropdown-title">Pitcher Props</div>
                   <div className="dropdown-desc">Strikeouts, innings & ERA forecasts</div>
                 </div>
               </button>
-              <button onClick={() => handleNavClick('/predictions/batters')} className="dropdown-item">
+              <button onClick={() => handlePredictionNav('/predictions/batters')} className="dropdown-item">
                 <img src={iconBatterProp} alt="" className="dropdown-icon" />
                 <div>
                   <div className="dropdown-title">Batter Props</div>

@@ -674,3 +674,11 @@
     gap: 0.35rem;
   }
 }
+
+/* Scout AI War Room — purple accent */
+.pov-feature-tag.accent-purple        { color: #a78bfa; background: rgba(167,139,250,0.12); border: 1px solid rgba(167,139,250,0.25); }
+.pov-feature-bullet__dot.accent-purple { background: #a78bfa; }
+.pov-sample-pick.accent-purple        { border-color: rgba(167,139,250,0.25); }
+.pov-sample-pick__prob.accent-purple  { color: #a78bfa; }
+.pov-screenshot-shell.accent-purple   { border-color: rgba(167,139,250,0.2); box-shadow: 0 24px 60px rgba(167,139,250,0.08), 0 0 0 1px rgba(167,139,250,0.12); }
+.pov-nav-card.accent-purple:hover     { border-color: rgba(167,139,250,0.4); }

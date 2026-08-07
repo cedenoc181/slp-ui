@@ -161,7 +161,24 @@ function SettingsPage() {
     if (!isAuthenticated) return;
     setSessionsLoading(true);
     userProfileService.getSessions()
-      .then(setSessions)
+      .then(async (list) => {
+        const arr = Array.isArray(list) ? list : [];
+        const MAX = 5;
+        if (arr.length <= MAX) { setSessions(arr); return; }
+        // Client-side stopgap: enforce the 5-session cap by revoking the
+        // oldest-by-activity sessions, keeping the 5 most-recently-active
+        // (which includes this device). NOTE: authoritative enforcement must
+        // happen server-side at login/refresh issuance (see NeedsWiring
+        // Feature 5) — this only trims when a user opens Settings.
+        const sorted = [...arr].sort((a, b) =>
+          new Date(b.last_active_at || b.created_at).getTime()
+          - new Date(a.last_active_at || a.created_at).getTime()
+        );
+        const keep = sorted.slice(0, MAX);
+        const drop = sorted.slice(MAX);
+        await Promise.allSettled(drop.map(s => userProfileService.revokeSession(s.id)));
+        setSessions(keep);
+      })
       .catch(() => setSessions([]))
       .finally(() => setSessionsLoading(false));
   }, [isAuthenticated]);

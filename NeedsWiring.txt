@@ -647,6 +647,15 @@ This keeps the 5 most recently active sessions and revokes the rest
 in a single statement. Run this transactionally with the new
 session insert so a race can't push the count over 5.
 
+STATUS (2026-08-02): STILL NOT ENFORCED — a real user was observed at
+"7 of 5 sessions in use" in Settings. As a stopgap, the FE now trims on
+Settings load: getSessions() → if > 5, it revokes the oldest-by-activity
+sessions (keeping the 5 most-recently-active, incl. the current device)
+via revokeSession(). This only runs when a user opens Settings and can't
+prevent the 6th session from being created — it just cleans up after the
+fact. The server-side enforcement above is still required for real
+enforcement (evict oldest at login/refresh issuance).
+
 REFRESH-TOKEN BEHAVIOR
 ----------------------
 When a refresh-token request comes in for a session that was
