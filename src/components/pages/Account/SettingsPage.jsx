@@ -6,6 +6,10 @@ import stripeService from '../../../data/services/stripeService';
 import { TEAMS, SPORTSBOOKS, US_STATES } from '../../../data/constants/apiConstants';
 import AlertInbox from '../../AlertInbox';
 
+// Feature flag: Notification Preferences isn't ready yet — muted (hidden) for
+// now. Flip to true to bring the section (and its nav link) back. Code kept.
+const SHOW_NOTIFICATION_PREFS = false;
+
 function SettingsPage() {
   const {
     isAuthenticated, loading, user, isAdmin,
@@ -153,34 +157,28 @@ function SettingsPage() {
   // -------------------------------------------------------------------------
   // Sessions
   // -------------------------------------------------------------------------
-  const [sessions, setSessions] = useState([]);
-  const [sessionsLoading, setSessionsLoading] = useState(false);
-  const [revokingId, setRevokingId] = useState(null);
-
+  // The Active Sessions card is muted (not shown). Cap enforcement stays
+  // automated: server-side at login/refresh is authoritative; this silently
+  // trims any overflow beyond the 5-session cap when a user opens Settings
+  // (keeping the 5 most-recently-active, revoking the oldest). No UI/state.
   useEffect(() => {
     if (!isAuthenticated) return;
-    setSessionsLoading(true);
+    let cancelled = false;
     userProfileService.getSessions()
       .then(async (list) => {
+        if (cancelled) return;
         const arr = Array.isArray(list) ? list : [];
         const MAX = 5;
-        if (arr.length <= MAX) { setSessions(arr); return; }
-        // Client-side stopgap: enforce the 5-session cap by revoking the
-        // oldest-by-activity sessions, keeping the 5 most-recently-active
-        // (which includes this device). NOTE: authoritative enforcement must
-        // happen server-side at login/refresh issuance (see NeedsWiring
-        // Feature 5) — this only trims when a user opens Settings.
+        if (arr.length <= MAX) return;
         const sorted = [...arr].sort((a, b) =>
           new Date(b.last_active_at || b.created_at).getTime()
           - new Date(a.last_active_at || a.created_at).getTime()
         );
-        const keep = sorted.slice(0, MAX);
         const drop = sorted.slice(MAX);
         await Promise.allSettled(drop.map(s => userProfileService.revokeSession(s.id)));
-        setSessions(keep);
       })
-      .catch(() => setSessions([]))
-      .finally(() => setSessionsLoading(false));
+      .catch(() => {});
+    return () => { cancelled = true; };
   }, [isAuthenticated]);
 
   // -------------------------------------------------------------------------
@@ -262,17 +260,6 @@ function SettingsPage() {
     }
   };
 
-  const handleRevokeSession = async (sessionId) => {
-    setRevokingId(sessionId);
-    try {
-      await userProfileService.revokeSession(sessionId);
-      setSessions(prev => prev.filter(s => s.id !== sessionId));
-    } catch (err) {
-      console.error('Failed to revoke session:', err);
-    } finally {
-      setRevokingId(null);
-    }
-  };
 
   const handleLogout = async () => {
     await logout();
@@ -311,13 +298,15 @@ function SettingsPage() {
               </svg>
               Profile
             </a>
-            <a href="#notifications" className="settings-nav-item">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
-                <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
-              </svg>
-              Notifications
-            </a>
+            {SHOW_NOTIFICATION_PREFS && (
+              <a href="#notifications" className="settings-nav-item">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+                  <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+                </svg>
+                Notifications
+              </a>
+            )}
             <a href="#account" className="settings-nav-item">
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <circle cx="12" cy="12" r="3"/>
@@ -330,14 +319,6 @@ function SettingsPage() {
                 <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
               </svg>
               Subscription
-            </a>
-            <a href="#sessions" className="settings-nav-item">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <rect x="2" y="3" width="20" height="14" rx="2"/>
-                <line x1="8" y1="21" x2="16" y2="21"/>
-                <line x1="12" y1="17" x2="12" y2="21"/>
-              </svg>
-              Sessions
             </a>
             {isAdmin && (
               <a href="#admin-tools" className="settings-nav-item">
@@ -425,7 +406,9 @@ function SettingsPage() {
               </div>
             </section>
 
-            {/* Notifications Section */}
+            {/* Notifications Section — muted (not ready). Code kept; gated on
+                SHOW_NOTIFICATION_PREFS. */}
+            {SHOW_NOTIFICATION_PREFS && (
             <section id="notifications" className="settings-section">
               <div className="section-header">
                 <h2>Notification Preferences</h2>
@@ -456,6 +439,7 @@ function SettingsPage() {
                 ))}
               </div>
             </section>
+            )}
 
             {/* Save button */}
             <div className="settings-footer">
@@ -1065,60 +1049,6 @@ function SettingsPage() {
                     )}
                   </div>
                 </div>
-              </div>
-            </section>
-
-            {/* Sessions Section */}
-            <section id="sessions" className="settings-section">
-              <div className="section-header">
-                <h2>Active Sessions</h2>
-                <p>
-                  Devices currently signed in to your account.{' '}
-                  <strong>Max 5 active sessions per user</strong> — signing in on a 6th device will
-                  automatically end your oldest session.
-                </p>
-                {!sessionsLoading && sessions.length > 0 && (
-                  <span className="setting-hint" style={{ display: 'inline-block', marginTop: '0.5rem' }}>
-                    {sessions.length} of 5 sessions in use
-                  </span>
-                )}
-              </div>
-              <div className="settings-group">
-                {sessionsLoading ? (
-                  <p className="setting-hint">Loading sessions…</p>
-                ) : sessions.length === 0 ? (
-                  <p className="setting-hint">No active sessions found.</p>
-                ) : (
-                  // Sort newest-first so users see their most recent session at the top.
-                  // The oldest session at the bottom is the next one auto-pruned on a 6th login.
-                  [...sessions]
-                    .sort((a, b) => {
-                      const aTs = new Date(a.last_active_at || a.created_at).getTime();
-                      const bTs = new Date(b.last_active_at || b.created_at).getTime();
-                      return bTs - aTs;
-                    })
-                    .map((session) => (
-                      <div key={session.id} className="account-action">
-                        <div className="action-info">
-                          <h4 style={{ fontSize: '0.9rem' }}>{session.device_info || 'Unknown device'}</h4>
-                          <p>
-                            {session.ip_address && `IP: ${session.ip_address} · `}
-                            {session.last_active_at
-                              ? `Last active: ${new Date(session.last_active_at).toLocaleString()}`
-                              : `Started: ${new Date(session.created_at).toLocaleString()}`}
-                          </p>
-                        </div>
-                        <button
-                          type="button"
-                          className="action-btn danger"
-                          onClick={() => handleRevokeSession(session.id)}
-                          disabled={revokingId === session.id}
-                        >
-                          {revokingId === session.id ? 'Revoking…' : 'Revoke'}
-                        </button>
-                      </div>
-                    ))
-                )}
               </div>
             </section>
 

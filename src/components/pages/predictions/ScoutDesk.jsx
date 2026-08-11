@@ -448,37 +448,6 @@ export default function ScoutDesk() {
                     <BoardCard key={play.id} play={play} lock={!!desk.lock && play.id === desk.lock.id} onOpen={setOpenPlay} />
                   ))}
                 </div>
-
-                {desk.cut.length > 0 && (
-                  <div className="sd-cuts">
-                    <div className="sd-cuts-title">Honorable Mentions</div>
-                    {desk.cut.map((c, i) => {
-                      // Clickable (opens the War Room) only when the play carries
-                      // the analyst breakdown — never open an empty drawer.
-                      const clickable = Array.isArray(c.analysts) && c.analysts.length > 0;
-                      const text = (
-                        <span className="sd-cut-text">
-                          <span className="sd-cut-sel">{c.selection}</span>
-                          <span className="sd-cut-reason sd-muted">{c.reason}</span>
-                        </span>
-                      );
-                      return clickable ? (
-                        <button
-                          key={c.id || i}
-                          type="button"
-                          className="sd-cut sd-cut--button"
-                          onClick={() => setOpenPlay(c)}
-                          title="Open the War Room for this play"
-                        >
-                          {text}
-                          <span className="sd-cut-arrow" aria-hidden="true">→</span>
-                        </button>
-                      ) : (
-                        <div key={c.id || i} className="sd-cut">{text}</div>
-                      );
-                    })}
-                  </div>
-                )}
               </>
             ) : (!desk.unlocked && desk.readyLabel) ? (
               <div className="sd-pending-banner">
