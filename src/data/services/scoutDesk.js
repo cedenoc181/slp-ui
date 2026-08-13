@@ -30,9 +30,11 @@ import predictionsService from './predictionsService';
 
 const ENDPOINT = '/api/v1/predictions/scout-desk';
 
-// ── "available by" unlock time — 4h before first pitch ────────────────────────
+// ── "available by" unlock time — 2h before first pitch ────────────────────────
+// Matches Game/Pitcher/Batter props (all gate at 2h) so Scout AI releases to
+// non-admins at the same time as the other prediction sections.
 
-const UNLOCK_LEAD_MINS = 240;    // predictions render 4 hours before first pitch
+const UNLOCK_LEAD_MINS = 120;    // predictions render 2 hours before first pitch
 const UNLOCK_CAP_MINS = 16 * 60; // never later than 4:00 PM ET
 
 function isFinalRow(r) {

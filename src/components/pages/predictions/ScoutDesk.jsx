@@ -325,7 +325,7 @@ function Autopsy({ data }) {
 
 export default function ScoutDesk() {
   const navigate = useNavigate();
-  const { isAuthenticated, isPremium, loading } = useAuth();
+  const { isAuthenticated, isPremium, isAdmin, loading } = useAuth();
 
   const [desk, setDesk] = useState(null);
   const [perf, setPerf] = useState(null);
@@ -435,7 +435,7 @@ export default function ScoutDesk() {
           <div className="sd-empty"><span className="sd-empty-icon">🗓️</span><p>No board available right now — check back closer to first pitch.</p></div>
         ) : (
           <>
-            {desk.board.length > 0 ? (
+            {desk.board.length > 0 && (isAdmin || desk.unlocked) ? (
               <>
                 <div className="sd-board-head">
                   <span className="sd-board-title">
@@ -455,7 +455,7 @@ export default function ScoutDesk() {
                 <div>
                   <div className="sd-pending-title">Scout AI available by {desk.readyLabel}</div>
                   <div className="sd-pending-sub">
-                    Our model and Scout AI analysis will be ready approximately 4 hours before first pitch.
+                    Our model and Scout AI analysis will be ready approximately 2 hours before first pitch.
                     Come back at {desk.readyLabel} for the day's picks and the full War Room breakdown.
                   </div>
                 </div>
