@@ -13,3 +13,9 @@
 // server to allow that user_id on those routes, otherwise their save/load 401s.
 // See NeedsWiring.txt → "BET LIBRARY ... NON-ADMIN ACCESS GRANT".
 export const ADMIN_TOOL_USER_IDS = [16];
+
+// The server has stopped returning the structured `audit` object on Scout Desk
+// / best-props board picks (behind its own reversible flag). Mirror that here
+// so the audit badge/panel stays hidden client-side until the server flag is
+// flipped back on and `pick.audit` is present again. Flip to true to restore.
+export const SHOW_AUDIT_SUMMARY = false;

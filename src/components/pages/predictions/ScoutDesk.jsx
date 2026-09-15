@@ -4,6 +4,7 @@ import { useAuth } from '../../../context/AuthContext';
 import PredictionsNav from './PredictionsNav';
 import { buildScoutDesk, getScoutDeskPerformance, buildAutopsy, toPct } from '../../../data/services/scoutDesk';
 import { WarRoom, CONSENSUS_META, isGame, toDrawerPlay, fmtOdds, plCls, fmtUnits } from './ScoutWarRoom';
+import { SHOW_AUDIT_SUMMARY } from '../../../data/constants/featureFlags';
 import betLibraryService from '../../../data/services/betLibraryService';
 import playerStatsService from '../../../data/services/playerStatsServices';
 import loadingPredictionsIcon from '../../../assets/icons/loading-predictions.png';
@@ -39,7 +40,7 @@ function leadTake(play) {
 function BoardCard({ play, onOpen, lock }) {
   const cm = CONSENSUS_META[play.consensus.level] || CONSENSUS_META.pass;
   const lead = play.reasoning?.rationale || leadTake(play)?.take || '';
-  const w = toPct(play.audit?.winPct);
+  const w = SHOW_AUDIT_SUMMARY ? toPct(play.audit?.winPct) : null;
   return (
     <button className={`sd-card ${cm.cls}${lock ? ' lock' : ''}`} onClick={() => onOpen(play)}>
       <div className="sd-card-top">

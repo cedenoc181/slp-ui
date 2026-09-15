@@ -16,6 +16,7 @@ import { resolveBetslipUrl } from '../../../lib/betslipLinks';
 import scheduleService from '../../../data/services/scheduleService';
 import { isGameFinal } from '../../../data/services/betGrader';
 import { toPct } from '../../../data/services/scoutDesk';
+import { SHOW_AUDIT_SUMMARY } from '../../../data/constants/featureFlags';
 import { loadGameSplitInsights } from '../../../data/services/gameSplitInsights';
 import predictiveAnalyticsIcon from '../../../assets/icons/predictive-analytics.png';
 import binocularsIcon from '../../../assets/icons/binoculars.png';
@@ -151,7 +152,7 @@ function Dots({ n }) {
 }
 
 function auditLine(a) {
-  if (!a) return null;
+  if (!SHOW_AUDIT_SUMMARY || !a) return null;
   const w = toPct(a.winPct), b = toPct(a.basePct);
   if (w == null) return null;
   return `High-conviction ${a.side ?? ''} ${a.line ?? ''} ${prettyStat(a.statType)} hits ${w}%${b != null ? ` vs ${b}% base` : ''}${a.sample ? ` · ${a.sample.toLocaleString()} samples` : ''}`.replace(/\s+/g, ' ').trim();
@@ -557,8 +558,8 @@ function BestPropsBoard({ picks, onOpen, title = 'Best Props', subtitle }) {
       <div className="sd-bp-grid">
         {picks.map((p, i) => {
           const cm = CONSENSUS_META[p.consensus?.level] || CONSENSUS_META.pass;
-          const w = p.audit?.winPct;
-          const base = p.audit?.basePct;
+          const w = SHOW_AUDIT_SUMMARY ? p.audit?.winPct : null;
+          const base = SHOW_AUDIT_SUMMARY ? p.audit?.basePct : null;
           const evPos = (p.ev ?? 0) > 0;
           return (
             <button
