@@ -1,7 +1,8 @@
 import React, { useEffect } from 'react';
-import { BrowserRouter as Router, Routes, Route, useLocation, matchPath } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate, useLocation, matchPath } from 'react-router-dom';
 import ReactGA from 'react-ga4';
 import { AuthProvider } from './context/AuthContext';
+import { SHOW_ANALYTICS_LAB } from './data/constants/featureFlags';
 
 import ApiTestPage from './components/ApiTestPage';
 import ProtectedRoute from './components/ProtectedRoute';
@@ -261,7 +262,7 @@ function App() {
           <Route path="/team-analytics" element={<TeamAnalytics />} />
           <Route path="/team-analytics/:teamName" element={<TeamAnalytics />} />
           <Route path="/player-analytics" element={<PlayerAnalytics />} />
-          <Route path="/analytics-explorer" element={<ProtectedRoute><AnalyticsLab /></ProtectedRoute>} />
+          <Route path="/analytics-explorer" element={SHOW_ANALYTICS_LAB ? <ProtectedRoute><AnalyticsLab /></ProtectedRoute> : <Navigate to="/team-analytics" replace />} />
           <Route path="/player/:nameSlug" element={<PlayerProfileStats />} />
 
           {/* Predictions routes */}

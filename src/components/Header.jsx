@@ -6,6 +6,7 @@ import { TEAMS, getTeamById } from '../data/constants/apiConstants';
 import { useAuth } from '../context/AuthContext';
 import playerStatsService from '../data/services/playerStatsServices';
 import scheduleService from '../data/services/scheduleService';
+import { SHOW_ANALYTICS_LAB } from '../data/constants/featureFlags';
 
 // Nav dropdown icons
 import iconMlbSchedule from '../assets/icons/mlb-schedule.png';
@@ -76,7 +77,7 @@ function Header() {
     { type: 'page', label: 'MLB Standings', path: '/mlb-standings', keywords: ['standings', 'rankings', 'division', 'wild card', 'leaderboard'] },
     { type: 'page', label: 'Team Analytics', path: '/team-analytics', keywords: ['team', 'analytics', 'stats', 'statistics'] },
     { type: 'page', label: 'Player Analytics', path: '/player-analytics', keywords: ['player', 'batter', 'pitcher', 'stats', 'analytics'] },
-    { type: 'page', label: 'Analytics Lab', path: '/analytics-explorer', keywords: ['chart', 'explorer', 'analytics', 'lab', 'scatter', 'bar', 'line', 'custom', 'sql', 'query', 'builder', 'visualize'] },
+    ...(SHOW_ANALYTICS_LAB ? [{ type: 'page', label: 'Analytics Lab', path: '/analytics-explorer', keywords: ['chart', 'explorer', 'analytics', 'lab', 'scatter', 'bar', 'line', 'custom', 'sql', 'query', 'builder', 'visualize'] }] : []),
     { type: 'page', label: 'Sandlot Insider', path: '/sandlot-insider', keywords: ['articles', 'news', 'insider', 'analysis', 'commentary'] },
     { type: 'page', label: 'Strategy Blog', path: '/blogs', keywords: ['blog', 'strategy', 'tips', 'betting', 'advice'] },
     { type: 'page', label: 'Data Science & Baseball', path: '/data-science', keywords: ['data', 'science', 'ml', 'machine learning', 'models', 'algorithm'] },
@@ -703,13 +704,15 @@ function Header() {
                   <div className="dropdown-desc">Player performance metrics</div>
                 </div>
               </button>
-              <button onClick={() => handleNavClick('/analytics-explorer')} className="dropdown-item">
-                <img src={iconTeamAnalytics} alt="" className="dropdown-icon" />
-                <div>
-                  <div className="dropdown-title">Analytics Lab</div>
-                  <div className="dropdown-desc">Build custom charts from any metric</div>
-                </div>
-              </button>
+              {SHOW_ANALYTICS_LAB && (
+                <button onClick={() => handleNavClick('/analytics-explorer')} className="dropdown-item">
+                  <img src={iconTeamAnalytics} alt="" className="dropdown-icon" />
+                  <div>
+                    <div className="dropdown-title">Analytics Lab</div>
+                    <div className="dropdown-desc">Build custom charts from any metric</div>
+                  </div>
+                </button>
+              )}
             </div>
           </div>
 
