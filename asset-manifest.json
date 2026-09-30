@@ -1,7 +1,7 @@
 {
   "files": {
-    "main.css": "/static/css/main.efb9acf0.css",
-    "main.js": "/static/js/main.83f0cb24.js",
+    "main.css": "/static/css/main.f8ff8722.css",
+    "main.js": "/static/js/main.b7251121.js",
     "static/media/world-series-logo.png": "/static/media/world-series-logo.27072f25221f4fb42833.png",
     "static/media/spa-retro-logo-removebg.png": "/static/media/spa-retro-logo-removebg.328337a4fd7c56aeefbe.png",
     "static/media/pitcher-prop-page.png": "/static/media/pitcher-prop-page.809ebb174b38b01c3363.png",
@@ -25,11 +25,13 @@
     "static/media/machine.png": "/static/media/machine.e36efc21071dc2fedcb1.png",
     "static/media/profit-and-loss.png": "/static/media/profit-and-loss.f8920428cb5f8645be97.png",
     "static/media/glossary.png": "/static/media/glossary.3ec5af82809a9cb2a369.png",
+    "static/media/archivo.woff2": "/static/media/archivo.15e94b3375acbe0ee0b5.woff2",
     "static/media/faq.png": "/static/media/faq.7ecd20bd056c6467ed4d.png",
     "static/media/predictive-analytics.png": "/static/media/predictive-analytics.096ad945e58a3474718a.png",
     "static/media/how-to-use.png": "/static/media/how-to-use.56e88192eecdbf629d8a.png",
     "static/media/pitcher-prop.png": "/static/media/pitcher-prop.224627ddc93a5b7900e6.png",
     "static/media/game-prop.png": "/static/media/game-prop.d71a826ac753cb712c83.png",
+    "static/media/jetbrains-mono.woff2": "/static/media/jetbrains-mono.4b979f3605f4f49a9cb0.woff2",
     "static/media/sabermetric.png": "/static/media/sabermetric.6c1c2610b1ca7aa4daf8.png",
     "static/media/analysis.png": "/static/media/analysis.4da8043e37a04d4d6fc3.png",
     "static/media/mlb-schedule.png": "/static/media/mlb-schedule.8e051293f98b3eedc45b.png",
@@ -39,6 +41,7 @@
     "static/media/moneyball.png": "/static/media/moneyball.3747d43c914cc83e2049.png",
     "static/media/player-profile.png": "/static/media/player-profile.996ed50da53ed4c19396.png",
     "static/media/command-centre.png": "/static/media/command-centre.5c3b16a8b52d1b63500c.png",
+    "static/media/oswald.woff2": "/static/media/oswald.26af8661406fc96a0ba8.woff2",
     "static/media/player-roster.png": "/static/media/player-roster.64e01057798ac763bead.png",
     "static/media/trophy.png": "/static/media/trophy.12e325e962bd90fc9e15.png",
     "static/media/statcast.png": "/static/media/statcast.eff2a4c5182f6bdbf45a.png",
@@ -46,11 +49,11 @@
     "static/media/mlb-standings.png": "/static/media/mlb-standings.5646a1371a9af7e91e83.png",
     "static/media/sandlot-insider.png": "/static/media/sandlot-insider.ee83f40d3c32f5e670ee.png",
     "index.html": "/index.html",
-    "main.efb9acf0.css.map": "/static/css/main.efb9acf0.css.map",
-    "main.83f0cb24.js.map": "/static/js/main.83f0cb24.js.map"
+    "main.f8ff8722.css.map": "/static/css/main.f8ff8722.css.map",
+    "main.b7251121.js.map": "/static/js/main.b7251121.js.map"
   },
   "entrypoints": [
-    "static/css/main.efb9acf0.css",
-    "static/js/main.83f0cb24.js"
+    "static/css/main.f8ff8722.css",
+    "static/js/main.b7251121.js"
   ]
 }
