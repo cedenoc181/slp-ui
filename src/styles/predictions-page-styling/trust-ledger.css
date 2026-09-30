@@ -17,6 +17,34 @@
    Prefix: tl-
    ============================================================ */
 
+/* Self-hosted (not Google Fonts CDN) — the production build prerenders pages
+   with react-snap, which inlines referenced stylesheets via a headless-Chrome
+   fetch() and aborts the whole build if that fetch fails; the site's own
+   `skipThirdPartyRequests` crawler setting makes an external CDN font request
+   unreliable at build time. Each file below is a variable font covering all
+   three declared weights, so one file per family is all that's needed. */
+@font-face {
+  font-family: 'Oswald';
+  font-style: normal;
+  font-weight: 500 700;
+  font-display: swap;
+  src: url('../../assets/fonts/oswald.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Archivo';
+  font-style: normal;
+  font-weight: 400 600;
+  font-display: swap;
+  src: url('../../assets/fonts/archivo.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'JetBrains Mono';
+  font-style: normal;
+  font-weight: 400 600;
+  font-display: swap;
+  src: url('../../assets/fonts/jetbrains-mono.woff2') format('woff2');
+}
+
 .tl-wrap {
   --tl-bg: #121212;
   --tl-surface: #1c1c1c;
