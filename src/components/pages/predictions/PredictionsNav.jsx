@@ -11,16 +11,24 @@ const LINKS = [
 ];
 
 export default function PredictionsNav() {
-  const { hasAdminToolsAccess } = useAuth();
+  const { hasAdminToolsAccess, isPremium } = useAuth();
   const links = [...LINKS];
-  // Admin tools (admins + explicitly-granted users), grouped/set apart on the right.
+
+  // Set-apart tools on the right: admin tools (admins + explicitly-granted
+  // users) plus Trust Ledger — a reference tool, not a pick board, shown only
+  // to users who actually have Scout AI access (same gate as its route),
+  // not teased to everyone the way the standard tabs above are.
+  const extraLinks = [];
   if (hasAdminToolsAccess) {
-    const ADMIN_LINKS = [
+    extraLinks.push(
       { to: '/predictions/bet-library', label: 'Bet Library' },
       { to: '/predictions/lab',         label: 'Lab' },
-    ];
-    links.push(...ADMIN_LINKS.map((l, i) => ({ ...l, admin: true, groupStart: i === 0 })));
+    );
   }
+  if (isPremium) {
+    extraLinks.push({ to: '/predictions/trust-ledger', label: 'Trust Ledger' });
+  }
+  links.push(...extraLinks.map((l, i) => ({ ...l, admin: true, groupStart: i === 0 })));
 
   return (
     <nav className="predictions-nav">

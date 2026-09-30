@@ -77,6 +77,7 @@ import BatterProps from './components/pages/predictions/BatterProps';
 import BetLibrary from './components/pages/predictions/BetLibrary';
 import Lab from './components/pages/predictions/Lab';
 import ScoutDesk from './components/pages/predictions/ScoutDesk';
+import TrustLedger from './components/pages/predictions/TrustLedger';
 import UpgradePage from './components/pages/Account/UpgradePage';
 import CheckoutSuccessPage from './components/pages/Account/CheckoutSuccessPage';
 
@@ -180,6 +181,7 @@ const PAGE_TITLES = [
   { path: '/predictions/bet-library', title: 'Bet Library' },
   { path: '/predictions/lab',          title: 'Lab' },
   { path: '/predictions/scout-desk',   title: 'Scout AI' },
+  { path: '/predictions/trust-ledger', title: 'Trust Ledger' },
   { path: '/unsubscribe',             title: 'Unsubscribe' },
   { path: '/verify-email',            title: 'Verify Email' },
 ];
@@ -273,6 +275,10 @@ function App() {
           <Route path="/predictions/bet-library" element={<ProtectedRoute require="admin-tools"><BetLibrary /></ProtectedRoute>} />
           <Route path="/predictions/lab" element={<ProtectedRoute require="admin-tools"><Lab /></ProtectedRoute>} />
           <Route path="/predictions/scout-desk" element={<ProtectedRoute require="premium"><ScoutDesk /></ProtectedRoute>} />
+          {/* Not premium-gated at the route level: the premium/admin/early-access
+              allowlist decision is server-side (403), so any authenticated user can
+              land here and TrustLedger itself renders the locked/upsell state on 403. */}
+          <Route path="/predictions/trust-ledger" element={<ProtectedRoute><TrustLedger /></ProtectedRoute>} />
 
           {/* Education routes */}
           <Route path="/glossary" element={<Glossary />} />

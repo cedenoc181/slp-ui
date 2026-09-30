@@ -1,0 +1,317 @@
+/* ============================================================
+   TRUST LEDGER — sortable league-wide reliability table
+   Structure/typography replicated from the approved reference mock;
+   colors remapped onto our own dark-theme tokens (see --tl-* below,
+   sourced from the values already used across Scout Desk / predictions):
+     --tl-bg          ← .predictions-page background (#121212)
+     --tl-surface     ← .sd-card background (#1c1c1c)
+     --tl-surface-2   ← .sd-card:hover background (#212121)
+     --tl-line        ← .sd-card border (rgba(255,255,255,.08))
+     --tl-ink         ← primary text (#fff)
+     --tl-ink-muted   ← .sd-desk-sub color (rgba(255,255,255,.55))
+     --tl-ink-faint   ← .sd-muted color (rgba(255,255,255,.42))
+     --tl-accent      ← .sd-tag color (#67e8f9)
+     --tl-good        ← .sd-pos / .pos (#4ade80)
+     --tl-warn        ← .sd-neg / .neg (#f87171)
+     --tl-meter-track ← .sd-gm-bar background (rgba(255,255,255,.1))
+   Prefix: tl-
+   ============================================================ */
+
+.tl-wrap {
+  --tl-bg: #121212;
+  --tl-surface: #1c1c1c;
+  --tl-surface-2: #212121;
+  --tl-line: rgba(255, 255, 255, 0.08);
+  --tl-ink: #ffffff;
+  --tl-ink-muted: rgba(255, 255, 255, 0.55);
+  --tl-ink-faint: rgba(255, 255, 255, 0.42);
+  --tl-accent: #67e8f9;
+  --tl-good: #4ade80;
+  --tl-warn: #f87171;
+  --tl-meter-track: rgba(255, 255, 255, 0.1);
+}
+
+/* ── Page header band ─────────────────────────────────────────────────────── */
+.tl-page-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px 28px;
+  padding-bottom: 22px;
+  border-bottom: 2px solid var(--tl-ink);
+  margin-bottom: 8px;
+}
+
+.tl-eyebrow {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--tl-accent);
+  margin: 0 0 6px;
+  font-weight: 600;
+}
+
+.tl-h1 {
+  font-family: 'Oswald', sans-serif;
+  font-weight: 600;
+  font-size: clamp(28px, 4vw, 40px);
+  letter-spacing: 0.01em;
+  text-transform: uppercase;
+  color: var(--tl-ink);
+  margin: 0;
+  line-height: 1.05;
+}
+
+.tl-meta {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12.5px;
+  color: var(--tl-ink-muted);
+  text-align: right;
+  line-height: 1.6;
+}
+.tl-meta strong { color: var(--tl-ink); font-weight: 600; }
+
+/* ── Dek ──────────────────────────────────────────────────────────────────── */
+.tl-dek {
+  max-width: 62ch;
+  color: var(--tl-ink-muted);
+  font-family: 'Archivo', sans-serif;
+  font-size: 15px;
+  line-height: 1.6;
+  margin: 18px 0 28px;
+}
+.tl-dek b { color: var(--tl-ink); font-weight: 600; }
+
+/* ── Legend row ───────────────────────────────────────────────────────────── */
+.tl-legend-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 18px;
+  align-items: center;
+  margin-bottom: 22px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11.5px;
+  color: var(--tl-ink-faint);
+  letter-spacing: 0.02em;
+}
+.tl-dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 2px;
+  margin-right: 6px;
+  vertical-align: -1px;
+}
+.tl-dot--good { background: var(--tl-good); }
+.tl-dot--warn { background: var(--tl-warn); }
+.tl-dot--accent { background: var(--tl-accent); }
+
+/* ── "not enough data yet" banner ─────────────────────────────────────────── */
+.tl-banner {
+  font-family: 'Archivo', sans-serif;
+  font-size: 0.85rem;
+  color: #fbbf24;
+  background: rgba(251, 191, 36, 0.1);
+  border: 1px solid rgba(251, 191, 36, 0.3);
+  border-radius: 6px;
+  padding: 0.7rem 1rem;
+  margin-bottom: 1rem;
+}
+
+/* ── Table container — the ONLY thing allowed to scroll horizontally ────────
+   The page itself must never scroll sideways; this container does instead. */
+.tl-table-scroll {
+  overflow-x: auto;
+  border: 1px solid var(--tl-line);
+  border-radius: 8px;
+  background: var(--tl-surface);
+}
+
+.tl-table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 1080px;
+}
+
+.tl-table thead th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background: var(--tl-surface-2);
+  border-bottom: 1px solid var(--tl-line);
+  text-align: left;
+  padding: 11px 14px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--tl-ink-muted);
+  font-weight: 600;
+  cursor: pointer;
+  user-select: none;
+  white-space: nowrap;
+}
+.tl-table thead th:hover { color: var(--tl-ink); }
+.tl-table thead th.tl-th-active { color: var(--tl-accent); }
+.tl-arrow { display: inline-block; width: 10px; margin-left: 2px; opacity: 0.75; font-size: 10px; }
+
+.tl-table tbody tr {
+  border-bottom: 1px solid var(--tl-line);
+  transition: background-color 120ms ease;
+}
+.tl-table tbody tr:last-child { border-bottom: none; }
+.tl-table tbody tr:hover { background: var(--tl-surface-2); }
+
+.tl-table td {
+  padding: 10px 14px;
+  font-size: 13.5px;
+  vertical-align: middle;
+  white-space: nowrap;
+  color: var(--tl-ink);
+}
+
+.tl-td-rank {
+  font-family: 'JetBrains Mono', monospace;
+  font-variant-numeric: tabular-nums;
+  color: var(--tl-ink-faint);
+  font-size: 12px;
+  width: 34px;
+}
+
+.tl-td-team {
+  font-family: 'Oswald', sans-serif;
+  font-weight: 500;
+  font-size: 15px;
+  letter-spacing: 0.01em;
+}
+.tl-team-cell { display: inline-flex; align-items: center; gap: 8px; }
+.tl-team-logo { width: 22px; height: 22px; border-radius: 50%; background: #fff; padding: 2px; object-fit: contain; flex-shrink: 0; box-sizing: border-box; }
+.tl-team-logo--empty { background: rgba(255, 255, 255, 0.08); }
+
+.tl-num { font-family: 'JetBrains Mono', monospace; font-variant-numeric: tabular-nums; }
+.tl-muted { color: var(--tl-ink-muted); }
+
+/* Trust cell: meter + percentage */
+.tl-trust-cell { display: flex; align-items: center; gap: 10px; min-width: 150px; }
+.tl-meter {
+  position: relative;
+  width: 88px;
+  height: 7px;
+  background: var(--tl-meter-track);
+  border-radius: 4px;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+.tl-meter > span {
+  position: absolute;
+  inset: 0 auto 0 0;
+  background: var(--tl-accent);
+  border-radius: 4px;
+}
+.tl-trust-pct {
+  font-family: 'JetBrains Mono', monospace;
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+  font-size: 13px;
+  width: 38px;
+  text-align: right;
+}
+
+/* Starter cell */
+.tl-starter-cell { display: flex; flex-direction: column; gap: 2px; min-width: 168px; }
+.tl-starter-name { font-family: 'Archivo', sans-serif; font-size: 13px; font-weight: 500; color: var(--tl-ink); }
+.tl-starter-stats {
+  font-family: 'JetBrains Mono', monospace;
+  font-variant-numeric: tabular-nums;
+  font-size: 11.5px;
+  color: var(--tl-ink-muted);
+  display: flex;
+  gap: 8px;
+}
+.tl-starter-stats b { font-weight: 600; }
+.tl-stat-good { color: var(--tl-good); }
+.tl-stat-warn { color: var(--tl-warn); }
+
+/* Bullpen cell — 2x2 grid */
+.tl-bullpen-cell {
+  display: grid;
+  grid-template-columns: repeat(2, auto);
+  gap: 1px 12px;
+  font-family: 'JetBrains Mono', monospace;
+  font-variant-numeric: tabular-nums;
+  font-size: 11.5px;
+  color: var(--tl-ink-muted);
+  min-width: 128px;
+}
+.tl-bullpen-cell b { font-weight: 600; }
+
+.tl-no-game {
+  color: var(--tl-ink-faint);
+  font-family: 'Archivo', sans-serif;
+  font-size: 12.5px;
+  font-style: italic;
+}
+
+/* ── Footnote ─────────────────────────────────────────────────────────────── */
+.tl-footnote {
+  margin-top: 22px;
+  padding-top: 16px;
+  border-top: 1px solid var(--tl-line);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  color: var(--tl-ink-faint);
+  line-height: 1.7;
+  max-width: 78ch;
+}
+.tl-footnote code {
+  font-family: 'JetBrains Mono', monospace;
+  background: var(--tl-surface-2);
+  padding: 1px 5px;
+  border-radius: 2px;
+  font-size: 11.5px;
+}
+
+/* ── Locked / upsell state ────────────────────────────────────────────────── */
+.tl-locked {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 0.6rem;
+  padding: 3rem 1.5rem;
+  background: linear-gradient(135deg, rgba(251, 191, 36, 0.07), rgba(28, 28, 28, 0.4));
+  border: 1px solid rgba(251, 191, 36, 0.28);
+  border-radius: 16px;
+}
+.tl-locked-icon { font-size: 2rem; }
+.tl-locked-title { font-family: 'Oswald', sans-serif; font-size: 1.05rem; font-weight: 600; color: var(--tl-ink); margin: 0; }
+.tl-locked-sub { font-family: 'Archivo', sans-serif; font-size: 0.85rem; color: var(--tl-ink-muted); margin: 0; max-width: 420px; line-height: 1.5; }
+.tl-locked-btn { margin-top: 0.4rem; padding: 0.7rem 1.4rem; }
+
+/* ── Skeleton ─────────────────────────────────────────────────────────────── */
+.tl-skel-table { border: 1px solid var(--tl-line); border-radius: 8px; background: var(--tl-surface); overflow: hidden; }
+.tl-skel-row { padding: 0.85rem 1rem; display: flex; align-items: center; gap: 0.9rem; border-bottom: 1px solid var(--tl-line); }
+.tl-skel-row:last-child { border-bottom: none; }
+.tl-skel {
+  display: block;
+  background: linear-gradient(90deg, #2a2a2a 25%, #333 50%, #2a2a2a 75%);
+  background-size: 200% 100%;
+  animation: tl-shimmer 1.4s infinite;
+  border-radius: 4px;
+}
+.tl-skel-rank { flex: 0 0 1.6rem; height: 14px; }
+.tl-skel-name { flex: 1 1 150px; height: 14px; max-width: 150px; }
+.tl-skel-meter { flex: 1 1 170px; height: 8px; border-radius: 4px; }
+.tl-skel-chip { flex: 0 0 60px; height: 18px; border-radius: 6px; }
+@keyframes tl-shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* ── Responsive ───────────────────────────────────────────────────────────── */
+@media (max-width: 640px) {
+  .tl-meta { text-align: left; }
+  .tl-page-head { flex-direction: column; }
+}
