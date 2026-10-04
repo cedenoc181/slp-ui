@@ -112,6 +112,48 @@
 }
 .tl-dek b { color: var(--tl-ink); font-weight: 600; }
 
+/* ── Mode toggle (Regular Season / Postseason) ───────────────────────────────── */
+.tl-mode-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 22px;
+}
+.tl-mode-toggle {
+  display: inline-flex;
+  padding: 3px;
+  background: var(--tl-surface);
+  border: 1px solid var(--tl-line);
+  border-radius: 8px;
+}
+.tl-mode-btn {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11.5px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--tl-ink-muted);
+  background: transparent;
+  border: none;
+  border-radius: 6px;
+  padding: 7px 14px;
+  cursor: pointer;
+  transition: background-color 120ms ease, color 120ms ease;
+}
+.tl-mode-btn:hover:not(:disabled) { color: var(--tl-ink); }
+.tl-mode-btn:disabled { cursor: default; opacity: 0.6; }
+.tl-mode-btn--active {
+  background: var(--tl-surface-2);
+  color: var(--tl-accent);
+}
+.tl-mode-note {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11.5px;
+  color: var(--tl-ink-faint);
+  letter-spacing: 0.02em;
+}
+
 /* ── Legend row ───────────────────────────────────────────────────────────── */
 .tl-legend-row {
   display: flex;
@@ -160,7 +202,7 @@
 .tl-table {
   width: 100%;
   border-collapse: collapse;
-  min-width: 1080px;
+  min-width: 1260px;
 }
 
 .tl-table thead th {
@@ -183,6 +225,8 @@
 }
 .tl-table thead th:hover { color: var(--tl-ink); }
 .tl-table thead th.tl-th-active { color: var(--tl-accent); }
+.tl-table thead th.tl-th-static { cursor: default; }
+.tl-table thead th.tl-th-static:hover { color: var(--tl-ink-muted); }
 .tl-arrow { display: inline-block; width: 10px; margin-left: 2px; opacity: 0.75; font-size: 10px; }
 
 .tl-table tbody tr {
@@ -280,6 +324,94 @@
   font-family: 'Archivo', sans-serif;
   font-size: 12.5px;
   font-style: italic;
+}
+
+/* MLB hitting/pitching rank badges */
+.tl-rank-badges { display: flex; flex-direction: column; gap: 3px; }
+.tl-rank-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-family: 'JetBrains Mono', monospace;
+  font-variant-numeric: tabular-nums;
+  font-size: 11.5px;
+  color: var(--tl-ink-muted);
+  white-space: nowrap;
+}
+.tl-rank-badge-icon { width: 13px; height: 13px; object-fit: contain; flex-shrink: 0; opacity: 0.85; }
+
+/* Row-expand control (record splits) — the whole row is the toggle; the
+   caret is just an inline indicator next to the team name, not its own
+   hit target. */
+.tl-table tbody tr.tl-row-expandable { cursor: pointer; }
+.tl-table tbody tr.tl-row-expandable:focus-visible { outline: 2px solid var(--tl-accent); outline-offset: -2px; }
+.tl-row-caret {
+  color: var(--tl-ink-faint);
+  font-size: 10px;
+  transition: transform 120ms ease, color 120ms ease;
+}
+.tl-row-expandable:hover .tl-row-caret { color: var(--tl-ink); }
+.tl-row-caret--open { color: var(--tl-accent); transform: rotate(180deg); }
+
+/* Expanded record-splits panel */
+.tl-table tbody tr.tl-splits-row { background: var(--tl-bg); }
+.tl-table tbody tr.tl-splits-row:hover { background: var(--tl-bg); }
+.tl-table tbody tr.tl-splits-row td { padding: 14px 20px 18px; white-space: normal; }
+
+.tl-splits-panel { display: flex; flex-direction: column; gap: 10px; }
+.tl-splits-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10.5px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--tl-ink-faint);
+}
+/* The 4 split groups always sit in one row (never wrap — the table's own
+   horizontal scroll container handles overflow), starting from the left
+   edge of the panel. */
+.tl-splits-columns { display: flex; flex-wrap: nowrap; align-items: flex-start; gap: 10px 28px; }
+.tl-splits-group { display: flex; flex-direction: column; gap: 6px; min-width: 190px; }
+.tl-splits-group:not(:first-child) { padding-left: 24px; border-left: 1px solid var(--tl-line); }
+
+.tl-split-row { display: flex; align-items: center; gap: 10px; }
+.tl-split-label {
+  flex: 0 0 52px;
+  font-family: 'Archivo', sans-serif;
+  font-size: 12px;
+  color: var(--tl-ink-muted);
+  white-space: nowrap;
+}
+.tl-split-label--wide { flex-basis: 100px; }
+.tl-split-track {
+  position: relative;
+  flex: 1 1 auto;
+  width: 90px;
+  height: 6px;
+  background: var(--tl-meter-track);
+  border-radius: 3px;
+  overflow: hidden;
+}
+.tl-split-center {
+  position: absolute;
+  left: 50%;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  background: var(--tl-line);
+}
+.tl-split-fill {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  border-radius: 3px;
+}
+.tl-split-fill--good { background: var(--tl-good); }
+.tl-split-fill--warn { background: var(--tl-warn); }
+.tl-split-val {
+  flex: 0 0 38px;
+  font-size: 12px;
+  color: var(--tl-ink);
+  text-align: right;
 }
 
 /* ── Footnote ─────────────────────────────────────────────────────────────── */

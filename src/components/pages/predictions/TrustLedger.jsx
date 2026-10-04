@@ -4,6 +4,8 @@ import { useAuth } from '../../../context/AuthContext';
 import PredictionsNav from './PredictionsNav';
 import trustLedgerService from '../../../data/services/trustLedgerService';
 import { TEAM_METADATA } from '../../../data/constants/apiConstants';
+import batterPropIcon from '../../../assets/icons/batter-prop.png';
+import pitcherPropIcon from '../../../assets/icons/pitcher-prop.png';
 import '../../../styles/predictions-page-styling/predictions.css';
 import '../../../styles/predictions-page-styling/scout-desk.css';
 import '../../../styles/predictions-page-styling/trust-ledger.css';
@@ -64,6 +66,7 @@ const COLUMNS = [
   { key: 'rank', label: '#' },
   { key: 'team', label: 'Team' },
   { key: 'trustPercentile', label: 'Trust' },
+  { key: 'mlbRank', label: 'MLB Rank', sortable: false },
   { key: 'winPct', label: 'Season' },
   { key: 'lastTen', label: 'Last 10' },
   { key: 'sp_era', label: 'Today’s Starter · L5 form' },
@@ -78,8 +81,73 @@ function getSortVal(t, key) {
   return t[key];
 }
 
+// Mode-aware tooltip for the MLB hitting/pitching rank badges — postseason
+// ranks are scoped to just the playoff field (and shrink as teams get
+// eliminated), so the copy must not imply a fixed "of 30" pool there.
+function rankTitle(kind, rank, postseason) {
+  if (rank == null) {
+    return postseason ? `No ${kind} games played yet this postseason` : `${kind} rank not available`;
+  }
+  return postseason
+    ? `#${rank} in team ${kind} among playoff teams so far`
+    : `#${rank} in team ${kind} across MLB`;
+}
+
+// ── Record-splits diverging bar (centered at .500) ──────────────────────────
+// `wide` widens the label column for the longer "vs LHP at Home"-style
+// labels in the hand/location drill-down — the short "Home"/"vs LHP" labels
+// elsewhere don't need that much room and look gappy with it.
+function SplitBar({ label, value, wide }) {
+  const clamped = value == null ? null : Math.max(0, Math.min(1, value));
+  const above = clamped != null && clamped >= 0.5;
+  const magnitude = clamped == null ? 0 : Math.abs(clamped - 0.5) * 100;
+  return (
+    <div className="tl-split-row">
+      <span className={`tl-split-label${wide ? ' tl-split-label--wide' : ''}`}>{label}</span>
+      <span className="tl-split-track">
+        <span className="tl-split-center" />
+        {clamped != null && (
+          <span
+            className={`tl-split-fill ${above ? 'tl-split-fill--good' : 'tl-split-fill--warn'}`}
+            style={above ? { left: '50%', width: `${magnitude}%` } : { right: '50%', width: `${magnitude}%` }}
+          />
+        )}
+      </span>
+      <span className="tl-split-val tl-num">{fmtDec(value)}</span>
+    </div>
+  );
+}
+
+// ── Record splits panel (always regular-season data, both modes) ───────────
+function RecordSplitsPanel({ splits }) {
+  return (
+    <div className="tl-splits-panel">
+      <div className="tl-splits-label">Record splits &middot; full season</div>
+      <div className="tl-splits-columns">
+        <div className="tl-splits-group">
+          <SplitBar label="Home" value={splits.homePct} />
+          <SplitBar label="Away" value={splits.awayPct} />
+        </div>
+        <div className="tl-splits-group">
+          <SplitBar label="vs LHP" value={splits.vsLeftSpPct} />
+          <SplitBar label="vs RHP" value={splits.vsRightSpPct} />
+        </div>
+        <div className="tl-splits-group">
+          <SplitBar label="vs LHP at Home" value={splits.vsLeftSpHomePct} wide />
+          <SplitBar label="vs LHP on Road" value={splits.vsLeftSpAwayPct} wide />
+        </div>
+        <div className="tl-splits-group">
+          <SplitBar label="vs RHP at Home" value={splits.vsRightSpHomePct} wide />
+          <SplitBar label="vs RHP on Road" value={splits.vsRightSpAwayPct} wide />
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ── Row ──────────────────────────────────────────────────────────────────────
-function TrustTableRow({ team, rank }) {
+function TrustTableRow({ team, rank, postseason }) {
+  const [expanded, setExpanded] = useState(false);
   const meta = findTeamMeta(team.team);
   const name = meta ? nicknameOf(meta.name) : team.team;
 
@@ -127,34 +195,69 @@ function TrustTableRow({ team, rank }) {
     );
   }
 
+  const hasSplits = !!team.recordSplits;
+  const toggleExpanded = () => { if (hasSplits) setExpanded((e) => !e); };
+
   return (
-    <tr>
-      <td className="tl-td-rank tl-num">{rank}</td>
-      <td className="tl-td-team">
-        <span className="tl-team-cell">
-          {meta?.mlbId ? (
-            <img
-              src={`https://www.mlbstatic.com/team-logos/${meta.mlbId}.svg`}
-              alt=""
-              className="tl-team-logo"
-              onError={(e) => { e.target.style.visibility = 'hidden'; }}
-            />
-          ) : <span className="tl-team-logo tl-team-logo--empty" />}
-          {name}
-        </span>
-      </td>
-      <td>
-        <div className="tl-trust-cell">
-          <span className="tl-meter"><span style={{ width: `${team.trustPercentile ?? 0}%` }} /></span>
-          <span className="tl-trust-pct tl-num">{fmtPct(team.trustPercentile)}</span>
-        </div>
-      </td>
-      <td className="tl-num tl-muted">{fmtDec(team.winPct)}</td>
-      <td className="tl-num tl-muted">{team.lastTen || '—'}</td>
-      <td>{starterCell}</td>
-      <td>{opsCell}</td>
-      <td>{bullpenCell}</td>
-    </tr>
+    <>
+      <tr
+        className={hasSplits ? 'tl-row-expandable' : ''}
+        onClick={hasSplits ? toggleExpanded : undefined}
+        role={hasSplits ? 'button' : undefined}
+        tabIndex={hasSplits ? 0 : undefined}
+        aria-expanded={hasSplits ? expanded : undefined}
+        aria-label={hasSplits ? `${expanded ? 'Hide' : 'Show'} record splits for ${name}` : undefined}
+        onKeyDown={hasSplits ? (e) => {
+          if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggleExpanded(); }
+        } : undefined}
+      >
+        <td className="tl-td-rank tl-num">{rank}</td>
+        <td className="tl-td-team">
+          <span className="tl-team-cell">
+            {meta?.mlbId ? (
+              <img
+                src={`https://www.mlbstatic.com/team-logos/${meta.mlbId}.svg`}
+                alt=""
+                className="tl-team-logo"
+                onError={(e) => { e.target.style.visibility = 'hidden'; }}
+              />
+            ) : <span className="tl-team-logo tl-team-logo--empty" />}
+            {name}
+            {hasSplits && <span className={`tl-row-caret${expanded ? ' tl-row-caret--open' : ''}`} aria-hidden="true">▾</span>}
+          </span>
+        </td>
+        <td>
+          <div className="tl-trust-cell">
+            <span className="tl-meter"><span style={{ width: `${team.trustPercentile ?? 0}%` }} /></span>
+            <span className="tl-trust-pct tl-num">{fmtPct(team.trustPercentile)}</span>
+          </div>
+        </td>
+        <td>
+          <span className="tl-rank-badges">
+            <span className="tl-rank-badge" title={rankTitle('offense', team.mlbHittingRank, postseason)}>
+              <img src={batterPropIcon} alt="" className="tl-rank-badge-icon" />
+              {team.mlbHittingRank != null ? `#${team.mlbHittingRank}` : '—'}
+            </span>
+            <span className="tl-rank-badge" title={rankTitle('pitching', team.mlbPitchingRank, postseason)}>
+              <img src={pitcherPropIcon} alt="" className="tl-rank-badge-icon" />
+              {team.mlbPitchingRank != null ? `#${team.mlbPitchingRank}` : '—'}
+            </span>
+          </span>
+        </td>
+        <td className="tl-num tl-muted">{fmtDec(team.winPct)}</td>
+        <td className="tl-num tl-muted">{team.lastTen || '—'}</td>
+        <td>{starterCell}</td>
+        <td>{opsCell}</td>
+        <td>{bullpenCell}</td>
+      </tr>
+      {expanded && hasSplits && (
+        <tr className="tl-splits-row">
+          <td colSpan={COLUMNS.length}>
+            <RecordSplitsPanel splits={team.recordSplits} />
+          </td>
+        </tr>
+      )}
+    </>
   );
 }
 
@@ -189,11 +292,39 @@ function TrustLedgerLocked({ onUpgrade }) {
   );
 }
 
-function TrustLedgerEmpty() {
+function TrustLedgerEmpty({ postseason }) {
   return (
     <div className="sd-empty">
       <span className="sd-empty-icon">🗓️</span>
-      <p>Standings return when the season starts.</p>
+      <p>
+        {postseason
+          ? 'No postseason bracket yet — check back once the playoffs begin.'
+          : 'Standings return when the season starts.'}
+      </p>
+    </div>
+  );
+}
+
+// ── Mode toggle ──────────────────────────────────────────────────────────────
+function TrustModeToggle({ postseason, onChange, disabled }) {
+  return (
+    <div className="tl-mode-toggle" role="group" aria-label="Season mode">
+      <button
+        type="button"
+        className={`tl-mode-btn${!postseason ? ' tl-mode-btn--active' : ''}`}
+        onClick={() => onChange(false)}
+        disabled={disabled}
+      >
+        Regular Season
+      </button>
+      <button
+        type="button"
+        className={`tl-mode-btn${postseason ? ' tl-mode-btn--active' : ''}`}
+        onClick={() => onChange(true)}
+        disabled={disabled}
+      >
+        Postseason
+      </button>
     </div>
   );
 }
@@ -209,6 +340,8 @@ export default function TrustLedger() {
   const [error, setError] = useState(null);
   const [sortKey, setSortKey] = useState('trustPercentile');
   const [sortDir, setSortDir] = useState(-1); // -1 desc, 1 asc — matches the reference's default (Trust, descending)
+  const [postseason, setPostseason] = useState(false);
+  const [bootstrapped, setBootstrapped] = useState(false);
 
   useEffect(() => { window.scrollTo(0, 0); }, []);
 
@@ -219,11 +352,11 @@ export default function TrustLedger() {
     }
   }, [loading, isAuthenticated, navigate]);
 
-  const load = useCallback(() => {
+  const load = useCallback((mode) => {
     setBusy(true);
     setLocked(false);
     setError(null);
-    trustLedgerService.getTrustLedger()
+    trustLedgerService.getTrustLedger(undefined, { postseason: mode })
       .then((data) => setTeams(Array.isArray(data) ? data : []))
       .catch((err) => {
         if (err?.status === 403) setLocked(true);
@@ -232,7 +365,42 @@ export default function TrustLedger() {
       .finally(() => setBusy(false));
   }, []);
 
-  useEffect(() => { if (isAuthenticated) load(); }, [isAuthenticated, load]);
+  // On first load, default to whichever mode is actually live: probe the
+  // postseason board first — a non-empty bracket means the playoffs have
+  // started, so default there; an empty one means fall back to the regular
+  // season board (fetched separately, since the probe response is empty).
+  useEffect(() => {
+    if (!isAuthenticated || bootstrapped) return;
+    setBootstrapped(true);
+    setBusy(true);
+    setLocked(false);
+    setError(null);
+    trustLedgerService.getTrustLedger(undefined, { postseason: true })
+      .then((data) => {
+        const list = Array.isArray(data) ? data : [];
+        if (list.length > 0) {
+          setPostseason(true);
+          setTeams(list);
+          setBusy(false);
+        } else {
+          setPostseason(false);
+          load(false);
+        }
+      })
+      .catch((err) => {
+        if (err?.status === 403) { setLocked(true); setBusy(false); return; }
+        // Probe itself failed for a non-auth reason — still try the regular
+        // season board as the sane default rather than stalling on an error.
+        setPostseason(false);
+        load(false);
+      });
+  }, [isAuthenticated, bootstrapped, load]);
+
+  const handleModeChange = useCallback((nextPostseason) => {
+    if (nextPostseason === postseason) return;
+    setPostseason(nextPostseason);
+    load(nextPostseason);
+  }, [postseason, load]);
 
   const sortedTeams = useMemo(() => {
     if (!Array.isArray(teams)) return [];
@@ -259,7 +427,7 @@ export default function TrustLedger() {
 
   const dateLabel = new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
   const season = new Date().getFullYear();
-  const clubCount = Array.isArray(teams) && teams.length ? teams.length : 30;
+  const clubCount = Array.isArray(teams) && teams.length ? teams.length : (postseason ? 12 : 30);
   const allPercentilesNull = Array.isArray(teams) && teams.length > 0 && teams.every((t) => t.trustPercentile == null);
   const showTable = !busy && !locked && !error && Array.isArray(teams) && teams.length > 0;
 
@@ -281,16 +449,23 @@ export default function TrustLedger() {
             </div>
             <div className="tl-meta">
               <div><strong>{dateLabel}</strong></div>
-              <div>{season} regular season &middot; {clubCount} clubs</div>
+              <div>{season} {postseason ? 'postseason' : 'regular season'} &middot; {clubCount} clubs</div>
             </div>
           </header>
 
           <p className="tl-dek">
             Every team's <b>trust score</b> &mdash; 70% season W-L%, 30% last-10-game form &mdash; ranked into a
-            league-wide percentile. This is the signal Scout leans on to break ties between comparably strong plays,
-            plus today's actual starter (last 5 starts) and each lineup's top-6 batting order (last 5 games) for
-            context. Click any column to re-sort.
+            league-wide percentile, alongside MLB's own offense/pitching rank and today's actual starter (last 5
+            starts) and top-6 lineup form (last 5 games). Expand a row for home/road and handedness splits. Click
+            any column to re-sort.
           </p>
+
+          <div className="tl-mode-row">
+            <TrustModeToggle postseason={postseason} onChange={handleModeChange} disabled={busy || locked} />
+            {postseason && (
+              <span className="tl-mode-note">Trust percentile is ranked against the full league, not just the playoff field.</span>
+            )}
+          </div>
 
           {showTable && (
             <div className="tl-legend-row">
@@ -307,7 +482,7 @@ export default function TrustLedger() {
           ) : error ? (
             <div className="sd-error">⚠ {error}</div>
           ) : !teams || teams.length === 0 ? (
-            <TrustLedgerEmpty />
+            <TrustLedgerEmpty postseason={postseason} />
           ) : (
             <>
               {allPercentilesNull && (
@@ -317,23 +492,31 @@ export default function TrustLedger() {
                 <table className="tl-table">
                   <thead>
                     <tr>
-                      {COLUMNS.map((col) => (
-                        <th
-                          key={col.key}
-                          onClick={() => handleSort(col.key)}
-                          className={sortKey === col.key ? 'tl-th-active' : ''}
-                        >
-                          {col.label}
-                          {sortKey === col.key && (
-                            <span className="tl-arrow">{sortDir === -1 ? '▼' : '▲'}</span>
-                          )}
-                        </th>
-                      ))}
+                      {COLUMNS.map((col) => {
+                        const sortable = col.sortable !== false;
+                        return (
+                          <th
+                            key={col.key}
+                            onClick={sortable ? () => handleSort(col.key) : undefined}
+                            className={`${sortKey === col.key ? 'tl-th-active' : ''}${sortable ? '' : ' tl-th-static'}`}
+                            title={
+                              col.key === 'trustPercentile' ? 'Ranked against the full 30-team league, not just the teams shown'
+                                : col.key === 'mlbRank' ? "MLB's own offense/pitching rank — switches to a playoff-only rank in Postseason mode"
+                                : undefined
+                            }
+                          >
+                            {col.label}
+                            {sortable && sortKey === col.key && (
+                              <span className="tl-arrow">{sortDir === -1 ? '▼' : '▲'}</span>
+                            )}
+                          </th>
+                        );
+                      })}
                     </tr>
                   </thead>
                   <tbody>
                     {sortedTeams.map((t, i) => (
-                      <TrustTableRow key={t.team} team={t} rank={i + 1} />
+                      <TrustTableRow key={t.team} team={t} rank={i + 1} postseason={postseason} />
                     ))}
                   </tbody>
                 </table>
