@@ -25,6 +25,63 @@ export const STAT_CATEGORIES = {
   PITCHING: 'pitching',
 };
 
+// ========== SPORTSBOOKS ==========
+// value = bookmaker key sent to the API (matches user.preferred_book);
+// label = display name shown to the user.
+// Reused for the settings selector and, later, "add to betslip" deep links.
+// Note: Caesars' key is intentionally "williamhill_us".
+export const SPORTSBOOKS = [
+  { value: 'draftkings',     label: 'DraftKings' },
+  { value: 'fanduel',        label: 'FanDuel' },
+  { value: 'betmgm',         label: 'BetMGM' },
+  { value: 'williamhill_us', label: 'Caesars' },
+  { value: 'betrivers',      label: 'BetRivers' },
+  { value: 'fanatics',       label: 'Fanatics' },
+  { value: 'hardrockbet',    label: 'Hard Rock Bet' },
+];
+
+// Fast key → display label lookup, derived from SPORTSBOOKS.
+export const SPORTSBOOK_LABELS = SPORTSBOOKS.reduce((map, b) => {
+  map[b.value] = b.label;
+  return map;
+}, {});
+
+// Display label for a bookmaker key, or null if the key isn't supported.
+export const getSportsbookLabel = (value) => SPORTSBOOK_LABELS[value] ?? null;
+
+// ========== US STATES ==========
+// value = 2-letter code stored on user.state; label = shown to the user.
+// Used to resolve {state} placeholders in sportsbook betslip deep links
+// (Caesars / BetMGM). See src/lib/betslipLinks.js.
+export const US_STATES = [
+  { value: 'AL', label: 'Alabama' },        { value: 'AK', label: 'Alaska' },
+  { value: 'AZ', label: 'Arizona' },        { value: 'AR', label: 'Arkansas' },
+  { value: 'CA', label: 'California' },      { value: 'CO', label: 'Colorado' },
+  { value: 'CT', label: 'Connecticut' },    { value: 'DE', label: 'Delaware' },
+  { value: 'DC', label: 'District of Columbia' },
+  { value: 'FL', label: 'Florida' },        { value: 'GA', label: 'Georgia' },
+  { value: 'HI', label: 'Hawaii' },         { value: 'ID', label: 'Idaho' },
+  { value: 'IL', label: 'Illinois' },       { value: 'IN', label: 'Indiana' },
+  { value: 'IA', label: 'Iowa' },           { value: 'KS', label: 'Kansas' },
+  { value: 'KY', label: 'Kentucky' },       { value: 'LA', label: 'Louisiana' },
+  { value: 'ME', label: 'Maine' },          { value: 'MD', label: 'Maryland' },
+  { value: 'MA', label: 'Massachusetts' },  { value: 'MI', label: 'Michigan' },
+  { value: 'MN', label: 'Minnesota' },      { value: 'MS', label: 'Mississippi' },
+  { value: 'MO', label: 'Missouri' },       { value: 'MT', label: 'Montana' },
+  { value: 'NE', label: 'Nebraska' },       { value: 'NV', label: 'Nevada' },
+  { value: 'NH', label: 'New Hampshire' },  { value: 'NJ', label: 'New Jersey' },
+  { value: 'NM', label: 'New Mexico' },     { value: 'NY', label: 'New York' },
+  { value: 'NC', label: 'North Carolina' }, { value: 'ND', label: 'North Dakota' },
+  { value: 'OH', label: 'Ohio' },           { value: 'OK', label: 'Oklahoma' },
+  { value: 'OR', label: 'Oregon' },         { value: 'PA', label: 'Pennsylvania' },
+  { value: 'RI', label: 'Rhode Island' },   { value: 'SC', label: 'South Carolina' },
+  { value: 'SD', label: 'South Dakota' },   { value: 'TN', label: 'Tennessee' },
+  { value: 'TX', label: 'Texas' },          { value: 'UT', label: 'Utah' },
+  { value: 'VT', label: 'Vermont' },        { value: 'VA', label: 'Virginia' },
+  { value: 'WA', label: 'Washington' },     { value: 'WV', label: 'West Virginia' },
+  { value: 'WI', label: 'Wisconsin' },      { value: 'WY', label: 'Wyoming' },
+];
+
 // ========== SEASONS ==========
 export const DEFAULT_SEASON = '2026';
 

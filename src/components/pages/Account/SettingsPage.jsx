@@ -3,8 +3,12 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../../context/AuthContext';
 import userProfileService from '../../../data/services/userProfileService';
 import stripeService from '../../../data/services/stripeService';
-import { TEAMS } from '../../../data/constants/apiConstants';
+import { TEAMS, SPORTSBOOKS, US_STATES } from '../../../data/constants/apiConstants';
 import AlertInbox from '../../AlertInbox';
+
+// Feature flag: Notification Preferences isn't ready yet — muted (hidden) for
+// now. Flip to true to bring the section (and its nav link) back. Code kept.
+const SHOW_NOTIFICATION_PREFS = false;
 
 function SettingsPage() {
   const {
@@ -23,7 +27,7 @@ function SettingsPage() {
   // -------------------------------------------------------------------------
   // Profile + preferences form state (seeded from user object)
   // -------------------------------------------------------------------------
-  const [profile, setProfile] = useState({ displayName: '', favoriteTeamId: '' });
+  const [profile, setProfile] = useState({ displayName: '', favoriteTeamId: '', preferredBook: '', state: '' });
   const [prefs, setPrefs] = useState({ emailUpdates: true, weeklyDigest: false, breakingNews: true });
 
   useEffect(() => {
@@ -31,6 +35,8 @@ function SettingsPage() {
       setProfile({
         displayName: user.displayName || '',
         favoriteTeamId: user.favoriteTeamId ?? '',
+        preferredBook: user.preferredBook ?? '',
+        state: user.stateCode ?? '',
       });
       setPrefs({
         emailUpdates: user.emailUpdates ?? true,
@@ -123,31 +129,56 @@ function SettingsPage() {
     }
     setFreeWeekLoading(true);
     setPromoError('');
+    // Hard timeout so a hanging/crashing gateway (the 502 path) can't leave the
+    // button stuck spinning with no message.
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), 15000);
     try {
-      const { checkout_url } = await stripeService.redeemPromo(code);
-      window.location.href = checkout_url;
+      const { checkout_url } = await stripeService.redeemPromo(code, { signal: controller.signal });
+      window.location.href = checkout_url; // success — page leaves; keep spinner
     } catch (err) {
-      // Backend returns { detail: "..." } on 400 — most fetch wrappers copy
-      // detail onto err.message. Fall back to a generic message otherwise.
-      setPromoError(err?.message || 'Unable to redeem code. Please try again.');
+      // A 400 carries a human-readable `detail` (e.g. "You've already redeemed a
+      // promotional code.") which we surface directly. Aborts (timeout), gateway/5xx,
+      // or network failures have no useful detail — show a friendly fallback.
+      const raw = err?.message || '';
+      const isTechnical = err?.name === 'AbortError'
+        || /request failed|failed to fetch|networkerror/i.test(raw);
+      setPromoError(
+        isTechnical
+          ? 'We couldn’t redeem that code. It may already have been used, or the service is briefly unavailable — please try again.'
+          : (raw || 'Unable to redeem code. Please try again.')
+      );
       setFreeWeekLoading(false);
+    } finally {
+      clearTimeout(timer);
     }
   };
 
   // -------------------------------------------------------------------------
   // Sessions
   // -------------------------------------------------------------------------
-  const [sessions, setSessions] = useState([]);
-  const [sessionsLoading, setSessionsLoading] = useState(false);
-  const [revokingId, setRevokingId] = useState(null);
-
+  // The Active Sessions card is muted (not shown). Cap enforcement stays
+  // automated: server-side at login/refresh is authoritative; this silently
+  // trims any overflow beyond the 5-session cap when a user opens Settings
+  // (keeping the 5 most-recently-active, revoking the oldest). No UI/state.
   useEffect(() => {
     if (!isAuthenticated) return;
-    setSessionsLoading(true);
+    let cancelled = false;
     userProfileService.getSessions()
-      .then(setSessions)
-      .catch(() => setSessions([]))
-      .finally(() => setSessionsLoading(false));
+      .then(async (list) => {
+        if (cancelled) return;
+        const arr = Array.isArray(list) ? list : [];
+        const MAX = 5;
+        if (arr.length <= MAX) return;
+        const sorted = [...arr].sort((a, b) =>
+          new Date(b.last_active_at || b.created_at).getTime()
+          - new Date(a.last_active_at || a.created_at).getTime()
+        );
+        const drop = sorted.slice(MAX);
+        await Promise.allSettled(drop.map(s => userProfileService.revokeSession(s.id)));
+      })
+      .catch(() => {});
+    return () => { cancelled = true; };
   }, [isAuthenticated]);
 
   // -------------------------------------------------------------------------
@@ -171,6 +202,8 @@ function SettingsPage() {
       await updateProfile({
         display_name: profile.displayName.trim() || null,
         favorite_team_id: profile.favoriteTeamId !== '' ? Number(profile.favoriteTeamId) : null,
+        preferred_book: profile.preferredBook !== '' ? profile.preferredBook : null,
+        state: profile.state !== '' ? profile.state : null,
       });
       await updatePreferences({
         email_updates: prefs.emailUpdates,
@@ -227,17 +260,6 @@ function SettingsPage() {
     }
   };
 
-  const handleRevokeSession = async (sessionId) => {
-    setRevokingId(sessionId);
-    try {
-      await userProfileService.revokeSession(sessionId);
-      setSessions(prev => prev.filter(s => s.id !== sessionId));
-    } catch (err) {
-      console.error('Failed to revoke session:', err);
-    } finally {
-      setRevokingId(null);
-    }
-  };
 
   const handleLogout = async () => {
     await logout();
@@ -276,13 +298,15 @@ function SettingsPage() {
               </svg>
               Profile
             </a>
-            <a href="#notifications" className="settings-nav-item">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
-                <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
-              </svg>
-              Notifications
-            </a>
+            {SHOW_NOTIFICATION_PREFS && (
+              <a href="#notifications" className="settings-nav-item">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+                  <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+                </svg>
+                Notifications
+              </a>
+            )}
             <a href="#account" className="settings-nav-item">
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <circle cx="12" cy="12" r="3"/>
@@ -295,14 +319,6 @@ function SettingsPage() {
                 <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
               </svg>
               Subscription
-            </a>
-            <a href="#sessions" className="settings-nav-item">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <rect x="2" y="3" width="20" height="14" rx="2"/>
-                <line x1="8" y1="21" x2="16" y2="21"/>
-                <line x1="12" y1="17" x2="12" y2="21"/>
-              </svg>
-              Sessions
             </a>
             {isAdmin && (
               <a href="#admin-tools" className="settings-nav-item">
@@ -359,10 +375,40 @@ function SettingsPage() {
                   </select>
                   <span className="setting-hint">Personalize your experience with team highlights</span>
                 </div>
+                <div className="setting-item">
+                  <label htmlFor="preferredBook">Preferred Sportsbook</label>
+                  <select
+                    id="preferredBook"
+                    value={profile.preferredBook}
+                    onChange={(e) => setProfile(p => ({ ...p, preferredBook: e.target.value }))}
+                  >
+                    <option value="">No preference</option>
+                    {SPORTSBOOKS.map(book => (
+                      <option key={book.value} value={book.value}>{book.label}</option>
+                    ))}
+                  </select>
+                  <span className="setting-hint">Used to tailor "add to betslip" links to your book</span>
+                </div>
+                <div className="setting-item">
+                  <label htmlFor="state">State</label>
+                  <select
+                    id="state"
+                    value={profile.state}
+                    onChange={(e) => setProfile(p => ({ ...p, state: e.target.value }))}
+                  >
+                    <option value="">Select a state...</option>
+                    {US_STATES.map(s => (
+                      <option key={s.value} value={s.value}>{s.label}</option>
+                    ))}
+                  </select>
+                  <span className="setting-hint">Required for Caesars &amp; BetMGM betslip links</span>
+                </div>
               </div>
             </section>
 
-            {/* Notifications Section */}
+            {/* Notifications Section — muted (not ready). Code kept; gated on
+                SHOW_NOTIFICATION_PREFS. */}
+            {SHOW_NOTIFICATION_PREFS && (
             <section id="notifications" className="settings-section">
               <div className="section-header">
                 <h2>Notification Preferences</h2>
@@ -393,6 +439,7 @@ function SettingsPage() {
                 ))}
               </div>
             </section>
+            )}
 
             {/* Save button */}
             <div className="settings-footer">
@@ -1002,60 +1049,6 @@ function SettingsPage() {
                     )}
                   </div>
                 </div>
-              </div>
-            </section>
-
-            {/* Sessions Section */}
-            <section id="sessions" className="settings-section">
-              <div className="section-header">
-                <h2>Active Sessions</h2>
-                <p>
-                  Devices currently signed in to your account.{' '}
-                  <strong>Max 5 active sessions per user</strong> — signing in on a 6th device will
-                  automatically end your oldest session.
-                </p>
-                {!sessionsLoading && sessions.length > 0 && (
-                  <span className="setting-hint" style={{ display: 'inline-block', marginTop: '0.5rem' }}>
-                    {sessions.length} of 5 sessions in use
-                  </span>
-                )}
-              </div>
-              <div className="settings-group">
-                {sessionsLoading ? (
-                  <p className="setting-hint">Loading sessions…</p>
-                ) : sessions.length === 0 ? (
-                  <p className="setting-hint">No active sessions found.</p>
-                ) : (
-                  // Sort newest-first so users see their most recent session at the top.
-                  // The oldest session at the bottom is the next one auto-pruned on a 6th login.
-                  [...sessions]
-                    .sort((a, b) => {
-                      const aTs = new Date(a.last_active_at || a.created_at).getTime();
-                      const bTs = new Date(b.last_active_at || b.created_at).getTime();
-                      return bTs - aTs;
-                    })
-                    .map((session) => (
-                      <div key={session.id} className="account-action">
-                        <div className="action-info">
-                          <h4 style={{ fontSize: '0.9rem' }}>{session.device_info || 'Unknown device'}</h4>
-                          <p>
-                            {session.ip_address && `IP: ${session.ip_address} · `}
-                            {session.last_active_at
-                              ? `Last active: ${new Date(session.last_active_at).toLocaleString()}`
-                              : `Started: ${new Date(session.created_at).toLocaleString()}`}
-                          </p>
-                        </div>
-                        <button
-                          type="button"
-                          className="action-btn danger"
-                          onClick={() => handleRevokeSession(session.id)}
-                          disabled={revokingId === session.id}
-                        >
-                          {revokingId === session.id ? 'Revoking…' : 'Revoke'}
-                        </button>
-                      </div>
-                    ))
-                )}
               </div>
             </section>
 

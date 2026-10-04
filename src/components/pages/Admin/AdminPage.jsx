@@ -1,9 +1,10 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../../context/AuthContext';
 import * as contentService from '../../../data/services/contentService';
 import predictionsService from '../../../data/services/predictionsService';
 import predictionsPerformanceService from '../../../data/services/predictionsPerformanceService';
+import playerStatsService from '../../../data/services/playerStatsServices';
 import { TEAM_METADATA } from '../../../data/constants/apiConstants';
 import { audienceMeta, formatCampaignSentAt } from '../../../data/constants/campaignsConstants';
 import {
@@ -13,6 +14,7 @@ import {
   formatAlertDate,
 } from '../../../data/services/alertsService';
 import { listCampaigns } from '../../../data/services/campaignsService';
+import { refreshScoutDesk } from '../../../data/services/scoutDesk';
 import CampaignDetailDrawer from './CampaignDetailDrawer';
 import AlertComposerModal from './AlertComposerModal';
 import '../../../styles/admin-page-styling/admin.css';
@@ -256,7 +258,7 @@ function ResultBadge({ result }) {
   return <span className={className}>{result.toUpperCase()}</span>;
 }
 
-function PickCard({ type, pick }) {
+function PickCard({ type, pick, aiPick, agree }) {
   if (!pick || pick.pick == null) return null;
   const meta = PICK_TYPE_META[type];
   const prob = pick.model_prob != null ? Math.round(pick.model_prob * 100) : null;
@@ -303,22 +305,159 @@ function PickCard({ type, pick }) {
           </div>
         )}
       </div>
+      {aiPick && (
+        <div className="admin-pick__scout">
+          <span className="admin-pick__scout-text">
+            <span className="admin-pick__scout-label">Scout AI:</span> {aiPick}
+          </span>
+          {agree != null && (
+            <span className={`admin-pick__scout-badge ${agree ? 'agree' : 'differ'}`}>
+              {agree ? '= Model' : '≠ Model'}
+            </span>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ─── Scout AI pick helpers (compared against the model pick on each card) ──────
+
+// scout_ai may arrive as a structured object or as { raw: "<json string>" }.
+function parseScoutAi(node) {
+  const sa = node?.scout_ai;
+  if (!sa) return null;
+  if (typeof sa === 'string') { try { return JSON.parse(sa); } catch { return null; } }
+  if (typeof sa.raw === 'string') { try { return JSON.parse(sa.raw); } catch { return null; } }
+  return typeof sa === 'object' ? sa : null;
+}
+
+// Which side a pick string points to, by matching team names / abbreviations.
+function pickTeamSide(text, game) {
+  if (!text) return null;
+  const t = String(text).toLowerCase();
+  const hit = (name, abbr) => {
+    if (name && t.includes(name.toLowerCase())) return true;
+    if (abbr && t.includes(String(abbr).toLowerCase())) return true;
+    const nick = name ? name.toLowerCase().split(/\s+/).pop() : null;
+    return !!nick && t.includes(nick);
+  };
+  const away = hit(game.away_team_name, game.away_team);
+  const home = hit(game.home_team_name, game.home_team);
+  if (away && !home) return 'away';
+  if (home && !away) return 'home';
+  return null;
+}
+const overUnderSide = (text) => {
+  const t = String(text || '').toLowerCase();
+  return t.includes('over') ? 'over' : t.includes('under') ? 'under' : null;
+};
+
+function ScoutSection({ icon, title, children, warning }) {
+  if (!children) return null;
+  return (
+    <div className="admin-scout-sec">
+      <div className={`admin-scout-sec__title${warning ? ' warn' : ''}`}>{icon} {title}</div>
+      <div className="admin-scout-sec__body">{children}</div>
+    </div>
+  );
+}
+
+// The expandable full scouting report shown under the prediction cards.
+function ScoutReport({ scout, pred }) {
+  const [open, setOpen] = useState(false);
+  const a = scout;
+  const hasReport = a && (a.headline || a.totalLean || a.oddsEdge || a.mlAlignment ||
+    a.pitchingMatchup || a.splitsEdge || a.keyFactors?.length || a.redFlags?.length || pred);
+  if (!hasReport) return null;
+
+  return (
+    <div className="admin-scout-report">
+      <button className="admin-scout-report__toggle" onClick={() => setOpen(v => !v)} aria-expanded={open}>
+        🧠 {open ? '▴ Hide scouting report' : '▾ Show scouting report'}
+      </button>
+      {open && (
+        <div className="admin-scout-report__body">
+          {a.headline && <p className="admin-scout-report__headline">{a.headline}</p>}
+          {pred && (
+            <div className="admin-scout-model">
+              <div className="admin-scout-model__title">📊 Model prediction</div>
+              <div className="admin-scout-model__grid">
+                {(pred.blended_p_home_win ?? pred.p_home_win) != null && (
+                  <div><span>Home win%</span><strong>{Math.round((pred.blended_p_home_win ?? pred.p_home_win) * 100)}%</strong></div>
+                )}
+                {(pred.blended_predicted_margin ?? pred.predicted_margin) != null && (
+                  <div><span>Pred. margin</span><strong>{(pred.blended_predicted_margin ?? pred.predicted_margin) > 0 ? '+' : ''}{Number(pred.blended_predicted_margin ?? pred.predicted_margin).toFixed(1)}</strong></div>
+                )}
+                {(pred.blended_predicted_total ?? pred.predicted_total) != null && (
+                  <div><span>Pred. total</span><strong>{Number(pred.blended_predicted_total ?? pred.predicted_total).toFixed(1)}</strong></div>
+                )}
+              </div>
+            </div>
+          )}
+          <ScoutSection icon="📈" title="Total Lean">{a.totalLean ? `${a.totalLean.lean ? `${a.totalLean.lean} — ` : ''}${a.totalLean.reason || ''}`.trim() : null}</ScoutSection>
+          <ScoutSection icon="💲" title="Odds Edge">{a.oddsEdge}</ScoutSection>
+          <ScoutSection icon="🤖" title="ML Alignment">{a.mlAlignment}</ScoutSection>
+          <ScoutSection icon="⚾" title="Pitching Matchup">{a.pitchingMatchup}</ScoutSection>
+          <ScoutSection icon="📊" title="Splits Edge">{a.splitsEdge}</ScoutSection>
+          {Array.isArray(a.keyFactors) && a.keyFactors.length > 0 && (
+            <ScoutSection icon="🔑" title="Key Factors">
+              <ul className="admin-scout-bullets">{a.keyFactors.map((f, i) => <li key={i}>{f}</li>)}</ul>
+            </ScoutSection>
+          )}
+          {Array.isArray(a.redFlags) && a.redFlags.length > 0 && (
+            <ScoutSection icon="⚠" title="Red Flags" warning>
+              <ul className="admin-scout-bullets warn">{a.redFlags.map((f, i) => <li key={i}>{f}</li>)}</ul>
+            </ScoutSection>
+          )}
+        </div>
+      )}
     </div>
   );
 }
 
 function GamePicksSideModal({ game, date, onClose }) {
+  const [predData, setPredData] = useState(null);
+
   useEffect(() => {
     const handleKey = (e) => { if (e.key === 'Escape') onClose(); };
     document.addEventListener('keydown', handleKey);
     return () => document.removeEventListener('keydown', handleKey);
   }, [onClose]);
 
+  // Pull the game's Scout AI scouting report to compare against the model pick.
+  const gamePk = game?.game_pk;
+  useEffect(() => {
+    if (gamePk == null) { setPredData(null); return; }
+    let cancelled = false;
+    predictionsService.getByGamePk(gamePk)
+      .then(d => { if (!cancelled) setPredData(d || null); })
+      .catch(() => { if (!cancelled) setPredData(null); });
+    return () => { cancelled = true; };
+  }, [gamePk]);
+
   if (!game) return null;
 
   const awayId = teamMlbId(game.away_team);
   const homeId = teamMlbId(game.home_team);
   const awayWon = game.away_score > game.home_score;
+
+  // Scout AI pick per market + whether it agrees with the model's pick side.
+  const a = parseScoutAi(predData);
+  const aiByType = {};
+  for (const p of (Array.isArray(a?.picks) ? a.picks : [])) if (p?.type) aiByType[p.type] = p;
+  if (!aiByType['Total'] && a?.totalLean?.lean) aiByType['Total'] = { type: 'Total', pick: a.totalLean.lean };
+
+  const aiInfo = (market, ml) => {
+    const ai = aiByType[market];
+    if (!ai?.pick) return { aiPick: null, agree: null };
+    const mlSide = market === 'Total'
+      ? (overUnderSide(ml?.pick) || ml?.pick_side)
+      : (pickTeamSide(ml?.pick, game) || ml?.pick_side);
+    const aiSide = market === 'Total' ? overUnderSide(ai.pick) : pickTeamSide(ai.pick, game);
+    const agree = (mlSide && aiSide) ? mlSide === aiSide : null;
+    return { aiPick: ai.pick, agree };
+  };
 
   return (
     <div className="admin-side-overlay" onClick={onClose}>
@@ -357,9 +496,10 @@ function GamePicksSideModal({ game, date, onClose }) {
         </div>
 
         <div className="admin-side__body">
-          <PickCard type="Moneyline" pick={game.moneyline} />
-          <PickCard type="Run Line"  pick={game.run_line}  />
-          <PickCard type="Total"     pick={game.totals}    />
+          <PickCard type="Moneyline" pick={game.moneyline} {...aiInfo('Moneyline', game.moneyline)} />
+          <PickCard type="Run Line"  pick={game.run_line}  {...aiInfo('Run Line', game.run_line)} />
+          <PickCard type="Total"     pick={game.totals}    {...aiInfo('Total', game.totals)} />
+          <ScoutReport scout={a} pred={predData?.prediction || null} />
         </div>
       </aside>
     </div>
@@ -458,6 +598,198 @@ function DailyGameReportModal({ data, title, onClose, onSelectGame }) {
   );
 }
 
+// ─── Pitcher-prop daily report (hit rate wedge + scorecard modal) ─────────────
+
+const PITCHER_PROP_META = [
+  { key: 'strikeouts',   label: 'Strikeouts',   short: 'K'   },
+  { key: 'earned_runs',  label: 'Earned Runs',  short: 'ER'  },
+  { key: 'hits_allowed', label: 'Hits Allowed', short: 'H'   },
+  { key: 'outs',         label: 'Pitcher Outs', short: 'OUT' },
+];
+
+const GRADED_RESULTS = new Set(['win', 'loss', 'push']);
+const propIsGraded = (prop) => !!prop && GRADED_RESULTS.has(prop.result);
+// A pitcher counts as graded once any of its props has a final result.
+const pitcherIsGraded = (p) => PITCHER_PROP_META.some(({ key }) => propIsGraded(p[key]));
+
+// A pitcher with no renderable prop (all picks missing) is still populating.
+const pitcherHasNoProps = (p) => !PITCHER_PROP_META.some(({ key }) => p[key] && p[key].pick != null);
+// The report is incomplete if it has any pitcher whose props haven't loaded yet.
+function reportIsIncomplete(report) {
+  const pitchers = Array.isArray(report?.pitchers) ? report.pitchers : [];
+  return pitchers.length === 0 || pitchers.some(pitcherHasNoProps);
+}
+
+// ET-local YYYY-MM-DD, offsetDays back from today.
+function etDateStr(offsetDays = 0) {
+  const d = new Date();
+  if (offsetDays) d.setDate(d.getDate() + offsetDays);
+  return d.toLocaleDateString('en-CA', { timeZone: 'America/New_York' });
+}
+
+// Headshot needs the MLB person id specifically — only trust fields that are
+// explicitly the MLB id (never an internal player_id/pitcher_id, which would
+// 404 the CDN). Everything else is resolved from the name via /players/lookup.
+function pitcherMlbId(p) {
+  return p.pitcher_mlb_id ?? p.player_mlb_id ?? p.mlb_id ?? null;
+}
+function pitcherHeadshotUrl(id) {
+  // Same URL the player profile header builds from player_mlb_id.
+  return `https://img.mlbstatic.com/mlb-photos/image/upload/w_120,q_100/v1/people/${id}/headshot/67/current`;
+}
+function pitcherInitials(name) {
+  return String(name || '').split(/\s+/).filter(Boolean).map(w => w[0]).slice(0, 2).join('').toUpperCase() || '?';
+}
+
+function PitcherPropReportModal({ data, title, onClose, onRefresh, refreshing }) {
+  // Resolve each pitcher's MLB id by name (the report rows don't carry one) so we
+  // can render the same headshot the player profile page uses.
+  const [idByName, setIdByName] = useState({});
+
+  useEffect(() => {
+    let cancelled = false;
+    const rows = Array.isArray(data?.pitchers) ? data.pitchers : [];
+    const names = [...new Set(
+      rows.filter(p => pitcherMlbId(p) == null && p.pitcher_name).map(p => p.pitcher_name),
+    )];
+    if (names.length === 0) return undefined;
+    Promise.all(names.map(name =>
+      playerStatsService.lookupPlayer({ fullName: name })
+        .then(res => [name, res?.mlb_id ?? null])
+        .catch(() => [name, null]),
+    )).then(pairs => {
+      if (cancelled) return;
+      const map = {};
+      for (const [name, id] of pairs) if (id != null) map[name] = id;
+      setIdByName(map);
+    });
+    return () => { cancelled = true; };
+  }, [data]);
+
+  if (!data) return null;
+  const raw = Array.isArray(data.pitchers) ? data.pitchers : [];
+  // Graded pitchers at the top, pending at the bottom (stable within each group).
+  const pitchers = [...raw].sort((a, b) => (pitcherIsGraded(b) ? 1 : 0) - (pitcherIsGraded(a) ? 1 : 0));
+  const missingCount = pitchers.filter(pitcherHasNoProps).length;
+
+  return (
+    <div className="admin-modal-overlay" onClick={onClose}>
+      <div className="admin-modal" onClick={e => e.stopPropagation()}>
+        <button className="admin-modal__close" onClick={onClose} aria-label="Close">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <line x1="18" y1="6" x2="6" y2="18"/>
+            <line x1="6" y1="6" x2="18" y2="18"/>
+          </svg>
+        </button>
+
+        <div className="admin-modal__header">
+          <h3 className="admin-modal__title">{title}</h3>
+          <p className="admin-modal__sub">
+            {data.date} · {pitchers.length} pitcher{pitchers.length !== 1 ? 's' : ''}
+          </p>
+          {onRefresh && (
+            <button
+              type="button"
+              className="admin-pp-refresh"
+              onClick={onRefresh}
+              disabled={refreshing}
+              aria-busy={refreshing}
+            >
+              <svg className={`admin-pp-refresh__icon${refreshing ? ' is-spinning' : ''}`} width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <polyline points="23 4 23 10 17 10" />
+                <polyline points="1 20 1 14 7 14" />
+                <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15" />
+              </svg>
+              {refreshing ? 'Refreshing…' : 'Refresh'}
+            </button>
+          )}
+          {missingCount > 0 && (
+            <p className="admin-pp-populating">
+              {missingCount} pitcher{missingCount !== 1 ? 's' : ''} still populating — predictions load closer to first pitch. {onRefresh ? 'Hit Refresh to pull the latest.' : ''}
+            </p>
+          )}
+          {data.summary && (
+            <div className="admin-modal__summary">
+              {PITCHER_PROP_META.map(({ key, short }) => {
+                const s = data.summary[key];
+                if (!s) return null;
+                return (
+                  <div key={key} className="admin-modal__summary-item">
+                    <span className="admin-modal__summary-label">{short}</span>
+                    <strong>{s.accuracy}%</strong>
+                    <span className="admin-modal__summary-sub">{s.hits}/{s.picks}</span>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
+
+        {pitchers.length === 0 ? (
+          <div className="admin-modal__empty">No graded pitcher props for this date.</div>
+        ) : (
+          <div className="admin-pp-list">
+            {pitchers.map((p, i) => {
+              const mlbId = pitcherMlbId(p) ?? idByName[p.pitcher_name] ?? null;
+              const graded = pitcherIsGraded(p);
+              // Within a card, graded prop tiles first, pending last.
+              const props = PITCHER_PROP_META
+                .filter(({ key }) => p[key] && p[key].pick != null)
+                .sort((a, b) => (propIsGraded(p[b.key]) ? 1 : 0) - (propIsGraded(p[a.key]) ? 1 : 0));
+              return (
+              <div key={p.game_pk ? `${p.game_pk}-${p.pitcher_name}` : i} className={`admin-pp-card${graded ? '' : ' admin-pp-card--pending'}`}>
+                <div className="admin-pp-card__head">
+                  <div className="admin-pp-card__avatar">
+                    <span className="admin-pp-card__avatar-fallback">{pitcherInitials(p.pitcher_name)}</span>
+                    {mlbId != null && (
+                      <img
+                        src={pitcherHeadshotUrl(mlbId)}
+                        alt=""
+                        className="admin-pp-card__avatar-img"
+                        loading="lazy"
+                        onError={e => { e.currentTarget.style.display = 'none'; }}
+                      />
+                    )}
+                  </div>
+                  <div className="admin-pp-card__id">
+                    <span className="admin-pp-card__name">{p.pitcher_name}</span>
+                    <span className="admin-pp-card__matchup">
+                      {p.team} {p.home_away === 'home' ? 'vs' : '@'} {p.opponent}
+                    </span>
+                  </div>
+                  {p.status && <span className={`admin-pp-card__status${graded ? ' is-final' : ''}`}>{p.status}</span>}
+                </div>
+                <div className="admin-pp-card__props">
+                  {props.map(({ key, label }) => {
+                    const prop = p[key];
+                    return (
+                      <div key={key} className={`admin-pp-prop admin-pp-prop--${prop.result || 'pending'}`}>
+                        <div className="admin-pp-prop__top">
+                          <span className="admin-pp-prop__label">{label}</span>
+                          <ResultBadge result={prop.result} />
+                        </div>
+                        <div className="admin-pp-prop__pick">
+                          {prop.pick != null ? String(prop.pick).toUpperCase() : '—'}
+                          {prop.line != null ? ` ${prop.line}` : ''}
+                        </div>
+                        <div className="admin-pp-prop__nums">
+                          <span>proj <strong>{prop.projection ?? '—'}</strong></span>
+                          <span>actual <strong>{prop.actual ?? '—'}</strong></span>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+              );
+            })}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
 // ─── Wedge: Player prop hit rate (pitcher / batter, today / yesterday) ────────
 
 function PlayerPropRow({ row }) {
@@ -482,12 +814,15 @@ function PlayerPropRow({ row }) {
   );
 }
 
-function PlayerPropsWedge({ data, loading, error }) {
+function PlayerPropsWedge({ data, loading, error, onOpenPitcherReport, pitcherReportReady }) {
   const [day, setDay] = useState('yesterday');       // 'today' | 'yesterday'
   const [category, setCategory] = useState('pitcher'); // 'pitcher' | 'batter'
 
   const dayData = data?.[day] ?? null;
   const rows    = dayData?.[category] ?? [];
+  // The daily pitcher-prop scorecard modal only applies to the pitcher category.
+  const canOpenReport = category === 'pitcher' && !!onOpenPitcherReport;
+  const reportReady = !!pitcherReportReady?.[day];
 
   return (
     <div className="admin-wedge admin-wedge--player-props">
@@ -544,6 +879,20 @@ function PlayerPropsWedge({ data, loading, error }) {
         <div className="admin-prop-list">
           {rows.map(row => <PlayerPropRow key={row.key} row={row} />)}
         </div>
+      )}
+
+      {canOpenReport && !loading && !error && (
+        <button
+          type="button"
+          className="admin-pp-report-link"
+          onClick={() => onOpenPitcherReport(day)}
+          disabled={!reportReady}
+          title={reportReady ? 'Open the per-pitcher scorecard' : 'No graded pitcher props for this date yet'}
+        >
+          {reportReady
+            ? `View ${day === 'today' ? "today's" : "yesterday's"} pitcher scorecard →`
+            : 'No pitcher scorecard for this date yet'}
+        </button>
       )}
     </div>
   );
@@ -680,7 +1029,51 @@ function AdminPage() {
   const [playerPropsLoading, setPlayerPropsLoading] = useState(true);
   const [playerPropsError, setPlayerPropsError] = useState(null);
 
+  // Pitcher-prop daily report (today / yesterday) — opened from the player-prop
+  // section; on fetch failure the data stays null and the trigger shows disabled.
+  const [pitcherToday, setPitcherToday] = useState(null);
+  const [pitcherYesterday, setPitcherYesterday] = useState(null);
+  const [pitcherRefreshing, setPitcherRefreshing] = useState(false);
+
+  // Fetch one day's pitcher-prop report; pass force to bypass the cache.
+  const loadPitcherReport = useCallback((which, { force = false } = {}) => {
+    const date = which === 'today' ? etDateStr(0) : etDateStr(-1);
+    const setter = which === 'today' ? setPitcherToday : setPitcherYesterday;
+    return predictionsPerformanceService
+      .getPitcherPropsDailyReport(date, force ? { ttl: 0 } : {})
+      .then(data => { setter(data || null); return data || null; })
+      .catch(() => null);
+  }, []);
+
+  // Manual refresh from inside the modal — always cache-bypassing.
+  const refreshPitcherReport = useCallback(async (which) => {
+    setPitcherRefreshing(true);
+    try { await loadPitcherReport(which, { force: true }); }
+    finally { setPitcherRefreshing(false); }
+  }, [loadPitcherReport]);
+
+  // Initial load + auto-retry: if a report comes back incomplete (predictions
+  // still populating), refetch fresh a couple times with backoff.
+  useEffect(() => {
+    let cancelled = false;
+    let attempt = 0;
+    const run = async (force) => {
+      const [t, y] = await Promise.all([
+        loadPitcherReport('today', { force }),
+        loadPitcherReport('yesterday', { force }),
+      ]);
+      if (cancelled) return;
+      attempt += 1;
+      if ((reportIsIncomplete(t) || reportIsIncomplete(y)) && attempt < 3) {
+        setTimeout(() => { if (!cancelled) run(true); }, attempt * 5000); // 5s, 10s
+      }
+    };
+    run(false);
+    return () => { cancelled = true; };
+  }, [loadPitcherReport]);
+
   const [reportModal, setReportModal] = useState(null); // null | 'today' | 'yesterday'
+  const [pitcherReportModal, setPitcherReportModal] = useState(null); // null | 'today' | 'yesterday'
   const [selectedGame, setSelectedGame] = useState(null); // { game, date } | null
   const [alertComposerOpen, setAlertComposerOpen] = useState(false);
 
@@ -697,6 +1090,43 @@ function AdminPage() {
   const [campaignsLoading, setCampaignsLoading] = useState(true);
   const [campaignsError, setCampaignsError] = useState(null);
   const [openCampaign, setOpenCampaign] = useState(null); // lightweight summary; drawer fetches full row
+
+  // Scout AI Desk refresh (admin force re-pick)
+  const [deskRefreshing, setDeskRefreshing] = useState(false);
+  const [deskRefreshMsg, setDeskRefreshMsg] = useState(null); // { tone: 'ok'|'empty'|'error', text }
+
+  const handleRefreshDesk = async () => {
+    if (deskRefreshing) return;
+    setDeskRefreshing(true);
+    setDeskRefreshMsg(null);
+    // The funnel (audit → AI selection → news/injury web checks) can run ~a
+    // minute; cap the wait so a hung request fails gracefully instead of
+    // spinning forever.
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), 150000); // 2.5 min
+    try {
+      const board = await refreshScoutDesk(undefined, { signal: controller.signal });
+      const picks = Array.isArray(board?.picks) ? board.picks : [];
+      if (picks.length === 0) {
+        setDeskRefreshMsg({
+          tone: 'empty',
+          text: board?.message || 'No props cleared the audit gate yet — lines likely haven’t posted. Try again closer to first pitch.',
+        });
+      } else {
+        setDeskRefreshMsg({ tone: 'ok', text: `Scout AI Desk rebuilt — ${picks.length} pick${picks.length === 1 ? '' : 's'} on the board.` });
+      }
+    } catch (e) {
+      setDeskRefreshMsg({
+        tone: 'error',
+        text: e?.name === 'AbortError'
+          ? 'Refresh timed out after 2.5 minutes. The board may still be rebuilding server-side — reload in a moment to check.'
+          : (e?.message || 'Refresh failed. Please try again.'),
+      });
+    } finally {
+      clearTimeout(timer);
+      setDeskRefreshing(false);
+    }
+  };
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -830,12 +1260,12 @@ function AdminPage() {
               </svg>
               Model Performance
             </Link>
-            <Link to="/admin/campaigns" className="admin-action-btn">
+            <Link to="/admin/prediction-audit" className="admin-action-btn">
               <svg className="admin-action-btn__icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
-                <polyline points="22,6 12,13 2,6" />
+                <path d="M9 11l3 3L22 4" />
+                <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" />
               </svg>
-              Campaigns
+              Prediction Audit
             </Link>
             <button
               type="button"
@@ -848,15 +1278,35 @@ function AdminPage() {
               </svg>
               New Alert
             </button>
-            <Link to="/admin/new" className="admin-action-btn">
-              <svg className="admin-action-btn__icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                <line x1="12" y1="5" x2="12" y2="19" />
-                <line x1="5"  y1="12" x2="19" y2="12" />
+            <button
+              type="button"
+              className="admin-action-btn admin-action-btn--accent"
+              onClick={handleRefreshDesk}
+              disabled={deskRefreshing}
+              aria-busy={deskRefreshing}
+            >
+              <svg
+                className={`admin-action-btn__icon${deskRefreshing ? ' is-spinning' : ''}`}
+                width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"
+              >
+                <polyline points="23 4 23 10 17 10" />
+                <polyline points="1 20 1 14 7 14" />
+                <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15" />
               </svg>
-              New Post
-            </Link>
+              {deskRefreshing ? 'Refreshing…' : 'Refresh Scout AI Desk'}
+            </button>
           </div>
         </div>
+
+        {deskRefreshing ? (
+          <div className="admin-desk-refresh-note admin-desk-refresh-note--busy" role="status">
+            Rebuilding the board — running the full funnel (audit → AI selection → news/injury checks). This can take up to a minute…
+          </div>
+        ) : deskRefreshMsg && (
+          <div className={`admin-desk-refresh-note admin-desk-refresh-note--${deskRefreshMsg.tone}`} role="status">
+            {deskRefreshMsg.text}
+          </div>
+        )}
 
         {/* ── Row 1: Status hero ── */}
         <div className="admin-hero-grid">
@@ -899,6 +1349,11 @@ function AdminPage() {
             data={playerProps}
             loading={playerPropsLoading}
             error={playerPropsError}
+            onOpenPitcherReport={(d) => setPitcherReportModal(d)}
+            pitcherReportReady={{
+              today: Array.isArray(pitcherToday?.pitchers) && pitcherToday.pitchers.length > 0,
+              yesterday: Array.isArray(pitcherYesterday?.pitchers) && pitcherYesterday.pitchers.length > 0,
+            }}
           />
         </div>
 
@@ -1096,6 +1551,13 @@ function AdminPage() {
               <option value="published">Published</option>
               <option value="draft">Draft</option>
             </select>
+            <Link to="/admin/new" className="admin-action-btn admin-filters__create">
+              <svg className="admin-action-btn__icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <line x1="12" y1="5" x2="12" y2="19" />
+                <line x1="5"  y1="12" x2="19" y2="12" />
+              </svg>
+              New Post
+            </Link>
           </div>
 
           {/* Posts Table */}
@@ -1172,6 +1634,16 @@ function AdminPage() {
           game={selectedGame.game}
           date={selectedGame.date}
           onClose={() => setSelectedGame(null)}
+        />
+      )}
+
+      {pitcherReportModal && (
+        <PitcherPropReportModal
+          data={pitcherReportModal === 'today' ? pitcherToday : pitcherYesterday}
+          title={pitcherReportModal === 'today' ? "Today's Pitcher Prop Report" : "Yesterday's Pitcher Prop Report"}
+          onClose={() => setPitcherReportModal(null)}
+          onRefresh={() => refreshPitcherReport(pitcherReportModal)}
+          refreshing={pitcherRefreshing}
         />
       )}
 

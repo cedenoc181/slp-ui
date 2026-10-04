@@ -300,7 +300,7 @@ function MLBStandings() {
       setSelectedSeason(String(SEASON_RANGE.END)); // Spring training defaults to current year
     } else if (type === 'postseason') {
       setSelectedLeague('Playoff');
-      setSelectedSeason(String(SEASON_RANGE.END - 1)); // Default to last completed postseason
+      setSelectedSeason(String(SEASON_RANGE.END)); // Postseason bracket falls back to the prior year itself if needed
     } else {
       setSelectedLeague('AL');
       setSelectedSeason(DEFAULT_SEASON);

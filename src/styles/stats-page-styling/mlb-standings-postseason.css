@@ -381,6 +381,54 @@
 }
 
 /* ============================================
+   Placeholder (round not reached yet)
+   ============================================ */
+.series-block.placeholder {
+  background: transparent;
+  border-style: dashed;
+  border-color: var(--card-border);
+  box-shadow: none;
+}
+
+.series-block.placeholder:hover {
+  border-color: var(--card-border);
+  box-shadow: none;
+}
+
+.series-block.world-series.placeholder {
+  border-color: rgba(255, 215, 0, 0.25);
+}
+
+.placeholder-round-label {
+  margin: 0;
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--muted);
+  text-align: center;
+}
+
+.team-row.placeholder {
+  justify-content: center;
+  text-align: center;
+  background: transparent;
+  border-style: dashed;
+  box-shadow: none;
+  color: var(--muted);
+  font-style: italic;
+}
+
+.team-row.placeholder:hover {
+  background: transparent;
+  transform: none;
+  box-shadow: none;
+}
+
+.team-row.placeholder.nl {
+  justify-content: center;
+}
+
+/* ============================================
    Team Row
    ============================================ */
 .team-row {

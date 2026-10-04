@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../../context/AuthContext';
 import { TEAM_METADATA, getTeamById } from '../../../data/constants/apiConstants';
 import predictionsService from '../../../data/services/predictionsService';
+import { WarRoom, BestPropsBoard } from './ScoutWarRoom';
 import playerStatsService from '../../../data/services/playerStatsServices';
 import api from '../../../data/services/apiService';
 import PredictionsNav from './PredictionsNav';
@@ -12,6 +13,10 @@ import '../../../styles/predictions-page-styling/pitcher-props.css';
 import '../../../styles/stats-page-styling/scout-ai.css';
 import analysisIcon from '../../../assets/icons/analysis.png';
 import loadingPredictionsIcon from '../../../assets/icons/loading-predictions.png';
+import iconStrikeouts from '../../../assets/icons/strikeouts-prop.png';
+import iconEarnedRuns from '../../../assets/icons/earnedruns-prop.png';
+import iconHitsAllowed from '../../../assets/icons/hitsallowed-prop.png';
+import iconOuts from '../../../assets/icons/pitcher-prop.png';
 
 // ─── URL helpers ──────────────────────────────────────────────────────────────
 
@@ -137,28 +142,28 @@ function getMockPitcherProps(pitcher) {
 
   const raw = [
     {
-      key: 'strikeouts', label: 'Strikeouts',  icon: '🔥',
+      key: 'strikeouts', label: 'Strikeouts',  icon: iconStrikeouts,
       line:      4.5 + (s % 4),
       side:      s % 3 !== 0 ? 'Over' : 'Under',
       modelProb: 56 + (s % 22),
       baseOdds:  -120 + (s % 35),
     },
     {
-      key: 'hits',       label: 'Hits Allowed', icon: '🎯',
+      key: 'hits',       label: 'Hits Allowed', icon: iconHitsAllowed,
       line:      4.5 + ((s * 3) % 4),
       side:      s % 2 === 0 ? 'Under' : 'Over',
       modelProb: 53 + (s % 18),
       baseOdds:  -125 + ((s * 2) % 40),
     },
     {
-      key: 'outs',       label: 'Pitcher Outs', icon: '⚾',
+      key: 'outs',       label: 'Pitcher Outs', icon: iconOuts,
       line:      14.5 + (s % 5),
       side:      s % 2 === 0 ? 'Over' : 'Under',
       modelProb: 54 + (s % 20),
       baseOdds:  -115 + ((s * 4) % 30),
     },
     {
-      key: 'earnedRuns', label: 'Earned Runs',  icon: '📊',
+      key: 'earnedRuns', label: 'Earned Runs',  icon: iconEarnedRuns,
       line:      1.5 + (s % 3),
       side:      'Under',
       modelProb: 57 + (s % 19),
@@ -201,10 +206,10 @@ function getMockPitcherProps(pitcher) {
 
 // Maps API stat_type → component key + display metadata
 const STAT_MAP = {
-  strikeouts:   { key: 'strikeouts', label: 'Strikeouts',   icon: '🔥', blendedKey: 'blended_strikeouts',   stdKey: 'strikeouts_std_dev'   },
-  hits_allowed: { key: 'hits',       label: 'Hits Allowed', icon: '🎯', blendedKey: 'blended_hits_allowed',  stdKey: 'hits_allowed_std_dev'  },
-  outs:         { key: 'outs',       label: 'Pitcher Outs', icon: '⚾', blendedKey: 'blended_outs',          stdKey: 'outs_std_dev'          },
-  earned_runs:  { key: 'earnedRuns', label: 'Earned Runs',  icon: '📊', blendedKey: 'blended_earned_runs',   stdKey: 'earned_runs_std_dev'   },
+  strikeouts:   { key: 'strikeouts', label: 'Strikeouts',   icon: iconStrikeouts,  blendedKey: 'blended_strikeouts',   stdKey: 'strikeouts_std_dev'   },
+  hits_allowed: { key: 'hits',       label: 'Hits Allowed', icon: iconHitsAllowed, blendedKey: 'blended_hits_allowed',  stdKey: 'hits_allowed_std_dev'  },
+  outs:         { key: 'outs',       label: 'Pitcher Outs', icon: iconOuts,        blendedKey: 'blended_outs',          stdKey: 'outs_std_dev'          },
+  earned_runs:  { key: 'earnedRuns', label: 'Earned Runs',  icon: iconEarnedRuns,  blendedKey: 'blended_earned_runs',   stdKey: 'earned_runs_std_dev'   },
 };
 
 function buildPitcherProps(pitcher) {
@@ -345,15 +350,6 @@ function arePredictionsUnlocked(pitchers) {
   return new Date() >= unlock;
 }
 
-// ─── Composite score: 40% EV, 35% model probability, 25% Scout AI confidence ──
-function compositeScore(prop) {
-  const ev      = Math.min(Math.max(parseFloat(prop.ev), -20), 40);
-  const evNorm  = (ev + 20) / 60 * 100;        // −20 → 0,  +40 → 100
-  const probNorm = prop.modelProb;              // already 0–100
-  const confNorm = (prop.scoutConf ?? 0) * 20; // 0–5 → 0–100
-  return evNorm * 0.40 + probNorm * 0.35 + confNorm * 0.25;
-}
-
 // Filter helper: classify a prop by its best price.
 //   Favs  = heavy favorite at -120 or shorter (e.g. -120, -150, -200)
 //   Dawgs = any positive (plus) odds
@@ -363,30 +359,6 @@ function propPassesRisk(prop, riskFilter) {
   if (riskFilter === 'fav') return prop?.bestOdds != null && prop.bestOdds <= -120;
   if (riskFilter === 'dog') return prop?.bestOdds != null && prop.bestOdds > 0;
   return true;
-}
-
-function getTopPicks(pitchers, unlocked, adminOverride = false) {
-  const candidates = [];
-  for (const pitcher of pitchers.filter(p => unlocked && !!p.prediction && (adminOverride || !!p.prediction.scout_ai))) {
-    const { props } = buildPitcherProps(pitcher);
-    for (const prop of props) {
-      candidates.push({ pitcher, bestProp: prop, score: compositeScore(prop) });
-    }
-  }
-
-  // Sort by score, then keep only the best-scoring prop per pitcher so the
-  // top-picks row never shows the same pitcher twice.
-  candidates.sort((a, b) => b.score - a.score);
-  const seen = new Set();
-  const unique = [];
-  for (const c of candidates) {
-    const key = pitcherKey(c.pitcher);
-    if (seen.has(key)) continue;
-    seen.add(key);
-    unique.push(c);
-    if (unique.length === 4) break;
-  }
-  return unique;
 }
 
 // ─── Shared sub-components ────────────────────────────────────────────────────
@@ -430,36 +402,6 @@ function PlatformLogo({ name, metaMap }) {
 
 // ─── Top pick card ────────────────────────────────────────────────────────────
 
-function TopPitcherCard({ pitcher, bestProp, onClick }) {
-  return (
-    <button className="pp-top-card" onClick={onClick}>
-      {/* Header row: small headshot + big team logo */}
-      <div className="pp-top-card-header">
-        <Headshot pitcher={pitcher} className="pp-top-card-headshot" />
-        <img
-          src={teamLogoUrl(pitcher.teamMlbId)}
-          alt={pitcher.teamAbbr}
-          className="pp-top-card-team-logo"
-        />
-      </div>
-
-      {/* Info */}
-      <div className="pp-top-card-info">
-        <div className="pp-top-card-name">{pitcher.name}</div>
-        <div className="pp-top-card-matchup">{pitcher.teamAbbr} · vs {pitcher.opponent}</div>
-
-        <div className="pp-top-card-prop">
-          <span className="pp-top-card-prop-label">{bestProp.label}</span>
-          <span className="pp-top-card-prop-line">
-            {bestProp.side} {bestProp.line} · {fmtOdds(bestProp.bestOdds)}
-          </span>
-        </div>
-
-        <EVBadge ev={bestProp.ev} />
-      </div>
-    </button>
-  );
-}
 
 // ─── Pitcher list card ────────────────────────────────────────────────────────
 
@@ -557,7 +499,7 @@ function PropPanel({ prop, onClick }) {
   return (
     <button className={`pp-prop-panel accent-${accent}`} onClick={onClick}>
       <div className="pp-prop-header">
-        <span className="pp-prop-icon">{prop.icon}</span>
+        <img src={prop.icon} className="pp-prop-icon-img" alt="" />
         <span className="pp-prop-label">{prop.label}</span>
       </div>
 
@@ -691,10 +633,10 @@ function PropDFSTable({ prop }) {
 // ─── Pitcher Scout AI modal ───────────────────────────────────────────────────
 
 const PITCHER_PROP_META = {
-  strikeouts:   { label: 'Strikeouts',   icon: '🔥' },
-  earned_runs:  { label: 'Earned Runs',  icon: '📊' },
-  hits_allowed: { label: 'Hits Allowed', icon: '🎯' },
-  outs:         { label: 'Pitcher Outs', icon: '⚾' },
+  strikeouts:   { label: 'Strikeouts',   icon: iconStrikeouts  },
+  earned_runs:  { label: 'Earned Runs',  icon: iconEarnedRuns  },
+  hits_allowed: { label: 'Hits Allowed', icon: iconHitsAllowed },
+  outs:         { label: 'Pitcher Outs', icon: iconOuts        },
 };
 
 function PitcherConfidenceDots({ value }) {
@@ -724,8 +666,7 @@ function PitcherScoutModal({ scoutAi, pitcherName, onClose }) {
               <path d="M9.5 2A2.5 2.5 0 0 1 12 4.5v15a2.5 2.5 0 0 1-4.96-.46 2.5 2.5 0 0 1-2.96-3.08 3 3 0 0 1-.34-5.58 2.5 2.5 0 0 1 1.32-4.24 2.5 2.5 0 0 1 4.44-1.14Z"/>
               <path d="M14.5 2A2.5 2.5 0 0 0 12 4.5v15a2.5 2.5 0 0 0 4.96-.46 2.5 2.5 0 0 0 2.96-3.08 3 3 0 0 0 .34-5.58 2.5 2.5 0 0 0-1.32-4.24 2.5 2.5 0 0 0-4.44-1.14Z"/>
             </svg>
-            <span>Scout AI</span>
-            <span className="scout-modal__beta">BETA</span>
+            <span>Scouting Report</span>
           </div>
           <button className="scout-modal__close" onClick={onClose} aria-label="Close">✕</button>
         </div>
@@ -736,11 +677,11 @@ function PitcherScoutModal({ scoutAi, pitcherName, onClose }) {
           )}
 
           {scoutAi.props && Object.entries(scoutAi.props).map(([key, data]) => {
-            const meta = PITCHER_PROP_META[key] ?? { label: key, icon: '📌' };
+            const meta = PITCHER_PROP_META[key] ?? { label: key, icon: analysisIcon };
             return (
               <div key={key} className="scout-section">
                 <h4 className="scout-section-title">
-                  <span className="scout-section-icon">{meta.icon}</span>
+                  <img src={meta.icon} className="scout-section-icon-img" alt="" />
                   {meta.label}
                   <span className="pp-scout-prop-pick">{data.pick}</span>
                   <PitcherConfidenceDots value={data.confidence ?? 0} />
@@ -853,7 +794,7 @@ function PitcherModal({ pitcher, onClose, predictionTime, predictionsUnlocked, i
               </div>
 
               <div className={`pp-prop-strip-chip accent-${accent}`}>
-                <span>{selectedProp.icon}</span>
+                <img src={selectedProp.icon} className="pp-prop-icon-img" alt="" />
                 <span>{selectedProp.label}</span>
                 <span className="pp-prop-strip-chip-line">
                   {selectedProp.scoutPick ?? `${selectedProp.side} ${selectedProp.line}`}
@@ -1051,6 +992,24 @@ export default function PitcherProps() {
   const [selectedKey, setSelectedKey] = useState(null);
   const [activeGamePk, setActiveGamePk] = useState(null);
   const [riskFilter, setRiskFilter] = useState('all'); // 'all' | 'fav' | 'dog'
+  const [bestProps, setBestProps] = useState([]);   // server-frozen best pitcher props (often 0)
+  const [openPick, setOpenPick]   = useState(null);  // War Room drawer
+
+  // Best Pitcher Props — additive sibling to /predictions/today. Often empty;
+  // hide the panel on empty/error (never block the page).
+  useEffect(() => {
+    predictionsService.getBestPitcherProps()
+      .then(res => setBestProps(Array.isArray(res?.picks) ? res.picks : []))
+      .catch(() => setBestProps([]));
+  }, []);
+
+  // Open the pitcher's profile from the War Room (route resolves an MLB id).
+  const goToPitcher = useCallback((play) => {
+    if (play?.playerId == null) return;
+    setOpenPick(null);
+    navigate(`/player/${play.playerId}`);
+    window.scrollTo(0, 0);
+  }, [navigate]);
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -1152,7 +1111,6 @@ export default function PitcherProps() {
 
   const predictionTime       = getPredictionReadyTime(pitchers);
   const predictionsUnlocked  = isAdmin || arePredictionsUnlocked(pitchers);
-  const topPicks             = getTopPicks(pitchers, predictionsUnlocked, isAdmin);
 
   const games = useMemo(() => {
     const seen = new Set();
@@ -1186,11 +1144,6 @@ export default function PitcherProps() {
     ? pitchers.filter(p => p.gamePk === activeGamePk)
     : pitchers
   ).filter(pitcherHasMatchingProp);
-
-  const visibleTopPicks = (activeGamePk
-    ? topPicks.filter(({ pitcher }) => pitcher.gamePk === activeGamePk)
-    : topPicks
-  ).filter(({ bestProp }) => propPassesRisk(bestProp, riskFilter));
 
   const activeMatchup = activeGamePk ? games.find(m => m.gamePk === activeGamePk) : null;
 
@@ -1301,22 +1254,12 @@ export default function PitcherProps() {
               </div>
             )}
 
-            {/* ── Top picks ───────────────────────────────────────── */}
-            {visibleTopPicks.length > 0 || isAdmin ? (
-              <>
-                <div className="pp-section-label">Top Picks Today</div>
-                <div className="pp-top-grid">
-                  {visibleTopPicks.map(({ pitcher, bestProp }) => (
-                    <TopPitcherCard
-                      key={pitcherKey(pitcher)}
-                      pitcher={pitcher}
-                      bestProp={bestProp}
-                      onClick={() => handleSelect(pitcherKey(pitcher))}
-                    />
-                  ))}
-                </div>
-              </>
-            ) : (
+            {/* ── Best Pitcher Props (server-frozen; replaces the old client
+                   "Top Picks Today". Hidden when the board has no picks). ─── */}
+            <BestPropsBoard title="Best Pitcher Props" subtitle="Scout AI · frozen for today" picks={bestProps} onOpen={setOpenPick} />
+
+            {/* Pending banner while predictions haven't unlocked yet */}
+            {!predictionsUnlocked && !isAdmin && (
               <div className="pp-pending-banner pp-pending-banner--page">
                 <img src={loadingPredictionsIcon} alt="" className="pp-pending-banner-icon" aria-hidden="true" />
                 <div>
@@ -1367,6 +1310,9 @@ export default function PitcherProps() {
           isAdmin={isAdmin}
         />
       )}
+
+      {/* Shared Scout Desk War Room — opened from a Best Pitcher Props card */}
+      {openPick && <WarRoom play={openPick} onClose={() => setOpenPick(null)} onPitcher={goToPitcher} />}
     </div>
   );
 }

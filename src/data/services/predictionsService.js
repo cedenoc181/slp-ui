@@ -22,6 +22,30 @@ class PredictionsService {
   }
 
   /**
+   * The day's 3 best game props (moneyline / total / run-line), chosen by the
+   * Scout Desk War Room engine and frozen once per ET day. Same pick shape as
+   * the Scout Desk board. Public, no auth. `picks` is [] and `lockedAt` null
+   * until the day's board generates.
+   * GET /predictions/today/best-game-props
+   * @returns {Promise<{ date, lockedAt, picks: Array, shortlist?: Array, cut?: Array }>}
+   */
+  async getBestGameProps(options = {}) {
+    return api.get('/predictions/today/best-game-props', options);
+  }
+
+  /**
+   * The day's best pitcher props (strikeouts / earned runs / hits allowed /
+   * outs), chosen by the Scout Desk War Room engine and frozen once per ET day.
+   * Same pick shape as the Scout Desk board (kind: "pitcher"). Public, no auth.
+   * `picks` is 0–4 items (OFTEN 0) and `lockedAt` null until the board generates.
+   * GET /predictions/today/best-pitcher-props
+   * @returns {Promise<{ date, lockedAt, picks: Array, shortlist?: Array, cut?: Array }>}
+   */
+  async getBestPitcherProps(options = {}) {
+    return api.get('/predictions/today/best-pitcher-props', options);
+  }
+
+  /**
    * Today's games that have a moneyline prediction.
    * GET /predictions/moneyline/today
    * @returns {Promise<Array>}

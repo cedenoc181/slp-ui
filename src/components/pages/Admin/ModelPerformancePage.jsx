@@ -12,14 +12,27 @@ const CATEGORY_LABELS = {
 
 const AVAILABLE_SEASONS = [2026];
 
+// ─── Model sources ───────────────────────────────────────────────────────────
+// The dashboard can point at either the ML model's graded picks or the Scout AI
+// reasoning layer's picks. Both endpoints return the identical row shape, so the
+// only difference is the service method + the display label/accent.
+const MODEL_SOURCES = [
+  { key: 'ml',    label: 'ML Model', tag: 'ML' },
+  { key: 'scout', label: 'Scout AI', tag: 'Scout AI' },
+];
+
 // ─── Period presets ──────────────────────────────────────────────────────────
 // `key` = UI state. `apiRange` = value sent as `range=` (null = omit, full season).
 const PERIOD_PRESETS = [
-  { key: 'season',       label: 'Season',       apiRange: null },
-  { key: 'this_week',    label: 'This Week',    apiRange: 'this_week' },
-  { key: 'last_7_days',  label: 'Last 7 Days',  apiRange: 'last_7_days' },
-  { key: 'last_month',   label: 'Last Month',   apiRange: 'last_month' },
-  { key: 'custom',       label: 'Custom',       apiRange: null },
+  { key: 'season',        label: 'Season',        apiRange: null },
+  { key: 'this_week',     label: 'This Week',     apiRange: 'this_week' },
+  { key: 'last_week',     label: 'Last Week',     apiRange: 'last_week' },
+  { key: 'last_7_days',   label: 'Last 7 Days',   apiRange: 'last_7_days' },
+  { key: 'last_14_days',  label: 'Last 14 Days',  apiRange: 'last_14_days' },
+  { key: 'last_30_days',  label: 'Last 30 Days',  apiRange: 'last_30_days' },
+  { key: 'this_month',    label: 'This Month',    apiRange: 'this_month' },
+  { key: 'last_month',    label: 'Last Month',    apiRange: 'last_month' },
+  { key: 'custom',        label: 'Custom',        apiRange: null },
 ];
 
 // Today in ET as "YYYY-MM-DD" — used as default end date for custom range
@@ -35,10 +48,32 @@ const shortDate = (iso) => {
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
+// The metric field shown for the active view.
+function metricValue(metric, view) {
+  return view === 'accuracy' ? metric.accuracy
+       : view === 'prob'     ? metric.prob
+       : view === 'ev'       ? metric.ev
+       :                       metric.calibration_gap; // 'calibration'
+}
+
+// Display string for a value in the active view.
+function fmtValue(value, view) {
+  if (view === 'ev')          return `${value > 0 ? '+' : ''}${value}%`;
+  if (view === 'calibration') return `${value > 0 ? '+' : ''}${value}`;
+  return `${value}%`;
+}
+
 function perfColor(value, view) {
   if (view === 'ev') {
     if (value >= 3)   return '#4ade80';
     if (value >= 0)   return '#fbbf24';
+    return '#f87171';
+  }
+  if (view === 'calibration') {
+    // calibration_gap = prob − accuracy; closer to 0 is better, large + = overconfident
+    const gap = Math.abs(value);
+    if (gap <= 4)  return '#4ade80';
+    if (gap <= 10) return '#fbbf24';
     return '#f87171';
   }
   if (value >= 67) return '#4ade80';
@@ -52,6 +87,12 @@ function perfLabel(value, view) {
     if (value >= 0)   return 'Average';
     return 'Weak';
   }
+  if (view === 'calibration') {
+    const gap = Math.abs(value);
+    if (gap <= 4)  return 'Calibrated';
+    if (gap <= 10) return 'Slight';
+    return value > 0 ? 'Overconfident' : 'Underconfident';
+  }
   if (value >= 67) return 'Strong';
   if (value >= 58) return 'Average';
   return 'Weak';
@@ -63,6 +104,11 @@ function barWidth(value, view, all) {
     const max = Math.max(...all.map(m => m.ev));
     const range = max - min || 1;
     return Math.max(5, ((value - min) / range) * 100);
+  }
+  if (view === 'calibration') {
+    // Scale by magnitude of the gap relative to the largest gap in view
+    const max = Math.max(...all.map(m => Math.abs(m.calibration_gap)), 1);
+    return Math.max(5, (Math.abs(value) / max) * 100);
   }
   // accuracy / prob: 50–100 range → 0–100%
   return Math.max(5, ((value - 50) / 50) * 100);
@@ -81,7 +127,7 @@ function OverviewCard({ label, value, sub, accent }) {
 }
 
 function MetricBar({ metric, view, allMetrics, onSelect, selected }) {
-  const raw      = view === 'accuracy' ? metric.accuracy : view === 'prob' ? metric.prob : metric.ev;
+  const raw      = metricValue(metric, view);
   const width    = barWidth(raw, view, allMetrics);
   const color    = perfColor(raw, view);
   const isActive = selected === metric.key;
@@ -102,7 +148,7 @@ function MetricBar({ metric, view, allMetrics, onSelect, selected }) {
           style={{ width: `${width}%`, background: color }}
         />
         <span className="mp-bar-value" style={{ color }}>
-          {view === 'ev' ? `${raw > 0 ? '+' : ''}${raw}%` : `${raw}%`}
+          {fmtValue(raw, view)}
         </span>
       </div>
       <div className="mp-bar-picks">{metric.picks} picks</div>
@@ -111,17 +157,23 @@ function MetricBar({ metric, view, allMetrics, onSelect, selected }) {
 }
 
 function BestTable({ metrics, view }) {
+  // Calibration ranks by closeness to 0 (best calibrated first); others by value desc.
   const sorted = [...metrics].sort((a, b) => {
-    const av = view === 'accuracy' ? a.accuracy : view === 'prob' ? a.prob : a.ev;
-    const bv = view === 'accuracy' ? b.accuracy : view === 'prob' ? b.prob : b.ev;
-    return bv - av;
+    if (view === 'calibration') {
+      return Math.abs(a.calibration_gap) - Math.abs(b.calibration_gap);
+    }
+    return metricValue(b, view) - metricValue(a, view);
   });
 
-  const viewLabel = view === 'accuracy' ? 'Accuracy' : view === 'prob' ? 'Prob' : 'EV';
+  const viewLabel = view === 'accuracy' ? 'Accuracy'
+                  : view === 'prob'     ? 'Prob'
+                  : view === 'ev'       ? 'EV'
+                  :                       'Cal. Gap';
+  const header = view === 'calibration' ? 'Best Calibrated' : 'Best Performers';
 
   return (
     <div className="mp-worst-table">
-      <div className="mp-worst-header">Best Performers</div>
+      <div className="mp-worst-header">{header}</div>
       <div className="mp-worst-head-row">
         <span>Metric</span>
         <span>Model</span>
@@ -129,14 +181,14 @@ function BestTable({ metrics, view }) {
         <span>Picks</span>
       </div>
       {sorted.map(m => {
-        const val = view === 'accuracy' ? m.accuracy : view === 'prob' ? m.prob : m.ev;
+        const val = metricValue(m, view);
         const color = perfColor(val, view);
         return (
           <div key={m.key} className="mp-worst-row">
             <span className="mp-worst-metric">{m.label}</span>
             <span className="mp-worst-model" data-model={m.model}>{m.model}</span>
             <span className="mp-worst-val" style={{ color }}>
-              {view === 'ev' ? `${val > 0 ? '+' : ''}${val}%` : `${val}%`}
+              {fmtValue(val, view)}
             </span>
             <span className="mp-worst-picks">{m.picks}</span>
           </div>
@@ -146,9 +198,12 @@ function BestTable({ metrics, view }) {
   );
 }
 
-function HoverDetail({ metric, view }) {
+function HoverDetail({ metric, view, source }) {
   if (!metric) return <div className="mp-hover-detail mp-hover-detail--empty">Click a bar for details</div>;
-  const { label, model, accuracy, prob, ev, picks, hits } = metric;
+  const { label, model, accuracy, prob, ev, picks, hits, calibration_gap: gap } = metric;
+  // For Scout AI, `prob` is the avg *stated* confidence, not a true probability.
+  const probLabel = source === 'scout' ? 'Stated Conf' : 'Model Prob';
+  const badgeValue = metricValue(metric, view);
   return (
     <div className="mp-hover-detail">
       <div className="mp-hover-title">{label} <span data-model={model}>{model}</span></div>
@@ -158,7 +213,7 @@ function HoverDetail({ metric, view }) {
           <strong style={{ color: perfColor(accuracy, 'accuracy') }}>{accuracy}%</strong>
         </div>
         <div className="mp-hover-stat">
-          <span>Model Prob</span>
+          <span>{probLabel}</span>
           <strong style={{ color: perfColor(prob, 'prob') }}>{prob}%</strong>
         </div>
         <div className="mp-hover-stat">
@@ -166,14 +221,16 @@ function HoverDetail({ metric, view }) {
           <strong style={{ color: perfColor(ev, 'ev') }}>{ev > 0 ? '+' : ''}{ev}%</strong>
         </div>
         <div className="mp-hover-stat">
+          <span>Calibration Gap</span>
+          <strong style={{ color: perfColor(gap, 'calibration') }}>{gap > 0 ? '+' : ''}{gap}</strong>
+        </div>
+        <div className="mp-hover-stat">
           <span>Picks / Hits</span>
           <strong>{picks} / {hits}</strong>
         </div>
       </div>
-      <div className="mp-hover-badge" data-perf={perfLabel(
-        view === 'accuracy' ? accuracy : view === 'prob' ? prob : ev, view
-      )}>
-        {perfLabel(view === 'accuracy' ? accuracy : view === 'prob' ? prob : ev, view)}
+      <div className="mp-hover-badge" data-perf={perfLabel(badgeValue, view)}>
+        {perfLabel(badgeValue, view)}
       </div>
     </div>
   );
@@ -190,8 +247,19 @@ export default function ModelPerformancePage() {
 
   const [seasonFilter, setSeasonFilter] = useState(AVAILABLE_SEASONS[0]);
   const [metricFilter, setMetricFilter] = useState('all');
-  const [view, setView] = useState('accuracy');  // accuracy | prob | ev
+  const [view, setView] = useState('accuracy');  // accuracy | prob | ev | calibration
   const [selected, setSelected] = useState(null);
+
+  // ── Data source: ML model vs Scout AI reasoning layer ──
+  const [modelSource, setModelSource] = useState('ml');   // 'ml' | 'scout'
+  const isScout = modelSource === 'scout';
+
+  // Switching source surfaces the most relevant view: Scout's headline is its
+  // confidence calibration; the ML model leads with raw accuracy.
+  const switchModelSource = (key) => {
+    setModelSource(key);
+    setView(key === 'scout' ? 'calibration' : 'accuracy');
+  };
 
   // ── Period state ──
   const [periodKey, setPeriodKey] = useState('season');   // see PERIOD_PRESETS
@@ -220,22 +288,30 @@ export default function ModelPerformancePage() {
       params.range = preset.apiRange;
     }
 
-    predictionsPerformanceService.getPerformance(params)
+    // Both endpoints return the identical row shape — only the source differs.
+    const request = isScout
+      ? predictionsPerformanceService.getScoutAiPerformance(params)
+      : predictionsPerformanceService.getPerformance(params);
+    const sourceTag = MODEL_SOURCES.find(s => s.key === modelSource)?.tag ?? 'ML';
+
+    request
       .then(data => {
         if (cancelled) return;
-        const arr = Array.isArray(data) ? data : [];
+        // Normalize the model label to the active source so tags/colors are
+        // unambiguous (both endpoints brand themselves "Scout AI" server-side).
+        const arr = (Array.isArray(data) ? data : []).map(m => ({ ...m, model: sourceTag }));
         setMetrics(arr);
-        setSelected(prev => prev ?? arr[0]?.key ?? null);
+        setSelected(prev => (arr.some(m => m.key === prev) ? prev : arr[0]?.key ?? null));
       })
       .catch(err => {
         if (cancelled) return;
-        console.error('Failed to load model performance:', err);
+        console.error('Failed to load performance:', err);
         setError(err?.message || 'Failed to load performance data.');
         setMetrics([]);
       })
       .finally(() => { if (!cancelled) setLoading(false); });
     return () => { cancelled = true; };
-  }, [seasonFilter, periodKey, customStart, customEnd]);
+  }, [modelSource, isScout, seasonFilter, periodKey, customStart, customEnd]);
 
   const filtered = useMemo(() => {
     return metrics.filter(m => {
@@ -257,6 +333,8 @@ export default function ModelPerformancePage() {
   const avgEV        = filtered.length ? (filtered.reduce((s, m) => s + m.ev, 0) / filtered.length).toFixed(1) : '—';
   const worst        = [...filtered].sort((a, b) => a.accuracy - b.accuracy)[0];
   const best         = [...filtered].sort((a, b) => b.accuracy - a.accuracy)[0];
+  const avgGap       = filtered.length ? Math.round(filtered.reduce((s, m) => s + m.calibration_gap, 0) / filtered.length) : 0;
+  const mostOver     = [...filtered].sort((a, b) => b.calibration_gap - a.calibration_gap)[0];
 
   return (
     <div className="mp-page">
@@ -271,10 +349,17 @@ export default function ModelPerformancePage() {
           </Link>
           <div>
             <h1 className="mp-page-title">Model Performance</h1>
-            <p className="mp-page-sub">Scout AI accuracy, probability calibration, and EV tracking</p>
+            <p className="mp-page-sub">
+              {isScout
+                ? 'Scout AI reasoning layer — confidence calibration, accuracy, and EV tracking'
+                : 'ML model accuracy, probability calibration, and EV tracking'}
+            </p>
           </div>
         </div>
         <div className="mp-data-badges">
+          <span className="mp-data-badge mp-data-badge--model" data-model={isScout ? 'Scout AI' : 'ML'}>
+            {MODEL_SOURCES.find(s => s.key === modelSource)?.label}
+          </span>
           <span className="mp-data-badge mp-data-badge--period">
             {periodKey === 'custom' && customStart && customEnd
               ? `${shortDate(customStart)} – ${shortDate(customEnd)}`
@@ -290,11 +375,36 @@ export default function ModelPerformancePage() {
         <OverviewCard label="Overall Accuracy"  value={`${overallAccuracy}%`} sub={`${totalHits} / ${totalPicks} picks`} accent="blue"   />
         <OverviewCard label="Avg EV"             value={`${avgEV > 0 ? '+' : ''}${avgEV}%`} sub="across filtered metrics"     accent="green"  />
         <OverviewCard label="Best Metric"        value={best?.label ?? '—'}  sub={best ? `${best.accuracy}% accuracy` : ''} accent="green"  />
-        <OverviewCard label="Worst Metric"       value={worst?.label ?? '—'} sub={worst ? `${worst.accuracy}% accuracy` : ''} accent="red"    />
+        {isScout ? (
+          <OverviewCard
+            label="Avg Calibration Gap"
+            value={`${avgGap > 0 ? '+' : ''}${avgGap}`}
+            sub={mostOver ? `most overconfident: ${mostOver.label} (+${mostOver.calibration_gap})` : 'stated conf − accuracy'}
+            accent={avgGap > 10 ? 'red' : avgGap > 4 ? 'amber' : 'green'}
+          />
+        ) : (
+          <OverviewCard label="Worst Metric"     value={worst?.label ?? '—'} sub={worst ? `${worst.accuracy}% accuracy` : ''} accent="red"    />
+        )}
       </div>
 
       {/* ── Filters + view toggle ── */}
       <div className="mp-filter-bar">
+        <div className="mp-filter-group">
+          <label>Model</label>
+          <div className="mp-filter-pills mp-model-toggle">
+            {MODEL_SOURCES.map(s => (
+              <button
+                key={s.key}
+                className={`mp-pill mp-pill--model${modelSource === s.key ? ' active' : ''}`}
+                data-model={s.tag}
+                onClick={() => switchModelSource(s.key)}
+              >
+                {s.label}
+              </button>
+            ))}
+          </div>
+        </div>
+
         <div className="mp-filter-group">
           <label htmlFor={AVAILABLE_SEASONS.length > 2 ? 'mp-season-select' : undefined}>Season</label>
           {AVAILABLE_SEASONS.length > 2 ? (
@@ -355,9 +465,10 @@ export default function ModelPerformancePage() {
           <label>View</label>
           <div className="mp-filter-pills">
             {[
-              { v: 'accuracy', label: 'Accuracy' },
-              { v: 'prob',     label: 'Probability' },
-              { v: 'ev',       label: 'EV %' },
+              { v: 'accuracy',    label: 'Accuracy' },
+              { v: 'prob',        label: isScout ? 'Confidence' : 'Probability' },
+              { v: 'ev',          label: 'EV %' },
+              { v: 'calibration', label: 'Calibration' },
             ].map(({ v, label }) => (
               <button
                 key={v}
@@ -412,14 +523,16 @@ export default function ModelPerformancePage() {
         <div className="mp-chart-panel">
           <div className="mp-chart-header">
             <span className="mp-chart-title">
-              {view === 'accuracy' ? 'Pick Accuracy by Metric' :
-               view === 'prob'     ? 'Model Probability Calibration' :
-                                     'Expected Value by Metric'}
+              {view === 'accuracy'    ? 'Pick Accuracy by Metric' :
+               view === 'prob'        ? (isScout ? 'Stated Confidence by Metric' : 'Model Probability Calibration') :
+               view === 'calibration' ? 'Calibration Gap by Metric' :
+                                        'Expected Value by Metric'}
             </span>
             <span className="mp-chart-sub">
-              {view === 'accuracy' ? '% of picks that were correct' :
-               view === 'prob'     ? 'Model-assigned probability vs actual hit rate' :
-                                     'Average EV% across all picks for this metric'}
+              {view === 'accuracy'    ? '% of picks that were correct' :
+               view === 'prob'        ? (isScout ? 'Avg confidence Scout claimed (1–5 → implied %)' : 'Model-assigned probability vs actual hit rate') :
+               view === 'calibration' ? `${isScout ? 'Stated confidence' : 'Model prob'} − accuracy · positive = overconfident` :
+                                        'Average EV% across all picks for this metric'}
             </span>
           </div>
 
@@ -427,6 +540,8 @@ export default function ModelPerformancePage() {
           <div className="mp-chart-axis">
             {view === 'ev'
               ? ['Weak', 'Avg', 'Strong'].map(l => <span key={l}>{l}</span>)
+              : view === 'calibration'
+              ? ['Calibrated', 'Gap', 'Overconfident'].map(l => <span key={l}>{l}</span>)
               : ['50%', '60%', '70%', '80%', '90%'].map(l => <span key={l}>{l}</span>)
             }
           </div>
@@ -454,15 +569,25 @@ export default function ModelPerformancePage() {
 
           {/* Legend */}
           <div className="mp-chart-legend">
-            <span className="mp-legend-dot" style={{ background: '#4ade80' }} /> Strong
-            <span className="mp-legend-dot" style={{ background: '#fbbf24' }} /> Average
-            <span className="mp-legend-dot" style={{ background: '#f87171' }} /> Weak
+            {view === 'calibration' ? (
+              <>
+                <span className="mp-legend-dot" style={{ background: '#4ade80' }} /> Calibrated
+                <span className="mp-legend-dot" style={{ background: '#fbbf24' }} /> Slight gap
+                <span className="mp-legend-dot" style={{ background: '#f87171' }} /> Overconfident
+              </>
+            ) : (
+              <>
+                <span className="mp-legend-dot" style={{ background: '#4ade80' }} /> Strong
+                <span className="mp-legend-dot" style={{ background: '#fbbf24' }} /> Average
+                <span className="mp-legend-dot" style={{ background: '#f87171' }} /> Weak
+              </>
+            )}
           </div>
         </div>
 
         {/* Right sidebar: hover detail + worst table */}
         <div className="mp-sidebar">
-          <HoverDetail metric={selectedMetric} view={view} />
+          <HoverDetail metric={selectedMetric} view={view} source={modelSource} />
           <BestTable metrics={filtered} view={view} />
         </div>
 

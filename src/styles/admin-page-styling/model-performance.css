@@ -97,6 +97,34 @@
   margin-top: 0;
 }
 
+.mp-data-badge--model {
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  margin-top: 0;
+}
+.mp-data-badge--model[data-model="ML"] {
+  background: rgba(100, 181, 246, 0.12);
+  border-color: rgba(100, 181, 246, 0.4);
+  color: #64b5f6;
+}
+.mp-data-badge--model[data-model="Scout AI"] {
+  background: rgba(167, 139, 250, 0.12);
+  border-color: rgba(167, 139, 250, 0.4);
+  color: #a78bfa;
+}
+
+/* ── Model toggle pills (active state color-coded per source) ── */
+.mp-pill--model[data-model="ML"].active {
+  background: rgba(100, 181, 246, 0.15);
+  border-color: rgba(100, 181, 246, 0.5);
+  color: #64b5f6;
+}
+.mp-pill--model[data-model="Scout AI"].active {
+  background: rgba(167, 139, 250, 0.15);
+  border-color: rgba(167, 139, 250, 0.5);
+  color: #a78bfa;
+}
+
 /* ── Custom date range row ──────────────────────────────── */
 .mp-daterange {
   display: flex;
@@ -173,9 +201,11 @@
   border-top: 3px solid transparent;
 }
 
-.mp-overview-card.accent-blue  { border-top-color: #64b5f6; }
-.mp-overview-card.accent-green { border-top-color: #4ade80; }
-.mp-overview-card.accent-red   { border-top-color: #f87171; }
+.mp-overview-card.accent-blue   { border-top-color: #64b5f6; }
+.mp-overview-card.accent-green  { border-top-color: #4ade80; }
+.mp-overview-card.accent-red    { border-top-color: #f87171; }
+.mp-overview-card.accent-amber  { border-top-color: #fbbf24; }
+.mp-overview-card.accent-violet { border-top-color: #a78bfa; }
 
 .mp-overview-label {
   font-size: 0.72rem;
@@ -504,10 +534,22 @@
   color: #fbbf24;
   border: 1px solid rgba(251, 191, 36, 0.3);
 }
-.mp-hover-badge[data-perf="Weak"] {
+.mp-hover-badge[data-perf="Weak"],
+.mp-hover-badge[data-perf="Overconfident"] {
   background: rgba(248, 113, 113, 0.1);
   color: #f87171;
   border: 1px solid rgba(248, 113, 113, 0.3);
+}
+.mp-hover-badge[data-perf="Calibrated"] {
+  background: rgba(74, 222, 128, 0.1);
+  color: #4ade80;
+  border: 1px solid rgba(74, 222, 128, 0.3);
+}
+.mp-hover-badge[data-perf="Slight"],
+.mp-hover-badge[data-perf="Underconfident"] {
+  background: rgba(251, 191, 36, 0.1);
+  color: #fbbf24;
+  border: 1px solid rgba(251, 191, 36, 0.3);
 }
 
 /* Worst performers table */

@@ -254,7 +254,7 @@ const SeasonStatsSection = React.memo(function SeasonStatsSection({
                     {/* ERA - Highlighted as key stat */}
                     <span className="pps-highlight">{displayStats.era?.toFixed(2) || '-'}</span>
                     <span>{displayStats.games_started || displayStats.gs || '-'}</span>
-                    <span>{displayStats.innings_pitched || displayStats.ip || '-'}</span>
+                    <span>{displayStats.innings_display || displayStats.innings_pitched || displayStats.ip || '-'}</span>
                     <span>{displayStats.strikeouts || displayStats.so || '-'}</span>
                     {/* WHIP - Highlighted as key stat */}
                     <span className="pps-highlight">{displayStats.whip?.toFixed(2) || '-'}</span>

@@ -1121,6 +1121,7 @@
 }
 
 .pp-prop-icon { font-size: 0.95rem; }
+.pp-prop-icon-img { width: 22px; height: 22px; object-fit: contain; flex-shrink: 0; }
 
 .pp-prop-label {
   font-size: 0.6rem;

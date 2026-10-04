@@ -13,6 +13,8 @@ function MLBStandingsPostseason({ selectedSeason }) {
   const [teamSeasonData, setTeamSeasonData] = useState({});
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  // Season actually being displayed — falls back to the prior year when selectedSeason has no bracket yet
+  const [displaySeason, setDisplaySeason] = useState(selectedSeason);
 
   const bracketContainerRef = useRef(null);
 
@@ -23,7 +25,7 @@ function MLBStandingsPostseason({ selectedSeason }) {
   const handleTeamClick = (teamAbbreviation) => {
     if (!teamAbbreviation) return;
     const urlName = getTeamUrlFromAbbr(teamAbbreviation);
-    navigate(`/team-analytics/${urlName}?season=${selectedSeason}`);
+    navigate(`/team-analytics/${urlName}?season=${displaySeason}`);
   };
 
   useEffect(() => {
@@ -36,15 +38,14 @@ function MLBStandingsPostseason({ selectedSeason }) {
           ((b['American League'] && b['American League'].length > 0) ||
             (b['National League'] && b['National League'].length > 0));
 
-        // Fetch bracket with fallback to prior year if no data
         let bracket = null;
         let effectiveSeason = selectedSeason;
         try {
           bracket = await teamsService.getTeamPostseasonBracket(selectedSeason);
         } catch (_) {}
 
-        // Only fall back to prior year for past seasons — current season has no postseason yet
-        if (!hasBracketData(bracket) && selectedSeason !== String(SEASON_RANGE.END)) {
+        // No bracket yet for the selected season — fall back to the prior season's bracket
+        if (!hasBracketData(bracket)) {
           const priorYear = String(parseInt(selectedSeason) - 1);
           try {
             const priorBracket = await teamsService.getTeamPostseasonBracket(priorYear);
@@ -56,6 +57,7 @@ function MLBStandingsPostseason({ selectedSeason }) {
         }
 
         setBracketData(bracket);
+        setDisplaySeason(effectiveSeason);
 
         // Fetch regular season records for each team (used for seeding)
         const allTeams = [
@@ -310,23 +312,23 @@ function MLBStandingsPostseason({ selectedSeason }) {
 
   // Detect single wild card format (2012-2021, excluding 2020)
   const isSingleWildCard = useMemo(() => {
-    const season = parseInt(selectedSeason);
+    const season = parseInt(displaySeason);
     if (season >= 2012 && season <= 2021 && season !== 2020) {
       return true;
     }
     const alWcCount = playoffData?.AL?.wildCard?.length || 0;
     const nlWcCount = playoffData?.NL?.wildCard?.length || 0;
     return alWcCount === 2 && nlWcCount === 2;
-  }, [selectedSeason, playoffData]);
+  }, [displaySeason, playoffData]);
 
   // Detect 2020 expanded playoffs (4 WC matchups per league = 8 teams)
   const is2020ExpandedPlayoffs = useMemo(() => {
-    const season = parseInt(selectedSeason);
+    const season = parseInt(displaySeason);
     if (season === 2020) return true;
     const alWcCount = playoffData?.AL?.wildCard?.length || 0;
     const nlWcCount = playoffData?.NL?.wildCard?.length || 0;
     return alWcCount === 8 && nlWcCount === 8;
-  }, [selectedSeason, playoffData]);
+  }, [displaySeason, playoffData]);
 
   const renderSeriesInfo = (teamA, teamB, label) => {
     const winner = teamB ? (teamA.score >= teamB.score ? teamA : teamB) : teamA;
@@ -402,8 +404,28 @@ function MLBStandingsPostseason({ selectedSeason }) {
     );
   };
 
+  const renderPlaceholderTeamRow = (label, league) => {
+    const isNL = league === 'nl';
+    return (
+      <div className={`team-row placeholder ${isNL ? 'nl' : ''}`}>
+        <span className="team-name">{label}</span>
+      </div>
+    );
+  };
+
+  const renderChampionshipSeriesPlaceholder = (league, connectDirection) => {
+    const label = `${league.toUpperCase()} Championship Series`;
+    return (
+      <div className={`series-block championship placeholder connect-${connectDirection}`}>
+        <p className="placeholder-round-label">{label}</p>
+        {renderPlaceholderTeamRow('TBD', league)}
+        {renderPlaceholderTeamRow('TBD', league)}
+      </div>
+    );
+  };
+
   const renderChampionshipSeries = (series, league, connectDirection) => {
-    if (!series) return null;
+    if (!series) return renderChampionshipSeriesPlaceholder(league, connectDirection);
     const isFirstWinner = series.team1.score > series.team2.score;
     const label = `${league.toUpperCase()} Championship Series`;
     return (
@@ -487,8 +509,24 @@ function MLBStandingsPostseason({ selectedSeason }) {
     );
   };
 
+  const renderWorldSeriesPlaceholder = () => (
+    <div className="world-series-block">
+      <div className="world-series-logo">
+        <img src={wsIcon} alt="World Series logo" />
+      </div>
+      <div className="series-block world-series placeholder">
+        <p className="placeholder-round-label">World Series</p>
+        {renderPlaceholderTeamRow('AL Champion', 'al')}
+        {renderPlaceholderTeamRow('NL Champion', 'nl')}
+      </div>
+      <div className="world-series-header">
+        <p className="eyebrow">Postseason {displaySeason}</p>
+      </div>
+    </div>
+  );
+
   const renderWorldSeries = () => {
-    if (!playoffData?.worldSeries) return null;
+    if (!playoffData?.worldSeries) return renderWorldSeriesPlaceholder();
     const alWins = playoffData.worldSeries.alChampion.score > playoffData.worldSeries.nlChampion.score;
     const label = 'World Series';
 
@@ -506,13 +544,13 @@ function MLBStandingsPostseason({ selectedSeason }) {
           {renderTeamRow(playoffData.worldSeries.nlChampion, !alWins, 'nl')}
         </div>
         <div className="world-series-header">
-          <p className="eyebrow">Postseason {selectedSeason}</p>
+          <p className="eyebrow">Postseason {displaySeason}</p>
         </div>
         <div className={`champion-banner ${championLeague}`}>
           <div className="champion-banner-content">
             <div className="champion-trophy">🏆</div>
             <div className="champion-info">
-              <span className="champion-label">{selectedSeason} World Series Champions</span>
+              <span className="champion-label">{displaySeason} World Series Champions</span>
               <div className="champion-team">
                 {champion.mlbTeamId && (
                   <img
@@ -571,6 +609,11 @@ function MLBStandingsPostseason({ selectedSeason }) {
   return (
     <div className="playoff-bracket-container" ref={bracketContainerRef}>
       <div>
+        {displaySeason !== selectedSeason && (
+          <div style={{ background: '#fff8e1', border: '1px solid #ffe082', borderRadius: '8px', padding: '10px 16px', marginBottom: '12px', fontSize: '14px', color: '#7c5a00' }}>
+            No postseason data available for {selectedSeason} yet. Showing the {displaySeason} bracket.
+          </div>
+        )}
         <div className="bracket-grid">
           <div className={`round-column al wild-card${isSingleWildCard ? ' single-matchup' : ''}${is2020ExpandedPlayoffs ? ' expanded-playoffs' : ''}`}>
             <div className="round-title">AL Wild Card</div>

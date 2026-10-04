@@ -7,14 +7,16 @@
  * total, opponent) attach to both starters so pitcher- and game-level filters
  * compose on the same row.
  *
- * Sources (all already live, no per-player fetches):
+ * Sources:
  *   /predictions/today          → odds + model prediction
  *   /predictions/pitchers/today → today's per-stat projections (game nodes)
  *   /teams/standings            → win%, last-10, streak, run differential
+ *   player-profile + game logs  → per-starter age, handedness, season ERA,
+ *                                 days of rest, and last-start box line
  *
- * Backend-pending attributes (age, daysRest, seasonEra, handedness, oppRisp,
- * injuries) are present as null so their filters exist but stay inert until the
- * payload carries them (see NeedsWiring → PREDICTIONS LAB).
+ * Backend-pending attributes (oppRisp, oppL5 form, injuries) are present as null
+ * so their filters exist but stay inert until the payload carries them
+ * (see NeedsWiring → PREDICTIONS LAB).
  */
 
 import predictionsService from './predictionsService';
@@ -95,15 +97,33 @@ function bestMoneyline(books, key, fallback) {
   return fallback != null ? Math.round(fallback) : null;
 }
 
-// Days of rest from a pitcher's game logs: standard baseball convention
-// (calendar gap to the last start minus 1, e.g. last start 5 days ago = 4 days rest).
-function daysRestFrom(logsResp, todayStr) {
+// The pitcher's most recent start before today, from their game logs.
+function lastStartFrom(logsResp, todayStr) {
   const logs = Array.isArray(logsResp) ? logsResp : (logsResp?.games || logsResp?.logs || []);
-  const dates = logs.map(g => g?.date).filter(d => typeof d === 'string' && d < todayStr);
-  if (!dates.length) return null;
-  const last = dates.sort().pop(); // most recent start before today
-  const gapDays = Math.round((Date.parse(todayStr) - Date.parse(last)) / 86400000);
+  const prior = logs.filter(g => typeof g?.date === 'string' && g.date < todayStr);
+  if (!prior.length) return null;
+  return prior.sort((a, b) => (a.date < b.date ? -1 : a.date > b.date ? 1 : 0)).pop();
+}
+
+// Days of rest from the last start: standard baseball convention (calendar gap
+// to the last start minus 1, e.g. last start 5 days ago = 4 days rest).
+function daysRestFrom(lastStart, todayStr) {
+  if (!lastStart?.date) return null;
+  const gapDays = Math.round((Date.parse(todayStr) - Date.parse(lastStart.date)) / 86400000);
   return Number.isFinite(gapDays) ? Math.max(0, gapDays - 1) : null;
+}
+
+// Box-score line from the last start, tolerant of payload field-name variants.
+function lastStartStats(lastStart) {
+  if (!lastStart) return { pitchCount: null, earnedRuns: null, hitsAllowed: null, strikeouts: null, walks: null };
+  const num = (v) => (v == null || Number.isNaN(Number(v)) ? null : Number(v));
+  return {
+    pitchCount:  num(lastStart.pitches_thrown ?? lastStart.pitch_count ?? lastStart.pitches),
+    earnedRuns:  num(lastStart.earned_runs ?? lastStart.earned_runs_allowed),
+    hitsAllowed: num(lastStart.hits_allowed ?? lastStart.hits),
+    strikeouts:  num(lastStart.strikeouts),
+    walks:       num(lastStart.walks ?? lastStart.walks_allowed),
+  };
 }
 
 // Locate a game's pitcher node from /pitchers/today.
@@ -208,6 +228,13 @@ export async function buildLabSlate() {
         // ── Pitcher (today's projection) ──
         ...proj,
 
+        // ── Last start (filled during enrichment from game logs) ──
+        lastPitchCount: null,
+        lastEarnedRuns: null,
+        lastHitsAllowed: null,
+        lastStrikeouts: null,
+        lastWalks: null,
+
         // ── Team form ──
         teamWinPct: teamFm?.winPct ?? null,
         teamLast10W: teamFm?.last10W ?? null,
@@ -227,6 +254,10 @@ export async function buildLabSlate() {
         pitcherSeasonEra: pNode?.season_era ?? null,
         pitcherHand: pNode?.throws ?? null,
         oppRispAvg: oppFm?.rispAvg ?? null,
+        // Opponent last-5 offensive form (rolling)
+        oppOpsL5:  oppFm?.opsL5  ?? null,
+        oppRunsL5: oppFm?.runsL5 ?? null,
+        oppAvgL5:  oppFm?.avgL5  ?? null,
         teamHasKeyInjury: null,
       };
     };
@@ -235,25 +266,31 @@ export async function buildLabSlate() {
     rows.push(mkRow('home'));
   }
 
-  // Enrich each starter with age + throwing hand (player-profile info) and days
-  // of rest (last start from their game logs). Requests are GET-cached, so
-  // repeat loads are cheap. Activates the Pitcher age / Throwing hand / Days of
-  // rest filters.
+  // Enrich each starter with age + throwing hand (player-profile info), season
+  // ERA (current-season pitching stats), and days of rest + last-start line
+  // (from their game logs). Requests are GET-cached, so repeat loads are cheap.
+  // Activates the Pitcher age / Throwing hand / Season ERA / Days of rest /
+  // Last-start filters.
   const ids = [...new Set(rows.map(r => r.pitcherId).filter(Boolean))];
   if (ids.length) {
     const todayStr = new Date().toLocaleDateString('en-CA', { timeZone: 'America/New_York' });
     const enriched = await Promise.allSettled(ids.map(async (id) => {
-      const [infoR, logsR] = await Promise.allSettled([
+      const [infoR, statsR, logsR] = await Promise.allSettled([
         playerStatsService.getPlayerInfo(id),
+        playerStatsService.getPitcherCurrentStats(id, season, 'R'),
         gamesService.getPitcherGameLogs(id, season, 'R', 12),
       ]);
       const info = infoR.status === 'fulfilled' ? infoR.value : null;
+      const stats = statsR.status === 'fulfilled' ? statsR.value : null;
       const logs = logsR.status === 'fulfilled' ? logsR.value : null;
+      const lastStart = lastStartFrom(logs, todayStr);
       return {
         id,
         age: info?.current_age ?? null,
         throws: info?.throws ?? null,
-        daysRest: daysRestFrom(logs, todayStr),
+        seasonEra: stats?.era != null ? Number(stats.era) : null,
+        daysRest: daysRestFrom(lastStart, todayStr),
+        lastStart: lastStartStats(lastStart),
       };
     }));
     const byId = {};
@@ -263,7 +300,15 @@ export async function buildLabSlate() {
       if (e) {
         r.pitcherAge = e.age ?? r.pitcherAge;
         r.pitcherHand = e.throws ?? r.pitcherHand;
+        r.pitcherSeasonEra = e.seasonEra ?? r.pitcherSeasonEra;
         r.daysRest = e.daysRest ?? r.daysRest;
+        if (e.lastStart) {
+          r.lastPitchCount  = e.lastStart.pitchCount;
+          r.lastEarnedRuns  = e.lastStart.earnedRuns;
+          r.lastHitsAllowed = e.lastStart.hitsAllowed;
+          r.lastStrikeouts  = e.lastStart.strikeouts;
+          r.lastWalks       = e.lastStart.walks;
+        }
       }
     }
   }

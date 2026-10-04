@@ -6,6 +6,7 @@ import { TEAMS, getTeamById } from '../data/constants/apiConstants';
 import { useAuth } from '../context/AuthContext';
 import playerStatsService from '../data/services/playerStatsServices';
 import scheduleService from '../data/services/scheduleService';
+import { SHOW_ANALYTICS_LAB } from '../data/constants/featureFlags';
 
 // Nav dropdown icons
 import iconMlbSchedule from '../assets/icons/mlb-schedule.png';
@@ -15,8 +16,7 @@ import iconPlayerAnalytics from '../assets/icons/player-analytics.png';
 import iconGameProp from '../assets/icons/game-prop.png';
 import iconPitcherProp from '../assets/icons/pitcher-prop.png';
 import iconBatterProp from '../assets/icons/batter-prop.png';
-import iconScoutAi from '../assets/icons/analysis.png';
-import { SHOW_SCOUT_AI } from '../data/constants/featureFlags';
+import iconScoutAi from '../assets/icons/ai-ml.png';
 import iconSandlotInsider from '../assets/icons/sandlot-insider.png';
 import iconStrategyBlog from '../assets/icons/strategy-blog.png';
 import iconDataScience from '../assets/icons/data-science-and-baseball.png';
@@ -60,7 +60,7 @@ function Header() {
   const scheduleGamesRef = useRef(null); // cache today/upcoming games for matchup search
   const navigate = useNavigate();
   const location = useLocation();
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, isPremium } = useAuth();
 
   // Use all 30 MLB teams from apiConstants
   const teamOptions = useMemo(() => 
@@ -77,6 +77,7 @@ function Header() {
     { type: 'page', label: 'MLB Standings', path: '/mlb-standings', keywords: ['standings', 'rankings', 'division', 'wild card', 'leaderboard'] },
     { type: 'page', label: 'Team Analytics', path: '/team-analytics', keywords: ['team', 'analytics', 'stats', 'statistics'] },
     { type: 'page', label: 'Player Analytics', path: '/player-analytics', keywords: ['player', 'batter', 'pitcher', 'stats', 'analytics'] },
+    ...(SHOW_ANALYTICS_LAB ? [{ type: 'page', label: 'Analytics Lab', path: '/analytics-explorer', keywords: ['chart', 'explorer', 'analytics', 'lab', 'scatter', 'bar', 'line', 'custom', 'sql', 'query', 'builder', 'visualize'] }] : []),
     { type: 'page', label: 'Sandlot Insider', path: '/sandlot-insider', keywords: ['articles', 'news', 'insider', 'analysis', 'commentary'] },
     { type: 'page', label: 'Strategy Blog', path: '/blogs', keywords: ['blog', 'strategy', 'tips', 'betting', 'advice'] },
     { type: 'page', label: 'Data Science & Baseball', path: '/data-science', keywords: ['data', 'science', 'ml', 'machine learning', 'models', 'algorithm'] },
@@ -162,6 +163,24 @@ function Header() {
     
     navigate(path);
     window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  // Predictions tabs: premium users go to the real (gated) page; everyone else
+  // lands on the overview and scrolls to that feature's info section — the
+  // pages redirect non-premium users back to the overview anyway.
+  const handlePredictionNav = (path) => {
+    const hash = {
+      '/predictions/scout-desk': '#pov-feature-scout',
+      '/predictions/games':      '#pov-feature-games',
+      '/predictions/pitchers':   '#pov-feature-pitchers',
+      '/predictions/batters':    '#pov-feature-batters',
+    }[path];
+    if (!isPremium && hash) {
+      closeMenu();
+      navigate(`/predictions${hash}`); // overview scrolls via its hash effect
+      return;
+    }
+    handleNavClick(path);
   };
 
   const toggleDropdown = (dropdown) => {
@@ -513,6 +532,7 @@ function Header() {
       '/mlb-standings':      iconMlbStandings,
       '/team-analytics':     iconTeamAnalytics,
       '/player-analytics':   iconPlayerAnalytics,
+      '/analytics-explorer': iconTeamAnalytics,
       '/sandlot-insider':    iconSandlotInsider,
       '/blogs':              iconStrategyBlog,
       '/data-science':       iconDataScience,
@@ -647,7 +667,7 @@ function Header() {
           >
             <button 
               type="button" 
-              className={`nav-button ${location.pathname.startsWith('/team-analytics') || location.pathname.startsWith('/batter-analytics') || location.pathname.startsWith('/pitcher-analytics') || location.pathname.startsWith('/mlb-schedule') || location.pathname.startsWith('/mlb-standings') || location.pathname.startsWith('/player-analytics') ? 'active' : ''}`}
+              className={`nav-button ${location.pathname.startsWith('/team-analytics') || location.pathname.startsWith('/batter-analytics') || location.pathname.startsWith('/pitcher-analytics') || location.pathname.startsWith('/mlb-schedule') || location.pathname.startsWith('/mlb-standings') || location.pathname.startsWith('/player-analytics') || location.pathname.startsWith('/analytics-explorer') ? 'active' : ''}`}
               onClick={() => toggleDropdown('stats')}
             >
               Stats
@@ -684,6 +704,15 @@ function Header() {
                   <div className="dropdown-desc">Player performance metrics</div>
                 </div>
               </button>
+              {SHOW_ANALYTICS_LAB && (
+                <button onClick={() => handleNavClick('/analytics-explorer')} className="dropdown-item">
+                  <img src={iconTeamAnalytics} alt="" className="dropdown-icon" />
+                  <div>
+                    <div className="dropdown-title">Analytics Lab</div>
+                    <div className="dropdown-desc">Build custom charts from any metric</div>
+                  </div>
+                </button>
+              )}
             </div>
           </div>
 
@@ -704,39 +733,34 @@ function Header() {
               </svg>
             </button>
             <div className={`dropdown-menu ${activeDropdown === 'predictions' ? 'show' : ''}`}>
-              <button onClick={() => handleNavClick('/predictions/games')} className="dropdown-item">
+              <button onClick={() => handlePredictionNav('/predictions/scout-desk')} className="dropdown-item">
+                <img src={iconScoutAi} alt="" className="dropdown-icon" />
+                <div>
+                  <div className="dropdown-title">Scout AI</div>
+                  <div className="dropdown-desc">High-conviction props with a proven edge</div>
+                </div>
+              </button>
+              <button onClick={() => handlePredictionNav('/predictions/games')} className="dropdown-item">
                 <img src={iconGameProp} alt="" className="dropdown-icon" />
                 <div>
                   <div className="dropdown-title">Game Props</div>
                   <div className="dropdown-desc">Win/loss, totals & spread projections</div>
                 </div>
               </button>
-              <button onClick={() => handleNavClick('/predictions/pitchers')} className="dropdown-item">
+              <button onClick={() => handlePredictionNav('/predictions/pitchers')} className="dropdown-item">
                 <img src={iconPitcherProp} alt="" className="dropdown-icon" />
                 <div>
                   <div className="dropdown-title">Pitcher Props</div>
                   <div className="dropdown-desc">Strikeouts, innings & ERA forecasts</div>
                 </div>
               </button>
-              <button onClick={() => handleNavClick('/predictions/batters')} className="dropdown-item">
+              <button onClick={() => handlePredictionNav('/predictions/batters')} className="dropdown-item">
                 <img src={iconBatterProp} alt="" className="dropdown-icon" />
                 <div>
                   <div className="dropdown-title">Batter Props</div>
                   <div className="dropdown-desc">Hits, HRs, RBIs & stolen base props</div>
                 </div>
               </button>
-              {SHOW_SCOUT_AI && (
-                <button onClick={() => handleNavClick('/predictions/scout-ai')} className="dropdown-item dropdown-item--scout">
-                  <img src={iconScoutAi} alt="" className="dropdown-icon" />
-                  <div>
-                    <div className="dropdown-title">
-                      Scout AI
-                      <span className="dropdown-badge">✨ AI</span>
-                    </div>
-                    <div className="dropdown-desc">Chat with our AI for instant pick recommendations</div>
-                  </div>
-                </button>
-              )}
             </div>
           </div>
 

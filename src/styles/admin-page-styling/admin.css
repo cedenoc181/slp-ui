@@ -118,6 +118,57 @@
   opacity: 1;
 }
 
+/* Accent (primary) action buttons — Scout Desk refresh, New Alert */
+.admin-action-btn--accent {
+  background: rgba(45, 212, 191, 0.12);
+  border-color: rgba(45, 212, 191, 0.4);
+  color: #2dd4bf;
+}
+.admin-action-btn--accent:hover {
+  background: rgba(45, 212, 191, 0.18);
+  border-color: rgba(45, 212, 191, 0.6);
+  color: #5eead4;
+}
+.admin-action-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+.admin-action-btn__icon.is-spinning {
+  animation: ai-spin 0.8s linear infinite;
+  opacity: 1;
+}
+
+/* Result note under the header after a Scout Desk refresh */
+.admin-desk-refresh-note {
+  margin: -0.25rem 0 1rem;
+  padding: 0.6rem 0.9rem;
+  border-radius: 8px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  border: 1px solid transparent;
+}
+.admin-desk-refresh-note--busy {
+  color: #a5b4fc;
+  background: rgba(129, 140, 248, 0.1);
+  border-color: rgba(129, 140, 248, 0.28);
+}
+.admin-desk-refresh-note--ok {
+  color: #5eead4;
+  background: rgba(45, 212, 191, 0.1);
+  border-color: rgba(45, 212, 191, 0.32);
+}
+.admin-desk-refresh-note--empty {
+  color: #fcd34d;
+  background: rgba(250, 204, 21, 0.1);
+  border-color: rgba(250, 204, 21, 0.28);
+}
+.admin-desk-refresh-note--error {
+  color: #fca5a5;
+  background: rgba(248, 113, 113, 0.1);
+  border-color: rgba(248, 113, 113, 0.3);
+}
+
 /* ── Command Center Dashboard ─────────────────────────────── */
 .admin-hero-grid {
   display: grid;
@@ -273,6 +324,32 @@
 .admin-hitrate__stat:first-child {
   border-left: none;
   padding-left: 0;
+}
+
+/* Link to open the per-pitcher daily scorecard from the player-prop wedge */
+.admin-pp-report-link {
+  margin-top: 0.9rem;
+  width: 100%;
+  padding: 0.55rem 0.75rem;
+  background: rgba(45, 212, 191, 0.1);
+  border: 1px solid rgba(45, 212, 191, 0.32);
+  border-radius: 8px;
+  color: #2dd4bf;
+  font-size: 0.78rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
+}
+.admin-pp-report-link:hover:not(:disabled) {
+  background: rgba(45, 212, 191, 0.18);
+  border-color: rgba(45, 212, 191, 0.55);
+}
+.admin-pp-report-link:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  color: rgba(255, 255, 255, 0.4);
+  background: rgba(255, 255, 255, 0.04);
+  border-color: rgba(255, 255, 255, 0.1);
 }
 
 .admin-hitrate__stat-label {
@@ -738,6 +815,69 @@
   font-variant-numeric: tabular-nums;
 }
 
+/* Scout AI pick line on each model pick card (with agree/differ vs model) */
+.admin-pick__scout {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  margin-top: 0.6rem;
+  padding-top: 0.55rem;
+  border-top: 1px solid rgba(148, 163, 184, 0.1);
+}
+.admin-pick__scout-text { font-size: 0.82rem; color: #ddd6fe; min-width: 0; }
+.admin-pick__scout-label { font-weight: 800; color: #c4b5fd; }
+.admin-pick__scout-badge {
+  font-size: 0.6rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  padding: 0.14rem 0.45rem;
+  border-radius: 5px;
+  white-space: nowrap;
+}
+.admin-pick__scout-badge.agree  { color: #4ade80; background: rgba(74, 222, 128, 0.15); }
+.admin-pick__scout-badge.differ { color: #fbbf24; background: rgba(251, 191, 36, 0.15); }
+
+/* Expandable full scouting report under the prediction cards */
+.admin-scout-report {
+  margin-top: 0.3rem;
+  padding-top: 0.85rem;
+  border-top: 1px solid rgba(148, 163, 184, 0.15);
+}
+.admin-scout-report__toggle {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: #c4b5fd;
+  padding: 0.2rem 0;
+}
+.admin-scout-report__toggle:hover { text-decoration: underline; }
+
+.admin-scout-report__body { margin-top: 0.65rem; display: flex; flex-direction: column; gap: 0.75rem; }
+.admin-scout-report__headline { margin: 0; font-size: 0.84rem; font-weight: 700; color: #fff; line-height: 1.45; }
+
+.admin-scout-model {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 9px;
+  padding: 0.6rem 0.7rem;
+}
+.admin-scout-model__title { font-size: 0.66rem; font-weight: 800; letter-spacing: 0.04em; text-transform: uppercase; color: rgba(255,255,255,0.45); margin-bottom: 0.45rem; }
+.admin-scout-model__grid { display: flex; flex-wrap: wrap; gap: 0.5rem 1.4rem; }
+.admin-scout-model__grid > div { display: flex; flex-direction: column; gap: 0.1rem; }
+.admin-scout-model__grid span { font-size: 0.62rem; text-transform: uppercase; letter-spacing: 0.05em; color: rgba(255,255,255,0.4); }
+.admin-scout-model__grid strong { font-size: 0.95rem; color: #fff; font-variant-numeric: tabular-nums; }
+
+.admin-scout-sec__title { font-size: 0.7rem; font-weight: 800; letter-spacing: 0.03em; color: #c4b5fd; margin-bottom: 0.2rem; }
+.admin-scout-sec__title.warn { color: #fca5a5; }
+.admin-scout-sec__body { font-size: 0.8rem; line-height: 1.5; color: rgba(255, 255, 255, 0.78); }
+.admin-scout-bullets { margin: 0.1rem 0 0; padding-left: 1.1rem; display: flex; flex-direction: column; gap: 0.2rem; }
+.admin-scout-bullets li { font-size: 0.8rem; line-height: 1.45; color: rgba(255, 255, 255, 0.78); }
+.admin-scout-bullets.warn li { color: #fca5a5; }
+
 @media (max-width: 480px) {
   .admin-side {
     max-width: 100%;
@@ -855,6 +995,130 @@
   text-align: center;
   color: rgba(255, 255, 255, 0.35);
   font-size: 0.9rem;
+}
+
+/* ── Pitcher-prop report modal ─────────────────────────────── */
+.admin-pp-refresh {
+  margin-top: 0.75rem;
+  display: inline-flex; align-items: center; gap: 0.4rem;
+  padding: 0.4rem 0.8rem;
+  background: rgba(45, 212, 191, 0.12);
+  border: 1px solid rgba(45, 212, 191, 0.32);
+  border-radius: 8px;
+  color: #2dd4bf;
+  font-size: 0.76rem; font-weight: 700;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+}
+.admin-pp-refresh:hover:not(:disabled) {
+  background: rgba(45, 212, 191, 0.2);
+  border-color: rgba(45, 212, 191, 0.55);
+}
+.admin-pp-refresh:disabled { opacity: 0.6; cursor: not-allowed; }
+.admin-pp-refresh__icon.is-spinning { animation: ai-spin 0.8s linear infinite; }
+.admin-pp-populating {
+  margin: 0.6rem 0 0;
+  font-size: 0.74rem;
+  color: #fcd34d;
+  background: rgba(250, 204, 21, 0.1);
+  border: 1px solid rgba(250, 204, 21, 0.24);
+  border-radius: 8px;
+  padding: 0.5rem 0.7rem;
+}
+.admin-pp-list {
+  overflow-y: auto;
+  flex: 1;
+  padding: 1rem 1.75rem 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+.admin-pp-card {
+  background: rgba(0, 0, 0, 0.2);
+  border: 1px solid rgba(148, 163, 184, 0.1);
+  border-radius: 12px;
+  padding: 0.85rem 1rem;
+}
+.admin-pp-card--pending { opacity: 0.82; }
+.admin-pp-card__head {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  margin-bottom: 0.7rem;
+}
+.admin-pp-card__avatar {
+  position: relative;
+  width: 42px; height: 42px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  overflow: hidden;
+  background: linear-gradient(135deg, rgba(45,212,191,0.25), rgba(45,212,191,0.08));
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  display: flex; align-items: center; justify-content: center;
+}
+.admin-pp-card__avatar-fallback {
+  font-size: 0.82rem; font-weight: 800; color: rgba(255, 255, 255, 0.85);
+  letter-spacing: 0.02em;
+}
+.admin-pp-card__avatar-img {
+  position: absolute; inset: 0;
+  width: 100%; height: 100%;
+  /* Fit the whole head-and-shoulders portrait inside the circle (no chopped
+     chin), bottom-anchored, with a slight zoom so it still fills the frame. */
+  object-fit: contain;
+  object-position: center bottom;
+  transform: scale(1.12);
+  transform-origin: center bottom;
+}
+.admin-pp-card__id { display: flex; flex-direction: column; gap: 0.15rem; min-width: 0; flex: 1; }
+.admin-pp-card__name { font-size: 0.92rem; font-weight: 800; color: #fff; }
+.admin-pp-card__matchup { font-size: 0.72rem; color: rgba(255, 255, 255, 0.45); }
+.admin-pp-card__status {
+  font-size: 0.6rem; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.5); background: rgba(255, 255, 255, 0.06);
+  border-radius: 5px; padding: 0.15rem 0.45rem; white-space: nowrap; align-self: flex-start;
+}
+.admin-pp-card__status.is-final {
+  color: #4ade80; background: rgba(74, 222, 128, 0.12);
+}
+.admin-pp-card__props {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.6rem;
+}
+.admin-pp-prop {
+  min-width: 0;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-left-width: 3px;
+  border-radius: 9px;
+  padding: 0.55rem 0.6rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+.admin-pp-prop--win  { border-left-color: #4ade80; }
+.admin-pp-prop--loss { border-left-color: #f87171; }
+.admin-pp-prop--push { border-left-color: #fbbf24; }
+.admin-pp-prop--pending { border-left-color: rgba(255, 255, 255, 0.15); }
+.admin-pp-prop__top { display: flex; align-items: center; justify-content: space-between; gap: 0.35rem; min-width: 0; }
+.admin-pp-prop__label {
+  min-width: 0; overflow-wrap: anywhere;
+  font-size: 0.58rem; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.45);
+}
+.admin-pp-prop__top .admin-pick__result { flex-shrink: 0; }
+.admin-pp-prop__pick { overflow-wrap: anywhere; }
+.admin-pp-prop__pick { font-size: 0.85rem; font-weight: 800; color: #fff; }
+.admin-pp-prop__nums {
+  display: flex; flex-direction: column; gap: 0.1rem;
+  font-size: 0.68rem; color: rgba(255, 255, 255, 0.4);
+}
+.admin-pp-prop__nums strong { color: rgba(255, 255, 255, 0.75); font-weight: 700; }
+
+@media (max-width: 600px) {
+  .admin-pp-list { padding: 0.85rem 1rem 1.25rem; }
+  .admin-pp-card__props { grid-template-columns: 1fr 1fr; }
 }
 
 @media (max-width: 600px) {
@@ -1018,6 +1282,8 @@
     align-items: flex-start;
     gap: 0.5rem;
   }
+  /* Span the full row so the subject ellipsis-truncates instead of overflowing. */
+  .admin-campaign-row__main { width: 100%; }
   .admin-campaigns__header-right {
     flex-direction: column;
     align-items: flex-end;
@@ -1120,6 +1386,8 @@
     align-items: flex-start;
     gap: 0.6rem;
   }
+  /* Span the full row so the subject ellipsis-truncates instead of overflowing. */
+  .admin-alert-row__main { width: 100%; }
   .admin-alert-row__actions {
     align-self: flex-end;
   }
@@ -2629,3 +2897,6 @@ button:disabled,
   .posts-table th:nth-child(4),
   .posts-table td:nth-child(4) { display: none; }
 }
+
+/* "New Post" create button sits at the end of the Content Manager filters row */
+.admin-filters__create { margin-left: auto; }

@@ -84,6 +84,20 @@ export const formatIP = (value) => {
 };
 
 /**
+ * Convert a TRUE-DECIMAL innings value (e.g. 14.3333 = 14â…“) to MLB box-score
+ * notation (X.0 / X.1 / X.2). Use for summed/computed innings only — not for
+ * values the API already returns in box notation.
+ * @param {number|string|null} value
+ * @returns {string}
+ */
+export const inningsToBox = (value) => {
+  const n = Number(value);
+  if (value === null || value === undefined || Number.isNaN(n)) return '0.0';
+  const outs = Math.round(n * 3);
+  return `${Math.floor(outs / 3)}.${outs % 3}`;
+};
+
+/**
  * Format date for display (e.g., "9/27")
  * Uses UTC to avoid timezone offset issues
  * @param {string} dateStr - ISO date string

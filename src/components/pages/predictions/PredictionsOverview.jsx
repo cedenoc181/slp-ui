@@ -1,5 +1,7 @@
-import { useNavigate } from 'react-router-dom';
+import { useEffect } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../../context/AuthContext';
+import scoutWarRoomImg from '../../../assets/images/scout-ai-war-room.png';
 import gamePropsImg from '../../../assets/images/game-prop-page.png';
 import pitcherPropsImg from '../../../assets/images/pitcher-prop-page.png';
 import batterPropsImg from '../../../assets/images/batter-prop-page.png';
@@ -41,9 +43,9 @@ function SamplePick({ label, pick, confidence, prob, accent }) {
 }
 
 // ── Section feature row ─────────────────────────────────────────────────────
-function FeatureSection({ accent, tag, tagIcon, title, description, bullets, picks, screenshotLabel, image, reverse }) {
+function FeatureSection({ id, accent, tag, tagIcon, title, description, bullets, picks, screenshotLabel, image, reverse }) {
   return (
-    <div className={`pov-feature-section${reverse ? ' reverse' : ''}`}>
+    <div id={id} className={`pov-feature-section${reverse ? ' reverse' : ''}`}>
       <div className="pov-feature-copy">
         <span className={`pov-feature-tag accent-${accent}`}>
           {tagIcon && <img src={tagIcon} alt="" className="pov-feature-tag-icon" />}
@@ -87,7 +89,19 @@ function FeatureSection({ accent, tag, tagIcon, title, description, bullets, pic
 // ── Main page ───────────────────────────────────────────────────────────────
 export default function PredictionsOverview() {
   const navigate = useNavigate();
+  const location = useLocation();
   const { isAuthenticated, isPremium } = useAuth();
+
+  // Non-premium tab clicks (Header "Predictions" dropdown) land here with a hash
+  // like #pov-feature-games — scroll to the correlated feature section.
+  useEffect(() => {
+    const id = location.hash?.replace(/^#/, '');
+    if (!id) return;
+    const el = document.getElementById(id);
+    if (!el) return;
+    const t = setTimeout(() => el.scrollIntoView({ behavior: 'smooth', block: 'start' }), 60);
+    return () => clearTimeout(t);
+  }, [location.hash]);
 
   const handleUpgrade = () => {
     navigate('/upgrade');
@@ -160,8 +174,31 @@ export default function PredictionsOverview() {
       <div id="pov-features" className="pov-features-wrapper">
 
         <FeatureSection
+          id="pov-feature-scout"
+          accent="purple"
+          tag="Scout AI War Room"
+          tagIcon={aiMlIcon}
+          title="The War Room breaks down the day's best plays"
+          description="Scout AI freezes the day's highest-conviction game and pitcher props, then opens a War Room for each — a panel of analyst personas debates the play, backed by the model's audit basis, matchup context, and a consensus verdict."
+          bullets={[
+            "The day's best plays — game and pitcher props, ranked by conviction",
+            'War Room analyst panel: quant, scout, and sharp personas weigh in on every pick',
+            'Audit basis — the historical win-rate buckets behind each edge',
+            'Full matchup breakdown, plus track-or-fade to follow your record',
+          ]}
+          picks={[
+            { label: 'Best Prop', pick: 'Gilbert Under 6.5 K', confidence: 5, prob: 70 },
+            { label: 'Best Prop', pick: 'Yankees ML', confidence: 4, prob: 66 },
+          ]}
+          screenshotLabel="Scout AI War Room Preview"
+          image={scoutWarRoomImg}
+          reverse
+        />
+
+        <FeatureSection
+          id="pov-feature-games"
           accent="blue"
-          tag="Game Predictions"
+          tag="Game Props"
           tagIcon={gamePropIcon}
           title="Full-game picks powered by real models"
           description="Our ML model generates win probability, run-line projections, and over/under totals for every scheduled game — then Scout AI writes a matchup-specific scouting report explaining the edge."
@@ -180,6 +217,7 @@ export default function PredictionsOverview() {
         />
 
         <FeatureSection
+          id="pov-feature-pitchers"
           accent="green"
           tag="Pitcher Props"
           tagIcon={pitcherPropIcon}
@@ -201,6 +239,7 @@ export default function PredictionsOverview() {
         />
 
         <FeatureSection
+          id="pov-feature-batters"
           accent="yellow"
           tag="Batter Props"
           tagIcon={batterPropIcon}

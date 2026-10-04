@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../../context/AuthContext';
@@ -6,9 +6,13 @@ import PredictionsNav from './PredictionsNav';
 import betLibraryService, { unitProfit, betPL, summarize } from '../../../data/services/betLibraryService';
 import predictionsService from '../../../data/services/predictionsService';
 import scheduleService from '../../../data/services/scheduleService';
+import gamesService from '../../../data/services/gamesService';
 import { buildMatchupCandidates } from '../../../data/services/matchupBets';
-import { gradeBet, isGameFinal, isSettleDue, gameStartEpoch } from '../../../data/services/betGrader';
+import { isGameFinal, gameStartEpoch } from '../../../data/services/betGrader';
+import { buildLiveTracker, getPlayerPropActual, isGameLive } from '../../../data/services/liveBetTracker';
+import { fetchBoxPlayers, settlePendingBets } from '../../../data/services/betSettlement';
 import { getTeamById } from '../../../data/constants/apiConstants';
+import LiveBetTracker from './LiveBetTracker';
 import '../../../styles/predictions-page-styling/predictions.css';
 import '../../../styles/predictions-page-styling/bet-library.css';
 
@@ -407,14 +411,16 @@ function AddBetModal({ onClose, onSave, matchups = [], gamesById = {} }) {
 
 // ── Bet row ───────────────────────────────────────────────────────────────────
 
-function BetRow({ bet, onStatus, onRemove }) {
+function BetRow({ bet, onStatus, onRemove, liveTracker, actual }) {
   const [open, setOpen] = useState(false);
+  const isPlayerProp = bet.grade?.type === 'pitcher_prop' || bet.grade?.type === 'batter_prop';
   const pl = betPL(bet);
   const settled = bet.status === 'won' || bet.status === 'lost' || bet.status === 'push';
   const status = STATUS_META[bet.status] ?? STATUS_META.pending;
 
   return (
-    <div className={`bl-row corr-${bet.correlation} status-${bet.status}`}>
+    <div className={`bl-row corr-${bet.correlation} status-${bet.status}${liveTracker ? ' is-live' : ''}`}>
+      {liveTracker && <LiveBetTracker tracker={liveTracker} />}
       <div className="bl-row-main">
         {/* Correlation badge */}
         <span className={`bl-corr-badge corr-${bet.correlation}`}>
@@ -486,6 +492,14 @@ function BetRow({ bet, onStatus, onRemove }) {
                 <span className="bl-detail-value">{new Date(bet.settledAt).toLocaleString()}</span>
               </div>
             )}
+            {isPlayerProp && actual != null && (
+              <div className="bl-detail-cell">
+                <span className="bl-detail-label">
+                  {bet.status === 'pending' ? 'Current' : 'Final'} {bet.market || 'result'}
+                </span>
+                <span className="bl-detail-value bl-detail-actual">{actual}</span>
+              </div>
+            )}
           </div>
 
           {bet.scoutPrompt && (
@@ -536,6 +550,8 @@ export default function BetLibrary() {
   const [matchups, setMatchups] = useState([]);
   const [gamesById, setGamesById] = useState({});
   const [loadError, setLoadError] = useState(null);
+  const [liveByPk, setLiveByPk] = useState({}); // gamePk → { game, boxscore, batters, pitchers }
+  const [propActuals, setPropActuals] = useState({}); // betId → actual stat the player got
 
   useEffect(() => { window.scrollTo(0, 0); }, []);
 
@@ -592,37 +608,11 @@ export default function BetLibrary() {
 
   useEffect(() => { refresh(); }, [refresh]);
 
-  // Auto-settle pending bets ~2.5h after first pitch, using the same schedule
-  // data the MLB schedule uses to flip live games to Final.
+  // Auto-settle pending bets ~2.5h after first pitch (shared with the Scout Desk
+  // so bets settle no matter which page is open).
   const attemptGrading = useCallback(async () => {
     try {
-      const all = await betLibraryService.list();
-      const now = Date.now();
-      const due = all.filter(b => b.status === 'pending' && b.gamePk != null && b.grade && isSettleDue(b, now));
-      if (!due.length) return;
-
-      const year = new Date().getFullYear();
-      const [todayRes, priorRes] = await Promise.allSettled([
-        scheduleService.getTodayGames(),
-        scheduleService.getPriorGames({ season: year, seasonType: 'R', limit: 100 }),
-      ]);
-      const games = [
-        ...(todayRes.status === 'fulfilled' && Array.isArray(todayRes.value) ? todayRes.value : []),
-        ...(priorRes.status === 'fulfilled' && Array.isArray(priorRes.value) ? priorRes.value : []),
-      ];
-      const byPk = {};
-      for (const g of games) {
-        const pk = g.game_pk ?? g.id;
-        if (pk != null && !(pk in byPk)) byPk[pk] = g;
-      }
-
-      let changed = false;
-      for (const bet of due) {
-        const g = byPk[bet.gamePk];
-        if (!g || !isGameFinal(g)) continue;       // not final yet → try again next pass
-        const status = gradeBet(bet, g);
-        if (status) { await betLibraryService.update(bet.id, { status }); changed = true; }
-      }
+      const { changed } = await settlePendingBets();
       if (changed) await refresh();
     } catch {
       // Non-fatal — grading retries on the next pass.
@@ -635,6 +625,126 @@ export default function BetLibrary() {
     const id = setInterval(attemptGrading, 10 * 60 * 1000);
     return () => clearInterval(id);
   }, [attemptGrading]);
+
+  // ── Live tracking: poll live game + H2H box scores for pending bets ───────────
+  // Reads current bets via a ref so unrelated bet edits don't restart the timer;
+  // the effect only re-subscribes when the set of pending games/markets changes.
+  const betsRef = useRef(bets);
+  betsRef.current = bets;
+  const liveSig = useMemo(
+    () => bets
+      .filter(b => b.status === 'pending' && b.gamePk != null)
+      .map(b => `${b.gamePk}:${b.grade?.type || ''}`)
+      .sort()
+      .join('|'),
+    [bets]
+  );
+
+  useEffect(() => {
+    const pending = betsRef.current.filter(b => b.status === 'pending' && b.gamePk != null);
+    if (!pending.length) { setLiveByPk({}); return; }
+
+    let cancelled = false;
+    // Bypass the API TTL cache so each poll reflects the latest in-game state.
+    const fresh = { ttl: 0 };
+
+    const poll = async () => {
+      try {
+        const todays = await scheduleService.getTodayGames(fresh).catch(() => []);
+        const byPk = {};
+        for (const g of (Array.isArray(todays) ? todays : [])) {
+          const pk = g.game_pk ?? g.id;
+          if (pk != null) byPk[pk] = g;
+        }
+        const livePks = [...new Set(pending.map(b => b.gamePk))]
+          .filter(pk => byPk[pk] && isGameLive(byPk[pk]));
+        if (!livePks.length) { if (!cancelled) setLiveByPk({}); return; }
+
+        // Only games carrying a player-prop bet need the per-player H2H box scores.
+        const needPlayers = new Set(
+          pending
+            .filter(b => b.grade?.type === 'pitcher_prop' || b.grade?.type === 'batter_prop')
+            .map(b => b.gamePk)
+        );
+
+        const entries = await Promise.all(livePks.map(async (pk) => {
+          const game = byPk[pk];
+          const wantPlayers = needPlayers.has(pk);
+          const [boxRes, players] = await Promise.all([
+            gamesService.getBoxscore(pk, fresh).catch(() => null),
+            wantPlayers ? fetchBoxPlayers(game, pk, fresh) : Promise.resolve({ batters: [], pitchers: [] }),
+          ]);
+          return [pk, { game, boxscore: boxRes, batters: players.batters, pitchers: players.pitchers }];
+        }));
+        if (!cancelled) setLiveByPk(Object.fromEntries(entries));
+      } catch {
+        // Non-fatal — the next poll retries.
+      }
+    };
+
+    poll();
+    const id = setInterval(poll, 60_000);
+    return () => { cancelled = true; clearInterval(id); };
+  }, [liveSig]);
+
+  // ── Per-bet actual: the metric total the player got, for player-prop bets ─────
+  // Derived from the same per-game H2H box scores (final → the settled total).
+  // Recomputed (from the API-cached payloads) whenever the prop-bet set changes.
+  const propSig = useMemo(
+    () => bets
+      .filter(b => b.gamePk != null && (b.grade?.type === 'pitcher_prop' || b.grade?.type === 'batter_prop'))
+      .map(b => `${b.id}:${b.gamePk}:${b.status}`)
+      .sort()
+      .join('|'),
+    [bets]
+  );
+
+  useEffect(() => {
+    const propBets = betsRef.current.filter(
+      b => b.gamePk != null && (b.grade?.type === 'pitcher_prop' || b.grade?.type === 'batter_prop')
+    );
+    if (!propBets.length) { setPropActuals({}); return; }
+
+    let cancelled = false;
+    (async () => {
+      try {
+        const year = new Date().getFullYear();
+        const [todayRes, priorRes] = await Promise.allSettled([
+          scheduleService.getTodayGames(),
+          scheduleService.getPriorGames({ season: year, seasonType: 'R', limit: 100 }),
+        ]);
+        const games = [
+          ...(todayRes.status === 'fulfilled' && Array.isArray(todayRes.value) ? todayRes.value : []),
+          ...(priorRes.status === 'fulfilled' && Array.isArray(priorRes.value) ? priorRes.value : []),
+        ];
+        const byPk = {};
+        for (const g of games) {
+          const pk = g.game_pk ?? g.id;
+          if (pk != null && !(pk in byPk)) byPk[pk] = g;
+        }
+        // Pull box scores for any prop game that has started (live or final);
+        // scheduled games have no stats yet so we skip them.
+        const playPks = [...new Set(propBets.map(b => b.gamePk))]
+          .filter(pk => byPk[pk] && (isGameFinal(byPk[pk]) || isGameLive(byPk[pk])));
+        if (!playPks.length) { if (!cancelled) setPropActuals({}); return; }
+
+        const boxByPk = {};
+        await Promise.all(playPks.map(async (pk) => { boxByPk[pk] = await fetchBoxPlayers(byPk[pk], pk); }));
+
+        const next = {};
+        for (const b of propBets) {
+          const box = boxByPk[b.gamePk];
+          if (!box) continue;
+          const v = getPlayerPropActual(b, box);
+          if (v != null) next[b.id] = v;
+        }
+        if (!cancelled) setPropActuals(next);
+      } catch {
+        // Non-fatal — recomputed on the next change.
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [propSig]);
 
   const handleAdd = useCallback(async (data) => {
     try { await betLibraryService.add(data); }
@@ -783,15 +893,27 @@ export default function BetLibrary() {
         ) : (
           <div className="bl-list">
             {visible.map(bet => (
-              <BetRow key={bet.id} bet={bet} onStatus={handleStatus} onRemove={handleRemove} />
+              <BetRow
+                key={bet.id}
+                bet={bet}
+                onStatus={handleStatus}
+                onRemove={handleRemove}
+                liveTracker={bet.gamePk != null && bet.status === 'pending'
+                  ? buildLiveTracker(bet, liveByPk[bet.gamePk])
+                  : null}
+                actual={(bet.gamePk != null && liveByPk[bet.gamePk]
+                  ? getPlayerPropActual(bet, liveByPk[bet.gamePk])
+                  : null) ?? propActuals[bet.id] ?? null}
+              />
             ))}
           </div>
         )}
 
         <p className="bl-disclaimer">
-          * Game bets (moneyline, run line, total) auto-settle ~2.5h after first pitch from final
-          scores; player props settle manually for now. Flat 1-unit P/L is model bookkeeping for
-          informational purposes only. Please gamble responsibly.
+          * Bets auto-settle ~2.5h after first pitch once the game is Final — game bets (moneyline,
+          run line, total) from the final score, and player props from the player's box-score line.
+          Anything without a resolvable result stays pending to settle manually. Flat 1-unit P/L is
+          model bookkeeping for informational purposes only. Please gamble responsibly.
         </p>
       </div>
 
