@@ -143,8 +143,8 @@ function MLBStandingsPostseason({ selectedSeason }) {
   }, [bracketData, teamSeasonData]);
 
   // Pair teams in a round using opponent IDs (primary) or complementary win/loss records (fallback).
-  // Also handles null series-winner fields by computing the winner from wins vs losses —
-  // this covers the case where the backend's game_type classification is broken.
+  // Pairing happens before win/loss labeling so a tied, in-progress series (e.g. 1-1) still
+  // produces a matchup — relying on "wins > losses" to find pairs would drop both teams when tied.
   const pairRoundTeams = useCallback((leagueTeams, winsKey, lossesKey, winnerKey, opponentKey) => {
     // Include teams that played this round: series-winner field set OR recorded wins/losses
     const participants = leagueTeams.filter(t =>
@@ -157,31 +157,38 @@ function MLBStandingsPostseason({ selectedSeason }) {
       return t[winsKey] > t[lossesKey];
     };
 
-    const winners = participants.filter(t => isWinner(t));
-    const losers = participants.filter(t => !isWinner(t));
-
     const matchups = [];
-    const usedLosers = new Set();
+    const used = new Set();
 
-    winners.forEach(winner => {
+    participants.forEach(team => {
+      if (used.has(team.team_id)) return;
+
       // 1. Primary: match by opponent ID (most reliable)
-      let loser = opponentKey
-        ? losers.find(l => !usedLosers.has(l.team_id) && l.team_id === winner[opponentKey])
+      let opponent = opponentKey
+        ? participants.find(o => !used.has(o.team_id) && o.team_id !== team.team_id && o.team_id === team[opponentKey])
         : null;
       // 2. Secondary: complementary series record
-      if (!loser) {
-        loser = losers.find(l =>
-          !usedLosers.has(l.team_id) &&
-          l[winsKey] === winner[lossesKey] &&
-          l[lossesKey] === winner[winsKey]
+      if (!opponent) {
+        opponent = participants.find(o =>
+          !used.has(o.team_id) &&
+          o.team_id !== team.team_id &&
+          o[winsKey] === team[lossesKey] &&
+          o[lossesKey] === team[winsKey]
         );
       }
-      // 3. Fallback: any unused loser
-      if (!loser) {
-        loser = losers.find(l => !usedLosers.has(l.team_id));
+      // 3. Fallback: any other unused participant
+      if (!opponent) {
+        opponent = participants.find(o => !used.has(o.team_id) && o.team_id !== team.team_id);
       }
-      if (loser) {
-        usedLosers.add(loser.team_id);
+
+      if (opponent) {
+        used.add(team.team_id);
+        used.add(opponent.team_id);
+        // Label winner/loser for the data shape below; irrelevant once tied — the renderers
+        // recompute the actual visual winner from live scores anyway.
+        const teamAhead = isWinner(team) && !isWinner(opponent);
+        const winner = teamAhead ? team : opponent;
+        const loser = teamAhead ? opponent : team;
         matchups.push({ winner, loser });
       }
     });
