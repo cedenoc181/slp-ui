@@ -505,7 +505,7 @@ export default function TrustLedger() {
                                 : undefined
                             }
                           >
-                            {col.label}
+                            {col.key === 'winPct' ? (postseason ? 'Playoff' : 'Season') : col.label}
                             {sortable && sortKey === col.key && (
                               <span className="tl-arrow">{sortDir === -1 ? '▼' : '▲'}</span>
                             )}
