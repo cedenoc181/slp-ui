@@ -422,6 +422,34 @@
   text-align: center;
 }
 
+/* ============================================
+   Projected (server-computed matchup — both participants
+   locked in, but MLB hasn't posted the official schedule yet)
+   ============================================ */
+.series-block.projected {
+  border-style: dashed;
+  border-color: rgba(255, 255, 255, 0.2);
+  padding-top: 16px;
+}
+
+.projected-badge {
+  position: absolute;
+  top: 6px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 8.5px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--muted);
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid var(--card-border);
+  border-radius: 20px;
+  padding: 1px 7px;
+  white-space: nowrap;
+  z-index: 3;
+}
+
 .team-row.placeholder {
   justify-content: center;
   text-align: center;
@@ -491,7 +519,8 @@
   transition: opacity 0.15s ease, transform 0.15s ease;
   pointer-events: none;
   z-index: 4;
-  white-space: nowrap;
+  white-space: normal;
+  max-width: 230px;
 }
 
 .series-block:hover .series-info-pop {

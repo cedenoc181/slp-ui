@@ -7,6 +7,11 @@ import alIcon from '../../../../assets/images/AL-icon.png';
 import nlIcon from '../../../../assets/images/NL-icon.png';
 import wsIcon from '../../../../assets/images/world-series-logo.png';
 
+// Wins needed to clinch, per round — used only for the "N wins from
+// advancing" status-line hint, never to re-derive the winner itself (the
+// server's own {round}_series_winner / ws_champion flag is authoritative).
+const CLINCH_WINS = { wildcard: 2, division: 3, championship: 4, worldseries: 4 };
+
 function MLBStandingsPostseason({ selectedSeason }) {
   const navigate = useNavigate();
   const [bracketData, setBracketData] = useState(null);
@@ -117,10 +122,15 @@ function MLBStandingsPostseason({ selectedSeason }) {
     ['American League', 'National League'].forEach(leagueName => {
       const leagueTeams = bracketData[leagueName] || [];
 
-      // Bye teams had no wild card games (wc_series_winner is null)
-      const byeTeams = leagueTeams.filter(t => t.wc_series_winner === null);
-      const wcWinners = leagueTeams.filter(t => t.wc_series_winner === true);
-      const wcLosers = leagueTeams.filter(t => t.wc_series_winner === false);
+      // Byes never get a Wild Card opponent at all (not just an undecided
+      // one) — wildcard_opponent_id is the reliable signal. wc_series_winner
+      // alone would also read null for a team whose WC series is simply
+      // scheduled-but-not-started (or still in progress), misclassifying
+      // them as a bye. The remaining participants are seeded together by
+      // regular-season rank regardless of win/loss/live status — seed is a
+      // playoff-entry ranking, not an outcome of the series itself.
+      const byeTeams = leagueTeams.filter(t => t.wildcard_opponent_id == null);
+      const wcParticipants = leagueTeams.filter(t => t.wildcard_opponent_id != null);
 
       const sortByRegularSeason = (teams) =>
         [...teams].sort((a, b) => {
@@ -131,70 +141,38 @@ function MLBStandingsPostseason({ selectedSeason }) {
         });
 
       const sortedBye = sortByRegularSeason(byeTeams);
-      const sortedWCWinners = sortByRegularSeason(wcWinners);
-      const sortedWCLosers = sortByRegularSeason(wcLosers);
+      const sortedParticipants = sortByRegularSeason(wcParticipants);
 
       sortedBye.forEach((team, i) => { seeds[team.team_id] = i + 1; });
-      sortedWCWinners.forEach((team, i) => { seeds[team.team_id] = sortedBye.length + 1 + i; });
-      sortedWCLosers.forEach((team, i) => { seeds[team.team_id] = sortedBye.length + sortedWCWinners.length + 1 + i; });
+      sortedParticipants.forEach((team, i) => { seeds[team.team_id] = sortedBye.length + 1 + i; });
     });
 
     return seeds;
   }, [bracketData, teamSeasonData]);
 
-  // Pair teams in a round using opponent IDs (primary) or complementary win/loss records (fallback).
-  // Pairing happens before win/loss labeling so a tied, in-progress series (e.g. 1-1) still
-  // produces a matchup — relying on "wins > losses" to find pairs would drop both teams when tied.
-  const pairRoundTeams = useCallback((leagueTeams, winsKey, lossesKey, winnerKey, opponentKey) => {
-    // Include teams that played this round: series-winner field set OR recorded wins/losses
-    const participants = leagueTeams.filter(t =>
-      t[winnerKey] !== null || t[winsKey] > 0 || t[lossesKey] > 0
-    );
-
-    // Determine winner: use the field if available, otherwise compute from wins vs losses
-    const isWinner = (t) => {
-      if (t[winnerKey] !== null) return t[winnerKey] === true;
-      return t[winsKey] > t[lossesKey];
-    };
-
+  // Pair teams in a round using opponent_id as ground truth. This renders a
+  // matchup the instant both participants are known — including a 0-0,
+  // not-yet-started series, and (for LCS/WS) a matchup the server computed
+  // ahead of MLB's own schedule — rather than waiting for nonzero win/loss
+  // counts the way the old win/loss-based pairing did. Ordered by seed so a
+  // card's top/bottom slot doesn't flip mid-series as the score changes.
+  const pairByOpponent = useCallback((teams, byId, opponentKey) => {
     const matchups = [];
     const used = new Set();
-
-    participants.forEach(team => {
+    teams.forEach(team => {
       if (used.has(team.team_id)) return;
-
-      // 1. Primary: match by opponent ID (most reliable)
-      let opponent = opponentKey
-        ? participants.find(o => !used.has(o.team_id) && o.team_id !== team.team_id && o.team_id === team[opponentKey])
-        : null;
-      // 2. Secondary: complementary series record
-      if (!opponent) {
-        opponent = participants.find(o =>
-          !used.has(o.team_id) &&
-          o.team_id !== team.team_id &&
-          o[winsKey] === team[lossesKey] &&
-          o[lossesKey] === team[winsKey]
-        );
-      }
-      // 3. Fallback: any other unused participant
-      if (!opponent) {
-        opponent = participants.find(o => !used.has(o.team_id) && o.team_id !== team.team_id);
-      }
-
-      if (opponent) {
-        used.add(team.team_id);
-        used.add(opponent.team_id);
-        // Label winner/loser for the data shape below; irrelevant once tied — the renderers
-        // recompute the actual visual winner from live scores anyway.
-        const teamAhead = isWinner(team) && !isWinner(opponent);
-        const winner = teamAhead ? team : opponent;
-        const loser = teamAhead ? opponent : team;
-        matchups.push({ winner, loser });
-      }
+      const oppId = team[opponentKey];
+      if (oppId == null) return; // opponent not known yet — hasn't reached this round
+      const opponent = byId.get(oppId);
+      if (!opponent || used.has(opponent.team_id)) return;
+      used.add(team.team_id);
+      used.add(opponent.team_id);
+      const teamSeed = teamSeeds[team.team_id] ?? 99;
+      const oppSeed = teamSeeds[opponent.team_id] ?? 99;
+      matchups.push(teamSeed <= oppSeed ? { a: team, b: opponent } : { a: opponent, b: team });
     });
-
     return matchups;
-  }, []);
+  }, [teamSeeds]);
 
   // Build bracket matchup pairs directly from the aggregated series data
   const bracketMatchups = useMemo(() => {
@@ -203,48 +181,35 @@ function MLBStandingsPostseason({ selectedSeason }) {
     const alTeams = bracketData['American League'] || [];
     const nlTeams = bracketData['National League'] || [];
     const allTeams = [...alTeams, ...nlTeams];
-
-    const wsParticipants = allTeams.filter(t => t.ws_wins > 0 || t.ws_losses > 0);
-    const wsWinner = allTeams.find(t => t.ws_champion === true) ||
-      wsParticipants.sort((a, b) => b.ws_wins - a.ws_wins)[0] || null;
-    const wsLoser = allTeams.find(t => t.ws_champion === false) ||
-      wsParticipants.sort((a, b) => a.ws_wins - b.ws_wins)[0] || null;
+    // World Series opponents live in the other league's array.
+    const byId = new Map(allTeams.map(t => [t.team_id, t]));
 
     return {
       AL: {
-        wildCard: pairRoundTeams(
-          alTeams, 'wildcard_wins', 'wildcard_losses', 'wc_series_winner', 'wildcard_opponent_id'
-        ),
-        divisionSeries: pairRoundTeams(
-          alTeams, 'lds_wins', 'lds_losses', 'lds_series_winner', 'lds_opponent_id'
-        ),
-        championshipSeries: pairRoundTeams(
-          alTeams, 'lcs_wins', 'lcs_losses', 'lcs_series_winner', 'lcs_opponent_id'
-        ),
+        wildCard: pairByOpponent(alTeams, byId, 'wildcard_opponent_id'),
+        divisionSeries: pairByOpponent(alTeams, byId, 'lds_opponent_id'),
+        championshipSeries: pairByOpponent(alTeams, byId, 'lcs_opponent_id'),
       },
       NL: {
-        wildCard: pairRoundTeams(
-          nlTeams, 'wildcard_wins', 'wildcard_losses', 'wc_series_winner', 'wildcard_opponent_id'
-        ),
-        divisionSeries: pairRoundTeams(
-          nlTeams, 'lds_wins', 'lds_losses', 'lds_series_winner', 'lds_opponent_id'
-        ),
-        championshipSeries: pairRoundTeams(
-          nlTeams, 'lcs_wins', 'lcs_losses', 'lcs_series_winner', 'lcs_opponent_id'
-        ),
+        wildCard: pairByOpponent(nlTeams, byId, 'wildcard_opponent_id'),
+        divisionSeries: pairByOpponent(nlTeams, byId, 'lds_opponent_id'),
+        championshipSeries: pairByOpponent(nlTeams, byId, 'lcs_opponent_id'),
       },
-      worldSeries: wsWinner && wsLoser ? { winner: wsWinner, loser: wsLoser } : null,
+      worldSeries: pairByOpponent(allTeams, byId, 'ws_opponent_id')[0] || null,
     };
-  }, [bracketData, pairRoundTeams]);
+  }, [bracketData, pairByOpponent]);
 
-  // Create a team display object from bracket team data + series wins
-  const createTeamObj = useCallback((team, seriesWins) => ({
+  // Create a team display object from bracket team data. `isWinner` comes
+  // straight from the server's own {round}_series_winner / ws_champion flag
+  // (bool or null) — never re-derived from score, since null-with-a-live-
+  // record means "in progress," not "undecided by score comparison."
+  const createTeamObj = useCallback((team, winsKey, winnerKey) => ({
     team: team.team_name,
     abbreviation: team.team_abbreviation,
     mlbTeamId: team.mlb_team_id,
-    logo: `https://www.mlbstatic.com/team-logos/${team.mlb_team_id}.svg`,
     seed: teamSeeds[team.team_id] || 0,
-    score: seriesWins,
+    score: team[winsKey] ?? 0,
+    isWinner: winnerKey ? team[winnerKey] : null,
     teamId: team.team_id,
   }), [teamSeeds]);
 
@@ -252,52 +217,55 @@ function MLBStandingsPostseason({ selectedSeason }) {
   const playoffData = useMemo(() => {
     if (!bracketData || !bracketMatchups) return null;
 
-    // Wild Card: flat array of [winner, loser, winner, loser, ...]
-    const buildWCFlat = (matchups, winsKey) =>
-      matchups.flatMap(({ winner, loser }) => [
-        createTeamObj(winner, winner[winsKey]),
-        createTeamObj(loser, loser[winsKey]),
+    // Wild Card: flat array of [a, b, a, b, ...]
+    const buildWCFlat = (matchups) =>
+      matchups.flatMap(({ a, b }) => [
+        createTeamObj(a, 'wildcard_wins', 'wc_series_winner'),
+        createTeamObj(b, 'wildcard_wins', 'wc_series_winner'),
       ]);
 
-    // Division Series: array of { topSeed, bottomSeed }
-    const buildSeriesBlocks = (matchups, winsKey) =>
-      matchups.map(({ winner, loser }) => ({
-        topSeed: createTeamObj(winner, winner[winsKey]),
-        bottomSeed: createTeamObj(loser, loser[winsKey]),
+    // Division Series: array of { topSeed, bottomSeed } — no projected flag,
+    // LDS opponents are only ever populated once MLB's own schedule exists.
+    const buildSeriesBlocks = (matchups) =>
+      matchups.map(({ a, b }) => ({
+        topSeed: createTeamObj(a, 'lds_wins', 'lds_series_winner'),
+        bottomSeed: createTeamObj(b, 'lds_wins', 'lds_series_winner'),
       }));
 
-    // Championship Series: single { team1, team2 }
-    const buildChampionship = (matchups, winsKey) => {
+    // Championship Series: single { team1, team2, projected }
+    const buildChampionship = (matchups) => {
       if (!matchups.length) return null;
-      const { winner, loser } = matchups[0];
+      const { a, b } = matchups[0];
       return {
-        team1: createTeamObj(winner, winner[winsKey]),
-        team2: createTeamObj(loser, loser[winsKey]),
+        team1: createTeamObj(a, 'lcs_wins', 'lcs_series_winner'),
+        team2: createTeamObj(b, 'lcs_wins', 'lcs_series_winner'),
+        projected: !!(a.lcs_opponent_projected || b.lcs_opponent_projected),
       };
     };
 
-    // World Series: { alChampion, nlChampion }
+    // World Series: { alChampion, nlChampion, projected }
     let worldSeries = null;
     if (bracketMatchups.worldSeries) {
-      const { winner, loser } = bracketMatchups.worldSeries;
-      const alTeam = winner.league_name === 'American League' ? winner : loser;
-      const nlTeam = winner.league_name === 'National League' ? winner : loser;
+      const { a, b } = bracketMatchups.worldSeries;
+      const alTeam = a.league_name === 'American League' ? a : b;
+      const nlTeam = a.league_name === 'National League' ? a : b;
       worldSeries = {
-        alChampion: createTeamObj(alTeam, alTeam.ws_wins),
-        nlChampion: createTeamObj(nlTeam, nlTeam.ws_wins),
+        alChampion: createTeamObj(alTeam, 'ws_wins', 'ws_champion'),
+        nlChampion: createTeamObj(nlTeam, 'ws_wins', 'ws_champion'),
+        projected: !!(alTeam.ws_opponent_projected || nlTeam.ws_opponent_projected),
       };
     }
 
     return {
       AL: {
-        wildCard: buildWCFlat(bracketMatchups.AL.wildCard, 'wildcard_wins'),
-        divisionSeries: buildSeriesBlocks(bracketMatchups.AL.divisionSeries, 'lds_wins'),
-        championshipSeries: buildChampionship(bracketMatchups.AL.championshipSeries, 'lcs_wins'),
+        wildCard: buildWCFlat(bracketMatchups.AL.wildCard),
+        divisionSeries: buildSeriesBlocks(bracketMatchups.AL.divisionSeries),
+        championshipSeries: buildChampionship(bracketMatchups.AL.championshipSeries),
       },
       NL: {
-        wildCard: buildWCFlat(bracketMatchups.NL.wildCard, 'wildcard_wins'),
-        divisionSeries: buildSeriesBlocks(bracketMatchups.NL.divisionSeries, 'lds_wins'),
-        championshipSeries: buildChampionship(bracketMatchups.NL.championshipSeries, 'lcs_wins'),
+        wildCard: buildWCFlat(bracketMatchups.NL.wildCard),
+        divisionSeries: buildSeriesBlocks(bracketMatchups.NL.divisionSeries),
+        championshipSeries: buildChampionship(bracketMatchups.NL.championshipSeries),
       },
       worldSeries,
     };
@@ -337,8 +305,43 @@ function MLBStandingsPostseason({ selectedSeason }) {
     return alWcCount === 8 && nlWcCount === 8;
   }, [displaySeason, playoffData]);
 
-  const renderSeriesInfo = (teamA, teamB, label) => {
-    const winner = teamB ? (teamA.score >= teamB.score ? teamA : teamB) : teamA;
+  // The server's {round}_series_winner / ws_champion is documented as
+  // authoritative — we're told not to re-derive it from scores. In practice
+  // it has been observed to flip true prematurely (a live, in-progress
+  // deciding game's still-changing score briefly counted as final), which is
+  // mathematically detectable: a series can't be clinched below that round's
+  // win threshold (e.g. 2-1 in a best-of-5 ALDS). This is a defensive floor,
+  // not a replacement for the real fix — a flagged mismatch here means the
+  // backend sent a result that isn't actually possible yet and should be
+  // reported, not silently trusted.
+  const clinchedWinner = (teamA, teamB, round) => {
+    const clinch = CLINCH_WINS[round];
+    if (teamA.isWinner === true && (!clinch || teamA.score >= clinch)) return teamA;
+    if (teamB && teamB.isWinner === true && (!clinch || teamB.score >= clinch)) return teamB;
+    return null;
+  };
+
+  // Status line trusts the server's own isWinner flag (filtered through the
+  // clinch-math floor above) rather than comparing scores outright — a tied,
+  // in-progress series (e.g. 1-1) must read "tied," not silently pick a
+  // "winner" by score comparison.
+  const seriesStatusLine = (teamA, teamB, round) => {
+    if (!teamB) return null;
+    const winner = clinchedWinner(teamA, teamB, round);
+    if (winner === teamA) return `${teamA.team} wins the series ${teamA.score}-${teamB.score}`;
+    if (winner === teamB) return `${teamB.team} wins the series ${teamB.score}-${teamA.score}`;
+    if (teamA.score === 0 && teamB.score === 0) return 'Series not yet started';
+    if (teamA.score === teamB.score) return `Series tied ${teamA.score}-${teamB.score}`;
+    const leader = teamA.score > teamB.score ? teamA : teamB;
+    const trailer = teamA.score > teamB.score ? teamB : teamA;
+    const clinch = CLINCH_WINS[round];
+    const winsAway = clinch ? clinch - leader.score : null;
+    const awaySuffix = winsAway > 0 ? ` · ${winsAway} win${winsAway === 1 ? '' : 's'} from advancing` : '';
+    return `${leader.team} leads ${leader.score}-${trailer.score}${awaySuffix}`;
+  };
+
+  const renderSeriesInfo = (teamA, teamB, label, round) => {
+    const statusLine = seriesStatusLine(teamA, teamB, round) || `${teamA.team}`;
     return (
       <div className="series-info-pop">
         <p className="series-info-title">{label}</p>
@@ -352,7 +355,7 @@ function MLBStandingsPostseason({ selectedSeason }) {
             <span className="series-info-score">{teamB.score}</span>
           </div>
         )}
-        <p className="series-info-winner">Winner: {winner.team}</p>
+        <p className="series-info-winner">{statusLine}</p>
       </div>
     );
   };
@@ -395,18 +398,18 @@ function MLBStandingsPostseason({ selectedSeason }) {
   };
 
   const renderSeriesBlock = (matchup, league, round, connectDirection) => {
-    const isTopWinner = matchup.topSeed.score > matchup.bottomSeed.score;
     const label =
       round === 'division'
         ? `${league.toUpperCase()} Division Series`
         : round === 'championship'
           ? `${league.toUpperCase()} Championship Series`
           : 'Series';
+    const winner = clinchedWinner(matchup.topSeed, matchup.bottomSeed, round);
     return (
       <div className={`series-block ${round} connect-${connectDirection}`}>
-        {renderSeriesInfo(matchup.topSeed, matchup.bottomSeed, label)}
-        {renderTeamRow(matchup.topSeed, isTopWinner, league)}
-        {renderTeamRow(matchup.bottomSeed, !isTopWinner, league)}
+        {renderSeriesInfo(matchup.topSeed, matchup.bottomSeed, label, round)}
+        {renderTeamRow(matchup.topSeed, winner === matchup.topSeed, league)}
+        {renderTeamRow(matchup.bottomSeed, winner === matchup.bottomSeed, league)}
       </div>
     );
   };
@@ -433,13 +436,14 @@ function MLBStandingsPostseason({ selectedSeason }) {
 
   const renderChampionshipSeries = (series, league, connectDirection) => {
     if (!series) return renderChampionshipSeriesPlaceholder(league, connectDirection);
-    const isFirstWinner = series.team1.score > series.team2.score;
     const label = `${league.toUpperCase()} Championship Series`;
+    const winner = clinchedWinner(series.team1, series.team2, 'championship');
     return (
-      <div className={`series-block championship connect-${connectDirection}`}>
-        {renderSeriesInfo(series.team1, series.team2, label)}
-        {renderTeamRow(series.team1, isFirstWinner, league)}
-        {renderTeamRow(series.team2, !isFirstWinner, league)}
+      <div className={`series-block championship connect-${connectDirection}${series.projected ? ' projected' : ''}`}>
+        {series.projected && <span className="projected-badge">Projected</span>}
+        {renderSeriesInfo(series.team1, series.team2, label, 'championship')}
+        {renderTeamRow(series.team1, winner === series.team1, league)}
+        {renderTeamRow(series.team2, winner === series.team2, league)}
       </div>
     );
   };
@@ -457,12 +461,12 @@ function MLBStandingsPostseason({ selectedSeason }) {
     const pairs = chunkIntoMatchups(games);
     return pairs.map((pair, idx) => {
       const [teamA, teamB] = pair;
-      const teamAWins = teamB ? teamA.score > teamB.score : true;
+      const wcWinner = clinchedWinner(teamA, teamB, 'wildcard');
       const items = (
         <div key={`${league}-wc-${idx}`} className={`series-block wild-card connect-${connectDirection}`}>
-          {renderSeriesInfo(teamA, teamB, `${league.toUpperCase()} Wild Card`)}
-          {renderTeamRow(teamA, teamAWins, league)}
-          {teamB && renderTeamRow(teamB, !teamAWins, league)}
+          {renderSeriesInfo(teamA, teamB, `${league.toUpperCase()} Wild Card`, 'wildcard')}
+          {renderTeamRow(teamA, wcWinner === teamA, league)}
+          {teamB && renderTeamRow(teamB, wcWinner === teamB, league)}
         </div>
       );
 
@@ -491,12 +495,12 @@ function MLBStandingsPostseason({ selectedSeason }) {
     const renderMatchups = (pairsList, startIdx) =>
       pairsList.map((pair, idx) => {
         const [teamA, teamB] = pair;
-        const teamAWins = teamB ? teamA.score > teamB.score : true;
+        const wcWinner = clinchedWinner(teamA, teamB, 'wildcard');
         return (
           <div key={`${league}-wc-${startIdx + idx}`} className={`series-block wild-card connect-${connectDirection}`}>
-            {renderSeriesInfo(teamA, teamB, `${league.toUpperCase()} Wild Card`)}
-            {renderTeamRow(teamA, teamAWins, league)}
-            {teamB && renderTeamRow(teamB, !teamAWins, league)}
+            {renderSeriesInfo(teamA, teamB, `${league.toUpperCase()} Wild Card`, 'wildcard')}
+            {renderTeamRow(teamA, wcWinner === teamA, league)}
+            {teamB && renderTeamRow(teamB, wcWinner === teamB, league)}
           </div>
         );
       });
@@ -534,45 +538,50 @@ function MLBStandingsPostseason({ selectedSeason }) {
 
   const renderWorldSeries = () => {
     if (!playoffData?.worldSeries) return renderWorldSeriesPlaceholder();
-    const alWins = playoffData.worldSeries.alChampion.score > playoffData.worldSeries.nlChampion.score;
+    const { alChampion, nlChampion, projected } = playoffData.worldSeries;
     const label = 'World Series';
 
-    const champion = alWins ? playoffData.worldSeries.alChampion : playoffData.worldSeries.nlChampion;
-    const championLeague = alWins ? 'al' : 'nl';
+    const champion = clinchedWinner(alChampion, nlChampion, 'worldseries');
+    const alWinner = champion === alChampion;
+    const nlWinner = champion === nlChampion;
+    const championLeague = alWinner ? 'al' : 'nl';
 
     return (
       <div className="world-series-block">
         <div className="world-series-logo">
           <img src={wsIcon} alt="World Series logo" />
         </div>
-        <div className="series-block world-series">
-          {renderSeriesInfo(playoffData.worldSeries.alChampion, playoffData.worldSeries.nlChampion, label)}
-          {renderTeamRow(playoffData.worldSeries.alChampion, alWins, 'al')}
-          {renderTeamRow(playoffData.worldSeries.nlChampion, !alWins, 'nl')}
+        <div className={`series-block world-series${projected ? ' projected' : ''}`}>
+          {projected && <span className="projected-badge">Projected</span>}
+          {renderSeriesInfo(alChampion, nlChampion, label, 'worldseries')}
+          {renderTeamRow(alChampion, alWinner, 'al')}
+          {renderTeamRow(nlChampion, nlWinner, 'nl')}
         </div>
         <div className="world-series-header">
           <p className="eyebrow">Postseason {displaySeason}</p>
         </div>
-        <div className={`champion-banner ${championLeague}`}>
-          <div className="champion-banner-content">
-            <div className="champion-trophy">🏆</div>
-            <div className="champion-info">
-              <span className="champion-label">{displaySeason} World Series Champions</span>
-              <div className="champion-team">
-                {champion.mlbTeamId && (
-                  <img
-                    src={`https://www.mlbstatic.com/team-logos/${champion.mlbTeamId}.svg`}
-                    alt={champion.team}
-                    className="champion-logo"
-                    onError={(e) => { e.target.style.display = 'none'; }}
-                  />
-                )}
-                <span className="champion-name">{champion.team}</span>
+        {champion && (
+          <div className={`champion-banner ${championLeague}`}>
+            <div className="champion-banner-content">
+              <div className="champion-trophy">🏆</div>
+              <div className="champion-info">
+                <span className="champion-label">{displaySeason} World Series Champions</span>
+                <div className="champion-team">
+                  {champion.mlbTeamId && (
+                    <img
+                      src={`https://www.mlbstatic.com/team-logos/${champion.mlbTeamId}.svg`}
+                      alt={champion.team}
+                      className="champion-logo"
+                      onError={(e) => { e.target.style.display = 'none'; }}
+                    />
+                  )}
+                  <span className="champion-name">{champion.team}</span>
+                </div>
               </div>
+              <div className="champion-trophy">🏆</div>
             </div>
-            <div className="champion-trophy">🏆</div>
           </div>
-        </div>
+        )}
       </div>
     );
   };
