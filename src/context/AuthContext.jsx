@@ -149,8 +149,8 @@ export function AuthProvider({ children }) {
     await _applyTokens(data.access_token, data.refresh_token, data.expires_in);
   };
 
-  const register = async (email, password) => {
-    await userAuthService.register(email, password);
+  const register = async (email, password, website = '') => {
+    await userAuthService.register(email, password, website);
   };
 
   const logout = async () => {

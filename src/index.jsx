@@ -2,11 +2,10 @@ import React from 'react';
 import ReactDOM from 'react-dom/client';
 import './styles/App.css';
 import App from './App';
-import ReactGA from 'react-ga4';
+import { initAnalytics } from './data/services/analytics';
 
-
-// Initialize Google Analytics with environment variable
-ReactGA.initialize('G-SYNN1KZYYW');
+// Initialize Google Analytics
+initAnalytics();
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(

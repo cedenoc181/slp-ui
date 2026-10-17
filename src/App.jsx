@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate, useLocation, matchPath } from 'react-router-dom';
-import ReactGA from 'react-ga4';
+import { trackPageview } from './data/services/analytics';
 import { AuthProvider } from './context/AuthContext';
 import { SHOW_ANALYTICS_LAB } from './data/constants/featureFlags';
 
@@ -217,11 +217,7 @@ function AnalyticsTracker() {
   useEffect(() => {
     const title = getPageTitle(location.pathname);
     document.title = title;
-    ReactGA.send({
-      hitType: "pageview",
-      page: location.pathname + location.search,
-      title,
-    });
+    trackPageview(location.pathname + location.search, title);
   }, [location]);
 
   return null;

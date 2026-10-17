@@ -2,6 +2,7 @@
 const express = require('express');
 const cors = require('cors');
 const dotenv = require('dotenv');
+const rateLimit = require('express-rate-limit');
 const { createClient } = require('@supabase/supabase-js');
 const { randomUUID } = require('crypto');
 
@@ -17,7 +18,28 @@ const fetch = (...args) =>
   import('node-fetch').then(({ default: fn }) => fn(...args));
 
 const app = express();
+app.set('trust proxy', 1); // Cloud Run sits behind a proxy — needed for express-rate-limit to see the real client IP
 app.use(express.json());
+
+const tooManyRequests = (req, res) => {
+  res.status(429).json({ success: false, message: 'Too many requests, please try again later.' });
+};
+
+const contactLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 5,
+  standardHeaders: true,
+  legacyHeaders: false,
+  handler: tooManyRequests,
+});
+
+const waitlistLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000,
+  max: 3,
+  standardHeaders: true,
+  legacyHeaders: false,
+  handler: tooManyRequests,
+});
 
 // CORS configuration - allow multiple origins
 const allowedOrigins = [
@@ -406,9 +428,15 @@ const sendWaitlistAdminEmail = async (userEmail) => {
   return { sent: true };
 };
 
-app.post('/api/contact', async (req, res) => {
+app.post('/api/contact', contactLimiter, async (req, res) => {
   try {
-    const { captchaToken, expectedAction = 'contact_submit', ...formData } = req.body || {};
+    const { captchaToken, expectedAction = 'contact_submit', website, ...formData } = req.body || {};
+
+    // Honeypot — bots that fill every field get a success response with no captcha check or emails
+    if (website) {
+      return res.json({ success: true });
+    }
+
     const verification = await verifyRecaptcha({ token: captchaToken, expectedAction });
     if (!verification.ok) {
       return res.status(400).json({ success: false, ...verification });
@@ -445,10 +473,15 @@ app.post('/api/contact', async (req, res) => {
 });
 
 // Waitlist signup endpoint (no reCAPTCHA required)
-app.post('/api/waitlist', async (req, res) => {
+app.post('/api/waitlist', waitlistLimiter, async (req, res) => {
   try {
-    const { email } = req.body || {};
-    
+    const { email, website } = req.body || {};
+
+    // Honeypot — bots that fill every field get a success response without inserting
+    if (website) {
+      return res.json({ success: true });
+    }
+
     // Validate email
     if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
       return res.status(400).json({ 

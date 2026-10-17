@@ -1,4 +1,5 @@
 # syntax=docker/dockerfile:1
+# supabase-js >2.105 needs Node 22+ (native WebSocket); bump both together.
 FROM node:18-alpine
 
 WORKDIR /app

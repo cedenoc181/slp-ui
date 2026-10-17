@@ -188,6 +188,18 @@
   flex-direction: column;
 }
 
+/* Honeypot — off-screen, not display:none, so bots that fill every field still get caught */
+.honeypot-field {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  white-space: nowrap;
+  left: -9999px;
+}
+
 .auth-form .form-group label {
   font-size: 0.9rem;
   font-weight: 600;

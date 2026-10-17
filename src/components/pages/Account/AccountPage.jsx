@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../../context/AuthContext';
+import { trackEvent } from '../../../data/services/analytics';
 
 const PREMIUM_PRICE_WEEKLY = process.env.REACT_APP_PREMIUM_PRICE_WEEKLY || '—';
 
@@ -16,6 +17,7 @@ function AccountPage() {
   const [registerEmail, setRegisterEmail] = useState('');
   const [registerPassword, setRegisterPassword] = useState('');
   const [registerConfirm, setRegisterConfirm] = useState('');
+  const [registerWebsite, setRegisterWebsite] = useState(''); // honeypot — real users never fill this in
   const [error, setError] = useState('');
   const [submitting, setSubmitting] = useState(false);
 
@@ -62,6 +64,12 @@ function AccountPage() {
     e.preventDefault();
     setError('');
 
+    if (registerWebsite) {
+      // Honeypot tripped — show the normal success state without calling the API or firing events
+      navigate('/verify-email', { state: { email: registerEmail } });
+      return;
+    }
+
     if (!registerEmail || !registerPassword || !registerConfirm) {
       setError('Please fill in all fields');
       return;
@@ -79,7 +87,9 @@ function AccountPage() {
 
     setSubmitting(true);
     try {
-      await register(registerEmail, registerPassword);
+      await register(registerEmail, registerPassword, registerWebsite);
+      trackEvent('sign_up', { method: 'email' });
+      trackEvent('generate_lead', { form_name: 'register' });
       navigate('/verify-email', { state: { email: registerEmail } });
     } catch (err) {
       setError(mapAuthError(err?.message));
@@ -338,6 +348,19 @@ function AccountPage() {
                     )}
                   </button>
                 </div>
+              </div>
+              <div className="form-group honeypot-field">
+                <label htmlFor="register-website">Website</label>
+                <input
+                  type="text"
+                  id="register-website"
+                  name="website"
+                  value={registerWebsite}
+                  onChange={(e) => setRegisterWebsite(e.target.value)}
+                  tabIndex={-1}
+                  autoComplete="off"
+                  aria-hidden="true"
+                />
               </div>
               <button type="submit" className="auth-btn secondary" disabled={submitting}>
                 {submitting ? 'Creating account…' : 'Create Free Account'}

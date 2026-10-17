@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import ReCAPTCHA from "react-google-recaptcha";
 import contactImage from '../../../assets/images/spa-retro-logo-removebg.png';
+import { trackEvent } from '../../../data/services/analytics';
 
 function ContactPage() {
 
@@ -8,7 +9,8 @@ function ContactPage() {
     name: '',
     email: '',
     issueType: '',
-    message: ''
+    message: '',
+    website: '' // honeypot — real users never fill this in
   });
   const [captchaValue, setCaptchaValue] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -51,8 +53,11 @@ function ContactPage() {
       });
       const data = await res.json();
       if (!res.ok || !data.success) throw new Error(data.message || 'verify failed');
+      if (!formData.website) {
+        trackEvent('generate_lead', { form_name: 'contact', issue_type: formData.issueType || 'unspecified' });
+      }
       setSubmitStatus({ type: 'success', message: 'Thank you! Your message has been sent successfully.' });
-      setFormData({ name: '', email: '', issueType: '', message: '' });
+      setFormData({ name: '', email: '', issueType: '', message: '', website: '' });
       setCaptchaValue(null);
     } catch (err) {
       setSubmitStatus({ type: 'error', message: 'Something went wrong. Please try again later.' });
@@ -133,6 +138,20 @@ function ContactPage() {
                   rows="6"
                   placeholder="Please provide as much detail as possible..."
                 ></textarea>
+              </div>
+
+              <div className="form-group honeypot-field">
+                <label htmlFor="website">Website</label>
+                <input
+                  type="text"
+                  id="website"
+                  name="website"
+                  value={formData.website}
+                  onChange={handleChange}
+                  tabIndex={-1}
+                  autoComplete="off"
+                  aria-hidden="true"
+                />
               </div>
 
               <div className="form-group captcha-group">

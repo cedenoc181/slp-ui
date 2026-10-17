@@ -45,10 +45,12 @@ async function authFetch(endpoint, body = null, withAuth = false) {
 const userAuthService = {
   /**
    * POST /api/v1/auth/register
+   * `website` is a honeypot field — always empty for real users, forwarded
+   * so the backend can reject submissions that fill it in.
    * Returns UserResponse { id, email, is_active, is_admin, created_at, ... }
    */
-  register: (email, password) =>
-    authFetch('/api/v1/auth/register', { email, password }),
+  register: (email, password, website = '') =>
+    authFetch('/api/v1/auth/register', { email, password, website }),
 
   /**
    * POST /api/v1/auth/login
