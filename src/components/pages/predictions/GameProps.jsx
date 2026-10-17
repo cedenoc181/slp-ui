@@ -751,9 +751,189 @@ function DFSMatrix({ pick }) {
   );
 }
 
+// ─── Predictions panel (drawer default view) ──────────────────────────────────
+// Every recommendation we have for this matchup in one place: the Scout AI
+// scouting report's picks (ML / run line / total) plus any early-game props
+// the day's board produced for this game.
+
+// Scout odds arrive as strings ("-135"), board odds as numbers — normalize both
+// and return null when absent so callers can skip the element entirely.
+function fmtOddsLoose(v) {
+  if (v == null || v === '') return null;
+  const s = String(v);
+  return s.startsWith('-') || s.startsWith('+') ? s : `+${s}`;
+}
+
+// Conviction arrives either as a 0–1 fraction or an already-1–5 rating.
+function toFiveScale(v) {
+  if (v == null) return 0;
+  const n = Number(v);
+  if (Number.isNaN(n)) return 0;
+  return Math.max(0, Math.min(5, Math.round(n <= 1 ? n * 5 : n)));
+}
+
+function PredConfidence({ value }) {
+  const n = toFiveScale(value);
+  if (!n) return null;
+  return (
+    <span className="gp-pred-dots" aria-label={`Confidence ${n} of 5`}>
+      {Array.from({ length: 5 }, (_, i) => (
+        <span key={i} className={`gp-pred-dot${i < n ? ' on' : ''}`} />
+      ))}
+    </span>
+  );
+}
+
+// An empty picks[] on the early-game board is ambiguous on its own, so the
+// board reports which kind of empty it is:
+//
+//   lockedAt null,  noEdgeReason null  → hasn't evaluated today's slate yet
+//   lockedAt set,   noEdgeReason set   → evaluated, nothing cleared the bar
+//   picks non-empty                    → normal
+//
+// The middle case is a real, informative result — "we looked, nothing was worth
+// betting" — and is expected to be common on thin slates while these models are
+// new and narrow-band. It must never render as an error or a loading state.
+function earlyState({ picks, meta }) {
+  if (Array.isArray(picks) && picks.length > 0) return 'picks';
+  if (meta?.noEdgeReason) return 'no-edge';
+  return 'pending';
+}
+
+// Shown in place of the pick list on a no-edge day. `reason` is a complete
+// sentence from the server and varies by day — render it verbatim.
+function NoEdgeCard({ reason }) {
+  return (
+    <div className="gp-no-edge">
+      <span className="gp-no-edge-title">No Edge Today</span>
+      <p className="gp-no-edge-reason">{reason}</p>
+    </div>
+  );
+}
+
+// Starting pitchers off an early-game pick. NRFI/YRFI picks carry the full
+// `nrfiProfile`; F5 picks carry a lighter `f5Profile` with names only. Both
+// are optional — the feed predates them, and a pick may arrive without either.
+function startersOf(pick) {
+  const ctx = pick?.reasoning?.context;
+  const prof = ctx?.nrfiProfile || ctx?.f5Profile;
+  if (!prof) return null;
+  const away = prof.awaySp?.name;
+  const home = prof.homeSp?.name;
+  if (!away && !home) return null;
+  return `${away || 'TBD'} vs ${home || 'TBD'}`;
+}
+
+function PredCard({ type, pick, confidence, odds, meta, badge, badgeLevel, sub }) {
+  const o = fmtOddsLoose(odds);
+  return (
+    <div className="gp-pred-card">
+      <div className="gp-pred-card-head">
+        <span className="gp-pred-card-type">{type}</span>
+        {badge && (
+          <span className={`gp-pred-card-badge${badgeLevel ? ` ${badgeLevel}` : ''}`}>
+            {badge}
+          </span>
+        )}
+      </div>
+      <span className="gp-pred-card-pick">{pick}</span>
+      {sub && <span className="gp-pred-card-sub">{sub}</span>}
+      <div className="gp-pred-card-foot">
+        <PredConfidence value={confidence} />
+        {o && (
+          <span className="gp-pred-card-odds">
+            <span className={o.startsWith('-') ? 'neg' : 'pos'}>{o}</span>
+            {meta && <span className="gp-pred-card-meta">{meta}</span>}
+          </span>
+        )}
+        {!o && meta && <span className="gp-pred-card-meta">{meta}</span>}
+      </div>
+    </div>
+  );
+}
+
+function PredictionsPanel({ game, earlyPicks, earlyMeta, ready }) {
+  const scoutPicks = ready ? (game.scout_ai?.picks ?? []) : [];
+  const hasScout = scoutPicks.length > 0;
+  // A day-level no-edge verdict applies to every matchup, so it shows here even
+  // though earlyPicks is scoped to this game.
+  const earlySt   = earlyState({ picks: earlyPicks, meta: earlyMeta });
+  const hasEarly  = earlySt === 'picks';
+  const noEdge    = earlySt === 'no-edge';
+
+  if (!hasScout && !hasEarly && !noEdge) {
+    return (
+      <div className="gp-odds-unavailable">
+        <span className="gp-odds-unavailable-icon">📋</span>
+        <p>No recommendations yet for this matchup</p>
+        <p className="gp-odds-unavailable-sub">
+          Scout AI picks and early-game props post closer to first pitch ({statusLabel(game)})
+        </p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="gp-pred-panel">
+      {hasScout && (
+        <section className="gp-pred-section">
+          <h4 className="gp-pred-section-title">Scouting Report Picks</h4>
+          <div className="gp-pred-cards">
+            {scoutPicks.map((p, i) => (
+              <PredCard
+                key={`scout-${i}`}
+                type={p.type ?? '—'}
+                pick={p.pick ?? '—'}
+                confidence={p.confidence}
+                odds={p.best_odds}
+                meta={p.best_odds_book}
+              />
+            ))}
+          </div>
+        </section>
+      )}
+
+      {noEdge && (
+        <section className="gp-pred-section">
+          <h4 className="gp-pred-section-title">Early Game Props</h4>
+          <NoEdgeCard reason={earlyMeta.noEdgeReason} />
+        </section>
+      )}
+
+      {hasEarly && (
+        <section className="gp-pred-section">
+          <h4 className="gp-pred-section-title">Early Game Props</h4>
+          <div className="gp-pred-cards">
+            {earlyPicks.map((p, i) => (
+              <PredCard
+                key={p.id ?? `early-${i}`}
+                // Label off the pick's own market/statType — F5 moneyline, run
+                // line and total land on this same feed, so nothing here may
+                // assume NRFI is the only market.
+                type={p.market || p.statType || 'Early game'}
+                pick={p.selection ?? p.side ?? '—'}
+                confidence={p.conviction}
+                odds={p.odds}
+                meta={p.ev != null ? `${p.ev > 0 ? '+' : ''}${p.ev}% EV` : null}
+                // Unlike the other boards, picks[] here is NOT pre-filtered to
+                // "strong" — colour each badge by its own level so a split pick
+                // never reads like a clean edge.
+                badge={p.consensus?.label ?? null}
+                badgeLevel={p.consensus?.level ?? null}
+                sub={startersOf(p)}
+              />
+            ))}
+          </div>
+          {/* This feed carries no deep_links yet — odds stay plain, no betslip. */}
+        </section>
+      )}
+    </div>
+  );
+}
+
 // ─── Right-side drawer modal ──────────────────────────────────────────────────
 
-function OddsDrawer({ game, onClose, unlocked, adminOverride = false }) {
+function OddsDrawer({ game, onClose, unlocked, adminOverride = false, earlyProps = [], earlyMeta = null }) {
   const navigate   = useNavigate();
   const pick       = buildPick(game);
   const ready      = isReadyToShow(game, unlocked, adminOverride);
@@ -776,7 +956,20 @@ function OddsDrawer({ game, onClose, unlocked, adminOverride = false }) {
   const pickAbbr   = drawerPickSide === 'away' ? awayAbbr : homeAbbr;
   const oppAbbr    = drawerPickSide === 'away' ? homeAbbr : awayAbbr;
 
-  const [view, setView] = useState('books'); // 'books' | 'exchange'
+  // Everything we recommend for this matchup leads; the odds matrices sit
+  // behind it. 'predictions' | 'books' | 'exchange'
+  const [view, setView] = useState('predictions');
+
+  // The early-game feed is a day-level board — scope it to this matchup.
+  // Picks on these boards key the game as `gamePk` (camelCase) while game rows
+  // from /predictions/today use `game_pk`; accept either spelling so a backend
+  // that sends the snake_case variant degrades to "no picks on the page board"
+  // rather than silently emptying this panel only.
+  const earlyPicks = (Array.isArray(earlyProps) ? earlyProps : [])
+    .filter(p => {
+      const pk = p?.gamePk ?? p?.game_pk;
+      return pk != null && String(pk) === String(game.game_pk);
+    });
 
   const [scoutAnalysis,   setScoutAnalysis]   = useState(null);
   const [scoutLoading]                         = useState(false);
@@ -851,6 +1044,12 @@ function OddsDrawer({ game, onClose, unlocked, adminOverride = false }) {
               Matchup Detail
             </button>
             <button
+              className={`gp-view-toggle-btn ${view === 'predictions' ? 'active' : ''}`}
+              onClick={() => setView('predictions')}
+            >
+              Predictions
+            </button>
+            <button
               className={`gp-view-toggle-btn ${view === 'books' ? 'active' : ''}`}
               onClick={() => setView('books')}
             >
@@ -880,6 +1079,9 @@ function OddsDrawer({ game, onClose, unlocked, adminOverride = false }) {
 
         {/* Matrix body */}
         <div className="gp-drawer-body">
+          {view === 'predictions' && (
+            <PredictionsPanel game={game} earlyPicks={earlyPicks} earlyMeta={earlyMeta} ready={ready} />
+          )}
           {view === 'books' && (
             pick.books.length > 0
               ? <OddsMatrix pick={pick} pickName={pickAbbr} oppName={oppAbbr} />
@@ -1013,6 +1215,9 @@ export default function GameProps() {
   const [loading, setLoading]       = useState(true);
   const [selectedId, setSelectedId] = useState(null);
   const [bestProps, setBestProps]   = useState([]);   // server-frozen top 3 game props
+  const [earlyProps, setEarlyProps] = useState([]);   // early-game props (NRFI/YRFI, F5 …)
+  // `lockedAt` + `noEdgeReason` disambiguate an empty picks[]: see earlyState().
+  const [earlyMeta, setEarlyMeta]   = useState({ lockedAt: null, noEdgeReason: null });
   const [openPick, setOpenPick]     = useState(null);  // War Room drawer
 
   useEffect(() => {
@@ -1021,6 +1226,21 @@ export default function GameProps() {
     predictionsService.getBestGameProps()
       .then(res => setBestProps(Array.isArray(res?.picks) ? res.picks : []))
       .catch(() => setBestProps([]));
+
+    // Early-game props (markets resolving before the full game — NRFI/YRFI now,
+    // F5 markets soon). Brand-new model with a narrow qualifying band, so empty
+    // is the common case and a normal state, not an error.
+    predictionsService.getBestEarlyGameProps()
+      .then(res => {
+        setEarlyProps(Array.isArray(res?.picks) ? res.picks : []);
+        setEarlyMeta({ lockedAt: res?.lockedAt ?? null, noEdgeReason: res?.noEdgeReason ?? null });
+      })
+      .catch(() => {
+        setEarlyProps([]);
+        // A failed request is NOT a no-edge day — leave the reason null so the
+        // panel hides rather than claiming the desk evaluated the slate.
+        setEarlyMeta({ lockedAt: null, noEdgeReason: null });
+      });
   }, []);
 
   useEffect(() => {
@@ -1122,6 +1342,20 @@ export default function GameProps() {
           <PredictionsPending games={games} unlocked={predictionsUnlocked} predReadyLabel={predReadyLabel} adminOverride={isAdmin} />
         )}
         <BestPropsBoard title="Best Game Props" subtitle="Scout AI · frozen for today" picks={bestProps} onOpen={setOpenPick} />
+        {/* Early-game props. Three outcomes: real picks, an explicit no-edge
+            verdict for the day, or not-yet-evaluated (render nothing). */}
+        {earlyState({ picks: earlyProps, meta: earlyMeta }) === 'no-edge' ? (
+          <div className="sd-bp">
+            <div className="sd-bp-head">
+              <span className="sd-bp-dot" />
+              Best Early Game Props
+              <span className="sd-bp-sub">Resolves before the full game</span>
+            </div>
+            <NoEdgeCard reason={earlyMeta.noEdgeReason} />
+          </div>
+        ) : (
+          <BestPropsBoard title="Best Early Game Props" subtitle="Resolves before the full game" picks={earlyProps} onOpen={setOpenPick} />
+        )}
 
         {/* Card grid */}
         {loading || profileLoading ? (
@@ -1175,7 +1409,14 @@ export default function GameProps() {
 
       {/* Right-side drawer modal */}
       {selectedGame && (
-        <OddsDrawer game={selectedGame} onClose={handleClose} unlocked={predictionsUnlocked} adminOverride={isAdmin} />
+        <OddsDrawer
+          game={selectedGame}
+          onClose={handleClose}
+          unlocked={predictionsUnlocked}
+          adminOverride={isAdmin}
+          earlyProps={earlyProps}
+          earlyMeta={earlyMeta}
+        />
       )}
 
       {/* Shared Scout Desk War Room — opened from a Best Game Props card */}

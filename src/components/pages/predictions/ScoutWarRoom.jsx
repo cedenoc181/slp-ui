@@ -101,6 +101,12 @@ const CONSENSUS_META = {
   fade:      { cls: 'fade',      icon: '⛔', label: 'Desk Fade' },
   pass:      { cls: 'pass',      icon: '·',  label: 'No edge' },
   strong:    { cls: 'consensus', icon: '★', label: 'Strong' },
+  // The early-game props board (NRFI/YRFI, F5 markets) does NOT pre-filter
+  // picks[] down to "strong" the way best-game-props / best-pitcher-props do,
+  // so mid-conviction levels arrive on the live feed. Without these entries
+  // they'd fall through to `pass` and render as a grey "No edge" badge.
+  lean:      { cls: 'lean',      icon: '◆',  label: 'Lean' },
+  split:     { cls: 'split',     icon: '⊘',  label: 'Split' },
 };
 const VOTE_META = {
   play:  { cls: 'play', label: 'PLAY' },

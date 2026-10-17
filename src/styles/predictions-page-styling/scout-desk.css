@@ -96,6 +96,12 @@
 .sd-card:hover { border-color: rgba(34, 211, 238, 0.35); transform: translateY(-2px); background: #212121; }
 .sd-card.consensus { border-left: 3px solid #fbbf24; }
 .sd-card.contested { border-left: 3px solid #38bdf8; }
+/* Early-game props cap at "lean" by design (2 analyst voices) — its own tone so
+   it doesn't read as "contested" (voices disagreeing) or "pass" (no edge). */
+.sd-card.lean { border-left: 3px solid #a78bfa; }
+/* Analysts disagreed — distinct from `contested` (sky) and from the grey of
+   `pass`, so a split pick never reads as either a clean edge or no edge. */
+.sd-card.split { border-left: 3px solid #94a3b8; }
 .sd-card.fade { border-left: 3px solid #f87171; }
 .sd-card.lock {
   border-color: rgba(251, 191, 36, 0.5);
@@ -117,6 +123,8 @@
 }
 .sd-badge.consensus { color: #fbbf24; background: rgba(251,191,36,0.14); border: 1px solid rgba(251,191,36,0.32); }
 .sd-badge.contested { color: #7dd3fc; background: rgba(56,189,248,0.14); border: 1px solid rgba(56,189,248,0.32); }
+.sd-badge.lean { color: #c4b5fd; background: rgba(167,139,250,0.14); border: 1px solid rgba(167,139,250,0.32); }
+.sd-badge.split { color: #cbd5e1; background: rgba(148,163,184,0.14); border: 1px solid rgba(148,163,184,0.32); }
 .sd-badge.fade { color: #f87171; background: rgba(248,113,113,0.13); border: 1px solid rgba(248,113,113,0.3); }
 .sd-badge.pass { color: rgba(255,255,255,0.5); background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.12); }
 

@@ -586,6 +586,167 @@
   border-radius: 99px;
 }
 
+/* ── Predictions panel (default drawer view) ──────────────── */
+.gp-pred-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+  padding: 18px 20px 24px;
+}
+
+.gp-pred-section {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.gp-pred-section-title {
+  margin: 0;
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.45);
+}
+
+.gp-pred-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+  gap: 10px;
+}
+
+.gp-pred-card {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  border-radius: 10px;
+  padding: 11px 12px;
+}
+
+.gp-pred-card-head {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.gp-pred-card-type {
+  font-size: 0.62rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #67e8f9;
+}
+
+/* Base is neutral: this feed does not pre-filter to "strong", so the badge is
+   coloured per-pick by consensus level below rather than assuming one level. */
+.gp-pred-card-badge {
+  font-size: 0.56rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.55);
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 20px;
+  padding: 1px 7px;
+}
+/* Mirrors the Scout Desk consensus palette (.sd-badge.*) so a pick carries the
+   same colour on the drawer card as it does on the board. */
+.gp-pred-card-badge.strong,
+.gp-pred-card-badge.consensus { color: #fbbf24; background: rgba(251, 191, 36, 0.14); border-color: rgba(251, 191, 36, 0.32); }
+.gp-pred-card-badge.lean      { color: #c4b5fd; background: rgba(167, 139, 250, 0.14); border-color: rgba(167, 139, 250, 0.32); }
+.gp-pred-card-badge.split     { color: #cbd5e1; background: rgba(148, 163, 184, 0.14); border-color: rgba(148, 163, 184, 0.32); }
+.gp-pred-card-badge.contested { color: #7dd3fc; background: rgba(56, 189, 248, 0.14); border-color: rgba(56, 189, 248, 0.32); }
+.gp-pred-card-badge.fade      { color: #f87171; background: rgba(248, 113, 113, 0.13); border-color: rgba(248, 113, 113, 0.3); }
+
+/* No-edge day: the desk evaluated the slate and nothing cleared the bar. This
+   is a result, not a failure — so it reads as a calm, neutral statement and
+   deliberately avoids the warning/error colours. */
+.gp-no-edge {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  padding: 14px 16px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-left: 3px solid rgba(148, 163, 184, 0.55);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.025);
+}
+.gp-no-edge-title {
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.72);
+}
+.gp-no-edge-reason {
+  margin: 0;
+  font-size: 0.8rem;
+  line-height: 1.45;
+  color: rgba(255, 255, 255, 0.55);
+}
+
+/* Starting pitchers on the card face (from reasoning.context.*Profile). */
+.gp-pred-card-sub {
+  font-size: 0.66rem;
+  color: rgba(255, 255, 255, 0.45);
+  margin-top: -2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.gp-pred-card-pick {
+  font-size: 0.92rem;
+  font-weight: 700;
+  color: #fff;
+  line-height: 1.3;
+}
+
+.gp-pred-card-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.gp-pred-dots {
+  display: inline-flex;
+  gap: 3px;
+}
+
+.gp-pred-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.16);
+}
+
+.gp-pred-dot.on {
+  background: #4ade80;
+}
+
+.gp-pred-card-odds {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 6px;
+  font-size: 0.8rem;
+  font-weight: 800;
+}
+
+.gp-pred-card-odds .pos { color: #4ade80; }
+.gp-pred-card-odds .neg { color: #f87171; }
+
+.gp-pred-card-meta {
+  font-size: 0.64rem;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.45);
+}
+
 /* ── View toggle ─────────────────────────────────────────── */
 .gp-view-toggle {
   display: flex;

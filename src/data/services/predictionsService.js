@@ -46,6 +46,60 @@ class PredictionsService {
   }
 
   /**
+   * The day's best early-game props — markets that resolve before the full game
+   * does (NRFI/YRFI today; F5 moneyline / run line / total landing on this same
+   * feed soon). Same envelope and pick shape as the other boards, but with
+   * several deliberate differences — don't assume the game-props board's shape:
+   *
+   *   kind            "nrfi" (not "game"), and more kinds are coming
+   *   side            "yrfi" | "nrfi" — a combined-both-teams market, not home/away
+   *   playerId        always null
+   *   pitcherName     always null — the starters live in reasoning.context
+   *                   (see below), not here
+   *   picks[]         NOT pre-filtered to "strong" the way best-game-props and
+   *                   best-pitcher-props are: a "lean" or "split" pick can and
+   *                   does appear in this list. Read consensus.level per pick;
+   *                   never assume everything in picks[] is a clean edge, and
+   *                   never filter the feed down to level === "strong".
+   *   deep_links      not populated — no betslip links; show plain odds instead
+   *   reasoning.ctx   carries the starting pitchers, shaped by market:
+   *                     NRFI → context.nrfiProfile { homeSp/awaySp {name,
+   *                            firstInningRunRateAllowed, starts},
+   *                            home/awayTopOrderObp (null until the lineup is
+   *                            posted), home/awayTeam1stInningScoreRate }
+   *                     F5   → context.f5Profile { homeSp/awaySp { name } }
+   *                   There is still no gameMatchup/parkFactor here — don't
+   *                   read reasoning.context.gameMatchup off this feed.
+   *
+   * Label sections off each pick's own `market` / `statType` rather than
+   * hardcoding "NRFI/YRFI" — new market types arrive on this same list.
+   *
+   * Empty is normal and frequent (brand-new model, narrow qualifying band).
+   * `lockedAt` + `noEdgeReason` say WHICH kind of empty it is:
+   *
+   *   lockedAt null, noEdgeReason null → hasn't evaluated today's slate yet;
+   *                                      hide the panel
+   *   lockedAt set,  noEdgeReason set  → evaluated, nothing cleared the
+   *                                      edge/conviction bar. Render the reason
+   *                                      verbatim (it's a complete sentence and
+   *                                      varies by day) as an explicit "No Edge
+   *                                      Today" card — NOT an error or a
+   *                                      loading state
+   *   picks non-empty                  → normal pick cards
+   *
+   * A no-edge day can still flip to real picks later the same day: the board
+   * keeps re-evaluating until it either freezes with picks or the day ends, so
+   * don't treat a no-edge response as final for the day.
+   *
+   * GET /predictions/today/best-early-game-props
+   * @returns {Promise<{ date, lockedAt, picks: Array, noEdgeReason: ?string,
+   *                     shortlist?: Array, cut?: Array }>}
+   */
+  async getBestEarlyGameProps(options = {}) {
+    return api.get('/predictions/today/best-early-game-props', options);
+  }
+
+  /**
    * Today's games that have a moneyline prediction.
    * GET /predictions/moneyline/today
    * @returns {Promise<Array>}
