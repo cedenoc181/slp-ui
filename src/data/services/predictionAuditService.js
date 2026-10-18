@@ -1,4 +1,13 @@
 import api from './apiService';
+import { getAccessToken } from './userAuthService';
+
+// /api/v1/admin/* requires an authenticated admin — attach the bearer token
+// the same way every other admin-gated service does (see alertsService.js).
+function authOptions(options = {}) {
+  const token = getAccessToken();
+  if (!token) return options;
+  return { ...options, headers: { ...options.headers, Authorization: `Bearer ${token}` } };
+}
 
 /**
  * Client service for the /admin/prediction-audit endpoint.
@@ -50,9 +59,9 @@ class PredictionAuditService {
     if (refresh) {
       // Force a recompute and bypass the client TTL cache so the user always
       // sees freshly-computed numbers when they explicitly ask for them.
-      return api.get('/api/v1/admin/prediction-audit?refresh=true', { ttl: 0 });
+      return api.get('/api/v1/admin/prediction-audit?refresh=true', authOptions({ ttl: 0 }));
     }
-    return api.get('/api/v1/admin/prediction-audit');
+    return api.get('/api/v1/admin/prediction-audit', authOptions());
   }
 }
 

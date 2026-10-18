@@ -1,4 +1,13 @@
 import api from './apiService';
+import { getAccessToken } from './userAuthService';
+
+// /api/v1/admin/* requires an authenticated admin — attach the bearer token
+// the same way every other admin-gated service does (see alertsService.js).
+function authOptions(options = {}) {
+  const token = getAccessToken();
+  if (!token) return options;
+  return { ...options, headers: { ...options.headers, Authorization: `Bearer ${token}` } };
+}
 
 /**
  * Client service for the /admin/model-performance endpoint.
@@ -46,7 +55,7 @@ class PredictionsPerformanceService {
     if (range)           qs.set('range', range);
     if (startDate)       qs.set('start_date', startDate);
     if (endDate)         qs.set('end_date', endDate);
-    return api.get(`/api/v1/admin/model-performance?${qs.toString()}`);
+    return api.get(`/api/v1/admin/model-performance?${qs.toString()}`, authOptions());
   }
 
   /**
@@ -86,7 +95,7 @@ class PredictionsPerformanceService {
    * @returns {Promise<Object>}
    */
   async getDailyGameReport(date) {
-    return api.get(`/api/v1/admin/daily-game-report?date=${date}`);
+    return api.get(`/api/v1/admin/daily-game-report?date=${date}`, authOptions());
   }
 
   /**
@@ -122,7 +131,7 @@ class PredictionsPerformanceService {
     const qs = date ? `?date=${date}` : '';
     // Pass { ttl: 0 } to bypass the cache (force a fresh pull) when the report
     // was first fetched before all predictions had populated.
-    return api.get(`/api/v1/admin/pitcher-props-daily-report${qs}`, options);
+    return api.get(`/api/v1/admin/pitcher-props-daily-report${qs}`, authOptions(options));
   }
 
   /**
@@ -142,7 +151,7 @@ class PredictionsPerformanceService {
    * @returns {Promise<Object>}
    */
   async getPlayerPropsTodayVsYesterday() {
-    return api.get('/api/v1/admin/player-props-today-vs-yesterday');
+    return api.get('/api/v1/admin/player-props-today-vs-yesterday', authOptions());
   }
 
   // ───────────────────────────────────────────────────────────────────────────
@@ -179,7 +188,7 @@ class PredictionsPerformanceService {
     if (range)           qs.set('range', range);
     if (startDate)       qs.set('start_date', startDate);
     if (endDate)         qs.set('end_date', endDate);
-    return api.get(`/api/v1/admin/scout-ai-performance?${qs.toString()}`);
+    return api.get(`/api/v1/admin/scout-ai-performance?${qs.toString()}`, authOptions());
   }
 
   /**
@@ -193,7 +202,7 @@ class PredictionsPerformanceService {
    */
   async getScoutAiDailyGameReport(date) {
     const qs = date ? `?date=${date}` : '';
-    return api.get(`/api/v1/admin/scout-ai-daily-game-report${qs}`);
+    return api.get(`/api/v1/admin/scout-ai-daily-game-report${qs}`, authOptions());
   }
 
   /**
@@ -210,7 +219,7 @@ class PredictionsPerformanceService {
     if (date)           qs.set('date', date);
     if (season != null) qs.set('season', String(season));
     const q = qs.toString();
-    return api.get(`/api/v1/admin/scout-ai-player-props-daily${q ? `?${q}` : ''}`);
+    return api.get(`/api/v1/admin/scout-ai-player-props-daily${q ? `?${q}` : ''}`, authOptions());
   }
 
   /**
@@ -223,7 +232,7 @@ class PredictionsPerformanceService {
    */
   async getScoutAiPlayerPropsTodayVsYesterday(season) {
     const qs = season != null ? `?season=${season}` : '';
-    return api.get(`/api/v1/admin/scout-ai-player-props-today-vs-yesterday${qs}`);
+    return api.get(`/api/v1/admin/scout-ai-player-props-today-vs-yesterday${qs}`, authOptions());
   }
 }
 
