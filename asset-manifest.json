@@ -1,7 +1,7 @@
 {
   "files": {
     "main.css": "/static/css/main.7c89c2ec.css",
-    "main.js": "/static/js/main.93b9855b.js",
+    "main.js": "/static/js/main.c71a9806.js",
     "static/media/world-series-logo.png": "/static/media/world-series-logo.27072f25221f4fb42833.png",
     "static/media/spa-retro-logo-removebg.png": "/static/media/spa-retro-logo-removebg.328337a4fd7c56aeefbe.png",
     "static/media/pitcher-prop-page.png": "/static/media/pitcher-prop-page.809ebb174b38b01c3363.png",
@@ -50,10 +50,10 @@
     "static/media/sandlot-insider.png": "/static/media/sandlot-insider.ee83f40d3c32f5e670ee.png",
     "index.html": "/index.html",
     "main.7c89c2ec.css.map": "/static/css/main.7c89c2ec.css.map",
-    "main.93b9855b.js.map": "/static/js/main.93b9855b.js.map"
+    "main.c71a9806.js.map": "/static/js/main.c71a9806.js.map"
   },
   "entrypoints": [
     "static/css/main.7c89c2ec.css",
-    "static/js/main.93b9855b.js"
+    "static/js/main.c71a9806.js"
   ]
 }
