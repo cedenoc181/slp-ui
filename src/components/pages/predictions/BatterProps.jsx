@@ -2,9 +2,10 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../../context/AuthContext';
-import { TEAM_METADATA, getTeamById } from '../../../data/constants/apiConstants';
+import { TEAM_METADATA, getTeamById, getTeamByDisplayName } from '../../../data/constants/apiConstants';
 import predictionsService from '../../../data/services/predictionsService';
 import playerStatsService from '../../../data/services/playerStatsServices';
+import { isPreReleaseWindow, DEFAULT_PREVIEW_BADGE } from '../../../data/utils/releaseGate';
 import PredictionsNav from './PredictionsNav';
 import '../../../styles/predictions-page-styling/predictions.css';
 import '../../../styles/predictions-page-styling/batter-props.css';
@@ -48,27 +49,6 @@ function probColor(prob) {
   if (prob >= 70) return '#4ade80';
   if (prob >= 55) return '#facc15';
   return 'rgba(255,255,255,0.55)';
-}
-
-// ─── Team lookup by display name from the batters API ─────────────────────────
-// API sends short names like "Royals", "Red Sox", "D-backs"
-
-const DISPLAY_NAME_TO_ABBR = {
-  athletics: 'ATH', pirates: 'PIT', padres: 'SD', mariners: 'SEA',
-  giants: 'SF', cardinals: 'STL', rays: 'TB', rangers: 'TEX',
-  'blue jays': 'TOR', twins: 'MIN', phillies: 'PHI', braves: 'ATL',
-  'white sox': 'CWS', marlins: 'MIA', yankees: 'NYY', brewers: 'MIL',
-  angels: 'LAA', diamondbacks: 'AZ', 'd-backs': 'AZ', orioles: 'BAL',
-  'red sox': 'BOS', cubs: 'CHC', reds: 'CIN', guardians: 'CLE',
-  rockies: 'COL', tigers: 'DET', astros: 'HOU', royals: 'KC',
-  dodgers: 'LAD', nationals: 'WSH', mets: 'NYM',
-};
-
-function getTeamByDisplayName(name) {
-  if (!name) return null;
-  const abbr = DISPLAY_NAME_TO_ABBR[name.toLowerCase()];
-  if (!abbr) return null;
-  return { abbr, ...(TEAM_METADATA[abbr] ?? {}) };
 }
 
 // ─── Platform meta ────────────────────────────────────────────────────────────
@@ -122,8 +102,8 @@ function buildBatterGames(apiGames) {
   for (const game of apiGames) {
     const awayTeam  = getTeamByDisplayName(game.away_team_name);
     const homeTeam  = getTeamByDisplayName(game.home_team_name);
-    const awayAbbr  = awayTeam?.abbr  || game.away_team_name;
-    const homeAbbr  = homeTeam?.abbr  || game.home_team_name;
+    const awayAbbr  = awayTeam?.id    || game.away_team_name;
+    const homeAbbr  = homeTeam?.id    || game.home_team_name;
     const awayMlbId = awayTeam?.mlbId ?? null;
     const homeMlbId = homeTeam?.mlbId ?? null;
 
@@ -146,6 +126,8 @@ function buildBatterGames(apiGames) {
       sportsbook_props: player.sportsbook_props || [],
       dfs_props:        player.dfs_props        || [],
       scout_ai:         player.scout_ai         ?? null,
+      is_preview:       player.is_preview       ?? false,
+      preview_badge:    player.preview_badge    ?? null,
     });
 
     for (const p of game.home_batters || []) addBatter(p, true);
@@ -297,66 +279,29 @@ function EVBadge({ ev }) {
   );
 }
 
-// ─── Prediction gate: 2 h before earliest first pitch ────────────────────────
-
-function parseGameTimesFromGames(games) {
-  return games.map(g => {
-    const str = g.game_time_et;
-    if (!str) return null;
-    const m = str.match(/(\d+):(\d+)\s*(AM|PM)/i);
-    if (!m) return null;
-    let h = parseInt(m[1]), min = parseInt(m[2]);
-    const period = m[3].toUpperCase();
-    if (period === 'PM' && h !== 12) h += 12;
-    if (period === 'AM' && h === 12) h = 0;
-    const d = new Date();
-    d.setHours(h, min, 0, 0);
-    return d;
-  }).filter(Boolean);
-}
-
-function getUnlockDate(games) {
-  const times = parseGameTimesFromGames(games);
-  if (!times.length) return null;
-  const earliest = new Date(Math.min(...times.map(t => t.getTime())));
-  earliest.setHours(earliest.getHours() - 2, earliest.getMinutes(), 0, 0);
-  // 4:00 PM ET is the absolute latest the user has to wait
-  const cap = new Date();
-  cap.setHours(16, 0, 0, 0);
-  return earliest.getTime() <= cap.getTime() ? earliest : cap;
-}
-
-function getPredictionReadyTime(games) {
-  const unlock = getUnlockDate(games);
-  if (!unlock) return null;
-  let h = unlock.getHours();
-  const min = String(unlock.getMinutes()).padStart(2, '0');
-  const period = h >= 12 ? 'PM' : 'AM';
-  h = h % 12 || 12;
-  return `${h}:${min} ${period} ET`;
-}
-
-function arePredictionsUnlocked(games) {
-  const unlock = getUnlockDate(games);
-  if (!unlock) return false;
-  return new Date() >= unlock;
-}
-
 // ─── Pending state components ─────────────────────────────────────────────────
+// A null/short batter list is ambiguous — gated by the release window, or
+// genuinely no lines posted yet (see the `gated` calc in the main component,
+// which resolves it per-game off isPreReleaseWindow()) — so this banner takes
+// the resolved `gated` flag rather than guessing again itself.
 
-function PendingBanner({ predictionTime }) {
+function PendingBanner({ gated, matchup }) {
+  const away = matchup?.awayAbbr;
+  const home = matchup?.homeAbbr;
+  const time = matchup?.game_time_et;
+  const matchupLabel = away && home ? `${away} @ ${home}` : null;
+
   return (
     <div className="bp-pending-banner">
       <img src={loadingPredictionsIcon} alt="" className="bp-pending-banner-icon" aria-hidden="true" />
       <div>
         <div className="bp-pending-banner-title">
-          {predictionTime ? `Predictions available by ${predictionTime}` : 'Predictions Coming Soon'}
+          {gated ? 'Not public yet' : 'Batter Props Pending'}
         </div>
         <div className="bp-pending-banner-sub">
-          Our model and Scout AI analysis will be ready approximately 2 hours before first pitch.
-          {predictionTime
-            ? ` Come back at ${predictionTime} for full game predictions and analysis.`
-            : ' Check back closer to game time.'}
+          {gated
+            ? <>{matchupLabel ? `${matchupLabel}${time ? `, ${time}` : ''} isn't` : 'This game isn’t'} public yet. Check back closer to first pitch.</>
+            : 'The model hasn’t posted batter lines for this matchup yet. Check back closer to game time.'}
         </div>
       </div>
     </div>
@@ -432,30 +377,39 @@ function TopPickCard({ batter, market, onClick }) {
   const [logoErr, setLogoErr] = useState(false);
   return (
     <button className={`bp-top-card accent-${market.accent}`} onClick={onClick}>
-      <div className="bp-top-card-left">
-        {hsErr ? (
-          <div className="bp-top-card-hs-fallback">{batter.name.split(' ').map(w => w[0]).join('').slice(0, 2)}</div>
-        ) : (
-          <img src={headshotUrl(batter.mlbId)} alt={batter.name} className="bp-top-card-headshot" onError={() => setHsErr(true)} />
-        )}
-        {batter.teamMlbId && !logoErr && (
-          <img src={teamLogoUrl(batter.teamMlbId)} alt={batter.teamAbbr} className="bp-top-card-logo" onError={() => setLogoErr(true)} />
-        )}
-      </div>
-      <div className="bp-top-card-body">
-        <div className="bp-top-card-name">{batter.name}</div>
-        <div className="bp-top-card-matchup">{batter.teamAbbr} · vs {batter.opponent}</div>
-        <div className="bp-top-card-market">
-          <span className={`bp-market-chip accent-${market.accent}`}>{market.icon} {market.label}</span>
-          <span className="bp-top-card-line">{market.side} {market.line} · {fmtOdds(market.bestOdds)}</span>
+      <div className="bp-top-card-row">
+        <div className="bp-top-card-left">
+          {hsErr ? (
+            <div className="bp-top-card-hs-fallback">{batter.name.split(' ').map(w => w[0]).join('').slice(0, 2)}</div>
+          ) : (
+            <img src={headshotUrl(batter.mlbId)} alt={batter.name} className="bp-top-card-headshot" onError={() => setHsErr(true)} />
+          )}
+          {batter.teamMlbId && !logoErr && (
+            <img src={teamLogoUrl(batter.teamMlbId)} alt={batter.teamAbbr} className="bp-top-card-logo" onError={() => setLogoErr(true)} />
+          )}
+        </div>
+        <div className="bp-top-card-body">
+          <div className="bp-top-card-name">
+            <span className="bp-card-name-text">{batter.name}</span>
+          </div>
+          <div className="bp-top-card-matchup">{batter.teamAbbr} · vs {batter.opponent}</div>
+          <div className="bp-top-card-market">
+            <span className={`bp-market-chip accent-${market.accent}`}>{market.icon} {market.label}</span>
+            <span className="bp-top-card-line">{market.side} {market.line} · {fmtOdds(market.bestOdds)}</span>
+          </div>
+        </div>
+        <div className="bp-top-card-right">
+          <div className="bp-top-card-prob" style={{ color: probColor(market.modelProb) }}>
+            {market.modelProb}%
+          </div>
+          <EVBadge ev={market.ev} />
         </div>
       </div>
-      <div className="bp-top-card-right">
-        <div className="bp-top-card-prob" style={{ color: probColor(market.modelProb) }}>
-          {market.modelProb}%
+      {batter.is_preview && (
+        <div className="pred-preview-badge-row">
+          <span className="pred-preview-badge">{batter.preview_badge || DEFAULT_PREVIEW_BADGE}</span>
         </div>
-        <EVBadge ev={market.ev} />
-      </div>
+      )}
     </button>
   );
 }
@@ -474,7 +428,9 @@ function BatterCard({ batter, market, onClick }) {
           <img src={headshotUrl(batter.mlbId)} alt={batter.name} className="bp-batter-card-headshot" onError={() => setHsErr(true)} />
         )}
         <div className="bp-batter-card-info">
-          <div className="bp-batter-card-name">{batter.name}</div>
+          <div className="bp-batter-card-name">
+            <span className="bp-card-name-text">{batter.name}</span>
+          </div>
           <div className="bp-batter-card-matchup">{batter.teamAbbr} · vs {batter.opponent}</div>
           <div className="bp-batter-card-line">{market.side} {market.line} · {fmtOdds(market.bestOdds)}</div>
         </div>
@@ -491,6 +447,11 @@ function BatterCard({ batter, market, onClick }) {
       <div className="bp-batter-card-bar">
         <div className="bp-batter-card-bar-fill" style={{ width: `${market.modelProb}%` }} />
       </div>
+      {batter.is_preview && (
+        <div className="pred-preview-badge-row bp-batter-card-badge-row">
+          <span className="pred-preview-badge">{batter.preview_badge || DEFAULT_PREVIEW_BADGE}</span>
+        </div>
+      )}
     </button>
   );
 }
@@ -889,14 +850,25 @@ export default function BatterProps() {
       });
   }, []); // eslint-disable-line
 
-  // Step 1: load matchup bar from the fast predictions/today endpoint
+  // Step 1: load the matchup bar. /predictions/today omits a game's row
+  // entirely until it clears the release gate (for a non-admin caller), so
+  // it's empty by design during the pre-release window — not an error.
+  // /predictions/pitchers/today never omits the game row (only nulls the
+  // pitcher slots), so it's the one feed that always knows which games exist
+  // today; used here only to fill the gap so the tab bar — and thus the
+  // batter-prop fetch per game — isn't skipped for a gated slate.
   useEffect(() => {
     window.scrollTo(0, 0);
-    predictionsService.getToday()
-      .then(rows => {
+    Promise.all([
+      predictionsService.getToday(),
+      predictionsService.getPitchersToday().catch(() => []),
+    ])
+      .then(([rows, pitcherRows]) => {
         const today = Array.isArray(rows)
           ? rows.filter(r => r.season_type !== 'spring' && r.season_type !== 'S')
           : [];
+        const todayByPk = new Map(today.map(r => [r.game_pk, r]));
+
         const mapped = today.map(r => ({
           gamePk:      r.game_pk,
           gameId:      r.id ?? r.game_pk,
@@ -906,6 +878,17 @@ export default function BatterProps() {
           homeMlbId:   getTeamById(r.home_team_id)?.mlbId ?? null,
           game_time_et: r.game_time_et ?? r.game_time ?? null,
         }));
+
+        for (const p of (Array.isArray(pitcherRows) ? pitcherRows : [])) {
+          if (p.game_pk == null || todayByPk.has(p.game_pk)) continue;
+          mapped.push({
+            gamePk: p.game_pk, gameId: p.game_pk,
+            awayAbbr: p.away_team_name, awayMlbId: null,
+            homeAbbr: p.home_team_name, homeMlbId: null,
+            game_time_et: p.game_time_et ?? null,
+            __notPublic: true,
+          });
+        }
 
         // Sort by scheduled game time (earliest first). Games without a parseable
         // time drop to the end so they don't disrupt the timeline.
@@ -961,14 +944,19 @@ export default function BatterProps() {
   const battersError   = activeEntry?.error ?? null;
   const visibleBatters = activeEntry?.batters ?? [];
 
-  const predictionsUnlocked = isAdmin || arePredictionsUnlocked(games);
-  const predictionTime      = getPredictionReadyTime(games);
+  const activeMatchup = activeGamePk ? games.find(m => m.gamePk === activeGamePk) : null;
 
-  // Show pending state if: time gate hasn't passed, OR time passed but no batter
-  // has both scout_ai and sportsbook_props (data not ready yet).
-  const hasReadyBatters = predictionsUnlocked &&
+  // A null/empty batter slot is ambiguous — gated by the release window, or
+  // genuinely no lines posted yet — so resolve it off this game's own first
+  // pitch rather than a single all-games guess. `__notPublic` (the game's row
+  // was omitted from /predictions/today entirely) is a stronger, direct
+  // signal than the time heuristic where it's available.
+  const gated = !isAdmin && !!activeMatchup &&
+    (activeMatchup.__notPublic || isPreReleaseWindow(activeMatchup.game_time_et));
+
+  const hasReadyBatters = !gated &&
     visibleBatters.some(b => b.scout_ai && b.sportsbook_props?.length > 0);
-  const showPending = isAdmin ? false : (!predictionsUnlocked ||
+  const showPending = isAdmin ? false : (gated ||
     (visibleBatters.length > 0 && !hasReadyBatters));
 
   const rowMarkets = Object.values(STAT_KEY_MAP).filter(m => m.inRows);
@@ -976,8 +964,6 @@ export default function BatterProps() {
 
   const openModal  = useCallback((batter, marketKey) => setModalState({ batter, marketKey }), []);
   const closeModal = useCallback(() => setModalState(null), []);
-
-  const activeMatchup = activeGamePk ? games.find(m => m.gamePk === activeGamePk) : null;
 
   return (
     <div className="predictions-page">
@@ -1067,7 +1053,7 @@ export default function BatterProps() {
               </div>
             ) : showPending ? (
               <>
-                <PendingBanner predictionTime={predictionTime} />
+                <PendingBanner gated={gated} matchup={activeMatchup} />
                 {visibleBatters.length > 0 && (
                   <div className="bp-pending-grid">
                     {visibleBatters.map(b => (

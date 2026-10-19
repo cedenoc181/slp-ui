@@ -1,4 +1,16 @@
 import api from './apiService';
+import { getAccessToken } from './userAuthService';
+
+// The release gate (see releaseGate.js) is enforced server-side per caller:
+// an admin's bearer token bypasses it and gets every row back flagged
+// is_preview/preview_badge; anyone else just gets gated rows omitted. None of
+// that can happen unless the token is actually sent, so every /predictions/*
+// call attaches it the same way the other admin-gated services do.
+function authOptions(options = {}) {
+  const token = getAccessToken();
+  if (!token) return options;
+  return { ...options, headers: { ...options.headers, Authorization: `Bearer ${token}` } };
+}
 
 /**
  * Client service for the /predictions endpoints.
@@ -17,8 +29,8 @@ class PredictionsService {
    * GET /predictions/today
    * @returns {Promise<Array>}
    */
-  async getToday() {
-    return api.get('/predictions/today');
+  async getToday(options = {}) {
+    return api.get('/predictions/today', authOptions(options));
   }
 
   /**
@@ -104,8 +116,8 @@ class PredictionsService {
    * GET /predictions/moneyline/today
    * @returns {Promise<Array>}
    */
-  async getMoneylineToday() {
-    return api.get('/predictions/moneyline/today');
+  async getMoneylineToday(options = {}) {
+    return api.get('/predictions/moneyline/today', authOptions(options));
   }
 
   /**
@@ -113,8 +125,8 @@ class PredictionsService {
    * GET /predictions/spread/today
    * @returns {Promise<Array>}
    */
-  async getSpreadToday() {
-    return api.get('/predictions/spread/today');
+  async getSpreadToday(options = {}) {
+    return api.get('/predictions/spread/today', authOptions(options));
   }
 
   /**
@@ -122,18 +134,19 @@ class PredictionsService {
    * GET /predictions/totals/today
    * @returns {Promise<Array>}
    */
-  async getTotalsToday() {
-    return api.get('/predictions/totals/today');
+  async getTotalsToday(options = {}) {
+    return api.get('/predictions/totals/today', authOptions(options));
   }
 
   /**
-   * Full prediction + odds context for a single game.
+   * Full prediction + odds context for a single game. Non-admin + not yet
+   * released = 404 (see releaseGate.js for the admin-preview contract).
    * GET /predictions/{game_pk}
    * @param {string|number} gamePk
    * @returns {Promise<Object>}
    */
   async getByGamePk(gamePk, options = {}) {
-    return api.get(`/predictions/${gamePk}`, options);
+    return api.get(`/predictions/${gamePk}`, authOptions(options));
   }
 
   /**
@@ -143,7 +156,7 @@ class PredictionsService {
    * @returns {Promise<Object>}
    */
   async getBattersByGamePk(gamePk, options = {}) {
-    return api.get(`/predictions/batters/${gamePk}`, options);
+    return api.get(`/predictions/batters/${gamePk}`, authOptions(options));
   }
 
   /**
@@ -152,7 +165,7 @@ class PredictionsService {
    * @returns {Promise<Array>}
    */
   async getPitchersToday(options = {}) {
-    return api.get('/predictions/pitchers/today', options);
+    return api.get('/predictions/pitchers/today', authOptions(options));
   }
 
   /**
@@ -162,7 +175,7 @@ class PredictionsService {
    * @returns {Promise<Object>}
    */
   async getPitchersByGamePk(gamePk, options = {}) {
-    return api.get(`/predictions/pitchers/${gamePk}`, options);
+    return api.get(`/predictions/pitchers/${gamePk}`, authOptions(options));
   }
 }
 

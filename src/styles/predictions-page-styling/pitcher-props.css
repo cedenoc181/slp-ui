@@ -451,6 +451,37 @@
   flex-shrink: 0;
 }
 
+/* .pp-top-card-info already spaces its children with `gap` — the badge row's
+   own margin-top would just double up on top of that. */
+.pp-top-card-info > .pred-preview-badge-row {
+  margin-top: 0;
+}
+
+.pp-top-card-team-logo-fallback {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.08);
+  color: rgba(255, 255, 255, 0.4);
+  font-size: 0.6rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  flex-shrink: 0;
+}
+
+/* Gated/unknown pitcher slot: a flat icon standing in for a headshot we
+   don't have, so it needs contain + breathing room instead of cover/crop. */
+.pp-top-card-headshot--generic {
+  object-fit: contain;
+  padding: 10px;
+  background: rgba(255, 255, 255, 0.06);
+  opacity: 0.6;
+}
+
 /* ── Card info below headshot ────────────────────────────── */
 .pp-top-card-info {
   padding: 0 0.9rem 0.85rem;
@@ -468,6 +499,7 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  min-width: 0;
 }
 
 .pp-top-card-matchup {
@@ -528,6 +560,15 @@
   opacity: 0.75;
   border-left-color: rgba(251, 191, 36, 0.35) !important;
   background: rgba(251, 191, 36, 0.03) !important;
+}
+
+/* Slot came back null with no name at all — no headshot to anchor the header */
+.pp-top-card--unknown {
+  cursor: default;
+}
+
+.pp-top-card--unknown .pp-top-card-header {
+  justify-content: center;
 }
 
 .pp-pending-chip {

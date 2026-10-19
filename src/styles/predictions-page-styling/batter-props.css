@@ -294,8 +294,7 @@
 
 .bp-top-card {
   display: flex;
-  align-items: center;
-  gap: 0.85rem;
+  flex-direction: column;
   background: #1e1e1e;
   border: 1px solid rgba(255,255,255,0.07);
   border-left: 3px solid var(--acc);
@@ -311,6 +310,13 @@
 }
 
 .bp-top-card:hover { background: #242424; transform: translateY(-1px); }
+
+.bp-top-card-row {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  width: 100%;
+}
 
 .bp-top-card-left {
   position: relative;
@@ -356,12 +362,20 @@
 }
 
 .bp-top-card-name {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  min-width: 0;
   font-size: 0.85rem;
   font-weight: 800;
   color: #fff;
+}
+
+.bp-card-name-text {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  min-width: 0;
 }
 
 .bp-top-card-matchup {
@@ -538,12 +552,13 @@
 }
 
 .bp-batter-card-name {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  min-width: 0;
   font-size: 0.77rem;
   font-weight: 800;
   color: #fff;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
 }
 
 .bp-batter-card-matchup {
@@ -587,6 +602,11 @@
 .bp-batter-card-bar {
   height: 3px;
   background: rgba(255,255,255,0.05);
+}
+
+.bp-batter-card-badge-row {
+  padding: 0 0.8rem 0.6rem;
+  box-sizing: border-box;
 }
 
 .bp-batter-card-bar-fill {

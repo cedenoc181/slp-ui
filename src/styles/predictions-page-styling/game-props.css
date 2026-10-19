@@ -386,6 +386,41 @@
   box-sizing: border-box;
 }
 
+/* ── Not-public-yet card (gated by the release window) ──── */
+.gp-card--not-public {
+  cursor: default;
+}
+
+.gp-card-not-public-matchup {
+  width: 100%;
+  text-align: center;
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.65);
+  padding: 0.75rem 0;
+}
+
+.gp-card-not-public-footer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  text-align: center;
+}
+
+.gp-card-not-public-icon {
+  width: 16px;
+  height: 16px;
+  opacity: 0.6;
+  flex-shrink: 0;
+}
+
+/* .gp-card already spaces its children with `gap` — the badge row's own
+   margin-top would just double up on top of that. */
+.gp-card > .pred-preview-badge-row {
+  margin-top: 0;
+}
+
 .gp-conf-wrap {
   display: flex;
   align-items: center;

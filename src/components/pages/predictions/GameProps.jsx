@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../../context/AuthContext';
 import loadingPredictionsIcon from '../../../assets/icons/loading-predictions.png';
 import predictionsService from '../../../data/services/predictionsService';
+import { DEFAULT_PREVIEW_BADGE } from '../../../data/utils/releaseGate';
 import { WarRoom, BestPropsBoard } from './ScoutWarRoom';
 import { getTeamById } from '../../../data/constants/apiConstants';
 import ScoutAiButton from '../Stats/mlb-schedule/components/ScoutAiButton';
@@ -82,130 +83,15 @@ function parseGameTimeMinutes(game) {
   return 9999;
 }
 
-// Returns true when a game has no odds or prediction data yet
-function hasNoPredictions(game) {
-  return !game.prediction &&
-    !game.odds &&
-    (!Array.isArray(game.bookmakers) || game.bookmakers.length === 0);
+// ─── Prediction gate ──────────────────────────────────────────────────────────
+// The server enforces the release gate now (a row simply isn't in the response
+// until it's public, or — for admins only — arrives flagged `is_preview`), so
+// "ready" just means a row with real data made it into `games`. See the games
+// fetch effect below for how a gated game still gets an honest placeholder
+// instead of vanishing.
+function isReadyToShow(game, adminOverride = false) {
+  return !!game.prediction && (adminOverride || !!game.scout_ai);
 }
-
-// ─── Prediction gate: 2 h before earliest first pitch ────────────────────────
-
-// Returns true only when: unlocked by time AND prediction exists AND scout_ai exists.
-// Pass adminOverride=true to bypass the scout_ai requirement (admin preview).
-function isReadyToShow(game, unlocked, adminOverride = false) {
-  return unlocked && !!game.prediction && (adminOverride || !!game.scout_ai);
-}
-
-// Computes the unlock time in minutes from midnight — earliest game − 2 h, capped at 4:00 PM (960 min)
-const UNLOCK_CAP_MINS = 16 * 60; // 4:00 PM ET
-
-function getUnlockMins(games) {
-  const mins = games.map(g => parseGameTimeMinutes(g)).filter(m => m < 9999);
-  if (!mins.length) return null;
-  return Math.min(Math.min(...mins) - 120, UNLOCK_CAP_MINS);
-}
-
-// Computes the unlock time label ("4:00 PM ET")
-function getPredReadyLabel(games) {
-  const unlockMins = getUnlockMins(games);
-  if (unlockMins === null) return null;
-  const h   = Math.floor(((unlockMins % 1440) + 1440) % 1440 / 60);
-  const min = String(unlockMins % 60).padStart(2, '0');
-  const period   = h >= 12 ? 'PM' : 'AM';
-  const displayH = h % 12 || 12;
-  return `${displayH}:${min} ${period} ET`;
-}
-
-// Returns true if current ET time is at or past the unlock threshold
-// Game times are in ET, so we must compare against ET — not local time.
-function arePredictionsUnlocked(games) {
-  const unlockMins = getUnlockMins(games);
-  if (unlockMins === null) return false;
-  const now = new Date();
-  const etParts = now.toLocaleString('en-US', { timeZone: 'America/New_York', hour: 'numeric', minute: 'numeric', hour12: false }).split(':');
-  const etMins  = parseInt(etParts[0], 10) * 60 + parseInt(etParts[1], 10);
-  return etMins >= unlockMins;
-}
-
-// Subtract 1 hour from a game time string and return display string e.g. "7:05 PM ET"
-function predReadyTime(game) {
-  const t = game.game_time_et || game.game_time || '';
-  const ampm = t.match(/(\d+):(\d+)\s*(AM|PM)/i);
-  if (!ampm) return t || 'game time';
-  let h = parseInt(ampm[1], 10);
-  const min = ampm[2];
-  const mer = ampm[3].toUpperCase();
-  if (mer === 'PM' && h !== 12) h += 12;
-  if (mer === 'AM' && h === 12) h = 0;
-  h = (h - 1 + 24) % 24;
-  const displayH = h % 12 || 12;
-  const displayMer = h >= 12 ? 'PM' : 'AM';
-  return `${displayH}:${min} ${displayMer} ET`;
-}
-
-// ─── Mock game slate ──────────────────────────────────────────────────────────
-// Fallback when the API returns no games (off-season / pre-season).
-// Remove MOCK_GAMES and the fallback logic in useEffect once the season is live.
-
-const MOCK_GAMES = [
-  {
-    id: 9001, game_pk: 9001,
-    date: new Date().toISOString().slice(0, 10),
-    game_time: '1:05 PM', status: 'Scheduled', season_type: 'regular',
-    away_team_id: 15, away_team_name: 'New York Yankees',     away_sp_name: 'Gerrit Cole',
-    home_team_id: 20, home_team_name: 'Boston Red Sox',       home_sp_name: 'Chris Sale',
-  },
-  {
-    id: 9002, game_pk: 9002,
-    date: new Date().toISOString().slice(0, 10),
-    game_time: '4:05 PM', status: 'Scheduled', season_type: 'regular',
-    away_team_id: 28, away_team_name: 'Los Angeles Dodgers',  away_sp_name: 'Tyler Glasnow',
-    home_team_id: 5,  home_team_name: 'San Francisco Giants', home_sp_name: 'Logan Webb',
-  },
-  {
-    id: 9003, game_pk: 9003,
-    date: new Date().toISOString().slice(0, 10),
-    game_time: '7:10 PM', status: 'Scheduled', season_type: 'regular',
-    away_team_id: 12, away_team_name: 'Atlanta Braves',       away_sp_name: 'Spencer Strider',
-    home_team_id: 30, home_team_name: 'New York Mets',        home_sp_name: 'Kodai Senga',
-  },
-  {
-    id: 9004, game_pk: 9004,
-    date: new Date().toISOString().slice(0, 10),
-    game_time: '8:05 PM', status: 'Scheduled', season_type: 'regular',
-    away_team_id: 26, away_team_name: 'Houston Astros',       away_sp_name: 'Framber Valdez',
-    home_team_id: 8,  home_team_name: 'Texas Rangers',        home_sp_name: 'Nathan Eovaldi',
-  },
-  {
-    id: 9005, game_pk: 9005,
-    date: new Date().toISOString().slice(0, 10),
-    game_time: '7:40 PM', status: 'Scheduled', season_type: 'regular',
-    away_team_id: 11, away_team_name: 'Philadelphia Phillies', away_sp_name: 'Zack Wheeler',
-    home_team_id: 14, home_team_name: 'Miami Marlins',         home_sp_name: 'Sandy Alcantara',
-  },
-  {
-    id: 9006, game_pk: 9006,
-    date: new Date().toISOString().slice(0, 10),
-    game_time: '8:10 PM', status: 'Scheduled', season_type: 'regular',
-    away_team_id: 3,  away_team_name: 'San Diego Padres',       away_sp_name: 'Yu Darvish',
-    home_team_id: 18, home_team_name: 'Arizona Diamondbacks',   home_sp_name: 'Zac Gallen',
-  },
-  {
-    id: 9007, game_pk: 9007,
-    date: new Date().toISOString().slice(0, 10),
-    game_time: '6:40 PM', status: 'Scheduled', season_type: 'regular',
-    away_team_id: 10, away_team_name: 'Minnesota Twins',  away_sp_name: 'Pablo Lopez',
-    home_team_id: 25, home_team_name: 'Detroit Tigers',   home_sp_name: 'Tarik Skubal',
-  },
-  {
-    id: 9008, game_pk: 9008,
-    date: new Date().toISOString().slice(0, 10),
-    game_time: '2:20 PM', status: 'Scheduled', season_type: 'regular',
-    away_team_id: 21, away_team_name: 'Chicago Cubs',        away_sp_name: 'Justin Steele',
-    home_team_id: 6,  home_team_name: 'St. Louis Cardinals', home_sp_name: 'Miles Mikolas',
-  },
-];
 
 // ─── Mock prediction data (fallback) ─────────────────────────────────────────
 
@@ -378,28 +264,6 @@ function findBestBook(rows, colIndex) {
   return rows.reduce((best, row, i, arr) =>
     row.values[colIndex] > arr[best].values[colIndex] ? i : best
   , 0);
-}
-
-// ─── Predictions-pending banner ───────────────────────────────────────────────
-// Shown before predictions unlock; the old client-derived "Top 3" is gone — the
-// board now comes from the server (see BestGameProps).
-function PredictionsPending({ games, unlocked, predReadyLabel, adminOverride = false }) {
-  const eligibleGames = games.filter(g => isReadyToShow(g, unlocked, adminOverride));
-  if (eligibleGames.length || adminOverride) return null;
-  return (
-    <div className="gp-pending-banner">
-      <img src={loadingPredictionsIcon} alt="" className="gp-pending-banner-icon" aria-hidden="true" />
-      <div>
-        <div className="gp-pending-banner-title">
-          {predReadyLabel ? `Predictions available by ${predReadyLabel}` : 'Predictions Coming Soon'}
-        </div>
-        <div className="gp-pending-banner-sub">
-          Our model and Scout AI analysis will be ready approximately 2 hours before first pitch.
-          {predReadyLabel ? ` Come back at ${predReadyLabel} for full game predictions and analysis.` : ' Check back closer to game time.'}
-        </div>
-      </div>
-    </div>
-  );
 }
 
 // ─── Sub-components ───────────────────────────────────────────────────────────
@@ -933,10 +797,10 @@ function PredictionsPanel({ game, earlyPicks, earlyMeta, ready }) {
 
 // ─── Right-side drawer modal ──────────────────────────────────────────────────
 
-function OddsDrawer({ game, onClose, unlocked, adminOverride = false, earlyProps = [], earlyMeta = null }) {
+function OddsDrawer({ game, onClose, adminOverride = false, earlyProps = [], earlyMeta = null }) {
   const navigate   = useNavigate();
   const pick       = buildPick(game);
-  const ready      = isReadyToShow(game, unlocked, adminOverride);
+  const ready      = isReadyToShow(game, adminOverride);
   const awayAbbr   = getTeamById(game.away_team_id)?.id || game.away_team_name;
   const homeAbbr   = getTeamById(game.home_team_id)?.id || game.home_team_name;
   const awayMlbId  = getTeamMlbId(game.away_team_id);
@@ -1023,6 +887,11 @@ function OddsDrawer({ game, onClose, unlocked, adminOverride = false, earlyProps
               </div>
             )}
           </div>
+          {game.is_preview && (
+            <div className="pred-preview-badge-row">
+              <span className="pred-preview-badge">{game.preview_badge || DEFAULT_PREVIEW_BADGE}</span>
+            </div>
+          )}
           <button className="gp-drawer-close" onClick={onClose} aria-label="Close">✕</button>
         </div>
 
@@ -1102,11 +971,36 @@ function OddsDrawer({ game, onClose, unlocked, adminOverride = false, earlyProps
   );
 }
 
+// ─── Not-public-yet card ───────────────────────────────────────────────────────
+// For a non-admin caller, a gated game's row is simply missing from
+// /predictions/today — so this card is built from whatever still names the
+// matchup pre-release (the pitchers/today feed never omits the game row; see
+// buildGames()). No prediction data exists to show, and none is faked.
+function NotPublicYetCard({ game }) {
+  const away = game.away_team_name || 'Away';
+  const home = game.home_team_name || 'Home';
+  const time = game.game_time_et || game.game_time || 'TBD';
+
+  return (
+    <div className="gp-card gp-card--muted gp-card--not-public" aria-disabled="true">
+      <div className="gp-card-topbar">
+        <span className="gp-card-time">{time}</span>
+        <span className="gp-card-status-dot" />
+      </div>
+      <div className="gp-card-not-public-matchup">{away} @ {home}</div>
+      <div className="gp-card-footer gp-card-not-public-footer">
+        <img src={loadingPredictionsIcon} alt="" className="gp-card-not-public-icon" aria-hidden="true" />
+        <span className="pred-gated-note">Not public yet — check back closer to first pitch ({time})</span>
+      </div>
+    </div>
+  );
+}
+
 // ─── Game card ────────────────────────────────────────────────────────────────
 
-function GamePickCard({ game, isSelected, onSelect, unlocked, predReadyLabel, adminOverride = false }) {
+function GamePickCard({ game, isSelected, onSelect, adminOverride = false }) {
   const pick       = buildPick(game);
-  const ready      = isReadyToShow(game, unlocked, adminOverride);
+  const ready      = isReadyToShow(game, adminOverride);
   const awayMlbId  = getTeamMlbId(game.away_team_id);
   const homeMlbId  = getTeamMlbId(game.home_team_id);
   const awayAbbr   = getTeamById(game.away_team_id)?.id || game.away_team_name;
@@ -1172,11 +1066,14 @@ function GamePickCard({ game, isSelected, onSelect, unlocked, predReadyLabel, ad
         ) : adminOverride && pick.confidence ? (
           <ConfidenceBar pct={pick.confidence} />
         ) : !adminOverride ? (
-          <span className="gp-card-pred-loading">
-            ⏳ {predReadyLabel ? `Predictions by ${predReadyLabel}` : 'Predictions coming soon'}
-          </span>
+          <span className="gp-card-pred-loading">⏳ Predictions coming soon</span>
         ) : null}
       </div>
+      {game.is_preview && (
+        <div className="pred-preview-badge-row">
+          <span className="pred-preview-badge">{game.preview_badge || DEFAULT_PREVIEW_BADGE}</span>
+        </div>
+      )}
     </button>
   );
 }
@@ -1245,8 +1142,17 @@ export default function GameProps() {
 
   useEffect(() => {
     window.scrollTo(0, 0);
-    predictionsService.getToday()
-      .then(rows => {
+    // /predictions/today omits a game's row entirely until it clears the
+    // release gate (for a non-admin caller) — so it's empty by design during
+    // the pre-release window, not an error. /predictions/pitchers/today never
+    // omits the game row (only nulls the pitcher slots), so it's the one feed
+    // that always knows which games exist today — used here only to fill the
+    // gap with an honest placeholder, never to fabricate prediction data.
+    Promise.all([
+      predictionsService.getToday(),
+      predictionsService.getPitchersToday().catch(() => []),
+    ])
+      .then(([rows, pitcherRows]) => {
         const filtered = Array.isArray(rows)
           ? rows.filter(r => r.season_type !== 'spring' && r.season_type !== 'S' && !isFinal(r))
           : [];
@@ -1282,15 +1188,22 @@ export default function GameProps() {
           return r;
         };
         const today = [...seen.values()].map(normalize);
-        if (today.length > 0) {
-          setGames([...today].sort((a, b) => parseGameTimeMinutes(a) - parseGameTimeMinutes(b)));
-        } else {
-          setGames(MOCK_GAMES);
-        }
+        const knownPks = new Set(today.map(r => r.game_pk ?? r.id));
+
+        const placeholders = (Array.isArray(pitcherRows) ? pitcherRows : [])
+          .filter(p => p.game_pk != null && !knownPks.has(p.game_pk))
+          .map(p => ({
+            id: p.game_pk, game_pk: p.game_pk, date: p.date,
+            game_time_et: p.game_time_et, status: 'Scheduled',
+            away_team_name: p.away_team_name, home_team_name: p.home_team_name,
+            __notPublic: true,
+          }));
+
+        const merged = [...today, ...placeholders]
+          .sort((a, b) => parseGameTimeMinutes(a) - parseGameTimeMinutes(b));
+        setGames(merged);
       })
-      .catch(() => {
-        setGames(MOCK_GAMES);
-      })
+      .catch(() => setGames([]))
       .finally(() => setLoading(false));
   }, []);
 
@@ -1301,8 +1214,6 @@ export default function GameProps() {
   const handleClose = useCallback(() => setSelectedId(null), []);
 
   const selectedGame     = games.find(g => (g.id ?? g.game_pk) === selectedId) ?? null;
-  const predictionsUnlocked = isAdmin || arePredictionsUnlocked(games);
-  const predReadyLabel      = getPredReadyLabel(games);
 
   const todayLabel = new Date().toLocaleDateString('en-US', {
     weekday: 'long', month: 'long', day: 'numeric',
@@ -1322,25 +1233,6 @@ export default function GameProps() {
       <div className="predictions-content">
         <div className="gp-date-label">{todayLabel}</div>
 
-
-        {/* "No predictions yet" banner — shown when every game is missing odds + predictions */}
-        {!loading && !isAdmin && games.length > 0 && games.every(g => hasNoPredictions(g)) && (() => {
-          const firstGame = [...games].sort((a, b) => parseGameTimeMinutes(a) - parseGameTimeMinutes(b))[0];
-          return (
-            <div className="gp-no-preds-banner">
-              <span className="gp-no-preds-icon">⏳</span>
-              <div className="gp-no-preds-text">
-                <span className="gp-no-preds-title">Predictions not yet available</span>
-                <span className="gp-no-preds-sub">Check back closer to game time · Ready around {predReadyLabel || predReadyTime(firstGame)}</span>
-              </div>
-            </div>
-          );
-        })()}
-
-        {/* Best Game Props (server-frozen top 3) + predictions-pending banner */}
-        {!loading && !profileLoading && games.length > 0 && (
-          <PredictionsPending games={games} unlocked={predictionsUnlocked} predReadyLabel={predReadyLabel} adminOverride={isAdmin} />
-        )}
         <BestPropsBoard title="Best Game Props" subtitle="Scout AI · frozen for today" picks={bestProps} onOpen={setOpenPick} />
         {/* Early-game props. Three outcomes: real picks, an explicit no-edge
             verdict for the day, or not-yet-evaluated (render nothing). */}
@@ -1385,14 +1277,15 @@ export default function GameProps() {
             <div className="gp-grid">
               {games.map(game => {
                 const gid = game.id ?? game.game_pk;
+                if (game.__notPublic) {
+                  return <NotPublicYetCard key={gid} game={game} />;
+                }
                 return (
                   <GamePickCard
                     key={gid}
                     game={game}
                     isSelected={selectedId === gid}
                     onSelect={() => handleCardClick(gid)}
-                    unlocked={predictionsUnlocked}
-                    predReadyLabel={predReadyLabel}
                     adminOverride={isAdmin}
                   />
                 );
@@ -1412,7 +1305,6 @@ export default function GameProps() {
         <OddsDrawer
           game={selectedGame}
           onClose={handleClose}
-          unlocked={predictionsUnlocked}
           adminOverride={isAdmin}
           earlyProps={earlyProps}
           earlyMeta={earlyMeta}

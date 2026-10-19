@@ -258,6 +258,40 @@
   border: 1px solid rgba(100, 181, 246, 0.25);
 }
 
+/* Admin-only: a row released early by the admin bypass, not yet public.
+   Sits on its own line at the bottom of the card/header — never inline with
+   the title — so it reads as a status footnote, not part of the headline. */
+.pred-preview-badge {
+  display: inline-flex;
+  align-items: center;
+  font-size: 0.5rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  border-radius: 16px;
+  padding: 0.16rem 0.44rem;
+  background: rgba(251, 191, 36, 0.14);
+  color: #fbbf24;
+  border: 1px solid rgba(251, 191, 36, 0.32);
+}
+
+/* Wraps the badge wherever it's pinned to the bottom of a card/header, so it
+   always sits on its own line, left-aligned, with a little breathing room
+   above it. */
+.pred-preview-badge-row {
+  display: flex;
+  margin-top: 0.4rem;
+}
+
+/* Honest "not released yet" card — same muted treatment as a card with no
+   predictions, but its message is a fact (the release gate), not a guess. */
+.pred-gated-note {
+  font-size: 0.72rem;
+  color: rgba(255, 255, 255, 0.5);
+  line-height: 1.4;
+}
+
 .predictions-card-arrow {
   font-size: 1rem;
   color: rgba(255, 255, 255, 0.2);

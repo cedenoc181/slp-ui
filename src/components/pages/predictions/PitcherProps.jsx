@@ -2,8 +2,9 @@ import { useState, useEffect, useCallback, useMemo } from 'react';
 import { createPortal } from 'react-dom';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../../context/AuthContext';
-import { TEAM_METADATA, getTeamById } from '../../../data/constants/apiConstants';
+import { TEAM_METADATA, getTeamById, getTeamByDisplayName } from '../../../data/constants/apiConstants';
 import predictionsService from '../../../data/services/predictionsService';
+import { isPreReleaseWindow, DEFAULT_PREVIEW_BADGE } from '../../../data/utils/releaseGate';
 import { WarRoom, BestPropsBoard } from './ScoutWarRoom';
 import playerStatsService from '../../../data/services/playerStatsServices';
 import api from '../../../data/services/apiService';
@@ -17,6 +18,9 @@ import iconStrikeouts from '../../../assets/icons/strikeouts-prop.png';
 import iconEarnedRuns from '../../../assets/icons/earnedruns-prop.png';
 import iconHitsAllowed from '../../../assets/icons/hitsallowed-prop.png';
 import iconOuts from '../../../assets/icons/pitcher-prop.png';
+// Same asset as iconOuts, imported separately for the gated/unknown-pitcher
+// placeholder — there it stands in for "a pitcher prop", not the Outs stat.
+import genericPitcherIcon from '../../../assets/icons/pitcher-prop.png';
 
 // ─── URL helpers ──────────────────────────────────────────────────────────────
 
@@ -303,53 +307,6 @@ function buildPitcherProps(pitcher) {
   return { props, bestProp };
 }
 
-// ─── Prediction gate: 2 h before earliest first pitch ────────────────────────
-
-function parseGameTimes(pitchers) {
-  return pitchers
-    .map(p => {
-      const str = p.game?.game_time_et;
-      if (!str) return null;
-      const m = str.match(/(\d+):(\d+)\s*(AM|PM)/i);
-      if (!m) return null;
-      let h = parseInt(m[1]), min = parseInt(m[2]);
-      const period = m[3].toUpperCase();
-      if (period === 'PM' && h !== 12) h += 12;
-      if (period === 'AM' && h === 12) h = 0;
-      const d = new Date();
-      d.setHours(h, min, 0, 0);
-      return d;
-    })
-    .filter(Boolean);
-}
-
-function getUnlockDate(pitchers) {
-  const times = parseGameTimes(pitchers);
-  if (!times.length) return null;
-  const earliest = new Date(Math.min(...times.map(t => t.getTime())));
-  earliest.setHours(earliest.getHours() - 2, earliest.getMinutes(), 0, 0);
-  // 4:00 PM ET is the absolute latest the user has to wait
-  const cap = new Date();
-  cap.setHours(16, 0, 0, 0);
-  return earliest.getTime() <= cap.getTime() ? earliest : cap;
-}
-
-function getPredictionReadyTime(pitchers) {
-  const unlock = getUnlockDate(pitchers);
-  if (!unlock) return null;
-  let h = unlock.getHours();
-  const min = String(unlock.getMinutes()).padStart(2, '0');
-  const period = h >= 12 ? 'PM' : 'AM';
-  h = h % 12 || 12;
-  return `${h}:${min} ${period} ET`;
-}
-
-function arePredictionsUnlocked(pitchers) {
-  const unlock = getUnlockDate(pitchers);
-  if (!unlock) return false;
-  return new Date() >= unlock;
-}
-
 // Filter helper: classify a prop by its best price.
 //   Favs  = heavy favorite at -120 or shorter (e.g. -120, -150, -200)
 //   Dawgs = any positive (plus) odds
@@ -365,10 +322,10 @@ function propPassesRisk(prop, riskFilter) {
 
 function Headshot({ pitcher, className }) {
   const [err, setErr] = useState(false);
-  if (err) {
+  if (err || !pitcher.mlbId) {
     return (
       <div className={`pp-headshot-fallback ${className || ''}`}>
-        {pitcher.name.split(' ').map(w => w[0]).join('').slice(0, 2)}
+        {(pitcher.name || '?').split(' ').map(w => w[0]).join('').slice(0, 2)}
       </div>
     );
   }
@@ -405,9 +362,42 @@ function PlatformLogo({ name, metaMap }) {
 
 // ─── Pitcher list card ────────────────────────────────────────────────────────
 
-function PitcherCard({ pitcher, isSelected, onClick, predictionsUnlocked, isAdmin }) {
-  const hasPred = predictionsUnlocked && !!pitcher.prediction && (!!pitcher.prediction.scout_ai || isAdmin);
+function PitcherCard({ pitcher, isSelected, onClick, isAdmin }) {
+  const hasPred = !!pitcher.prediction && (isAdmin || !!pitcher.prediction.scout_ai);
   const { bestProp } = hasPred ? buildPitcherProps(pitcher) : { bestProp: null };
+  const isPreview = hasPred && !!pitcher.prediction.is_preview;
+  const [logoErr, setLogoErr] = useState(false);
+
+  // Slot came back null and we don't even know who's starting (gated, or the
+  // probable starter just isn't announced) — nothing to click into yet. Still
+  // show what we do know: the team and a generic "pitcher prop" image standing
+  // in for the headshot we can't have.
+  if (pitcher.__unknown) {
+    return (
+      <div className="pp-top-card pp-top-card--pending pp-top-card--unknown" aria-disabled="true">
+        <div className="pp-top-card-header">
+          <img src={genericPitcherIcon} alt="" className="pp-top-card-headshot pp-top-card-headshot--generic" aria-hidden="true" />
+          {pitcher.teamMlbId && !logoErr ? (
+            <img
+              src={teamLogoUrl(pitcher.teamMlbId)}
+              alt={pitcher.teamAbbr}
+              className="pp-top-card-team-logo"
+              onError={() => setLogoErr(true)}
+            />
+          ) : (
+            <span className="pp-top-card-team-logo-fallback">{String(pitcher.teamAbbr || '?').slice(0, 3)}</span>
+          )}
+        </div>
+        <div className="pp-top-card-info">
+          <div className="pp-top-card-matchup">{pitcher.teamAbbr} · vs {pitcher.opponent}</div>
+          <span className="pp-pending-chip">
+            {pitcher.__gated ? 'Not public yet' : 'Starter not yet confirmed'}
+          </span>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <button
       className={`pp-top-card${isSelected ? ' selected' : ''}${!hasPred ? ' pp-top-card--pending' : ''}`}
@@ -424,7 +414,7 @@ function PitcherCard({ pitcher, isSelected, onClick, predictionsUnlocked, isAdmi
       </div>
 
       <div className="pp-top-card-info">
-        <div className="pp-top-card-name">{pitcher.name}</div>
+        <span className="pp-top-card-name">{pitcher.name}</span>
         <div className="pp-top-card-matchup">{pitcher.teamAbbr} · vs {pitcher.opponent}</div>
 
         {hasPred ? (
@@ -438,7 +428,14 @@ function PitcherCard({ pitcher, isSelected, onClick, predictionsUnlocked, isAdmi
             <EVBadge ev={bestProp.ev} />
           </>
         ) : (
-          <span className="pp-pending-chip">Predictions Pending</span>
+          <span className="pp-pending-chip">
+            {pitcher.__gated ? 'Not public yet' : 'Predictions Pending'}
+          </span>
+        )}
+        {isPreview && (
+          <div className="pred-preview-badge-row">
+            <span className="pred-preview-badge">{pitcher.prediction.preview_badge || DEFAULT_PREVIEW_BADGE}</span>
+          </div>
         )}
       </div>
     </button>
@@ -447,9 +444,10 @@ function PitcherCard({ pitcher, isSelected, onClick, predictionsUnlocked, isAdmi
 
 // ─── No-prediction fallback body ─────────────────────────────────────────────
 
-function NoPredictionBody({ pitcher, predictionTime }) {
+function NoPredictionBody({ pitcher }) {
   const dfsList = (pitcher.game?.dfs_props ?? [])
     .filter(d => d.player_id === pitcher.id);
+  const gameTimeEt = pitcher.game?.game_time_et;
 
   return (
     <div className="pp-pending-body">
@@ -457,13 +455,12 @@ function NoPredictionBody({ pitcher, predictionTime }) {
         <img src={loadingPredictionsIcon} alt="" className="pp-pending-banner-icon" aria-hidden="true" />
         <div>
           <div className="pp-pending-banner-title">
-            {predictionTime
-              ? `Predictions available by ${predictionTime}`
-              : 'Predictions Coming Soon'}
+            {pitcher.__gated ? 'Not public yet' : 'Predictions Coming Soon'}
           </div>
           <div className="pp-pending-banner-sub">
-            Our model and Scout AI analysis for this start will be ready approximately 2 hours before first pitch.
-            {predictionTime ? ` Come back at ${predictionTime} for full game predictions and analysis.` : ' Check back closer to game time.'}
+            {pitcher.__gated
+              ? `This start isn't public yet. Check back closer to first pitch${gameTimeEt ? ` (${gameTimeEt})` : ''}.`
+              : 'The model hasn’t generated a prediction for this start yet. Check back closer to game time.'}
           </div>
         </div>
       </div>
@@ -712,7 +709,7 @@ function PitcherScoutModal({ scoutAi, pitcherName, onClose }) {
 
 // ─── Pitcher modal ────────────────────────────────────────────────────────────
 
-function PitcherModal({ pitcher, onClose, predictionTime, predictionsUnlocked, isAdmin = false }) {
+function PitcherModal({ pitcher, onClose, isAdmin = false }) {
   const { props } = buildPitcherProps(pitcher);
   const [hsErr, setHsErr]               = useState(false);
   const [selectedProp, setSelectedProp] = useState(null);
@@ -846,6 +843,11 @@ function PitcherModal({ pitcher, onClose, predictionTime, predictionsUnlocked, i
                   <button className="pp-modal-meta pp-modal-link" onClick={goToMatchup}>
                     {pitcher.teamAbbr} · vs {pitcher.opponent}
                   </button>
+                  {pitcher.prediction?.is_preview && (
+                    <div className="pred-preview-badge-row">
+                      <span className="pred-preview-badge">{pitcher.prediction.preview_badge || DEFAULT_PREVIEW_BADGE}</span>
+                    </div>
+                  )}
                 </div>
               </div>
 
@@ -865,14 +867,14 @@ function PitcherModal({ pitcher, onClose, predictionTime, predictionsUnlocked, i
             </div>
 
             <div className="pp-modal-body">
-              {predictionsUnlocked && pitcher.prediction && (isAdmin || pitcher.prediction.scout_ai) ? (
+              {pitcher.prediction && (isAdmin || pitcher.prediction.scout_ai) ? (
                 <div className="pp-props-grid">
                   {props.map(prop => (
                     <PropPanel key={prop.key} prop={prop} onClick={() => handlePropClick(prop)} />
                   ))}
                 </div>
               ) : (
-                <NoPredictionBody pitcher={pitcher} predictionTime={predictionTime} />
+                <NoPredictionBody pitcher={pitcher} />
               )}
             </div>
           </div>
@@ -897,9 +899,11 @@ function PitcherModal({ pitcher, onClose, predictionTime, predictionsUnlocked, i
   );
 }
 
-// Stable key for a pitcher (real pitchers from the API may not have an MLB ID yet)
+// Stable key for a pitcher (real pitchers from the API may not have an MLB ID yet,
+// and a gated/unknown placeholder has neither an id nor a name).
 function pitcherKey(p) {
-  return p.id != null ? p.id : `${p.gamePk}-${p.name}`;
+  if (p.id != null) return p.id;
+  return `${p.gamePk}-${p.name ?? p.side ?? 'slot'}`;
 }
 
 // ─── Skeleton & comeback banner ───────────────────────────────────────────────
@@ -958,7 +962,7 @@ function LoadingBanner() {
 
 function ComebackBanner({ gameSlate }) {
   const earliest = [...(gameSlate || [])]
-    .map(g => g.game_time)
+    .map(g => g.game_time_et)
     .filter(Boolean)
     .sort((a, b) => parseTimeStrToMinutes(a) - parseTimeStrToMinutes(b))[0];
 
@@ -1033,63 +1037,79 @@ export default function PitcherProps() {
         const today = Array.isArray(rows)
           ? rows.filter(r => r.season_type !== 'spring' && r.season_type !== 'S' && !isFinal(r))
           : [];
-        if (today.length === 0) return;
-        setGameSlate(today);
+        const todayByPk = new Map(today.map(r => [r.game_pk, r]));
 
-        // Build pitcher entries
+        // /predictions/pitchers/today is the source of truth for "which games
+        // exist today" — unlike /predictions/today, it never omits the game
+        // row pre-release (only nulls the pitcher slots) — so build off it,
+        // using `today` purely to enrich with team ids / sp names when it has
+        // the row (released, or an admin preview).
+        const gameRows = Array.isArray(pitcherPreds) ? pitcherPreds : [];
+        setGameSlate(gameRows);
+
         const realPitchers = [];
-        for (const r of today) {
-          const awayAbbr  = getTeamById(r.away_team_id)?.id  || r.away_team_name;
-          const homeAbbr  = getTeamById(r.home_team_id)?.id  || r.home_team_name;
-          const awayMlbId = getTeamById(r.away_team_id)?.mlbId ?? null;
-          const homeMlbId = getTeamById(r.home_team_id)?.mlbId ?? null;
-          if (r.away_sp_name) {
-            realPitchers.push({
-              id:        r.away_sp_id ?? null,
-              mlbId:     null,
-              nameSlug:  null,
-              name:      r.away_sp_name,
-              teamAbbr:  awayAbbr,
-              teamMlbId: awayMlbId,
-              opponent:  homeAbbr,
-              gameId:    r.id ?? r.game_pk,
-              gamePk:    r.game_pk,
-              game:      r,
-            });
-          }
-          if (r.home_sp_name) {
-            realPitchers.push({
-              id:        r.home_sp_id ?? null,
-              mlbId:     null,
-              nameSlug:  null,
-              name:      r.home_sp_name,
-              teamAbbr:  homeAbbr,
-              teamMlbId: homeMlbId,
-              opponent:  awayAbbr,
-              gameId:    r.id ?? r.game_pk,
-              gamePk:    r.game_pk,
-              game:      r,
-            });
-          }
-        }
-        if (realPitchers.length === 0) return;
+        for (const g of gameRows) {
+          const full  = todayByPk.get(g.game_pk) ?? null;
+          const gated = isPreReleaseWindow(g.game_time_et);
+          const sides = [
+            { side: 'away', slot: g.away_pitcher, teamId: full?.away_team_id, teamName: full?.away_team_name ?? g.away_team_name, spName: full?.away_sp_name, spId: full?.away_sp_id, oppTeamId: full?.home_team_id, oppTeamName: full?.home_team_name ?? g.home_team_name },
+            { side: 'home', slot: g.home_pitcher, teamId: full?.home_team_id, teamName: full?.home_team_name ?? g.home_team_name, spName: full?.home_sp_name, spId: full?.home_sp_id, oppTeamId: full?.away_team_id, oppTeamName: full?.away_team_name ?? g.away_team_name },
+          ];
 
-        // Attach predictions — normalize scout_ai.raw → parsed object
-        const predMap = {};
-        for (const game of (Array.isArray(pitcherPreds) ? pitcherPreds : [])) {
-          if (game.home_pitcher?.player_id) predMap[game.home_pitcher.player_id] = normalizePitcherScoutAi(game.home_pitcher);
-          if (game.away_pitcher?.player_id) predMap[game.away_pitcher.player_id] = normalizePitcherScoutAi(game.away_pitcher);
+          for (const s of sides) {
+            // today's team_id resolves a logo directly; a gated slot has no
+            // `full` row to carry one, so fall back to the short display name
+            // pitchers/today does send ("Rays", "Guardians", ...).
+            const team    = getTeamById(s.teamId)    ?? getTeamByDisplayName(s.teamName);
+            const oppTeam = getTeamById(s.oppTeamId) ?? getTeamByDisplayName(s.oppTeamName);
+            const teamAbbr  = team?.id     || s.teamName    || '???';
+            const teamMlbId = team?.mlbId  ?? null;
+            const oppAbbr   = oppTeam?.id  || s.oppTeamName || '???';
+            const gameCtx   = full ?? { game_pk: g.game_pk, game_time_et: g.game_time_et };
+            const base = {
+              side: s.side, teamAbbr, teamMlbId, opponent: oppAbbr,
+              gameId: full?.id ?? g.game_pk, gamePk: g.game_pk, game: gameCtx,
+            };
+
+            if (s.slot) {
+              const normalized = normalizePitcherScoutAi(s.slot);
+              realPitchers.push({
+                ...base,
+                id: normalized.player_id ?? s.spId ?? null,
+                mlbId: null, nameSlug: null,
+                name: s.spName ?? normalized.pitcher_name ?? 'TBD',
+                prediction: normalized,
+              });
+            } else if (s.spName) {
+              // Probable starter is known; the model just hasn't posted a
+              // prediction for them yet (gated, or genuinely not generated).
+              realPitchers.push({
+                ...base,
+                id: s.spId ?? null, mlbId: null, nameSlug: null,
+                name: s.spName,
+                prediction: null,
+                __gated: gated,
+              });
+            } else {
+              // Nothing — not even a probable-starter name — to key a card on.
+              realPitchers.push({
+                ...base,
+                id: null, name: null,
+                prediction: null,
+                __gated: gated, __unknown: true,
+              });
+            }
+          }
         }
-        realPitchers.forEach(p => {
-          if (p.id && predMap[p.id]) p.prediction = predMap[p.id];
-        });
 
         // Show pitchers immediately — don't wait for headshot lookups
         setPitchers(realPitchers);
 
-        // Background: resolve MLB IDs for headshots and update each card as they arrive
+        // Background: resolve MLB IDs for headshots and update each card as
+        // they arrive. Skip nameless placeholders — their `id` isn't a real
+        // player id, just a synthetic key, and there's no name to look up.
         realPitchers.forEach((p, i) => {
-          if (!p.id) return;
+          if (!p.id || p.__unknown) return;
           playerStatsService.lookupPlayer({ playerId: p.id })
             .then(result => {
               if (result?.mlb_id) {
@@ -1108,9 +1128,6 @@ export default function PitcherProps() {
 
     return () => controller.abort();
   }, []);
-
-  const predictionTime       = getPredictionReadyTime(pitchers);
-  const predictionsUnlocked  = isAdmin || arePredictionsUnlocked(pitchers);
 
   const games = useMemo(() => {
     const seen = new Set();
@@ -1258,22 +1275,6 @@ export default function PitcherProps() {
                    "Top Picks Today". Hidden when the board has no picks). ─── */}
             <BestPropsBoard title="Best Pitcher Props" subtitle="Scout AI · frozen for today" picks={bestProps} onOpen={setOpenPick} />
 
-            {/* Pending banner while predictions haven't unlocked yet */}
-            {!predictionsUnlocked && !isAdmin && (
-              <div className="pp-pending-banner pp-pending-banner--page">
-                <img src={loadingPredictionsIcon} alt="" className="pp-pending-banner-icon" aria-hidden="true" />
-                <div>
-                  <div className="pp-pending-banner-title">
-                    {predictionTime ? `Predictions available by ${predictionTime}` : 'Predictions Coming Soon'}
-                  </div>
-                  <div className="pp-pending-banner-sub">
-                    Our model and Scout AI analysis will be ready approximately 2 hours before first pitch.
-                    {predictionTime ? ` Come back at ${predictionTime} for full game predictions and analysis.` : ' Check back closer to game time.'}
-                  </div>
-                </div>
-              </div>
-            )}
-
             {/* ── Divider ─────────────────────────────────────────── */}
             <div className="pp-divider">
               <span className="pp-divider-line" />
@@ -1287,7 +1288,6 @@ export default function PitcherProps() {
                   pitcher={pitcher}
                   isSelected={selectedKey === pitcherKey(pitcher)}
                   onClick={() => handleSelect(pitcherKey(pitcher))}
-                  predictionsUnlocked={predictionsUnlocked}
                   isAdmin={isAdmin}
                 />
               ))}
@@ -1305,8 +1305,6 @@ export default function PitcherProps() {
         <PitcherModal
           pitcher={selectedPitcher}
           onClose={handleClose}
-          predictionTime={predictionTime}
-          predictionsUnlocked={predictionsUnlocked}
           isAdmin={isAdmin}
         />
       )}

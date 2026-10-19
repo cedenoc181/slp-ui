@@ -180,3 +180,23 @@ export const getTeamByAbbr = (abbr) => TEAMS.find(t => t.id === abbr);
 export const getTeamByUrlName = (urlName) => TEAMS.find(t => t.urlName === urlName);
 export const getTeamById = (teamId) => TEAMS.find(t => t.teamId === teamId);
 export const getTeamIdFromAbbr = (abbr) => TEAM_IDS[abbr];
+
+// Some feeds (batter/pitcher prop endpoints) send short display names instead
+// of a team_id — e.g. "Royals", "Red Sox", "D-backs" — with no way to join
+// back to TEAM_IDS. This maps those names to an abbr so callers can still
+// resolve a logo/mlbId.
+const DISPLAY_NAME_TO_ABBR = {
+  athletics: 'ATH', pirates: 'PIT', padres: 'SD', mariners: 'SEA',
+  giants: 'SF', cardinals: 'STL', rays: 'TB', rangers: 'TEX',
+  'blue jays': 'TOR', twins: 'MIN', phillies: 'PHI', braves: 'ATL',
+  'white sox': 'CWS', marlins: 'MIA', yankees: 'NYY', brewers: 'MIL',
+  angels: 'LAA', diamondbacks: 'AZ', 'd-backs': 'AZ', orioles: 'BAL',
+  'red sox': 'BOS', cubs: 'CHC', reds: 'CIN', guardians: 'CLE',
+  rockies: 'COL', tigers: 'DET', astros: 'HOU', royals: 'KC',
+  dodgers: 'LAD', nationals: 'WSH', mets: 'NYM',
+};
+export const getTeamByDisplayName = (name) => {
+  if (!name) return null;
+  const abbr = DISPLAY_NAME_TO_ABBR[String(name).toLowerCase()];
+  return abbr ? getTeamByAbbr(abbr) : null;
+};
