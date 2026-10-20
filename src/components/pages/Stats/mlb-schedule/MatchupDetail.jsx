@@ -207,15 +207,19 @@ export default function MatchupDetail() {
     ? (h2h.summary.team_a?.team_id === game.away_team_id ? h2h.summary.team_b : h2h.summary.team_a)
     : null;
 
-  // Recent form game lists
+  // Recent form game lists. The record is always derived from these same
+  // games (never from last10Summary.last_ten_wins/losses) so it can never
+  // drift from what's actually rendered below it — the backend's summary
+  // field is computed server-side without regard to season_type, so during
+  // the postseason it still reflects the regular-season last-10 split.
   const awayGames  = formGames(awayLast10, game.away_team_id);
   const homeGames  = formGames(homeLast10, game.home_team_id);
   const awayForm   = awayGames.map(g => g.result);
   const homeForm   = homeGames.map(g => g.result);
-  const awayWins   = awayLast10Summary?.last_ten_wins   ?? awayForm.filter(r => r === 'W').length;
-  const awayLosses = awayLast10Summary?.last_ten_losses ?? awayForm.filter(r => r === 'L').length;
-  const homeWins   = homeLast10Summary?.last_ten_wins   ?? homeForm.filter(r => r === 'W').length;
-  const homeLosses = homeLast10Summary?.last_ten_losses ?? homeForm.filter(r => r === 'L').length;
+  const awayWins   = awayForm.filter(r => r === 'W').length;
+  const awayLosses = awayForm.filter(r => r === 'L').length;
+  const homeWins   = homeForm.filter(r => r === 'W').length;
+  const homeLosses = homeForm.filter(r => r === 'L').length;
 
   // ── Scout AI ────────────────────────────────────────────────────────────
   scoutAllowedRef.current = async () => {

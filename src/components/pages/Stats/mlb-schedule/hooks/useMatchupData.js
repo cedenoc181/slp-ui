@@ -68,18 +68,27 @@ export function useMatchupData() {
 
         const resolve = res => res.status === 'fulfilled' ? res.value : null;
 
+        // A postseason start is the only tier that isn't reachable by simple
+        // chronological fallback — the current-season regular-stats tier
+        // below it almost always has data (the team already played 162 games
+        // to get here), so it would otherwise always win before a postseason
+        // tier ever got a chance. Only fetch it when it's actually relevant.
+        const needsPostseasonSP = seasonType === 'P';
+
         // ── Wave 1: hero + pitchers section (fast, critical path) ────────────
         const [
-          awaySPTier1Res, awaySPTier2Res, awaySPTier3Res,
-          homeSPTier1Res, homeSPTier2Res, homeSPTier3Res,
+          awaySPPostRes, awaySPTier1Res, awaySPTier2Res, awaySPTier3Res,
+          homeSPPostRes, homeSPTier1Res, homeSPTier2Res, homeSPTier3Res,
           awaySPInfoRes, homeSPInfoRes,
           standingsRes,
           predictionRes,
           boxscoreRes,
         ] = await Promise.allSettled([
+          awaySPId && needsPostseasonSP ? playerStatsService.getPitcherCurrentStats(awaySPId, season, 'P') : Promise.resolve(null),
           awaySPId ? playerStatsService.getPitcherCurrentStats(awaySPId, season, 'R')          : Promise.resolve(null),
           awaySPId ? playerStatsService.getPitcherCurrentStats(awaySPId, season, 'S')          : Promise.resolve(null),
           awaySPId ? playerStatsService.getPitcherCurrentStats(awaySPId, FALLBACK_SEASON, 'R') : Promise.resolve(null),
+          homeSPId && needsPostseasonSP ? playerStatsService.getPitcherCurrentStats(homeSPId, season, 'P') : Promise.resolve(null),
           homeSPId ? playerStatsService.getPitcherCurrentStats(homeSPId, season, 'R')          : Promise.resolve(null),
           homeSPId ? playerStatsService.getPitcherCurrentStats(homeSPId, season, 'S')          : Promise.resolve(null),
           homeSPId ? playerStatsService.getPitcherCurrentStats(homeSPId, FALLBACK_SEASON, 'R') : Promise.resolve(null),
@@ -100,6 +109,7 @@ export function useMatchupData() {
 
         // Commit wave-1 state and drop the loading screen
         const spTiers = [
+          { stats: resolve(awaySPPostRes),  label: `${String(season)} Postseason` },
           { stats: resolve(awaySPTier1Res), label: String(season) },
           { stats: resolve(awaySPTier2Res), label: `${String(season)} Spring` },
           { stats: resolve(awaySPTier3Res), label: FALLBACK_SEASON },
@@ -109,6 +119,7 @@ export function useMatchupData() {
         setAwaySPStatSeason(awayTier?.label ?? null);
 
         const homeTiers = [
+          { stats: resolve(homeSPPostRes),  label: `${String(season)} Postseason` },
           { stats: resolve(homeSPTier1Res), label: String(season) },
           { stats: resolve(homeSPTier2Res), label: `${String(season)} Spring` },
           { stats: resolve(homeSPTier3Res), label: FALLBACK_SEASON },

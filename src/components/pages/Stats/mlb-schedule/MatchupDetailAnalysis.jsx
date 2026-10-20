@@ -1,12 +1,12 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { Link, useParams, useLocation } from 'react-router-dom';
-import { getMlbId, getAbbr } from './utils';
+import { getMlbId, getAbbr, mapSeasonType } from './utils';
 import scheduleService from '../../../../data/services/scheduleService';
 import teamStatsService from '../../../../data/services/teamStatsService';
 import teamLeadersService from '../../../../data/services/teamLeadersService';
 import playerStatsService from '../../../../data/services/playerStatsServices';
 import gamesService from '../../../../data/services/gamesService';
-import { DEFAULT_SEASON, SEASON_TYPE_CODES, PLAYER_ROLES } from '../../../../data/constants/apiConstants';
+import { DEFAULT_SEASON, SEASON_TYPES, SEASON_TYPE_CODES, PLAYER_ROLES } from '../../../../data/constants/apiConstants';
 import '../../../../styles/stats-page-styling/matchup-analysis.css';
 import '../../../../styles/stats-page-styling/scout-ai.css';
 import { ScoutAiButton, ScoutAiModal } from './components';
@@ -98,33 +98,54 @@ export default function MatchupDetailComp() {
 
   useEffect(() => { window.scrollTo(0, 0); }, []);
 
-  // ── Offensive splits + home/road splits — three-tier fallback: current R → current S → prior year R ──
+  // ── Offensive splits + home/road splits ──
+  // Tier order: current-season postseason (only for a postseason game; confirmed
+  // live against /teams/stats/batting[/home-vs-road]?season_type=P — both return
+  // real data) → current-season regular → current-season spring → prior-year
+  // regular. A postseason game's regular-season tier almost always has data too
+  // (the team played 162 games to get there), so without an explicit postseason
+  // tier ahead of it, postseason splits would never surface — same class of bug
+  // as the starting-pitcher stat tiers fixed earlier.
   useEffect(() => {
     if (!game) return;
     const season      = game.season || DEFAULT_SEASON;
     const priorSeason = String(Number(season) - 1);
-    const TIER_LABELS = [null, `${season} Spring`, priorSeason];
+    const seasonType  = mapSeasonType(game.season_type);
+    const isPost      = seasonType === 'P';
+    // Index 0 (postseason) is always null data when !isPost (see `skip` below),
+    // so findIndex() below naturally never selects this label off-season.
+    const TIER_LABELS = [`${season} Postseason`, null, `${season} Spring`, priorSeason];
+    const skip = Promise.resolve(null);
 
     Promise.allSettled([
+      isPost ? teamStatsService.getTeamBattingStats(game.away_team_id, season, 'P') : skip,
       teamStatsService.getTeamBattingStats(game.away_team_id, season,      'R'),
       teamStatsService.getTeamBattingStats(game.away_team_id, season,      'S'),
       teamStatsService.getTeamBattingStats(game.away_team_id, priorSeason, 'R'),
+      isPost ? teamStatsService.getTeamBattingStats(game.home_team_id, season, 'P') : skip,
       teamStatsService.getTeamBattingStats(game.home_team_id, season,      'R'),
       teamStatsService.getTeamBattingStats(game.home_team_id, season,      'S'),
       teamStatsService.getTeamBattingStats(game.home_team_id, priorSeason, 'R'),
+      isPost ? teamStatsService.getTeamBattingHomeVsRoad(game.away_team_id, season, 'P') : skip,
       teamStatsService.getTeamBattingHomeVsRoad(game.away_team_id, season,      'R'),
       teamStatsService.getTeamBattingHomeVsRoad(game.away_team_id, season,      'S'),
       teamStatsService.getTeamBattingHomeVsRoad(game.away_team_id, priorSeason, 'R'),
+      isPost ? teamStatsService.getTeamBattingHomeVsRoad(game.home_team_id, season, 'P') : skip,
       teamStatsService.getTeamBattingHomeVsRoad(game.home_team_id, season,      'R'),
       teamStatsService.getTeamBattingHomeVsRoad(game.home_team_id, season,      'S'),
       teamStatsService.getTeamBattingHomeVsRoad(game.home_team_id, priorSeason, 'R'),
-    ]).then(([awVH1, awVH2, awVH3, hmVH1, hmVH2, hmVH3, awHR1, awHR2, awHR3, hmHR1, hmHR2, hmHR3]) => {
+    ]).then(([
+      awVHP, awVH1, awVH2, awVH3,
+      hmVHP, hmVH1, hmVH2, hmVH3,
+      awHRP, awHR1, awHR2, awHR3,
+      hmHRP, hmHR1, hmHR2, hmHR3,
+    ]) => {
       const ok = res => res.status === 'fulfilled' ? res.value : null;
 
-      const awayVHTiers = [normalizeBattingStats(ok(awVH1)), normalizeBattingStats(ok(awVH2)), normalizeBattingStats(ok(awVH3))];
-      const homeVHTiers = [normalizeBattingStats(ok(hmVH1)), normalizeBattingStats(ok(hmVH2)), normalizeBattingStats(ok(hmVH3))];
-      const awayHRTiers = [normalizeBattingHomeRoad(ok(awHR1)), normalizeBattingHomeRoad(ok(awHR2)), normalizeBattingHomeRoad(ok(awHR3))];
-      const homeHRTiers = [normalizeBattingHomeRoad(ok(hmHR1)), normalizeBattingHomeRoad(ok(hmHR2)), normalizeBattingHomeRoad(ok(hmHR3))];
+      const awayVHTiers = [normalizeBattingStats(ok(awVHP)), normalizeBattingStats(ok(awVH1)), normalizeBattingStats(ok(awVH2)), normalizeBattingStats(ok(awVH3))];
+      const homeVHTiers = [normalizeBattingStats(ok(hmVHP)), normalizeBattingStats(ok(hmVH1)), normalizeBattingStats(ok(hmVH2)), normalizeBattingStats(ok(hmVH3))];
+      const awayHRTiers = [normalizeBattingHomeRoad(ok(awHRP)), normalizeBattingHomeRoad(ok(awHR1)), normalizeBattingHomeRoad(ok(awHR2)), normalizeBattingHomeRoad(ok(awHR3))];
+      const homeHRTiers = [normalizeBattingHomeRoad(ok(hmHRP)), normalizeBattingHomeRoad(ok(hmHR1)), normalizeBattingHomeRoad(ok(hmHR2)), normalizeBattingHomeRoad(ok(hmHR3))];
 
       const awayVHIdx = awayVHTiers.findIndex(t => t !== null);
       const homeVHIdx = homeVHTiers.findIndex(t => t !== null);
@@ -145,19 +166,40 @@ export default function MatchupDetailComp() {
     });
   }, [game?.away_team_id, game?.home_team_id]); // eslint-disable-line
 
-  // ── SP splits — three-tier fallback: current R → current S → prior year R ──
+  // ── SP splits ──
+  // Tier order: current-season postseason (postseason game only) → current R →
+  // current S → prior year R.
+  //
+  // IMPORTANT: this postseason tier MUST request `season_type=SEASON_TYPES.POSTSEASON`
+  // ('P', a letter) and NOT `SEASON_TYPE_CODES.POSTSEASON` (3, a number) — confirmed
+  // live that these two pitcher-splits endpoints silently return regular-season
+  // data (HTTP 200, no error) when sent the numeric code 3, while 'P' correctly
+  // returns real postseason numbers. That's a backend inconsistency (the numeric
+  // R/S codes 1/2 *do* resolve correctly) worth flagging upstream, but until it's
+  // fixed, letter 'P' is the only reliable way to request postseason splits here.
+  //
+  // vs-hand splits return real postseason data this way; home-road splits
+  // currently 500 server-side for postseason regardless of format — that tier
+  // is still requested (Promise.allSettled swallows the error) and just falls
+  // through to the next tier today, picking up real data automatically once
+  // that's fixed server-side with no further client change.
   useEffect(() => {
     if (!game) return;
     const season      = game.season || DEFAULT_SEASON;
     const priorSeason = String(Number(season) - 1);
+    const isPost      = mapSeasonType(game.season_type) === 'P';
+    const skip        = Promise.resolve(null);
 
     const fetchSPSplits = async (spId) => {
       const [
+        tPvsHand,  tPhomeRoad,
         t1vsHand,  t1homeRoad,
         t2vsHand,  t2homeRoad,
         t3vsHand,  t3homeRoad,
         info,
       ] = await Promise.allSettled([
+        isPost ? playerStatsService.getPitcherVsHandSplits(spId, season, SEASON_TYPES.POSTSEASON)    : skip,
+        isPost ? playerStatsService.getPitcherHomeRoadSplits(spId, season, SEASON_TYPES.POSTSEASON)  : skip,
         playerStatsService.getPitcherVsHandSplits(spId, season,      SEASON_TYPE_CODES.REGULAR),
         playerStatsService.getPitcherHomeRoadSplits(spId, season,      SEASON_TYPE_CODES.REGULAR),
         playerStatsService.getPitcherVsHandSplits(spId, season,      SEASON_TYPE_CODES.SPRING_TRAINING),
@@ -168,15 +210,21 @@ export default function MatchupDetailComp() {
       ]);
 
       const ok = res => res.status === 'fulfilled' ? res.value : null;
-      // null label = current season (no badge); string label = fallback season
-      const TIER_LABELS = [null, `${season} Spring`, priorSeason];
+      // Index 0 (postseason) is always null data when !isPost, so findIndex()
+      // below naturally never selects this label off-season.
+      const TIER_LABELS = [`${season} Postseason`, null, `${season} Spring`, priorSeason];
 
       const vsHandTiers   = [
+        normalizePitcherVsHandSplits(ok(tPvsHand)),
         normalizePitcherVsHandSplits(ok(t1vsHand)),
         normalizePitcherVsHandSplits(ok(t2vsHand)),
         normalizePitcherVsHandSplits(ok(t3vsHand)),
       ];
       const homeRoadTiers = [
+        // Matches on SEASON_TYPES.POSTSEASON ('P'), not SEASON_TYPE_CODES.POSTSEASON (3) —
+        // the request above used the letter code, and the response echoes back
+        // whatever format was sent, so the match value has to follow suit.
+        normalizePitcherHomeRoadSplits(ok(tPhomeRoad), season,      SEASON_TYPES.POSTSEASON),
         normalizePitcherHomeRoadSplits(ok(t1homeRoad), season,      SEASON_TYPE_CODES.REGULAR),
         normalizePitcherHomeRoadSplits(ok(t2homeRoad), season,      SEASON_TYPE_CODES.SPRING_TRAINING),
         normalizePitcherHomeRoadSplits(ok(t3homeRoad), priorSeason, SEASON_TYPE_CODES.REGULAR),
@@ -221,24 +269,35 @@ export default function MatchupDetailComp() {
     }
   }, [game?.away_sp_id, game?.home_sp_id]); // eslint-disable-line
 
-  // ── Team split leaders (Key Insights) — three-tier fallback: current R → current S → prior year R ──
+  // ── Team split leaders (Key Insights) ──
+  // Postseason tier added for parity with the other sections; confirmed live
+  // that /teams/leaders/splits/team?...&season_type=P currently comes back
+  // empty (not 500 — genuinely not computed yet) for both roles on both
+  // teams, so it's a no-op today and simply falls through to current-season
+  // regular, same as before. Will start surfacing real data the moment the
+  // backend populates it, with no further client change.
   useEffect(() => {
     if (!game) return;
     const season      = game.season || DEFAULT_SEASON;
     const priorSeason = String(Number(season) - 1);
-    const TIER_LABELS = [null, `${season} Spring`, priorSeason];
+    const isPost      = mapSeasonType(game.season_type) === 'P';
+    const skip        = Promise.resolve(null);
+    const TIER_LABELS = [`${season} Postseason`, null, `${season} Spring`, priorSeason];
     const hasArr      = v => Array.isArray(v) && v.length > 0;
 
     Promise.allSettled([
+      isPost ? teamLeadersService.getTeamSplits(game.away_team_id, season, 'P', PLAYER_ROLES.BATTER) : skip,
+      isPost ? teamLeadersService.getTeamSplits(game.home_team_id, season, 'P', PLAYER_ROLES.BATTER) : skip,
       teamLeadersService.getTeamSplits(game.away_team_id, season,      'R', PLAYER_ROLES.BATTER),
       teamLeadersService.getTeamSplits(game.home_team_id, season,      'R', PLAYER_ROLES.BATTER),
       teamLeadersService.getTeamSplits(game.away_team_id, season,      'S', PLAYER_ROLES.BATTER),
       teamLeadersService.getTeamSplits(game.home_team_id, season,      'S', PLAYER_ROLES.BATTER),
       teamLeadersService.getTeamSplits(game.away_team_id, priorSeason, 'R', PLAYER_ROLES.BATTER),
       teamLeadersService.getTeamSplits(game.home_team_id, priorSeason, 'R', PLAYER_ROLES.BATTER),
-    ]).then(([awT1, hmT1, awT2, hmT2, awT3, hmT3]) => {
+    ]).then(([awTP, hmTP, awT1, hmT1, awT2, hmT2, awT3, hmT3]) => {
       const ok  = res => res.status === 'fulfilled' ? res.value : null;
       const tiers = [
+        { away: ok(awTP), home: ok(hmTP) },
         { away: ok(awT1), home: ok(hmT1) },
         { away: ok(awT2), home: ok(hmT2) },
         { away: ok(awT3), home: ok(hmT3) },
@@ -255,26 +314,32 @@ export default function MatchupDetailComp() {
     }).catch(() => { setAwaySplitLeaders(false); setHomeSplitLeaders(false); });
   }, [game?.away_team_id, game?.home_team_id]); // eslint-disable-line
 
-  // ── Hot batting leaders (Top Batters card) — three-tier fallback ──
+  // ── Hot batting leaders (Top Batters card) ──
+  // Postseason tier confirmed live against /teams/leaders/batting/hot/team?
+  // ...&season_type=P — returns real postseason "last 7 games" leaders.
   useEffect(() => {
     if (!game) return;
     const season      = game.season || DEFAULT_SEASON;
     const priorSeason = String(Number(season) - 1);
+    const isPost      = mapSeasonType(game.season_type) === 'P';
+    const skip        = Promise.resolve(null);
     const asOfDate    = game.date || null;
     const hasData     = d => d && typeof d === 'object' && Object.values(d).some(a => Array.isArray(a) && a.length > 0);
-    const TIER_LABELS = [null, `${season} Spring`, priorSeason];
+    const TIER_LABELS = [`${season} Postseason`, null, `${season} Spring`, priorSeason];
 
     Promise.allSettled([
+      isPost ? teamLeadersService.getHotTeamBattingLeaders(game.away_team_id, season, 'P', 10, asOfDate) : skip,
+      isPost ? teamLeadersService.getHotTeamBattingLeaders(game.home_team_id, season, 'P', 10, asOfDate) : skip,
       teamLeadersService.getHotTeamBattingLeaders(game.away_team_id, season,      'R', 10, asOfDate),
       teamLeadersService.getHotTeamBattingLeaders(game.home_team_id, season,      'R', 10, asOfDate),
       teamLeadersService.getHotTeamBattingLeaders(game.away_team_id, season,      'S', 10, asOfDate),
       teamLeadersService.getHotTeamBattingLeaders(game.home_team_id, season,      'S', 10, asOfDate),
       teamLeadersService.getHotTeamBattingLeaders(game.away_team_id, priorSeason, 'R', 10, null),
       teamLeadersService.getHotTeamBattingLeaders(game.home_team_id, priorSeason, 'R', 10, null),
-    ]).then(([awayT1, homeT1, awayT2, homeT2, awayT3, homeT3]) => {
+    ]).then(([awayTP, homeTP, awayT1, homeT1, awayT2, homeT2, awayT3, homeT3]) => {
       const ok = res => res.status === 'fulfilled' ? res.value : null;
-      const awayTiers = [ok(awayT1), ok(awayT2), ok(awayT3)];
-      const homeTiers = [ok(homeT1), ok(homeT2), ok(homeT3)];
+      const awayTiers = [ok(awayTP), ok(awayT1), ok(awayT2), ok(awayT3)];
+      const homeTiers = [ok(homeTP), ok(homeT1), ok(homeT2), ok(homeT3)];
       const awayIdx   = awayTiers.findIndex(d => hasData(d));
       const homeIdx   = homeTiers.findIndex(d => hasData(d));
       setAwayHotLeaders(      awayIdx >= 0 ? awayTiers[awayIdx] : false);
