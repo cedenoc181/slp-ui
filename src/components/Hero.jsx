@@ -18,16 +18,6 @@ function Hero() {
 
   return (
     <section className="hero">
-      {/* NEW: Floating analytics background */}
-      <div className="hero-analytics-bg" aria-hidden="true">
-        <span className="floating-stat stat-1">.342 AVG</span>
-        <span className="floating-stat stat-2">12 K's</span>
-        <span className="floating-stat stat-3">+2.5 TB</span>
-        <span className="floating-stat stat-4">89%</span>
-        <span className="floating-stat stat-5">OVER</span>
-        <span className="floating-stat stat-6">1.82 RMSE</span>
-      </div>
-
       <div className="container">
         {/* NEW: Live badge */}
         {/* <div className="hero-badge">

@@ -13,6 +13,7 @@ import Header from './components/Header';
 import FreeWeekBanner from './components/FreeWeekBanner';
 import AlertSignInModal from './components/AlertSignInModal';
 import Hero from './components/Hero';
+import GameTicker from './components/GameTicker';
 import StatsPreview from './components/StatsPreview';
 import PredictionsTeaser from './components/PredictionsTeaser';
 import HowItWorks from './components/HowItWorks';
@@ -134,6 +135,7 @@ import './styles/legal-page-styling/legal.css';
 function HomePage() {
   return (
     <>
+      <GameTicker />
       <Hero />
       <PredictionsTeaser />
       <HowItWorks />

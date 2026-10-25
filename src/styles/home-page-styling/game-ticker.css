@@ -1,0 +1,62 @@
+/* ============================================
+   GAME TICKER
+   Reuses the homepage's existing dark palette (#0d1117 / #161b22 / #64B5F6)
+   rather than introducing new colors.
+   ============================================ */
+.game-ticker-wrap {
+  overflow: hidden;
+  background: #0d1117;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  padding-block: 0.55rem;
+}
+
+.game-ticker {
+  display: flex;
+  gap: 2.5rem;
+  white-space: nowrap;
+  width: max-content;
+  padding-left: 2rem;
+  animation: gameTickerScroll 45s linear infinite;
+}
+
+@keyframes gameTickerScroll {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .game-ticker { animation: none; }
+}
+
+.gt-tick {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.82rem;
+  color: #8b949e;
+}
+
+.gt-tick b {
+  color: #e6edf3;
+  font-weight: 600;
+}
+
+.gt-tick .mono {
+  font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace;
+  font-variant-numeric: tabular-nums;
+}
+
+.gt-status {
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+}
+
+.gt-status.live { color: #E31837; }
+.gt-status.final { color: #8b949e; }
+.gt-status.pre { color: #64B5F6; }
+
+@media screen and (max-width: 480px) {
+  .game-ticker-wrap { padding-block: 0.4rem; }
+  .gt-tick { font-size: 0.74rem; }
+}
