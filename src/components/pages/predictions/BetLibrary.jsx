@@ -555,18 +555,21 @@ export default function BetLibrary() {
 
   useEffect(() => { window.scrollTo(0, 0); }, []);
 
-  // Today's slate → matchup suggestions + game rows for the Track-a-bet modal
+  // Today's slate → matchup suggestions + game rows for the Track-a-bet modal.
+  // The full slate + odds come from the ungated /today/odds; released /today
+  // rows (prediction + scout_ai, 2h pre-pitch) are layered on top per game.
   useEffect(() => {
     const isFinalRow = (s = '') => ['final', 'game over', 'completed'].includes(s.toLowerCase());
-    predictionsService.getToday()
-      .then(rows => {
-        const list = Array.isArray(rows) ? rows : [];
-        const byId = {};
-        for (const r of list) {
+    Promise.allSettled([predictionsService.getTodayOdds(), predictionsService.getToday()])
+      .then(([oddsRes, predRes]) => {
+        const asList = res => (res.status === 'fulfilled' && Array.isArray(res.value) ? res.value : []);
+        const merged = new Map(); // insertion order = API slate order
+        for (const r of [...asList(oddsRes), ...asList(predRes)]) {
           const pk = r.game_pk ?? r.id;
-          if (pk != null) byId[pk] = r;
+          if (pk != null) merged.set(pk, { ...merged.get(pk), ...r });
         }
-        setGamesById(byId);
+        const list = [...merged.values()];
+        setGamesById(Object.fromEntries(merged));
         const seen = new Set();
         const opts = list
           .filter(r => r.away_team_id && r.home_team_id &&

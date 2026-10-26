@@ -34,6 +34,17 @@ class PredictionsService {
   }
 
   /**
+   * Market odds for every game today — NOT release-gated. Same rows as
+   * getToday() minus model output (no prediction / scout_ai), so the full
+   * slate's lines are available before predictions unlock 2h pre-pitch.
+   * GET /predictions/today/odds
+   * @returns {Promise<Array>}
+   */
+  async getTodayOdds(options = {}) {
+    return api.get('/predictions/today/odds', options);
+  }
+
+  /**
    * The day's 3 best game props (moneyline / total / run-line), chosen by the
    * Scout Desk War Room engine and frozen once per ET day. Same pick shape as
    * the Scout Desk board. Public, no auth. `picks` is [] and `lockedAt` null
