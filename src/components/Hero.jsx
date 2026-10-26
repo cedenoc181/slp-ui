@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import teamsService from '../data/services/teamsService';
+import scheduleService from '../data/services/scheduleService';
 import '../styles/home-page-styling/hero.css';
 
 // Watchlist panel shows real win% for a few well-known teams (not a saved,
@@ -28,6 +29,17 @@ function Hero() {
   const navigate = useNavigate();
   const [standingsByAbbr, setStandingsByAbbr] = useState(null);
   const [alEast, setAlEast] = useState(null);
+  // Baseball decoration fills the space when the ticker (same homepage,
+  // rendered above Hero) has nothing to show — hidden once it does.
+  const [tickerHasGames, setTickerHasGames] = useState(false);
+
+  useEffect(() => {
+    let alive = true;
+    scheduleService.getTodayGames()
+      .then(games => { if (alive) setTickerHasGames(Array.isArray(games) && games.length > 0); })
+      .catch(() => { if (alive) setTickerHasGames(false); });
+    return () => { alive = false; };
+  }, []);
 
   useEffect(() => {
     let alive = true;
@@ -54,7 +66,7 @@ function Hero() {
         <div className="hero-copy">
           <p className="hero-eyebrow">{'// BASEBALL ANALYTICS, MODELS & MORE'}</p>
           <h1 className="hero-title">
-            Smarter picks start <em>here.</em>
+            Every stat, pick, and<br />trend in <em>one terminal.</em>
           </h1>
           <p className="hero-lede">
             Advanced player predictions, real-time statistics, and data-driven insights
@@ -148,6 +160,7 @@ function Hero() {
         </div>
       </div>
 
+      {!tickerHasGames && (
       <div className="hero-decorations" aria-hidden="true">
         <svg className="baseball-icon" width="80" height="80" viewBox="0 0 80 80">
           <circle cx="40" cy="40" r="35" fill="white" stroke="#E0E0E0" strokeWidth="1"/>
@@ -165,6 +178,7 @@ function Hero() {
           <path d="M 55 62 L 60 60 L 65 62" stroke="#C62828" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round"/>
         </svg>
       </div>
+      )}
     </section>
   );
 }

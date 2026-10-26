@@ -69,39 +69,30 @@
   flex: 1;
 }
 
-.btn {
-  display: inline-flex;
+.account-icon {
+  display: flex;
   align-items: center;
-  padding: 0.55rem 1.25rem;
-  border-radius: 8px;
-  font-size: 0.9rem;
-  font-weight: 700;
-  text-decoration: none;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  white-space: nowrap;
-}
-
-.btn-ghost {
-  color: #E6EDF5;
-  background: transparent;
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  margin-right: 0.75rem;
-}
-
-.btn-ghost:hover {
+  justify-content: center;
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
   background: rgba(255, 255, 255, 0.05);
-  border-color: rgba(255, 255, 255, 0.35);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: #E6EDF5;
+  flex-shrink: 0;
+  transition: all 0.2s ease;
 }
 
-.btn-accent {
-  color: #fff;
-  background: var(--cta-color);
-  border: none;
+.account-icon:hover {
+  background: rgba(100, 181, 246, 0.12);
+  border-color: rgba(100, 181, 246, 0.35);
+  color: #64B5F6;
 }
 
-.btn-accent:hover {
-  background: var(--cta-hover);
+.account-icon.active {
+  background: rgba(200, 16, 46, 0.14);
+  border-color: rgba(200, 16, 46, 0.4);
+  color: #ff6b6b;
 }
 
 @media screen and (max-width: 768px) {
@@ -118,13 +109,13 @@
     display: none;
   }
 
-  .btn-ghost,
-  .btn-accent {
-    padding: 0.5rem 0.9rem;
-    font-size: 0.82rem;
+  .account-icon {
+    width: 36px;
+    height: 36px;
   }
 
-  .btn-ghost {
-    margin-right: 0.5rem;
+  .account-icon svg {
+    width: 20px;
+    height: 20px;
   }
 }

@@ -1,10 +1,11 @@
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import logo from '../assets/images/spa-retro-logo-removebg.png';
 import '../styles/home-page-styling/header.css';
 
 function Header() {
   const navigate = useNavigate();
+  const location = useLocation();
   const { isAuthenticated } = useAuth();
 
   const handleLogoClick = (e) => {
@@ -34,14 +35,17 @@ function Header() {
 
         <div className="topbar-spacer"></div>
 
-        {isAuthenticated ? (
-          <Link to="/account/settings" className="btn btn-ghost">Account</Link>
-        ) : (
-          <>
-            <Link to="/account" className="btn btn-ghost">Log In</Link>
-            <Link to="/account" className="btn btn-accent">Start Free</Link>
-          </>
-        )}
+        <Link
+          to={isAuthenticated ? '/account/settings' : '/account'}
+          className={`account-icon ${location.pathname.startsWith('/account') ? 'active' : ''}`}
+          aria-label={isAuthenticated ? 'Settings' : 'Account'}
+          title={isAuthenticated ? 'Account Settings' : 'Login / Sign Up'}
+        >
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <circle cx="12" cy="8" r="4" />
+            <path d="M4 21v-2a4 4 0 0 1 4-4h8a4 4 0 0 1 4 4v2" />
+          </svg>
+        </Link>
       </div>
     </header>
   );
