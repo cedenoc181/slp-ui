@@ -42,7 +42,7 @@
 }
 
 .gt-tick .mono {
-  font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace;
+  font-family: 'JetBrains Mono', 'SF Mono', 'Fira Code', 'Consolas', monospace;
   font-variant-numeric: tabular-nums;
 }
 

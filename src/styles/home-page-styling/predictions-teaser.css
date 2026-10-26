@@ -53,8 +53,9 @@
 }
 
 .teaser-header h2 {
+  font-family: 'Oswald', -apple-system, BlinkMacSystemFont, sans-serif;
   font-size: 2.5rem;
-  font-weight: 800;
+  font-weight: 700;
   color: #e6edf3;
   margin-bottom: 1rem;
   letter-spacing: -0.5px;
@@ -202,7 +203,7 @@
   font-size: 1.1rem;
   font-weight: 700;
   color: #e6edf3;
-  font-family: 'SF Mono', 'Fira Code', monospace;
+  font-family: 'JetBrains Mono', 'SF Mono', 'Fira Code', monospace;
 }
 
 .projection-row {
@@ -221,7 +222,7 @@
   font-size: 0.95rem;
   font-weight: 700;
   color: #64B5F6;
-  font-family: 'SF Mono', 'Fira Code', monospace;
+  font-family: 'JetBrains Mono', 'SF Mono', 'Fira Code', monospace;
 }
 
 .confidence-meter {
@@ -241,7 +242,7 @@
 .confidence-value {
   font-weight: 700;
   color: #22c55e;
-  font-family: 'SF Mono', 'Fira Code', monospace;
+  font-family: 'JetBrains Mono', 'SF Mono', 'Fira Code', monospace;
 }
 
 .confidence-bar {
@@ -657,7 +658,7 @@
   font-size: 1.5rem;
   font-weight: 800;
   color: #64B5F6;
-  font-family: 'SF Mono', 'Fira Code', monospace;
+  font-family: 'JetBrains Mono', 'SF Mono', 'Fira Code', monospace;
 }
 
 .launch-stat-label {

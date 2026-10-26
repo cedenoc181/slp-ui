@@ -14,6 +14,7 @@ import FreeWeekBanner from './components/FreeWeekBanner';
 import AlertSignInModal from './components/AlertSignInModal';
 import Hero from './components/Hero';
 import GameTicker from './components/GameTicker';
+import ProofStrip from './components/ProofStrip';
 import StatsPreview from './components/StatsPreview';
 import PredictionsTeaser from './components/PredictionsTeaser';
 import HowItWorks from './components/HowItWorks';
@@ -137,6 +138,7 @@ function HomePage() {
     <>
       <GameTicker />
       <Hero />
+      <ProofStrip />
       <PredictionsTeaser />
       <HowItWorks />
       <StatsPreview />
