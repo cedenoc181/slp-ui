@@ -218,7 +218,7 @@ export function AuthProvider({ children }) {
       profileLoading,
       // Role shortcuts mirroring backend dependency tiers
       isAdmin: user?.isAdmin === true || user?.isAdmin === 1,
-      // Admins, plus explicitly-granted user IDs, can use the Bet Library + Lab.
+      // Admins, plus explicitly-granted user IDs, can use the Lab.
       hasAdminToolsAccess:
         user?.isAdmin === true || user?.isAdmin === 1
         || ADMIN_TOOL_USER_IDS.some(id => String(id) === String(user?.id)),

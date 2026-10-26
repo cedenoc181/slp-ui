@@ -540,7 +540,7 @@ const CORR_FILTERS = [
 
 export default function BetLibrary() {
   const navigate = useNavigate();
-  const { isAuthenticated, hasAdminToolsAccess, loading } = useAuth();
+  const { isAuthenticated, loading } = useAuth();
 
   const [bets, setBets]       = useState([]);
   const [busy, setBusy]       = useState(true);
@@ -584,15 +584,13 @@ export default function BetLibrary() {
       .catch(() => { setMatchups([]); setGamesById({}); });
   }, []);
 
-  // Admin gate
+  // Auth gate — every signed-in user has their own library.
   useEffect(() => {
     if (loading) return;
     if (!isAuthenticated) {
       navigate('/account', { state: { from: { pathname: '/predictions/bet-library' } } });
-      return;
     }
-    if (!hasAdminToolsAccess) navigate('/predictions');
-  }, [loading, isAuthenticated, hasAdminToolsAccess, navigate]);
+  }, [loading, isAuthenticated, navigate]);
 
   const refresh = useCallback(async () => {
     try {
@@ -778,7 +776,7 @@ export default function BetLibrary() {
   const summary = useMemo(() => summarize(corrBets), [corrBets]);
   const corrLabel = corr === 'all' ? 'all bets' : `${corr} bets`;
 
-  if (loading || !isAuthenticated || !hasAdminToolsAccess) return null;
+  if (loading || !isAuthenticated) return null;
 
   return (
     <div className="predictions-page">
@@ -793,7 +791,7 @@ export default function BetLibrary() {
       <div className="predictions-content">
         <div className="bl-toolbar">
           <div className="bl-toolbar-copy">
-            <span className="bl-admin-tag">Admin · P&amp;L Tracker</span>
+            <span className="bl-admin-tag">Your P&amp;L Tracker</span>
             <p className="bl-toolbar-sub">
               A library of the bets you've taken or watchlisted — with the Scout AI prompt, odds, and
               model probability captured at pick time. Flat 1-unit staking; ROI is computed from the odds.

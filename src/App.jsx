@@ -268,7 +268,7 @@ function App() {
           <Route path="/predictions/games" element={<ProtectedRoute require="premium"><GameProps /></ProtectedRoute>} />
           <Route path="/predictions/pitchers" element={<ProtectedRoute require="premium"><PitcherProps /></ProtectedRoute>} />
           <Route path="/predictions/batters" element={<ProtectedRoute require="premium"><BatterProps /></ProtectedRoute>} />
-          <Route path="/predictions/bet-library" element={<ProtectedRoute require="admin-tools"><BetLibrary /></ProtectedRoute>} />
+          <Route path="/predictions/bet-library" element={<ProtectedRoute><BetLibrary /></ProtectedRoute>} />
           <Route path="/predictions/lab" element={<ProtectedRoute require="admin-tools"><Lab /></ProtectedRoute>} />
           <Route path="/predictions/scout-desk" element={<ProtectedRoute require="premium"><ScoutDesk /></ProtectedRoute>} />
           {/* Not premium-gated at the route level: the premium/admin/early-access
