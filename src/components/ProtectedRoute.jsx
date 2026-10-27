@@ -11,7 +11,7 @@ import { useAuth } from '../context/AuthContext';
  *   <ProtectedRoute require="verified"> — requires is_verified
  *   <ProtectedRoute require="admin">   — requires is_admin
  *   <ProtectedRoute require="admin-tools"> — admin OR an explicitly-granted user
- *                                            (ADMIN_TOOL_USER_IDS): Bet Library, Lab
+ *                                            (ADMIN_TOOL_USER_IDS): Lab
  *
  * Unauthenticated users are redirected to /account.
  * Non-premium users hitting a premium route are redirected to /predictions.

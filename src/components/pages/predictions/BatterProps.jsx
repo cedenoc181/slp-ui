@@ -969,8 +969,7 @@ export default function BatterProps() {
     <div className="predictions-page">
       <div className="predictions-header">
         <div className="predictions-header-inner">
-          <h1>Batter Props</h1>
-          <PredictionsNav />
+          <PredictionsNav propsOnly />
         </div>
       </div>
 

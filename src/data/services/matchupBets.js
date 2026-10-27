@@ -6,8 +6,13 @@
  *
  * Sources (same payloads the prop pages consume):
  *   - team markets  → game row from /predictions/today (prediction + odds + bookmakers)
- *   - pitcher props → /predictions/pitchers/today  → game node { game_pk, home_pitcher, away_pitcher }
- *                     (matched to the game's starters; mirrors PitcherProps.buildPitcherProps)
+ *   - pitcher props → /predictions/pitchers/today merged over /predictions/pitchers/today/odds,
+ *                     per game_pk + side → game node { game_pk, home_pitcher, away_pitcher }
+ *                     (matched to the game's starters; mirrors PitcherProps.buildPitcherProps).
+ *                     The odds side is ungated (real lines for every game); the prediction
+ *                     side only arrives once a starter is released (2h pre-pitch) — a starter
+ *                     with lines but no projection still yields Over/Under candidates below,
+ *                     just with modelProb/ev left null.
  *   - batter props  → /predictions/batters/{game_pk}  → { home_batters, away_batters }
  *                     (mirrors BatterProps.buildBatterMarkets)
  *
@@ -206,15 +211,17 @@ function buildPitcherCandidates(resp, game) {
     const name = starterName || pred.player_name || pred.name;
     if (!name) continue;
 
+    // /pitchers/today/odds carries sportsbook_props on every starter, gated or
+    // not; /pitchers/today adds the model fields (blended_*) only once released
+    // — so sbProps is always available, blended is the thing that may be missing.
     const sbProps = Array.isArray(pred.sportsbook_props) ? pred.sportsbook_props : [];
     const scoutAI = pred.scout_ai && typeof pred.scout_ai === 'object' ? pred.scout_ai : null;
 
     for (const [apiKey, cfg] of Object.entries(PITCHER_STATS)) {
       const blendedRaw = pred[cfg.blended];
+      const hasProjection = blendedRaw != null;
       const statSB = sbProps.filter(p => p.stat_type === apiKey);
-      if (blendedRaw == null && statSB.length === 0) continue; // no data → skip (no junk rows)
-      const blended = blendedRaw ?? 0;
-      const std = pred[cfg.std] ?? 1;
+      if (!hasProjection && statSB.length === 0) continue; // no data at all → skip
 
       // Group books by platform for this stat
       const bookMap = {};
@@ -226,7 +233,36 @@ function buildPitcherCandidates(resp, game) {
       }
       const books  = Object.values(bookMap);
       const sbLine = statSB.length ? statSB[0].line : null;
-      const line   = sbLine ?? Math.round(blended * 10) / 10;
+      const bestAt = (pickLine, sideKey) => books
+        .filter(b => b.line === pickLine)
+        .reduce((best, b) => {
+          const v = b[sideKey];
+          return v != null && (best == null || v > best) ? v : best;
+        }, null);
+
+      // Not yet released: real lines only, nothing to guess a side from —
+      // offer both Over and Under instead of defaulting one.
+      if (!hasProjection) {
+        if (sbLine == null) continue;
+        for (const side of ['Over', 'Under']) {
+          out.push({
+            key:       `${name.toLowerCase()}|${cfg.market.toLowerCase()}|${side.toLowerCase()}`,
+            selection: `${name} ${side} ${sbLine} ${cfg.label}`,
+            market:    cfg.market,
+            odds:      bestAt(sbLine, side === 'Over' ? 'over' : 'under'),
+            modelProb: null,
+            ev:        null,
+            scoutPrompt: '', scoutConfidence: null, scoutPick: false,
+            grade: { type: 'pitcher_prop', side, line: sbLine, statType: apiKey, playerId: pred.player_id ?? null },
+            search:    `${name} ${cfg.label} pitcher ${side}`.toLowerCase(),
+          });
+        }
+        continue;
+      }
+
+      const blended = blendedRaw;
+      const std = pred[cfg.std] ?? 1;
+      const line = sbLine ?? Math.round(blended * 10) / 10;
 
       // Scout AI pick (side + line), same precedence the page uses
       const scoutProp  = scoutAI?.props?.[apiKey] ?? null;
@@ -237,12 +273,7 @@ function buildPitcherCandidates(resp, game) {
       const side     = scoutSide ?? (blended >= line ? 'Over' : 'Under');
       const sideKey  = side === 'Over' ? 'over' : 'under';
       const pickLine = scoutLine ?? line;
-      const bestOdds = books
-        .filter(b => b.line === pickLine)
-        .reduce((best, b) => {
-          const v = b[sideKey];
-          return v != null && (best == null || v > best) ? v : best;
-        }, null) ?? -115;
+      const bestOdds = bestAt(pickLine, sideKey);
       const prob = pitcherConfidence(blended, line, std);
 
       out.push({
@@ -373,7 +404,8 @@ function buildBatterCandidates(resp) {
 /**
  * @param {Object} args
  * @param {Object} args.game      — game row from /predictions/today
- * @param {*}      args.pitchers  — /predictions/pitchers/today payload (array of game nodes)
+ * @param {*}      args.pitchers  — merged /pitchers/today + /pitchers/today/odds payload
+ *                                  (array of game nodes; see module docblock)
  * @param {*}      args.batters   — /predictions/batters/{game_pk} payload
  * @returns {Array} candidate bets, deduped (value-carrying entries preferred)
  */

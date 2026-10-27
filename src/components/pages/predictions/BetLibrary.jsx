@@ -2,19 +2,36 @@ import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../../context/AuthContext';
-import PredictionsNav from './PredictionsNav';
 import betLibraryService, { unitProfit, betPL, summarize } from '../../../data/services/betLibraryService';
 import predictionsService from '../../../data/services/predictionsService';
 import scheduleService from '../../../data/services/scheduleService';
 import gamesService from '../../../data/services/gamesService';
 import { buildMatchupCandidates } from '../../../data/services/matchupBets';
 import { isGameFinal, gameStartEpoch } from '../../../data/services/betGrader';
-import { buildLiveTracker, getPlayerPropActual, isGameLive } from '../../../data/services/liveBetTracker';
+import { buildLiveTracker, getPlayerPropActual, getPitcherLineWatch, isGameLive } from '../../../data/services/liveBetTracker';
 import { fetchBoxPlayers, settlePendingBets } from '../../../data/services/betSettlement';
 import { getTeamById } from '../../../data/constants/apiConstants';
 import LiveBetTracker from './LiveBetTracker';
 import '../../../styles/predictions-page-styling/predictions.css';
 import '../../../styles/predictions-page-styling/bet-library.css';
+
+// Merges /pitchers/today/odds (ungated lines, every game) with /pitchers/today
+// (gated model output, released starters only) by game_pk + side. The odds
+// side is the base so a still-gated (null) prediction never wipes out real
+// sportsbook/DFS lines already available for that starter.
+function mergePitcherNodes(oddsRows, predRows) {
+  const oddsList = Array.isArray(oddsRows) ? oddsRows : [];
+  const predByPk = new Map((Array.isArray(predRows) ? predRows : []).map(g => [g.game_pk ?? g.id, g]));
+  const mergeSide = (oddsSide, predSide) => (oddsSide ? { ...oddsSide, ...(predSide || {}) } : predSide || null);
+  return oddsList.map(g => {
+    const pred = predByPk.get(g.game_pk) ?? null;
+    return {
+      ...g,
+      away_pitcher: mergeSide(g.away_pitcher, pred?.away_pitcher),
+      home_pitcher: mergeSide(g.home_pitcher, pred?.home_pitcher),
+    };
+  });
+}
 
 // ── Display helpers ───────────────────────────────────────────────────────────
 
@@ -125,16 +142,25 @@ function AddBetModal({ onClose, onSave, matchups = [], gamesById = {} }) {
     setForm(f => ({ ...f, ...cleared, matchup: g ? g.value : '', gamePk: g ? g.gamePk : null }));
   };
 
-  // Fetch + build candidate bets whenever the selected game changes
+  // Fetch + build candidate bets whenever the selected game changes.
+  // Pitcher props: /pitchers/today/odds (ungated, every game) merged with
+  // /pitchers/today (gated model output) — so a game within 2h of first pitch
+  // isn't the only one offering pitcher-prop candidates.
   useEffect(() => {
     if (form.gamePk == null) { setCandidates([]); return; }
     let cancelled = false;
     setCandLoading(true);
-    Promise.all([
-      predictionsService.getPitchersToday().catch(() => null),
-      predictionsService.getBattersByGamePk(form.gamePk).catch(() => null),
-    ]).then(([pitchers, batters]) => {
+    Promise.allSettled([
+      predictionsService.getPitchersTodayOdds(),
+      predictionsService.getPitchersToday(),
+      predictionsService.getBattersByGamePk(form.gamePk),
+    ]).then(([oddsRes, predRes, battersRes]) => {
       if (cancelled) return;
+      const pitchers = mergePitcherNodes(
+        oddsRes.status === 'fulfilled' ? oddsRes.value : [],
+        predRes.status === 'fulfilled' ? predRes.value : []
+      );
+      const batters = battersRes.status === 'fulfilled' ? battersRes.value : null;
       setCandidates(buildMatchupCandidates({ game: gamesById[form.gamePk], pitchers, batters }));
       setCandLoading(false);
     });
@@ -411,7 +437,41 @@ function AddBetModal({ onClose, onSave, matchups = [], gamesById = {} }) {
 
 // ── Bet row ───────────────────────────────────────────────────────────────────
 
-function BetRow({ bet, onStatus, onRemove, liveTracker, actual }) {
+// Market-line movement for a pending pitcher_prop bet — independent of
+// liveTracker (which only renders once the game itself is in progress).
+function PitcherLineWatch({ watch }) {
+  if (!watch) return null;
+  const { currentLine, currentPrice, preferredBookPrice, preferredBookTitle, dfsLines, trackedLine, trackedOdds, lineMoved, priceMoved } = watch;
+  if (currentLine == null && currentPrice == null && !dfsLines.length) return null;
+
+  return (
+    <div className="bl-live watch" role="status">
+      <span className="bl-live-badge">Line Watch</span>
+      <div className="bl-live-body">
+        {currentLine != null && (
+          <span className="bl-live-metric">
+            Line <strong>{currentLine}</strong>
+            {lineMoved && <span className="bl-live-note"> (tracked {trackedLine})</span>}
+          </span>
+        )}
+        {currentPrice != null && (
+          <span className="bl-live-target">
+            {fmtOdds(currentPrice)}
+            {priceMoved && <span className="bl-live-note"> (was {fmtOdds(trackedOdds)})</span>}
+          </span>
+        )}
+        {preferredBookPrice != null && (
+          <span className="bl-live-tag">{preferredBookTitle} {fmtOdds(preferredBookPrice)}</span>
+        )}
+        {dfsLines.map(d => (
+          <span key={`${d.title}-${d.line}`} className="bl-live-tag">DFS · {d.title} {d.line}</span>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function BetRow({ bet, onStatus, onRemove, liveTracker, actual, lineWatch }) {
   const [open, setOpen] = useState(false);
   const isPlayerProp = bet.grade?.type === 'pitcher_prop' || bet.grade?.type === 'batter_prop';
   const pl = betPL(bet);
@@ -421,6 +481,7 @@ function BetRow({ bet, onStatus, onRemove, liveTracker, actual }) {
   return (
     <div className={`bl-row corr-${bet.correlation} status-${bet.status}${liveTracker ? ' is-live' : ''}`}>
       {liveTracker && <LiveBetTracker tracker={liveTracker} />}
+      <PitcherLineWatch watch={lineWatch} />
       <div className="bl-row-main">
         {/* Correlation badge */}
         <span className={`bl-corr-badge corr-${bet.correlation}`}>
@@ -540,7 +601,7 @@ const CORR_FILTERS = [
 
 export default function BetLibrary() {
   const navigate = useNavigate();
-  const { isAuthenticated, hasAdminToolsAccess, loading } = useAuth();
+  const { isAuthenticated, loading, user } = useAuth();
 
   const [bets, setBets]       = useState([]);
   const [busy, setBusy]       = useState(true);
@@ -552,21 +613,25 @@ export default function BetLibrary() {
   const [loadError, setLoadError] = useState(null);
   const [liveByPk, setLiveByPk] = useState({}); // gamePk → { game, boxscore, batters, pitchers }
   const [propActuals, setPropActuals] = useState({}); // betId → actual stat the player got
+  const [pitcherOddsByPk, setPitcherOddsByPk] = useState({}); // gamePk → /pitchers/today/odds game node
 
   useEffect(() => { window.scrollTo(0, 0); }, []);
 
-  // Today's slate → matchup suggestions + game rows for the Track-a-bet modal
+  // Today's slate → matchup suggestions + game rows for the Track-a-bet modal.
+  // The full slate + odds come from the ungated /today/odds; released /today
+  // rows (prediction + scout_ai, 2h pre-pitch) are layered on top per game.
   useEffect(() => {
     const isFinalRow = (s = '') => ['final', 'game over', 'completed'].includes(s.toLowerCase());
-    predictionsService.getToday()
-      .then(rows => {
-        const list = Array.isArray(rows) ? rows : [];
-        const byId = {};
-        for (const r of list) {
+    Promise.allSettled([predictionsService.getTodayOdds(), predictionsService.getToday()])
+      .then(([oddsRes, predRes]) => {
+        const asList = res => (res.status === 'fulfilled' && Array.isArray(res.value) ? res.value : []);
+        const merged = new Map(); // insertion order = API slate order
+        for (const r of [...asList(oddsRes), ...asList(predRes)]) {
           const pk = r.game_pk ?? r.id;
-          if (pk != null) byId[pk] = r;
+          if (pk != null) merged.set(pk, { ...merged.get(pk), ...r });
         }
-        setGamesById(byId);
+        const list = [...merged.values()];
+        setGamesById(Object.fromEntries(merged));
         const seen = new Set();
         const opts = list
           .filter(r => r.away_team_id && r.home_team_id &&
@@ -584,15 +649,13 @@ export default function BetLibrary() {
       .catch(() => { setMatchups([]); setGamesById({}); });
   }, []);
 
-  // Admin gate
+  // Auth gate — every signed-in user has their own library.
   useEffect(() => {
     if (loading) return;
     if (!isAuthenticated) {
       navigate('/account', { state: { from: { pathname: '/predictions/bet-library' } } });
-      return;
     }
-    if (!hasAdminToolsAccess) navigate('/predictions');
-  }, [loading, isAuthenticated, hasAdminToolsAccess, navigate]);
+  }, [loading, isAuthenticated, navigate]);
 
   const refresh = useCallback(async () => {
     try {
@@ -746,6 +809,60 @@ export default function BetLibrary() {
     return () => { cancelled = true; };
   }, [propSig]);
 
+  // ── Pitcher line watch: current market lines for pending pitcher_prop bets ───
+  // Independent of game live/final status — a line can move before first pitch
+  // too. Polls at most every 5 min, stops once every relevant game is final.
+  const pitcherLineSig = useMemo(
+    () => bets
+      .filter(b => b.status === 'pending' && b.gamePk != null && b.grade?.type === 'pitcher_prop')
+      .map(b => b.gamePk)
+      .sort()
+      .join('|'),
+    [bets]
+  );
+
+  useEffect(() => {
+    const pendingGamePks = new Set(
+      betsRef.current
+        .filter(b => b.status === 'pending' && b.gamePk != null && b.grade?.type === 'pitcher_prop')
+        .map(b => b.gamePk)
+    );
+    if (!pendingGamePks.size) { setPitcherOddsByPk({}); return; }
+
+    let cancelled = false;
+    let id = null;
+
+    const poll = async () => {
+      try {
+        const [oddsRows, todayGames] = await Promise.all([
+          predictionsService.getPitchersTodayOdds().catch(() => []),
+          scheduleService.getTodayGames({ ttl: 0 }).catch(() => []),
+        ]);
+        if (cancelled) return;
+        const byPk = {};
+        for (const g of (Array.isArray(oddsRows) ? oddsRows : [])) {
+          if (g?.game_pk != null) byPk[g.game_pk] = g;
+        }
+        setPitcherOddsByPk(byPk);
+
+        // Stop polling once every pending pitcher-prop bet's game is final.
+        const gamesByPk = {};
+        for (const g of (Array.isArray(todayGames) ? todayGames : [])) {
+          const pk = g.game_pk ?? g.id;
+          if (pk != null) gamesByPk[pk] = g;
+        }
+        const allFinal = [...pendingGamePks].every(pk => gamesByPk[pk] && isGameFinal(gamesByPk[pk]));
+        if (allFinal && id != null) clearInterval(id);
+      } catch {
+        // Non-fatal — next poll retries.
+      }
+    };
+
+    poll();
+    id = setInterval(poll, 5 * 60 * 1000);
+    return () => { cancelled = true; clearInterval(id); };
+  }, [pitcherLineSig]);
+
   const handleAdd = useCallback(async (data) => {
     try { await betLibraryService.add(data); }
     catch (err) { setLoadError(err?.message || 'Failed to save the bet.'); }
@@ -778,22 +895,14 @@ export default function BetLibrary() {
   const summary = useMemo(() => summarize(corrBets), [corrBets]);
   const corrLabel = corr === 'all' ? 'all bets' : `${corr} bets`;
 
-  if (loading || !isAuthenticated || !hasAdminToolsAccess) return null;
+  if (loading || !isAuthenticated) return null;
 
   return (
     <div className="predictions-page">
-      {/* Header */}
-      <div className="predictions-header">
-        <div className="predictions-header-inner">
-          <h1>Bet Library</h1>
-          <PredictionsNav />
-        </div>
-      </div>
-
       <div className="predictions-content">
         <div className="bl-toolbar">
           <div className="bl-toolbar-copy">
-            <span className="bl-admin-tag">Admin · P&amp;L Tracker</span>
+            <span className="bl-admin-tag">Your P&amp;L Tracker</span>
             <p className="bl-toolbar-sub">
               A library of the bets you've taken or watchlisted — with the Scout AI prompt, odds, and
               model probability captured at pick time. Flat 1-unit staking; ROI is computed from the odds.
@@ -904,6 +1013,9 @@ export default function BetLibrary() {
                 actual={(bet.gamePk != null && liveByPk[bet.gamePk]
                   ? getPlayerPropActual(bet, liveByPk[bet.gamePk])
                   : null) ?? propActuals[bet.id] ?? null}
+                lineWatch={bet.status === 'pending' && bet.grade?.type === 'pitcher_prop'
+                  ? getPitcherLineWatch(bet, pitcherOddsByPk, user?.preferredBook)
+                  : null}
               />
             ))}
           </div>

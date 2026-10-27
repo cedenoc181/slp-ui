@@ -35,10 +35,12 @@ function AccountPage() {
 
   useEffect(() => {
     window.scrollTo(0, 0);
+    // Signed-in users land on the Terminal, unless a protected route (or
+    // /upgrade) sent them here — then return them to where they were headed.
     if (!loading && isAuthenticated) {
-      navigate('/account/settings');
+      navigate(redirectedFrom || '/terminal', { replace: true });
     }
-  }, [isAuthenticated, loading, navigate]);
+  }, [isAuthenticated, loading, navigate, redirectedFrom]);
 
   const handleLogin = async (e) => {
     e.preventDefault();

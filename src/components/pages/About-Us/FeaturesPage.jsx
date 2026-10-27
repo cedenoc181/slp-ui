@@ -63,7 +63,7 @@ function FeaturesPage() {
         'Games behind calculations',
         'Playoff scenarios'
       ],
-      link: '/standings',
+      link: '/mlb-standings',
       access: 'free'
     },
     {
@@ -195,10 +195,13 @@ function FeaturesPage() {
   return (
     <section className="features-page">
       <div className="container">
-        <h1 className="page-title">Platform Features</h1>
-        <p className="page-subtitle">
-          Discover the tools and resources that power your baseball research on Sandlot Picks Analytics
-        </p>
+        <div className="features-hero">
+          <p className="page-eyebrow">{'// THE FULL TOOLKIT'}</p>
+          <h1 className="page-title">Platform Features</h1>
+          <p className="page-subtitle">
+            Discover the tools and resources that power your baseball research on Sandlot Picks Analytics
+          </p>
+        </div>
 
         {/* Features Grid */}
         <div className="features-grid">
@@ -233,7 +236,7 @@ function FeaturesPage() {
           <h2>Ready to Dive In?</h2>
           <p>Start exploring MLB analytics with our free tools, or create an account to unlock the full suite.</p>
           <div className="cta-buttons">
-            <Link to="/standings" className="cta-btn primary" onClick={() => window.scrollTo(0, 0)}>
+            <Link to="/mlb-standings" className="cta-btn primary" onClick={() => window.scrollTo(0, 0)}>
               View MLB Standings
             </Link>
             <Link to="/glossary" className="cta-btn secondary" onClick={() => window.scrollTo(0, 0)}>

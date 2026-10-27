@@ -1,6 +1,6 @@
 /* ============================================================
    BET LIBRARY — Admin P&L Tracker
-   Shares the predictions dark theme (#121212 / #1e1e1e / indigo #6366f1).
+   Shares the Sandlot terminal theme (#0d1117 / #161b22 / blue #64B5F6 / red #C8102E).
    Prefix: bl-
    ============================================================ */
 
@@ -19,9 +19,9 @@
   font-weight: 800;
   letter-spacing: 0.12em;
   text-transform: uppercase;
-  color: #818cf8;
-  background: rgba(99, 102, 241, 0.12);
-  border: 1px solid rgba(99, 102, 241, 0.3);
+  color: #64B5F6;
+  background: rgba(100, 181, 246, 0.12);
+  border: 1px solid rgba(100, 181, 246, 0.3);
   border-radius: 20px;
   padding: 0.25rem 0.7rem;
   margin-bottom: 0.65rem;
@@ -50,10 +50,10 @@
 .bl-btn:disabled { opacity: 0.45; cursor: not-allowed; }
 
 .bl-btn.primary {
-  background: #6366f1;
+  background: var(--cta-color, #C8102E);
   color: #fff;
 }
-.bl-btn.primary:hover:not(:disabled) { background: #585be6; }
+.bl-btn.primary:hover:not(:disabled) { background: var(--cta-hover, #E31837); }
 
 .bl-btn.ghost {
   background: rgba(255, 255, 255, 0.05);
@@ -86,7 +86,7 @@
 }
 
 .bl-stat-card {
-  background: #1e1e1e;
+  background: #161b22;
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 14px;
   padding: 1.1rem 1.2rem;
@@ -159,8 +159,8 @@
 .bl-filter-btn:hover { color: rgba(255, 255, 255, 0.85); background: rgba(255, 255, 255, 0.07); }
 .bl-filter-btn.active {
   color: #fff;
-  background: rgba(99, 102, 241, 0.18);
-  border-color: rgba(99, 102, 241, 0.4);
+  background: rgba(100, 181, 246, 0.18);
+  border-color: rgba(100, 181, 246, 0.4);
 }
 .bl-filter-btn.status.active {
   background: rgba(255, 255, 255, 0.1);
@@ -174,7 +174,7 @@
   border-radius: 10px;
   padding: 0.05rem 0.4rem;
 }
-.bl-filter-btn.active .bl-filter-count { color: #c7c9ff; background: rgba(99, 102, 241, 0.25); }
+.bl-filter-btn.active .bl-filter-count { color: #8ec8f6; background: rgba(100, 181, 246, 0.25); }
 
 /* ── List + rows ──────────────────────────────────────────── */
 .bl-list {
@@ -184,7 +184,7 @@
 }
 
 .bl-row {
-  background: #1e1e1e;
+  background: #161b22;
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 14px;
   overflow: hidden;
@@ -213,9 +213,9 @@
   padding: 0.28rem 0.5rem;
 }
 .bl-corr-badge.corr-taken {
-  color: #818cf8;
-  background: rgba(99, 102, 241, 0.15);
-  border: 1px solid rgba(99, 102, 241, 0.3);
+  color: #64B5F6;
+  background: rgba(100, 181, 246, 0.15);
+  border: 1px solid rgba(100, 181, 246, 0.3);
 }
 .bl-corr-badge.corr-watchlist {
   color: rgba(255, 255, 255, 0.55);
@@ -245,7 +245,7 @@
   font-size: 0.72rem;
 }
 .bl-row-market {
-  color: #c7c9ff;
+  color: #8ec8f6;
   font-weight: 600;
 }
 .bl-row-matchup { color: rgba(255, 255, 255, 0.4); }
@@ -286,7 +286,7 @@
   border-radius: 50%;
   background: rgba(255, 255, 255, 0.18);
 }
-.bl-conf-dot.filled { background: #6366f1; }
+.bl-conf-dot.filled { background: #64B5F6; }
 
 .bl-status-pill {
   flex-shrink: 0;
@@ -344,8 +344,8 @@
   display: flex;
   flex-direction: column;
   gap: 0.4rem;
-  background: rgba(99, 102, 241, 0.06);
-  border: 1px solid rgba(99, 102, 241, 0.15);
+  background: rgba(100, 181, 246, 0.06);
+  border: 1px solid rgba(100, 181, 246, 0.15);
   border-radius: 10px;
   padding: 0.8rem 0.9rem;
 }
@@ -417,7 +417,7 @@
   gap: 0.5rem;
   text-align: center;
   padding: 3.5rem 1rem;
-  background: #1a1a1a;
+  background: #161b22;
   border: 1px dashed rgba(255, 255, 255, 0.1);
   border-radius: 16px;
 }
@@ -448,7 +448,7 @@
 .bl-modal {
   width: 100%;
   max-width: 560px;
-  background: #1c1c1c;
+  background: #161b22;
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 18px;
   overflow: hidden;
@@ -509,7 +509,7 @@
 }
 
 .bl-input {
-  background: #121212;
+  background: #0d1117;
   border: 1px solid rgba(255, 255, 255, 0.12);
   border-radius: 9px;
   padding: 0.6rem 0.75rem;
@@ -519,7 +519,7 @@
   transition: border-color 0.15s ease;
   font-family: inherit;
 }
-.bl-input:focus { outline: none; border-color: rgba(99, 102, 241, 0.6); }
+.bl-input:focus { outline: none; border-color: rgba(100, 181, 246, 0.6); }
 .bl-input::placeholder { color: rgba(255, 255, 255, 0.28); }
 .bl-textarea { resize: vertical; line-height: 1.5; }
 select.bl-input { appearance: none; cursor: pointer; }
@@ -531,14 +531,14 @@ select.bl-input { appearance: none; cursor: pointer; }
   flex-shrink: 0;
   font-size: 0.72rem;
   font-weight: 600;
-  color: #818cf8;
+  color: #64B5F6;
   background: transparent;
   border: none;
   cursor: pointer;
   padding: 0.2rem 0.1rem;
   white-space: nowrap;
 }
-.bl-link-btn:hover { color: #a5a8ff; text-decoration: underline; }
+.bl-link-btn:hover { color: #8ec8f6; text-decoration: underline; }
 
 /* Selection typeahead combobox */
 .bl-combo { position: relative; }
@@ -550,7 +550,7 @@ select.bl-input { appearance: none; cursor: pointer; }
   z-index: 20;
   max-height: 260px;
   overflow-y: auto;
-  background: #161616;
+  background: #0d1117;
   border: 1px solid rgba(255, 255, 255, 0.14);
   border-radius: 10px;
   box-shadow: 0 12px 32px rgba(0, 0, 0, 0.5);
@@ -575,7 +575,7 @@ select.bl-input { appearance: none; cursor: pointer; }
   text-align: left;
   transition: background 0.12s ease;
 }
-.bl-combo-item:hover { background: rgba(99, 102, 241, 0.14); }
+.bl-combo-item:hover { background: rgba(100, 181, 246, 0.14); }
 
 /* Scout AI's recommended side — highlighted so the lean is easy to spot */
 .bl-combo-item.is-scout {
@@ -611,7 +611,7 @@ select.bl-input { appearance: none; cursor: pointer; }
   font-weight: 700;
   letter-spacing: 0.04em;
   text-transform: uppercase;
-  color: #818cf8;
+  color: #64B5F6;
 }
 .bl-combo-item-nums { display: flex; align-items: center; gap: 0.6rem; flex-shrink: 0; }
 .bl-combo-odds { font-size: 0.82rem; font-weight: 700; }
@@ -643,8 +643,8 @@ select.bl-input { appearance: none; cursor: pointer; }
 .bl-seg-btn:hover { color: #fff; }
 .bl-seg-btn.active.corr-taken {
   color: #fff;
-  background: rgba(99, 102, 241, 0.2);
-  border-color: rgba(99, 102, 241, 0.5);
+  background: rgba(100, 181, 246, 0.2);
+  border-color: rgba(100, 181, 246, 0.5);
 }
 .bl-seg-btn.active.corr-watchlist {
   color: #fff;
@@ -721,6 +721,10 @@ select.bl-input { appearance: none; cursor: pointer; }
 .bl-live.tone-good { background: rgba(74, 222, 128, 0.1);  border-bottom-color: rgba(74, 222, 128, 0.32); }
 .bl-live.tone-bad  { background: rgba(248, 113, 113, 0.11); border-bottom-color: rgba(248, 113, 113, 0.34); }
 
+/* Line Watch — informational, not urgent like LIVE, so blue not red */
+.bl-live.watch { background: rgba(100, 181, 246, 0.07); border-bottom-color: rgba(100, 181, 246, 0.22); }
+.bl-live.watch .bl-live-badge { color: #64B5F6; }
+
 .bl-live-badge {
   display: inline-flex;
   align-items: center;
@@ -747,10 +751,10 @@ select.bl-input { appearance: none; cursor: pointer; }
 
 .bl-live-inning {
   font-size: 0.72rem;
-  color: #cbd5e1;
+  color: #e6edf3;
   white-space: nowrap;
 }
-.bl-live-half { color: #94a3b8; text-transform: uppercase; font-size: 0.64rem; }
+.bl-live-half { color: #8b949e; text-transform: uppercase; font-size: 0.64rem; }
 
 .bl-live-body {
   display: flex;
@@ -760,13 +764,13 @@ select.bl-input { appearance: none; cursor: pointer; }
   margin-left: auto;
 }
 
-.bl-live-metric { color: #e2e8f0; }
+.bl-live-metric { color: #e6edf3; }
 .bl-live-metric strong { font-size: 1.05rem; font-weight: 800; color: #fff; margin-right: 0.15rem; }
 
 .bl-live-target {
   font-size: 0.72rem;
   font-weight: 700;
-  color: #cbd5e1;
+  color: #e6edf3;
   padding: 0.1rem 0.45rem;
   border-radius: 5px;
   background: rgba(255, 255, 255, 0.08);
@@ -774,12 +778,12 @@ select.bl-input { appearance: none; cursor: pointer; }
 }
 
 .bl-live-score { display: inline-flex; align-items: center; gap: 0.4rem; font-variant-numeric: tabular-nums; }
-.bl-live-team { color: #b6c0d0; }
-.bl-live-team strong { color: #e2e8f0; }
+.bl-live-team { color: #8b949e; }
+.bl-live-team strong { color: #e6edf3; }
 .bl-live-team.lead strong { color: #fff; }
-.bl-live-team.pick { color: #fbbf24; }
-.bl-live-team.pick strong { color: #fbbf24; }
-.bl-live-score-sep { color: #64748b; }
+.bl-live-team.pick { color: #f3c94a; }
+.bl-live-team.pick strong { color: #f3c94a; }
+.bl-live-score-sep { color: #8b949e; }
 
 .bl-live-tag {
   font-size: 0.66rem;
@@ -789,12 +793,12 @@ select.bl-input { appearance: none; cursor: pointer; }
   padding: 0.12rem 0.45rem;
   border-radius: 5px;
   background: rgba(255, 255, 255, 0.08);
-  color: #cbd5e1;
+  color: #e6edf3;
 }
 .bl-live.tone-good .bl-live-tag { background: rgba(74, 222, 128, 0.18);  color: #4ade80; }
 .bl-live.tone-bad  .bl-live-tag { background: rgba(248, 113, 113, 0.18); color: #f87171; }
 
-.bl-live-note { font-size: 0.68rem; color: #94a3b8; font-style: italic; }
+.bl-live-note { font-size: 0.68rem; color: #8b949e; font-style: italic; }
 
 @media (max-width: 680px) {
   .bl-live-body { margin-left: 0; width: 100%; }

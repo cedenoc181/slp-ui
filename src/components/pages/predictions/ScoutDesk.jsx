@@ -1,7 +1,6 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../../context/AuthContext';
-import PredictionsNav from './PredictionsNav';
 import { buildScoutDesk, getScoutDeskPerformance, buildAutopsy, toPct } from '../../../data/services/scoutDesk';
 import { WarRoom, CONSENSUS_META, isGame, toDrawerPlay, fmtOdds, plCls, fmtUnits } from './ScoutWarRoom';
 import { SHOW_AUDIT_SUMMARY } from '../../../data/constants/featureFlags';
@@ -405,13 +404,6 @@ export default function ScoutDesk() {
 
   return (
     <div className="predictions-page">
-      <div className="predictions-header">
-        <div className="predictions-header-inner">
-          <h1>Scout AI</h1>
-          <PredictionsNav />
-        </div>
-      </div>
-
       <div className="predictions-content">
         <div className="sd-desk-head">
           <div>

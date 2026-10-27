@@ -1,8 +1,8 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../../context/AuthContext';
-import PredictionsNav from './PredictionsNav';
 import trustLedgerService from '../../../data/services/trustLedgerService';
+import { getEliminatedMlbIds } from '../../../data/services/postseasonStatus';
 import { TEAM_METADATA } from '../../../data/constants/apiConstants';
 import batterPropIcon from '../../../assets/icons/batter-prop.png';
 import pitcherPropIcon from '../../../assets/icons/pitcher-prop.png';
@@ -146,14 +146,17 @@ function RecordSplitsPanel({ splits }) {
 }
 
 // ── Row ──────────────────────────────────────────────────────────────────────
-function TrustTableRow({ team, rank, postseason }) {
+function TrustTableRow({ team, rank, postseason, eliminated }) {
   const [expanded, setExpanded] = useState(false);
   const meta = findTeamMeta(team.team);
   const name = meta ? nicknameOf(meta.name) : team.team;
+  // Postseason: a club knocked out of the bracket reads "eliminated"; one still
+  // alive but off today keeps "no game today".
+  const noGameText = postseason && meta && eliminated?.has(meta.mlbId) ? 'eliminated' : 'no game today';
 
   let starterCell;
   if (!team.spName) {
-    starterCell = <span className="tl-no-game">no game today</span>;
+    starterCell = <span className="tl-no-game">{noGameText}</span>;
   } else {
     const sp = team.sp;
     const eraCls = sp ? statClass(sp.era, (v) => v <= 3.5, (v) => v >= 5.5) : '';
@@ -179,7 +182,7 @@ function TrustTableRow({ team, rank, postseason }) {
   let bullpenCell;
   const bp = team.bullpen;
   if (!bp) {
-    bullpenCell = <span className="tl-no-game">no game today</span>;
+    bullpenCell = <span className="tl-no-game">{noGameText}</span>;
   } else {
     const eraCls = statClass(bp.era, (v) => v <= 3.6, (v) => v >= 4.6);
     const whipCls = statClass(bp.whip, (v) => v <= 1.2, (v) => v >= 1.4);
@@ -402,6 +405,15 @@ export default function TrustLedger() {
     load(nextPostseason);
   }, [postseason, load]);
 
+  // Eliminated clubs (mlb_team_id) from the postseason bracket — postseason mode only.
+  const [eliminated, setEliminated] = useState(() => new Set());
+  useEffect(() => {
+    if (!postseason) { setEliminated(new Set()); return; }
+    let alive = true;
+    getEliminatedMlbIds(new Date().getFullYear()).then((ids) => { if (alive) setEliminated(ids); });
+    return () => { alive = false; };
+  }, [postseason]);
+
   const sortedTeams = useMemo(() => {
     if (!Array.isArray(teams)) return [];
     return [...teams].sort((a, b) => {
@@ -433,13 +445,6 @@ export default function TrustLedger() {
 
   return (
     <div className="predictions-page">
-      <div className="predictions-header">
-        <div className="predictions-header-inner">
-          <h1>Trust Ledger</h1>
-          <PredictionsNav />
-        </div>
-      </div>
-
       <div className="predictions-content">
         <div className="tl-wrap">
           <header className="tl-page-head">
@@ -516,7 +521,7 @@ export default function TrustLedger() {
                   </thead>
                   <tbody>
                     {sortedTeams.map((t, i) => (
-                      <TrustTableRow key={t.team} team={t} rank={i + 1} postseason={postseason} />
+                      <TrustTableRow key={t.team} team={t} rank={i + 1} postseason={postseason} eliminated={eliminated} />
                     ))}
                   </tbody>
                 </table>

@@ -45,7 +45,7 @@
   padding: 2rem 0;
 }
 
-.page-title {
+.articles-page .page-title {
   font-size: 2.75rem;
   color: var(--article-text-primary);
   margin-bottom: 1rem;
@@ -56,7 +56,7 @@
   letter-spacing: -0.02em;
 }
 
-.page-title::after {
+.articles-page .page-title::after {
   content: '';
   position: absolute;
   bottom: 0;
@@ -68,7 +68,7 @@
   border-radius: 2px;
 }
 
-.page-subtitle {
+.articles-page .page-subtitle {
   font-size: 1.125rem;
   color: var(--article-text-secondary);
   max-width: 600px;
@@ -512,12 +512,12 @@
     padding: 0 1rem;
   }
 
-  .page-title {
+  .articles-page .page-title {
     font-size: 1.75rem;
     padding-bottom: 1rem;
   }
 
-  .page-title::after {
+  .articles-page .page-title::after {
     width: 60px;
   }
 

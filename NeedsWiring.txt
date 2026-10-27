@@ -1480,7 +1480,7 @@ Once confirmed, the FE delete button wires up in a single follow-up.
 
 
 ============================================================
-FEATURE — BET LIBRARY / P&L TRACKER (ADMIN-ONLY)
+FEATURE — BET LIBRARY / P&L TRACKER (ALL SIGNED-IN USERS, 2026-10-26)
 ============================================================
 
 WHAT IT IS

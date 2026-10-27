@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate, useLocation, matchPath } from 'react-router-dom';
 import { trackPageview } from './data/services/analytics';
-import { AuthProvider } from './context/AuthContext';
+import { AuthProvider, useAuth } from './context/AuthContext';
 import { SHOW_ANALYTICS_LAB } from './data/constants/featureFlags';
 
 import ApiTestPage from './components/ApiTestPage';
@@ -81,6 +81,14 @@ import Lab from './components/pages/predictions/Lab';
 import ScoutDesk from './components/pages/predictions/ScoutDesk';
 import TrustLedger from './components/pages/predictions/TrustLedger';
 import UpgradePage from './components/pages/Account/UpgradePage';
+
+// Products directory
+import ProductsPage from './components/pages/Products/ProductsPage';
+import TerminalLanding from './components/pages/Products/TerminalLanding';
+import TerminalPage from './components/pages/Terminal/TerminalPage';
+import TerminalShell from './components/pages/Terminal/TerminalShell';
+import TrustLedgerLanding from './components/pages/Products/TrustLedgerLanding';
+import BetLibraryLanding from './components/pages/Products/BetLibraryLanding';
 import CheckoutSuccessPage from './components/pages/Account/CheckoutSuccessPage';
 
 // styling imports
@@ -125,12 +133,32 @@ import './styles/more-page-styling/contact-page.css';
 import './styles/account-page-styling/account-page.css';
 import './styles/account-page-styling/settings-page.css';
 
+//Products-page-styles//
+import './styles/products-page-styling/products.css';
+
 //Admin-page-styles//
 import './styles/admin-page-styling/admin.css';
 
 // Legal-page-styles//
 import './styles/legal-page-styling/legal.css';
 
+
+// Signed-in visitors land on the Terminal instead of the marketing homepage.
+function HomeRoute() {
+  const { isAuthenticated } = useAuth();
+  return isAuthenticated ? <Navigate to="/terminal" replace /> : <HomePage />;
+}
+
+// Signed-in users get every route inside the Terminal frame (top bar, ticker,
+// rail) — the dashboard at /terminal, any feature page in its main area.
+// Signed-out visitors get the routes as-is under the marketing Header. Nothing
+// renders while a stored session is being restored, so a returning user never
+// sees a page mount outside the frame and then remount inside it.
+function AppFrame({ children }) {
+  const { isAuthenticated, loading } = useAuth();
+  if (loading) return null;
+  return isAuthenticated ? <TerminalShell>{children}</TerminalShell> : children;
+}
 
 // Home page component
 function HomePage() {
@@ -186,6 +214,12 @@ const PAGE_TITLES = [
   { path: '/predictions/lab',          title: 'Lab' },
   { path: '/predictions/scout-desk',   title: 'Scout AI' },
   { path: '/predictions/trust-ledger', title: 'Trust Ledger' },
+  { path: '/products',                title: 'Products' },
+  { path: '/products/predictions',    title: 'Predictions' },
+  { path: '/products/terminal',       title: 'Terminal' },
+  { path: '/terminal',                title: 'Terminal' },
+  { path: '/products/trust-ledger',   title: 'Trust Ledger' },
+  { path: '/products/bet-library',    title: 'Bet Library' },
   { path: '/unsubscribe',             title: 'Unsubscribe' },
   { path: '/verify-email',            title: 'Verify Email' },
 ];
@@ -236,8 +270,9 @@ function App() {
           <Header />
           <FreeWeekBanner />
           <AlertSignInModal />
+          <AppFrame>
           <Routes>
-            <Route path="/" element={<HomePage />} />
+            <Route path="/" element={<HomeRoute />} />
           {/* test route */}
           <Route path="/api-test" element={<ApiTestPage />} />
           {/* More routes */}
@@ -272,13 +307,26 @@ function App() {
           <Route path="/predictions/games" element={<ProtectedRoute require="premium"><GameProps /></ProtectedRoute>} />
           <Route path="/predictions/pitchers" element={<ProtectedRoute require="premium"><PitcherProps /></ProtectedRoute>} />
           <Route path="/predictions/batters" element={<ProtectedRoute require="premium"><BatterProps /></ProtectedRoute>} />
-          <Route path="/predictions/bet-library" element={<ProtectedRoute require="admin-tools"><BetLibrary /></ProtectedRoute>} />
+          <Route path="/predictions/bet-library" element={<ProtectedRoute><BetLibrary /></ProtectedRoute>} />
           <Route path="/predictions/lab" element={<ProtectedRoute require="admin-tools"><Lab /></ProtectedRoute>} />
           <Route path="/predictions/scout-desk" element={<ProtectedRoute require="premium"><ScoutDesk /></ProtectedRoute>} />
           {/* Not premium-gated at the route level: the premium/admin/early-access
               allowlist decision is server-side (403), so any authenticated user can
               land here and TrustLedger itself renders the locked/upsell state on 403. */}
           <Route path="/predictions/trust-ledger" element={<ProtectedRoute><TrustLedger /></ProtectedRoute>} />
+
+          {/* Products directory — public, every product gets its own landing page */}
+          <Route path="/products" element={<ProductsPage />} />
+          {/* Alias of /predictions — kept so the Products directory can nest its
+              URL, without moving the canonical /predictions route (other pages
+              link straight to /predictions and its /predictions/* sub-routes). */}
+          <Route path="/products/predictions" element={<PredictionsOverview />} />
+          <Route path="/products/terminal" element={<TerminalLanding />} />
+
+          {/* Terminal — the logged-in dashboard (free + premium panels) */}
+          <Route path="/terminal" element={<ProtectedRoute><TerminalPage /></ProtectedRoute>} />
+          <Route path="/products/trust-ledger" element={<TrustLedgerLanding />} />
+          <Route path="/products/bet-library" element={<BetLibraryLanding />} />
 
           {/* Education routes */}
           <Route path="/glossary" element={<Glossary />} />
@@ -311,6 +359,7 @@ function App() {
           {/* 404 Catch-all route - must be last */}
           <Route path="*" element={<NotFound />} />
         </Routes>
+          </AppFrame>
         <Footer />
       </div>
       </AuthProvider>

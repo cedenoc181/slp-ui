@@ -4,14 +4,10 @@
 // without removing the underlying code. The corresponding routes in
 // App.jsx are left active so direct URLs / bookmarks still resolve.
 
-// Admin tools (Bet Library, Lab) under /predictions are normally admin-only.
-// These specific (non-admin) user IDs are ALSO granted access. Used by the
-// `admin-tools` ProtectedRoute mode, the predictions nav, and each page's gate.
-//
-// IMPORTANT — backend dependency: the Bet Library persists via the admin-gated
-// endpoints /api/v1/bet-library/*. Granting a non-admin here ALSO requires the
-// server to allow that user_id on those routes, otherwise their save/load 401s.
-// See NeedsWiring.txt → "BET LIBRARY ... NON-ADMIN ACCESS GRANT".
+// Admin tools (Lab) under /predictions are normally admin-only. These specific
+// (non-admin) user IDs are ALSO granted access. Used by the `admin-tools`
+// ProtectedRoute mode, the predictions nav, and the page's gate.
+// (The Bet Library is open to every signed-in user — no allowlist needed.)
 export const ADMIN_TOOL_USER_IDS = [16];
 
 // The server has stopped returning the structured `audit` object on Scout Desk

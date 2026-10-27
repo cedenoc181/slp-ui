@@ -576,7 +576,9 @@ function MLBSchedule() {
       setPredictions(predCacheRef.current);
     }
 
-    predictionsService.getToday().then(data => {
+    // Odds-only, ungated endpoint — shows the full day's slate instead of
+    // only games within 2h of first pitch (getToday()'s release gate).
+    predictionsService.getTodayOdds().then(data => {
       if (!Array.isArray(data)) return;
       const map = {};
       data.forEach(p => { if (p.game_pk) map[p.game_pk] = p; });

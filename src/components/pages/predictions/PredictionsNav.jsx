@@ -10,25 +10,30 @@ const LINKS = [
   { to: '/predictions/batters',    label: 'Batter Props' },
 ];
 
-export default function PredictionsNav() {
-  const { hasAdminToolsAccess, isPremium } = useAuth();
-  const links = [...LINKS];
+// The props pages show just their own three tabs.
+const PROPS_PATHS = ['/predictions/games', '/predictions/pitchers', '/predictions/batters'];
 
-  // Set-apart tools on the right: admin tools (admins + explicitly-granted
-  // users) plus Trust Ledger — a reference tool, not a pick board, shown only
-  // to users who actually have Scout AI access (same gate as its route),
-  // not teased to everyone the way the standard tabs above are.
+export default function PredictionsNav({ propsOnly = false }) {
+  const { isAuthenticated, hasAdminToolsAccess, isPremium } = useAuth();
+  const links = propsOnly ? LINKS.filter(l => PROPS_PATHS.includes(l.to)) : [...LINKS];
+
+  // Set-apart tools on the right: the Bet Library (every signed-in user has
+  // their own), the Lab (admins + explicitly-granted users), plus Trust Ledger —
+  // a reference tool, not a pick board, shown only to users who actually have
+  // Scout AI access (same gate as its route), not teased to everyone the way
+  // the standard tabs above are.
   const extraLinks = [];
+  if (isAuthenticated) {
+    extraLinks.push({ to: '/predictions/bet-library', label: 'Bet Library' });
+  }
   if (hasAdminToolsAccess) {
-    extraLinks.push(
-      { to: '/predictions/bet-library', label: 'Bet Library' },
-      { to: '/predictions/lab',         label: 'Lab' },
-    );
+    extraLinks.push({ to: '/predictions/lab', label: 'Lab' });
   }
   if (isPremium) {
     extraLinks.push({ to: '/predictions/trust-ledger', label: 'Trust Ledger' });
   }
-  links.push(...extraLinks.map((l, i) => ({ ...l, admin: true, groupStart: i === 0 })));
+  // The props pages leave the set-apart tools out entirely.
+  if (!propsOnly) links.push(...extraLinks.map((l, i) => ({ ...l, admin: true, groupStart: i === 0 })));
 
   return (
     <nav className="predictions-nav">

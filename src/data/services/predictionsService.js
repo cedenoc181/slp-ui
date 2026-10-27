@@ -19,7 +19,8 @@ function authOptions(options = {}) {
  * {
  *   game_pk, date, home_team_id, away_team_id, home_team_name, away_team_name,
  *   home_sp_name, away_sp_name, game_time, status, season, season_type,
- *   odds: { moneyline_home, moneyline_away, spread_home, spread_line, total, ... } | null,
+ *   odds: { home_moneyline_game, away_moneyline_game, home_run_line_game,
+ *           away_run_line_game, over_under_line_game, ... } | null,
  *   prediction: { p_home_win, predicted_margin, predicted_total, ... } | null
  * }
  */
@@ -31,6 +32,17 @@ class PredictionsService {
    */
   async getToday(options = {}) {
     return api.get('/predictions/today', authOptions(options));
+  }
+
+  /**
+   * Market odds for every game today — NOT release-gated. Same rows as
+   * getToday() minus model output (no prediction / scout_ai), so the full
+   * slate's lines are available before predictions unlock 2h pre-pitch.
+   * GET /predictions/today/odds
+   * @returns {Promise<Array>}
+   */
+  async getTodayOdds(options = {}) {
+    return api.get('/predictions/today/odds', options);
   }
 
   /**
@@ -166,6 +178,16 @@ class PredictionsService {
    */
   async getPitchersToday(options = {}) {
     return api.get('/predictions/pitchers/today', authOptions(options));
+  }
+
+  /**
+   * Both starters' prop lines (sportsbook + DFS) for every game today — NOT
+   * release-gated, no model output. Projections/EV/scout_ai stay on
+   * getPitchersToday() (gated per starter, 2h pre-pitch).
+   * GET /predictions/pitchers/today/odds
+   */
+  async getPitchersTodayOdds(options = {}) {
+    return api.get('/predictions/pitchers/today/odds', options);
   }
 
   /**

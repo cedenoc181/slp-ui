@@ -84,7 +84,7 @@ export default function UpgradePage() {
 
       {/* Hero */}
       <div className="upgrade-hero">
-        <span className="upgrade-eyebrow">Premium Access</span>
+        <span className="upgrade-eyebrow">{'// PREMIUM ACCESS'}</span>
         <h1 className="upgrade-title">
           The full predictions suite.<br />
           <span className="upgrade-title--accent">Pick your plan.</span>

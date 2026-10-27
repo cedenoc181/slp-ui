@@ -1178,8 +1178,7 @@ export default function PitcherProps() {
     <div className="predictions-page">
       <div className="predictions-header">
         <div className="predictions-header-inner">
-          <h1>Pitcher Props</h1>
-          <PredictionsNav />
+          <PredictionsNav propsOnly />
         </div>
       </div>
 

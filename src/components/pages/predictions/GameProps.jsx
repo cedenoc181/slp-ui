@@ -1224,8 +1224,7 @@ export default function GameProps() {
       {/* Header */}
       <div className="predictions-header">
         <div className="predictions-header-inner">
-          <h1>Game Props</h1>
-          <PredictionsNav />
+          <PredictionsNav propsOnly />
         </div>
       </div>
 

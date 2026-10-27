@@ -1,8 +1,8 @@
 /**
  * Bet Library service.
  *
- * Admin-only "track bets you like" feature. Lets an admin save picks they've
- * either *taken* or on their *watchlist* (their correlation to the bet) along
+ * Per-user "track bets you like" feature. Lets any signed-in user save picks
+ * they've either *taken* or on their *watchlist* (their correlation to the bet) along
  * with the Scout AI prompt, odds, model probability, EV, and confidence —
  * building a flat 1-unit profit/loss + ROI record across all picks.
  *
@@ -35,21 +35,37 @@
  * }
  */
 
-import { API_BASE_URL } from '../config/apiConfig';
+import { API_BASE_URL, IS_DEV, LOCAL_URL } from '../config/apiConfig';
 import { getAccessToken } from './userAuthService';
 
 const LS_KEY   = 'spa_bet_library_v1';
 const API_BASE = '/api/v1/bet-library';
 
-// Authenticated fetch — injects the admin Bearer token and reads the `detail`
+// Mirrors apiService.js's local→remote fallback (dev only). betLibraryFetch
+// can't just reuse ApiService's request() since that layer doesn't attach
+// auth headers for this user-scoped route — but it still needs the same
+// local-first behavior, or a running local backend never actually gets hit.
+async function fetchWithLocalFallback(endpoint, config) {
+  if (!IS_DEV || !LOCAL_URL) {
+    return fetch(`${API_BASE_URL}${endpoint}`, config);
+  }
+  try {
+    return await fetch(`${LOCAL_URL}${endpoint}`, config);
+  } catch (err) {
+    if (err instanceof TypeError) return fetch(`${API_BASE_URL}${endpoint}`, config); // local unreachable
+    throw err;
+  }
+}
+
+// Authenticated fetch — injects the user's Bearer token and reads the `detail`
 // error field, mirroring alertsService / campaignsService (the apiService cache
-// layer doesn't attach auth, so admin-gated routes need this).
+// layer doesn't attach auth, so user-scoped routes need this).
 async function betLibraryFetch(endpoint, method = 'GET', body = null) {
   const token = getAccessToken();
   const headers = { 'Content-Type': 'application/json' };
   if (token) headers['Authorization'] = `Bearer ${token}`;
 
-  const res = await fetch(`${API_BASE_URL}${endpoint}`, {
+  const res = await fetchWithLocalFallback(endpoint, {
     method,
     headers,
     body: body !== null ? JSON.stringify(body) : undefined,
@@ -63,7 +79,7 @@ async function betLibraryFetch(endpoint, method = 'GET', body = null) {
   return data;
 }
 
-// Backend is live: /api/v1/bet-library (camelCase, admin-gated, user-scoped).
+// Backend is live: /api/v1/bet-library (camelCase, any signed-in user, user-scoped).
 // gameStartEpoch is epoch ms; createdAt/settledAt are ISO strings — a true
 // drop-in, so mapRecord needs no remapping. Call migrateLocalToBackend() once
 // to carry over any bets saved on this device.
@@ -229,7 +245,7 @@ class LocalBetLibrary {
   }
 }
 
-// ── REST backend (per-user, admin-gated for now) ──────────────────────────────
+// ── REST backend (per-user, any signed-in user) ───────────────────────────────
 
 class ApiBetLibrary {
   /** GET /api/v1/bet-library — caller's bets, newest first. */

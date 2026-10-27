@@ -188,4 +188,76 @@ export function buildLiveTracker(bet, live) {
   }
 }
 
+// ── pitcher-prop line watch (market movement, independent of game live/final) ──
+//
+// Separate from buildLiveTracker() above: this compares a pending pitcher_prop
+// bet's TRACKED line/price against the CURRENT market from
+// /predictions/pitchers/today/odds — relevant before and during the game, not
+// just while it's live. DFS prices are a flat -137 placeholder, never used
+// here as a price.
+
+function mostCommon(nums) {
+  if (!nums.length) return null;
+  const counts = new Map();
+  for (const n of nums) counts.set(n, (counts.get(n) || 0) + 1);
+  return [...counts.entries()].sort((a, b) => b[1] - a[1])[0][0];
+}
+
+function findOddsPitcher(gameNode, playerId) {
+  if (!gameNode || playerId == null) return null;
+  const sides = [gameNode.away_pitcher, gameNode.home_pitcher];
+  return sides.find(p => p && (p.player_id === playerId)) || null;
+}
+
+/**
+ * Current market line/price for a pending pitcher_prop bet, plus movement vs
+ * the tracked bet. Returns null when the game/starter/stat isn't in the feed.
+ * @param {Object} bet              — tracked bet (grade.playerId/statType/side/line, odds, gamePk)
+ * @param {Object} pitcherOddsByPk  — { [game_pk]: gameNode } from /pitchers/today/odds
+ * @param {string|null} preferredBook — user's preferredBook (platform_key)
+ */
+export function getPitcherLineWatch(bet, pitcherOddsByPk, preferredBook = null) {
+  const meta = bet?.grade;
+  if (!meta || meta.type !== 'pitcher_prop' || bet?.gamePk == null) return null;
+
+  const gameNode = pitcherOddsByPk?.[bet.gamePk];
+  const pitcher = findOddsPitcher(gameNode, meta.playerId);
+  if (!pitcher) return null;
+
+  const sbProps = Array.isArray(pitcher.sportsbook_props) ? pitcher.sportsbook_props : [];
+  const dfsProps = Array.isArray(pitcher.dfs_props) ? pitcher.dfs_props : [];
+  const statSB = sbProps.filter(p => p.stat_type === meta.statType);
+  const statDFS = dfsProps.filter(p => p.stat_type === meta.statType);
+  if (!statSB.length && !statDFS.length) return null;
+
+  const currentLine = statSB.length ? mostCommon(statSB.map(p => p.line)) : null;
+  const sideKey = (meta.side === 'Over' || meta.side === 'over') ? 'over_price' : 'under_price';
+
+  const atLine = statSB.filter(p => currentLine == null || p.line === currentLine);
+  const currentPrice = atLine.reduce((best, p) => {
+    const v = p[sideKey];
+    return v != null && (best == null || v > best) ? v : best;
+  }, null);
+
+  let preferredBookPrice = null, preferredBookTitle = null;
+  if (preferredBook) {
+    const row = atLine.find(p => p.platform_key === preferredBook);
+    if (row && row[sideKey] != null) { preferredBookPrice = row[sideKey]; preferredBookTitle = row.platform_title; }
+  }
+
+  const dfsLines = statDFS.map(p => ({ title: p.platform_title, line: p.line }));
+
+  return {
+    currentLine,
+    currentPrice,
+    preferredBookPrice,
+    preferredBookTitle,
+    dfsLines,
+    trackedLine: meta.line ?? null,
+    trackedOdds: bet.odds ?? null,
+    lineMoved:  currentLine  != null && meta.line != null && currentLine  !== meta.line,
+    priceMoved: currentPrice != null && bet.odds  != null && currentPrice !== bet.odds,
+  };
+}
+
 export default buildLiveTracker;

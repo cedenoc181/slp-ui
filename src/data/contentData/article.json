@@ -1,15 +1,88 @@
 {
   "schema_version": "2.0",
   "site": "sandlotpicks.com",
-  "generated_at": "2026-08-02",
+  "generated_at": "2026-10-20",
   "pagination": {
     "current_page": 1,
     "articles_per_page": 4,
-    "total_articles": 4,
-    "total_pages": 1,
-    "has_more": false
+    "total_articles": 5,
+    "total_pages": 2,
+    "has_more": true
   },
   "articles": [
+    {
+      "id": 8,
+      "title": "Mets at Braves pick 8/11/26",
+      "slug": "mets-at-braves-pick-81126",
+      "author": "Sandlot Picks Team",
+      "date": "2026-08-11",
+      "status": "Final",
+      "tags": [
+        "Mets",
+        "Braves",
+        "totals",
+        "2026",
+        "MLB"
+      ],
+      "summary": "The Mets' top-6 lineup is hitting .869 OPS over their last five games against left-handers, and they'll face one tonight in Perez. Factor in New York's thin bullpen — just four rested arms with a 4.80 ERA — and the model projects 10.29 total runs against an 8.5 line.",
+      "read_time_minutes": 1,
+      "estimated_word_count": 228,
+      "hero_image": {
+        "url": "https://ryrlvrbjpwpecxpjicdo.supabase.co/storage/v1/object/public/post-images/hero/mets-at-braves-pick-81126/1786470183194-img-8655.jpg",
+        "alt": "Mets @ braves"
+      },
+      "content": [
+        {
+          "text": "Mets @ Braves pick of the day!",
+          "type": "heading"
+        },
+        {
+          "text": "The Mets hold the clearest splits advantage: their top-6 OPS of .785 vs LHP is the sharpest lineup signal in this game, comfortably outpacing Atlanta's top-6 OPS of .775 vs McLean's right hand, and New York's L5 OPS of .869 signals the lineup is scorching hot right now.",
+          "type": "paragraph"
+        },
+        {
+          "text": "KEY FACTORS",
+          "type": "subheading"
+        },
+        {
+          "text": "McLean's road ERA of 2.81 and WHIP of 1.03 away from home makes him a markedly different pitcher than his overall numbers suggest — tonight he pitches on the road, which is his comfort zone.\nNYM top-6 hitters carry a .785 OPS vs LHP and a blistering L5 OPS of .869, the hottest offensive profile in this matchup by a significant margin.\nNYM's bullpen has only 4 fully rested arms (ERA 4.80, WHIP 1.315) vs ATL's 6 rested relievers (ERA 3.23, WHIP 1.13, Opp OPS .618) — a meaningful late-game run-prevention edge for Atlanta.\nMets lead the season series 7-4, demonstrating consistent ability to beat this Braves club across multiple contexts this year.",
+          "type": "paragraph"
+        },
+        {
+          "text": "TOTAL LEAN",
+          "type": "subheading"
+        },
+        {
+          "text": "OVER\n\nThe ML model projects 10.29 runs against a posted total of 8.5 — a massive 1.79-run gap — and while both SPs are capable, the Mets' red-hot offense (L5 OPS .869) facing a lefty and NYM's thin, taxed bullpen (4 rested, ERA 4.80) support the case for late-inning runs that push this well past 8.5.",
+          "type": "paragraph"
+        }
+      ],
+      "seo": {
+        "keywords": [
+          "mets vs braves prediction",
+          "over under pick",
+          "mlb totals",
+          "left-handed pitcher splits",
+          "bullpen rest advantages",
+          "baseball analytics",
+          "sandlot picks",
+          "mlb predictions"
+        ],
+        "og_image": "https://ryrlvrbjpwpecxpjicdo.supabase.co/storage/v1/object/public/post-images/hero/mets-at-braves-pick-81126/1786470183194-img-8655.jpg",
+        "title_tag": "Mets vs Braves pick 8/11/26 | Over 8.5 total runs",
+        "canonical_url": "https://www.sandlotpicks.com/sandlot-insider/mets-at-braves-pick-81126",
+        "meta_description": "Mets top-6 hitting .869 OPS vs lefty Perez, thin bullpen. Model projects 10.29 runs on 8.5 line. Over lean from Sandlot Picks."
+      },
+      "affiliate_cta": {
+        "link": "https://www.sandlotpicks.com/upgrade",
+        "context": "Upgrade to premium!",
+        "enabled": true,
+        "platform": "Sandlot Picks"
+      },
+      "affiliate_disclaimer": "Data and predictions provided for informational and entertainment purposes only.",
+      "related_posts": [],
+      "reference_urls": []
+    },
     {
       "id": 7,
       "title": "Three MLB Unders and Moneylines Worth Tracking Today",
@@ -253,94 +326,6 @@
       "affiliate_disclaimer": "Data and predictions provided for informational and entertainment purposes only.",
       "related_posts": [
         "five-batter-props-standing-out-on-todays-mlb-schedule-525",
-        "the-model-sees-nine-runs-in-chicago-and-a-padres-win"
-      ],
-      "reference_urls": []
-    },
-    {
-      "id": 4,
-      "title": "Five Batter Props Standing Out on Today's MLB Schedule 5/25",
-      "slug": "five-batter-props-standing-out-on-todays-mlb-schedule-525",
-      "author": "Sandlot Picks Team",
-      "date": "2026-05-25",
-      "status": "Final",
-      "tags": [
-        "Baseball",
-        "MLB",
-        "batter props",
-        "Sports Betting"
-      ],
-      "summary": "Yandy Díaz has gone 10-for-22 against Kyle Bradish with a 1.273 OPS in that sample, and the model projects 4.02 total bases against a 1.5 line. George Springer is the power upside play — 5.84 projected TB against a pitcher surrendering 1.31 HR/9, with Springer's OPS doubling at home.",
-      "read_time_minutes": 3,
-      "estimated_word_count": 681,
-      "hero_image": {
-        "url": "https://ryrlvrbjpwpecxpjicdo.supabase.co/storage/v1/object/public/post-images/hero/five-batter-props-standing-out-on-todays-mlb-schedule-525/1779730901968-screen-shot-2026-05-25-at-10-32-33-am.png",
-        "alt": ""
-      },
-      "content": [
-        {
-          "text": "Today's Best Batter Props to Target",
-          "type": "heading"
-        },
-        {
-          "text": "Rays vs Orioles: Yandy Diaz",
-          "type": "subheading"
-        },
-        {
-          "text": "Yandy Díaz carries a 0.315 AVG and 0.896 OPS on the road against RHP Kyle Bradish, though his splits show 0.302 AVG and 0.805 OPS away from home. That's offset by his dominant 0.455 AVG and 1.273 OPS in 24 career PA against Bradish—elite familiarity despite the venue.\n\nHis 0.455 H2H average (10 H in 22 AB) and season 0.315 AVG exceed the 1.5 hits line. The ML model projects 1.69 hits. Road splits drag slightly, but career dominance and strong recent form (9 H in last 5 games) support the over.\n\nOn total bases, Díaz's 0.503 season SLG yields ~1.94 TB per game. The ML model projects 4.02 TB against the 1.5 consensus line. H2H splits are sharper: 16 TB in 24 PA (1.5 TB per PA), with recent outings of 4 TB (05/24), 6 TB (05/19), and 6 TB (05/18). Road splits present a modest headwind but don't offset his season-long offensive consistency.",
-          "type": "paragraph"
-        },
-        {
-          "text": "Diamondbacks vs Giants — Nolan Arenado",
-          "type": "subheading"
-        },
-        {
-          "text": "Arenado's road splits look great (0.220 AVG, 0.700 OPS), but throw in Landen Roupp and everything changes. He's crushing this guy — 0.667 AVG, 1.000 SLG in head-to-head — and our model sees 2.43 hits coming, way above the 0.5 consensus line.\n\nYeah, he's hitting just 0.220 on the road this year, but his track record against Roupp is legit (2 hits in his last 3 at-bats). The model is projecting 4.28 total bases — nearly nine times the consensus 0.5 line. Add in his 0.47 season SLG and the fact he's been racking up 2–4 TB in three of his last five games, and the over case builds fast.\n\nThe line's heavy (−190), so the market's skeptical. But the model edge is real here.",
-          "type": "paragraph"
-        },
-        {
-          "text": "Marlins vs Blue Jays – George Springer",
-          "type": "subheading"
-        },
-        {
-          "text": "Our model says Springer's hitting 2.43 hits tonight—well clear of that 0.5 line. He's consistently making contact at home (.227 AVG, 17 hits in 75 AB). Junk's giving up 9.33 hits per nine with an ugly 5.07 ERA. That's contact-hitter weather.\n\nThe home run projection is 1.25, nearly doubling the consensus 0.5. Springer's raked in two straight games, sitting at 5 HR in his last 34. He's a flyball pitcher's problem, especially when Springer's hitting at home and Junk's serving up fastballs at a 1.31 HR/9 clip.\n\nTotal bases: 5.84 per our model, crushing that 1.5 line. Springer's been on a power tear—6 TB on 05/23, 4 TB on 05/21—and he's torched Junk for 5 TB in three at-bats on 3/16. Playing at home helps; his OPS jumps from .374 season-wide to .758 at the ballpark. Junk's soft fastball approach (6.55 K/9) is tailor-made for what Springer does.",
-          "type": "paragraph"
-        },
-        {
-          "text": "Mariners vs Athletics - Jeff McNeil",
-          "type": "subheading"
-        },
-        {
-          "text": "McNeil owns a ridiculous .533 AVG with 1.267 SLG in 15 career at-bats against Castillo—but here's the thing: he's hitting .267 on the season and went 0-for-3 his last two games. That's real noise. Still, the matchup matters. Castillo's an RHP with a 6.41 ERA, and McNeil hits .278 against righties. Our model spits out 1.67 hits. The market has him at 0.5. That's mispriced.\n\nMcNeil's 0.533 career AVG against Castillo is the headline, and it holds up. Yeah, he's 3-for-18 his last five games overall, but that H2H sample—8 hits in 16 PA—is exactly what you want to see. The RHP matchup (.278 season AVG vs righties) is another layer. A recent 0-for-6 doesn't erase what this guy does to Castillo.\n\nMcNeil's hit 3 homers in 6 career PA against Castillo, and our model projects .71 homeruns. The 0.5 line looks soft. The caveat: he's only got 2 homers in 50 games this season and none at home. Castillo's allowing 1.36 HR/9, though, and McNeil's power history in this matchup is legit—just not overwhelming conviction.\n\nMcNeil's career 1.267 SLG against Castillo (19 TB in 16 PA) crushes the 1.5 line. His season SLG sits at .360 with 58 TB across 50 games—roughly 1.16 TB per game—but the H2H edge and RHP split push this over. Model and matchup point the same way.",
-          "type": "paragraph"
-        }
-      ],
-      "seo": {
-        "keywords": [
-          "yandy diaz props",
-          "nolan arenado props",
-          "jeff mcneil props",
-          "Geroge Springer props",
-          "mlb batter props",
-          "mlb predictions",
-          "head-to-head splits",
-          "baseball analytics",
-          "prop betting edges"
-        ],
-        "og_image": "https://ryrlvrbjpwpecxpjicdo.supabase.co/storage/v1/object/public/post-images/hero/five-batter-props-standing-out-on-todays-mlb-schedule-525/1779730901968-screen-shot-2026-05-25-at-10-32-33-am.png",
-        "title_tag": "MLB Batter Props 5/25: Yandy Díaz, Arenado, Springer, McNeil Picks",
-        "canonical_url": "https://www.sandlotpicks.com/sandlot-insider/five-batter-props-standing-out-on-todays-mlb-schedule-525",
-        "meta_description": "Five high-value batter props standing out on today's MLB schedule, backed by head-to-head splits and model projections. Find the matchups with edges."
-      },
-      "affiliate_cta": {
-        "link": "https://www.sandlotpicks.com/upgrade",
-        "context": "Enjoy a free 7 day pass using code \"FREE7\" At Checkout!",
-        "enabled": true,
-        "platform": "Sandlot Picks"
-      },
-      "affiliate_disclaimer": "Data and predictions provided for informational and entertainment purposes only.",
-      "related_posts": [
-        "three-games-three-bets-worth-making-on-todays-mlb-slate",
         "the-model-sees-nine-runs-in-chicago-and-a-padres-win"
       ],
       "reference_urls": []

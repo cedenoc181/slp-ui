@@ -1,28 +1,30 @@
 /* =============================================
-   Features Page - Light Mode Styling
+   Features Page - Terminal Dark Styling
+   (matches the Products directory color template)
    ============================================= */
 
 /* CSS Variables */
 .features-page {
-  --fp-bg-primary: #FFFFFF;
-  --fp-bg-secondary: #F7F9FC;
-  --fp-bg-card: #FFFFFF;
-  --fp-bg-card-hover: #F7F9FC;
+  --fp-bg-primary: #0d1117;
+  --fp-bg-secondary: #0d1117;
+  --fp-bg-card: #161b22;
+  --fp-bg-card-hover: #161b22;
   --fp-accent: #C8102E;
   --fp-accent-light: #E31837;
-  --fp-text-primary: #1A202C;
-  --fp-text-secondary: #4A5568;
-  --fp-text-muted: #718096;
-  --fp-border: #E2E8F0;
-  --fp-border-hover: #CBD5E0;
-  --fp-success: #38A169;
-  --fp-info: #3182CE;
+  --fp-blue: #64B5F6;
+  --fp-text-primary: #ffffff;
+  --fp-text-secondary: #e6edf3;
+  --fp-text-muted: #8b949e;
+  --fp-border: rgba(255, 255, 255, 0.1);
+  --fp-border-hover: rgba(100, 181, 246, 0.4);
+  --fp-success: #4ade80;
+  --fp-info: #64B5F6;
 }
 
 .features-page {
   min-height: 100vh;
-  padding: 8rem 0 4rem;
-  background: linear-gradient(180deg, #F7F7F9 0%, #FFFFFF 100%);
+  padding: 0 0 4rem;
+  background: #0d1117;
 }
 
 .features-page .container {
@@ -31,37 +33,36 @@
   padding: 0 2rem;
 }
 
-/* Page Title */
-.features-page .page-title {
-  font-size: 3rem;
-  color: #041E42;
-  margin-bottom: 1rem;
+/* Eyebrow + Page Title (matches the Products directory hero exactly) */
+.features-page .features-hero {
   text-align: center;
-  font-weight: 700;
-  position: relative;
-  padding-bottom: 1rem;
+  padding: 5rem 1.5rem 3rem;
+  max-width: 760px;
+  margin: 0 auto;
 }
 
-.features-page .page-title::after {
-  content: '';
-  position: absolute;
-  bottom: 0;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 120px;
-  height: 4px;
-  background: linear-gradient(90deg, var(--fp-accent), var(--fp-accent-light));
-  border-radius: 2px;
+.features-page .page-eyebrow {
+  font-family: 'JetBrains Mono', 'SF Mono', 'Fira Code', monospace;
+  font-size: 0.85rem;
+  color: var(--fp-blue);
+  letter-spacing: 0.04em;
+  margin: 0 0 1rem;
+}
+
+.features-page .page-title {
+  font-family: 'Oswald', -apple-system, BlinkMacSystemFont, sans-serif;
+  font-weight: 700;
+  font-size: 2.75rem;
+  line-height: 1.15;
+  color: #fff;
+  margin: 0 0 1rem;
 }
 
 .features-page .page-subtitle {
-  text-align: center;
-  font-size: 1.2rem;
-  color: #546A7B;
-  margin-bottom: 3rem;
-  max-width: 800px;
-  margin-left: auto;
-  margin-right: auto;
+  font-size: 1.1rem;
+  line-height: 1.6;
+  color: var(--fp-text-muted);
+  margin: 0;
 }
 
 /* Features Grid */
@@ -78,7 +79,7 @@
   padding: 2rem;
   border-radius: 16px;
   border: 1px solid var(--fp-border);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
   transition: all 0.3s ease;
   position: relative;
   display: flex;
@@ -88,7 +89,7 @@
 .features-page .feature-card:hover {
   border-color: var(--fp-border-hover);
   transform: translateY(-4px);
-  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.35);
 }
 
 /* Feature Header */
@@ -105,45 +106,47 @@
   justify-content: center;
   width: 56px;
   height: 56px;
-  background: linear-gradient(135deg, var(--fp-accent) 0%, var(--fp-accent-light) 100%);
+  background: rgba(100, 181, 246, 0.12);
   border-radius: 14px;
   flex-shrink: 0;
 }
 
 .features-page .feature-icon svg {
-  stroke: white;
+  stroke: var(--fp-blue);
 }
 
 /* Access Badges */
 .access-badge {
-  font-size: 0.7rem;
+  font-family: 'JetBrains Mono', 'SF Mono', 'Fira Code', monospace;
+  font-size: 0.65rem;
   font-weight: 600;
-  padding: 0.35rem 0.75rem;
+  padding: 0.3rem 0.65rem;
   border-radius: 20px;
   text-transform: uppercase;
-  letter-spacing: 0.5px;
+  letter-spacing: 0.06em;
 }
 
 .access-badge.free {
-  background: rgba(56, 161, 105, 0.1);
+  background: rgba(74, 222, 128, 0.08);
   color: var(--fp-success);
-  border: 1px solid rgba(56, 161, 105, 0.25);
+  border: 1px solid rgba(74, 222, 128, 0.3);
 }
 
 .access-badge.free-account {
-  background: rgba(49, 130, 206, 0.1);
+  background: rgba(100, 181, 246, 0.08);
   color: var(--fp-info);
-  border: 1px solid rgba(49, 130, 206, 0.25);
+  border: 1px solid rgba(100, 181, 246, 0.3);
 }
 
 .access-badge.premium {
-  background: rgba(200, 16, 46, 0.1);
-  color: var(--fp-accent);
-  border: 1px solid rgba(200, 16, 46, 0.25);
+  background: rgba(243, 201, 74, 0.08);
+  color: #f3c94a;
+  border: 1px solid rgba(243, 201, 74, 0.3);
 }
 
 /* Card Content */
 .features-page .feature-card h3 {
+  font-family: 'Oswald', -apple-system, BlinkMacSystemFont, sans-serif;
   font-size: 1.25rem;
   color: var(--fp-text-primary);
   margin-bottom: 0.75rem;
@@ -180,7 +183,7 @@
   top: 0.5rem;
   width: 6px;
   height: 6px;
-  background: var(--fp-accent);
+  background: var(--fp-blue);
   border-radius: 50%;
 }
 
@@ -188,9 +191,10 @@
 .feature-link {
   display: inline-flex;
   align-items: center;
+  font-family: 'Oswald', -apple-system, BlinkMacSystemFont, sans-serif;
   font-size: 0.9rem;
   font-weight: 600;
-  color: var(--fp-accent);
+  color: var(--fp-blue);
   text-decoration: none;
   margin-top: auto;
   padding-top: 1rem;
@@ -199,19 +203,21 @@
 }
 
 .feature-link:hover {
-  color: var(--fp-accent-light);
+  color: #8ec8f6;
   gap: 0.5rem;
 }
 
 /* CTA Section */
 .features-cta {
-  background: linear-gradient(135deg, #041E42 0%, #0A2F5A 100%);
+  background: #161b22;
+  border: 1px solid var(--fp-border);
   padding: 3rem;
   border-radius: 20px;
   text-align: center;
 }
 
 .features-cta h2 {
+  font-family: 'Oswald', -apple-system, BlinkMacSystemFont, sans-serif;
   font-size: 1.75rem;
   color: #FFFFFF;
   margin-bottom: 0.75rem;
@@ -220,7 +226,7 @@
 
 .features-cta > p {
   font-size: 1.05rem;
-  color: rgba(255, 255, 255, 0.85);
+  color: var(--fp-text-muted);
   margin-bottom: 2rem;
   max-width: 500px;
   margin-left: auto;
@@ -244,23 +250,26 @@
 }
 
 .cta-btn.primary {
-  background: linear-gradient(135deg, var(--fp-accent) 0%, var(--fp-accent-light) 100%);
+  background: var(--fp-accent);
   color: white;
+  box-shadow: 0 4px 20px rgba(200, 16, 46, 0.35);
 }
 
 .cta-btn.primary:hover {
+  background: var(--fp-accent-light);
   transform: translateY(-2px);
   box-shadow: 0 8px 24px rgba(200, 16, 46, 0.4);
 }
 
 .cta-btn.secondary {
-  background: rgba(255, 255, 255, 0.1);
+  background: transparent;
   color: #FFFFFF;
-  border: 1px solid rgba(255, 255, 255, 0.25);
+  border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
 .cta-btn.secondary:hover {
-  background: rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 255, 255, 0.3);
 }
 
 /* Responsive Design */
@@ -272,16 +281,11 @@
 }
 
 @media (max-width: 768px) {
-  .features-hero {
-    padding: 4rem 1.5rem 3rem;
-    margin: 0 -2rem 2rem;
+  .features-page .page-title {
+    font-size: 2.1rem;
   }
 
-  .features-hero h1 {
-    font-size: 2rem;
-  }
-
-  .features-hero .hero-subtitle {
+  .features-page .page-subtitle {
     font-size: 1rem;
   }
 
@@ -318,12 +322,7 @@
     padding: 0 1rem;
   }
 
-  .features-hero {
-    margin: 0 -1rem 2rem;
-    padding: 3rem 1rem 2.5rem;
-  }
-
-  .features-hero h1 {
+  .features-page .page-title {
     font-size: 1.75rem;
   }
 
@@ -343,7 +342,7 @@
   }
 
   .access-badge {
-    font-size: 0.65rem;
+    font-size: 0.6rem;
     padding: 0.25rem 0.5rem;
   }
 }

@@ -56,6 +56,13 @@
 .gt-status.final { color: #8b949e; }
 .gt-status.pre { color: #64B5F6; }
 
+/* Pitcher strikeout line — only shown when there's exactly one game today */
+.gt-pitcher-k {
+  color: #8b949e;
+  padding-left: 0.5rem;
+  border-left: 1px solid rgba(255, 255, 255, 0.1);
+}
+
 @media screen and (max-width: 480px) {
   .game-ticker-wrap { padding-block: 0.4rem; }
   .gt-tick { font-size: 0.74rem; }

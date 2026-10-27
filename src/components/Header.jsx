@@ -6,13 +6,18 @@ import '../styles/home-page-styling/header.css';
 function Header() {
   const navigate = useNavigate();
   const location = useLocation();
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, loading } = useAuth();
 
   const handleLogoClick = (e) => {
     e.preventDefault();
     navigate('/');
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
+
+  // Marketing header is for signed-out visitors only — signed-in users
+  // navigate from the Terminal's top bar, rail, and Cmd+K palette. Hidden
+  // while auth is resolving too, so a returning user never sees it flash.
+  if (loading || isAuthenticated) return null;
 
   return (
     <header className="header">
@@ -28,18 +33,18 @@ function Header() {
         </div>
 
         <nav className="navlinks">
+          <Link to="/products">Products</Link>
           <Link to="/features">Features</Link>
-          <Link to="/predictions/trust-ledger">Track Record</Link>
           <Link to="/upgrade">Pricing</Link>
         </nav>
 
         <div className="topbar-spacer"></div>
 
         <Link
-          to={isAuthenticated ? '/account/settings' : '/account'}
+          to="/account"
           className={`account-icon ${location.pathname.startsWith('/account') ? 'active' : ''}`}
-          aria-label={isAuthenticated ? 'Settings' : 'Account'}
-          title={isAuthenticated ? 'Account Settings' : 'Login / Sign Up'}
+          aria-label="Account"
+          title="Login / Sign Up"
         >
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <circle cx="12" cy="8" r="4" />

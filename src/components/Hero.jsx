@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import teamsService from '../data/services/teamsService';
 import scheduleService from '../data/services/scheduleService';
 import '../styles/home-page-styling/hero.css';
@@ -80,7 +80,7 @@ function Hero() {
                 <polyline points="12 5 19 12 12 19" />
               </svg>
             </button>
-            <a href="#predictions" className="hero-cta-secondary">See What&apos;s Inside</a>
+            <Link to="/products" className="hero-cta-secondary">See What&apos;s Inside</Link>
           </div>
           <p className="hero-trust-line">
             Free to browse standings &amp; stats · <span className="mono">Premium</span> unlocks full access
