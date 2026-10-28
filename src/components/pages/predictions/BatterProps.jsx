@@ -1,3 +1,4 @@
+import { parseScoutPick } from '../../../data/services/scoutPick';
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { useNavigate } from 'react-router-dom';
@@ -162,11 +163,13 @@ function buildBatterMarkets(batter) {
 
     // Scout AI pick for this stat — drives line, direction, confidence, reasoning
     const aiPick = batter.scout_ai?.[statType] ?? null;
+    // Picks arrive as "Over 0.5" with `line` null — split into side + line.
+    const scout = parseScoutPick(aiPick);
 
     // Use scout_ai line when available; fall back to consensus across sportsbook + DFS
     let lineNum;
-    if (aiPick) {
-      lineNum = aiPick.line;
+    if (scout.line != null) {
+      lineNum = scout.line;
     } else {
       const lineCounts = {};
       for (const p of [...sbProps, ...dfsProps]) lineCounts[p.line] = (lineCounts[p.line] || 0) + 1;
@@ -175,7 +178,7 @@ function buildBatterMarkets(batter) {
       lineNum = parseFloat(lineEntry[0]);
     }
 
-    const side      = aiPick?.pick ?? 'Over';
+    const side      = scout.side ?? 'Over';
     const predicted = batter[def.predicted] ?? 0;
     const overProb  = Math.round(poissonProb(predicted, lineNum));
     const modelProb = side === 'Under' ? 100 - overProb : overProb;

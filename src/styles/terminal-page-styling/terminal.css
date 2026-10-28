@@ -104,6 +104,15 @@
 
 .slt-tier--free:hover { color: var(--slt-ink); }
 
+/* Premium: neon green outline on a transparent badge */
+.slt-tier--premium {
+  color: var(--slt-good);
+  background: transparent;
+  border: 1px solid var(--slt-good);
+  box-shadow: 0 0 6px rgba(74, 222, 128, 0.35);
+  text-shadow: 0 0 6px rgba(74, 222, 128, 0.45);
+}
+
 .slt-cmdk {
   display: flex;
   align-items: center;
@@ -579,6 +588,44 @@
 .slt-headshot--lg { width: 28px; height: 28px; }
 .slt-sp-tag { color: var(--slt-ink-muted); font-weight: 500; font-size: 0.78em; white-space: nowrap; margin-left: 0.15rem; }
 .slt-box td.team { white-space: nowrap; }
+
+/* Live Game panel before first pitch */
+.slt-pregame {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.25rem;
+  padding: 0.35rem 0 0.15rem;
+}
+.slt-pregame-teams {
+  display: grid;
+  grid-template-columns: auto auto;
+  align-items: center;
+  column-gap: 1.25rem;
+  row-gap: 0.55rem;
+  font-size: 0.82rem;
+  font-weight: 600;
+  min-width: 0;
+}
+.slt-pregame-ml { color: var(--slt-ink-muted); font-weight: 500; font-size: 0.78rem; text-align: right; }
+.slt-pregame-meta {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.15rem;
+  padding-left: 1.25rem;
+  border-left: 1px solid var(--slt-line);
+  font-size: 0.75rem;
+  white-space: nowrap;
+}
+.slt-pregame-label {
+  font-family: 'Oswald', sans-serif;
+  font-size: 0.65rem;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--slt-ink-faint);
+}
+.slt-pregame-time { font-size: 0.95rem; font-weight: 600; color: var(--slt-ink); }
 .slt-matchup { display: inline-flex; align-items: center; gap: 0.4rem; }
 .slt-prop-subject { display: inline-flex; align-items: center; gap: 0.35rem; flex-wrap: wrap; min-width: 0; }
 .slt-prop-subject .slt-team-logo { margin-left: 0.1rem; }

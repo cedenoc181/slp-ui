@@ -23,6 +23,7 @@
  * { key, selection, market, odds|null, modelProb|null, ev|null, search }
  */
 
+import { parseScoutPick } from './scoutPick';
 import { getTeamById } from '../constants/apiConstants';
 
 // ── shared math ───────────────────────────────────────────────────────────────
@@ -358,10 +359,13 @@ function buildBatterCandidates(resp) {
       const statSB = sbProps.filter(p => p.stat_type === apiKey);
       const aiPick = scoutAI?.props?.[apiKey] ?? scoutAI?.[apiKey] ?? null;
 
+      // Scout picks come as "Over 0.5" (side + line in one string, line field null).
+      const scout = parseScoutPick(aiPick);
+
       // Line: scout_ai line, else most-common posted line, else rounded projection
       let line;
-      if (aiPick?.line != null) {
-        line = aiPick.line;
+      if (scout.line != null) {
+        line = scout.line;
       } else if (statSB.length) {
         const counts = {};
         for (const p of statSB) counts[p.line] = (counts[p.line] || 0) + 1;
@@ -371,7 +375,7 @@ function buildBatterCandidates(resp) {
       }
 
       const overProb  = Math.round(poissonProb(predicted, line));
-      const side      = aiPick?.pick ?? (predicted >= line ? 'Over' : 'Under');
+      const side      = scout.side ?? (predicted >= line ? 'Over' : 'Under');
       const modelProb = side === 'Under' ? 100 - overProb : overProb;
       const sideKey   = side === 'Under' ? 'under_price' : 'over_price';
       const bestOdds  = statSB

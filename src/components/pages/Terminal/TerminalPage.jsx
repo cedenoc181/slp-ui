@@ -1420,13 +1420,21 @@ function LiveGamePanel({ games, flash, expanded, onExpand, onClose }) {
         {games === null && <Skeleton rows={2} />}
         {games !== null && !featured && <Empty>No games on the schedule today.</Empty>}
         {featured?.state === 'pre' && (
-          <Empty>
-            <TeamWithStarter teamId={featured.awayId} team={featured.away} spName={featured.awaySp} era={eras[featured.awaySpId]} />
-            {' @ '}
-            <TeamWithStarter teamId={featured.homeId} team={featured.home} spName={featured.homeSp} era={eras[featured.homeSpId]} />
-            {' · first pitch '}{featured.time}
-            {featured.mlAway && featured.mlHome && <> · <span className="slt-mono">{featured.mlAway} / {featured.mlHome}</span></>}
-          </Empty>
+          // Same shape as the live box score: away over home on the left, each
+          // with its starter and moneyline; first pitch + total on the right.
+          <div className="slt-pregame">
+            <div className="slt-pregame-teams">
+              <TeamWithStarter teamId={featured.awayId} team={featured.away} spName={featured.awaySp} era={eras[featured.awaySpId]} />
+              <span className="slt-mono slt-pregame-ml">{featured.mlAway ?? ''}</span>
+              <TeamWithStarter teamId={featured.homeId} team={featured.home} spName={featured.homeSp} era={eras[featured.homeSpId]} />
+              <span className="slt-mono slt-pregame-ml">{featured.mlHome ?? ''}</span>
+            </div>
+            <div className="slt-pregame-meta">
+              <span className="slt-pregame-label">First pitch</span>
+              <span className="slt-pregame-time">{featured.time}</span>
+              {featured.total != null && <span className="slt-faint">O/U <span className="slt-mono">{featured.total}</span></span>}
+            </div>
+          </div>
         )}
         {featured && featured.state !== 'pre' && <BoxScore game={featured} boxscore={boxscore} eras={eras} />}
       </Panel>

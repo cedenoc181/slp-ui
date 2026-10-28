@@ -146,6 +146,53 @@ function mapRecord(r) {
 
 const byNewest = (a, b) => new Date(b.createdAt) - new Date(a.createdAt);
 
+// ── Repair for batter props tracked before the Scout-pick parsing fix ─────────
+// Scout batter picks arrive as pick "Over 1.5" (line null); older tracking code
+// used that whole string as the side, so those bets were saved as
+//   selection "José Ramírez Over 1.5 1.5 Total Bases", grade.side "Over 1.5".
+// The grader only treats side === 'Over' as an Over, so such Over bets were
+// settled as Unders. repairBet() fixes the text and the side, and sends an
+// Over bet that already settled back to 'pending' so it regrades correctly.
+// Returns { bet, patch } — patch is null when nothing needed fixing.
+const DOUBLED_LINE = /\b(Over|Under)\s+(\d+(?:\.\d+)?)\s+(\d+(?:\.\d+)?)\b/i;
+
+export function repairBet(bet) {
+  if (!bet) return { bet, patch: null };
+  const patch = {};
+  const g = bet.grade;
+  let side = null;
+  let line = g?.line ?? null;
+
+  const m = typeof g?.side === 'string' ? g.side.match(/^(over|under)\s+([-+]?\d+(?:\.\d+)?)/i) : null;
+  if (m && (g.type === 'batter_prop' || g.type === 'pitcher_prop')) {
+    side = m[1].toLowerCase() === 'over' ? 'Over' : 'Under';
+    if (line == null) line = Number(m[2]);
+    patch.grade = { ...g, side, line };
+    // Graded as an Under by mistake → let settlement regrade it.
+    if (side === 'Over' && (bet.status === 'won' || bet.status === 'lost')) patch.status = 'pending';
+  }
+
+  const sel = typeof bet.selection === 'string' ? bet.selection.match(DOUBLED_LINE) : null;
+  if (sel) {
+    const fixedSide = side ?? (sel[1].toLowerCase() === 'over' ? 'Over' : 'Under');
+    const fixedLine = line ?? Number(sel[3]); // the saved grade line is the one the odds were priced at
+    patch.selection = bet.selection.replace(DOUBLED_LINE, `${fixedSide} ${fixedLine}`);
+  }
+
+  if (!Object.keys(patch).length) return { bet, patch: null };
+  const fixed = { ...bet, ...patch };
+  if (patch.status === 'pending') fixed.settledAt = null;
+  return { bet: fixed, patch };
+}
+
+// Repairs a freshly listed set and persists each fix through `save(id, patch)`.
+// Awaited so a following settlement pass sees the corrected (pending) bets.
+async function repairAll(bets, save) {
+  const results = bets.map(repairBet);
+  await Promise.allSettled(results.filter(r => r.patch).map(r => save(r.bet.id, r.patch)));
+  return results.map(r => r.bet);
+}
+
 // ── American-odds → profit math (flat 1-unit stake) ───────────────────────────
 
 /**
@@ -200,7 +247,13 @@ export function summarize(bets) {
 class LocalBetLibrary {
   /** All tracked bets, newest first. Legacy 'watched' records map to 'watchlist'. */
   async list() {
-    return readAll().map(mapRecord).sort(byNewest);
+    const bets = readAll().map(mapRecord);
+    const repaired = bets.map(b => repairBet(b).bet);
+    if (repaired.some((b, i) => b !== bets[i])) {
+      const byId = Object.fromEntries(repaired.map(b => [b.id, b]));
+      writeAll(readAll().map(b => byId[b.id] || b));
+    }
+    return repaired.sort(byNewest);
   }
 
   /** Track a new bet. Fills in id, createdAt, and normalized defaults. */
@@ -251,7 +304,11 @@ class ApiBetLibrary {
   /** GET /api/v1/bet-library — caller's bets, newest first. */
   async list() {
     const rows = await betLibraryFetch(API_BASE, 'GET');
-    return (Array.isArray(rows) ? rows : []).map(mapRecord).sort(byNewest);
+    const bets = (Array.isArray(rows) ? rows : []).map(mapRecord);
+    // Best effort: if the server rejects a patch the fixed values still show,
+    // and the repair is retried on the next load.
+    const repaired = await repairAll(bets, (id, patch) => betLibraryFetch(`${API_BASE}/${id}`, 'PATCH', patch));
+    return repaired.sort(byNewest);
   }
 
   /** POST /api/v1/bet-library — server sets id/createdAt and applies defaults. */

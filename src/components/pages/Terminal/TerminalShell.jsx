@@ -388,10 +388,10 @@ export default function TerminalShell({ children }) {
           <div className="slt-ui slt-topbar">
             <Link to="/terminal" className="slt-brand">
               <span className="slt-brand-dot" />
-              Sandlot Terminal
+              Sandlot Picks
             </Link>
             {isPremium
-              ? <span className="slt-tier">PREMIUM</span>
+              ? <span className="slt-tier slt-tier--premium">Premium</span>
               : <Link to="/upgrade" className="slt-tier slt-tier--free">FREE</Link>}
             {!onDashboard && current && (
               <span className="slt-crumb">
