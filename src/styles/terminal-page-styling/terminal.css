@@ -434,6 +434,55 @@
 .slt-wl-team { font-weight: 600; font-size: 0.88rem; }
 .slt-wl-next { font-size: 0.68rem; color: var(--slt-ink-faint); display: block; margin-top: 0.1rem; }
 .slt-wl-pct { font-size: 0.85rem; }
+
+/* Watchlist management (sheet) */
+.slt-wl-row--player { grid-template-columns: 1fr; }
+.slt-wl-inactive { opacity: 0.55; }
+.slt-wl-chips { margin-bottom: 0.75rem; }
+.slt-wl-error { margin: 0 0 0.6rem; }
+.slt-wl-note { margin: 0 0 0.75rem; }
+.slt-wl-actions { display: inline-flex; align-items: center; gap: 0.6rem; flex-shrink: 0; }
+.slt-wl-remove {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  padding: 0;
+  border: 1px solid var(--slt-line);
+  border-radius: 4px;
+  background: transparent;
+  color: var(--slt-ink-faint);
+  font-size: 0.7rem;
+  cursor: pointer;
+}
+.slt-wl-remove:hover:not(:disabled) { color: var(--slt-warn); border-color: rgba(248,113,113,0.4); }
+.slt-wl-remove:disabled { opacity: 0.5; cursor: wait; }
+.slt-wl-search { margin-bottom: 0.75rem; }
+.slt-wl-search input {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 0.5rem 0.65rem;
+  background: var(--slt-bg);
+  border: 1px solid var(--slt-line);
+  border-radius: 6px;
+  color: var(--slt-ink);
+  font: inherit;
+  font-size: 0.82rem;
+}
+.slt-wl-search input:focus { outline: none; border-color: rgba(103,232,249,0.45); }
+.slt-wl-search input::placeholder { color: var(--slt-ink-faint); }
+.slt-wl-results { list-style: none; margin: 0.35rem 0 0; padding: 0; border: 1px solid var(--slt-line); border-radius: 6px; }
+.slt-wl-results li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.4rem 0.6rem;
+  font-size: 0.8rem;
+  border-top: 1px solid var(--slt-line);
+}
+.slt-wl-results li:first-child { border-top: none; }
 .slt-spark-empty { width: 52px; }
 
 .slt-chips {
@@ -520,6 +569,19 @@
 .slt-tl-rank { color: var(--slt-ink-faint); font-size: 0.75rem; }
 .slt-tl-team { font-weight: 600; font-size: 0.85rem; }
 .slt-tl-score { font-size: 0.85rem; text-align: right; }
+.slt-team-cell { display: inline-flex; align-items: center; gap: 0.5rem; min-width: 0; }
+.slt-team-logo { width: 20px; height: 20px; object-fit: contain; flex-shrink: 0; }
+.slt-team-logo--empty { display: inline-block; }
+.slt-team-logo--lg { width: 28px; height: 28px; }
+.slt-team-logo--sm { width: 16px; height: 16px; }
+.slt-headshot { width: 20px; height: 20px; border-radius: 50%; object-fit: cover; object-position: center 20%; background: var(--slt-surface-2); flex-shrink: 0; }
+.slt-headshot--sm { width: 18px; height: 18px; }
+.slt-headshot--lg { width: 28px; height: 28px; }
+.slt-sp-tag { color: var(--slt-ink-muted); font-weight: 500; font-size: 0.78em; white-space: nowrap; margin-left: 0.15rem; }
+.slt-box td.team { white-space: nowrap; }
+.slt-matchup { display: inline-flex; align-items: center; gap: 0.4rem; }
+.slt-prop-subject { display: inline-flex; align-items: center; gap: 0.35rem; flex-wrap: wrap; min-width: 0; }
+.slt-prop-subject .slt-team-logo { margin-left: 0.1rem; }
 .slt-tl-row > .slt-bar { grid-column: 3; width: 80px; }
 .slt-tl-row--board > .slt-bar { width: auto; }
 .slt-tl-row > .slt-tl-score { grid-column: 4; }
@@ -665,6 +727,10 @@
 
 .slt-box td.team,
 .slt-box th.team { text-align: left; color: var(--slt-ink); font-weight: 600; }
+/* Shrink-to-fit: the table spans the panel, so without this the team column
+   soaks up all the spare width and pushes the line score away from it. */
+.slt-box td.team,
+.slt-box th.team { width: 1%; white-space: nowrap; padding-right: 0.9rem; }
 .slt-box td.slt-mono { color: var(--slt-ink); }
 .slt-box td.slt-box-total { font-weight: 700; }
 
@@ -1108,6 +1174,13 @@
 .slt-table--sheet { font-size: 0.8rem; }
 .slt-table--sheet td { padding-block: 0.45rem; }
 
+/* Model Board: matchup shrinks to fit and the pick sits left-aligned right
+   after it, so the two never read as one cell. */
+.slt-table--board td.team,
+.slt-table--board th:first-child { width: 1%; white-space: nowrap; padding-right: 1rem; font-weight: 500; }
+.slt-table--board th.pick,
+.slt-table--board td.pick { text-align: left; font-weight: 600; white-space: nowrap; }
+
 .slt-trust-cell {
   display: inline-flex;
   align-items: center;
@@ -1174,6 +1247,25 @@
 .slt-slate-row:hover .slt-tl-team { color: var(--slt-cyan); }
 
 /* ── Responsive ───────────────────────────────────────────── */
+/* Laptop and up: every preview card is capped at the Watchlist card's height
+   (--slt-card-max, measured in TerminalPage). Overflow is clipped and fades
+   out over the bottom padding — the card's sheet has the full content. */
+@media (min-width: 1024px) {
+  .slt-grid > .slt-panel { max-height: var(--slt-card-max, none); overflow: hidden; position: relative; }
+  .slt-grid > .slt-panel[data-panel-id="watchlist"] { max-height: none; align-self: start; }
+  .slt-grid > .slt-panel::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 1.15rem; /* = the panel's bottom padding, so unclipped cards look unchanged */
+    background: linear-gradient(to bottom, transparent, var(--slt-surface));
+    pointer-events: none;
+  }
+  .slt-grid > .slt-panel--expandable:hover::after { background: linear-gradient(to bottom, transparent, #131925); }
+}
+
 @media (max-width: 900px) {
   .slt-sheet { width: 100vw; min-width: 0; }
 }

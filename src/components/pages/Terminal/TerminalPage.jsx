@@ -3,12 +3,13 @@ import { createPortal } from 'react-dom';
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../../../context/AuthContext';
 import predictionsService from '../../../data/services/predictionsService';
+import playerStatsService from '../../../data/services/playerStatsServices';
 import teamsService from '../../../data/services/teamsService';
 import gamesService from '../../../data/services/gamesService';
 import trustLedgerService from '../../../data/services/trustLedgerService';
 import { getEliminatedMlbIds } from '../../../data/services/postseasonStatus';
 import betLibraryService, { summarize, betPL } from '../../../data/services/betLibraryService';
-import watchlistService from '../../../data/services/watchlistService';
+import watchlistService, { WATCHLIST_LIMITS } from '../../../data/services/watchlistService';
 import { listPublished, apiPostToDisplay } from '../../../data/services/contentService';
 import articlesData from '../../../data/contentData/article.json';
 import moreArticlesData from '../../../data/contentData/moreArticles.json';
@@ -363,28 +364,104 @@ function useLast10(teamIds) {
   return series;
 }
 
+// MLB headshot (falls back to MLB's generic silhouette). Players saved before
+// mlbId was stored still carry it at the end of their profile slug.
+function playerMlbId(p) {
+  if (p?.mlbId != null) return p.mlbId;
+  const m = String(p?.slug ?? '').match(/(\d+)$/);
+  return m ? m[1] : null;
+}
+
+function PlayerHeadshot({ player, size }) {
+  const mlbId = playerMlbId(player);
+  const cls = `slt-headshot${size ? ` slt-headshot--${size}` : ''}`;
+  if (!mlbId) return <TeamLogo teamId={player?.teamId} size={size} />;
+  return (
+    <img
+      src={`https://img.mlbstatic.com/mlb-photos/image/upload/d_people:generic:headshot:67:current.png/w_120,q_auto:best/v1/people/${mlbId}/headshot/67/current`}
+      alt=""
+      className={cls}
+      loading="lazy"
+      onError={(e) => { e.target.style.visibility = 'hidden'; }}
+    />
+  );
+}
+
+// Debounced player search for the watchlist's "add player" box.
+function usePlayerSearch(query) {
+  const [results, setResults] = useState([]);
+  const [searching, setSearching] = useState(false);
+  useEffect(() => {
+    const q = query.trim();
+    if (q.length < 2) { setResults([]); setSearching(false); return; }
+    let alive = true;
+    setSearching(true);
+    const t = setTimeout(() => {
+      playerStatsService.searchPlayers(q, 8)
+        .then(r => { if (alive) setResults(Array.isArray(r) ? r : []); })
+        .catch(() => { if (alive) setResults([]); })
+        .finally(() => { if (alive) setSearching(false); });
+    }, 250);
+    return () => { alive = false; clearTimeout(t); };
+  }, [query]);
+  return { results, searching };
+}
+
 function WatchlistPanel({ standings, games, flash, expanded, onExpand, onClose }) {
   const { user } = useAuth();
   const favoriteTeamId = user?.favoriteTeamId ?? null;
-  // 'api' = saved server-side · 'fallback' = endpoint not live yet, seeded from favorite_team_id
+  const userId = user?.id ?? null;
+  // 'api' = saved to the account · 'local' = endpoint not live yet, saved on this device
   const [mode, setMode] = useState(null);
-  const [teamIds, setTeamIds] = useState(null);
-  const [editing, setEditing] = useState(false);
+  const [list, setList] = useState(null); // { teamIds, players, playersSupported }
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState(null);
+  const [loadError, setLoadError] = useState(null);
+  const [query, setQuery] = useState('');
+  const { results, searching } = usePlayerSearch(query);
 
   useEffect(() => {
     let alive = true;
+    setLoadError(null);
     watchlistService.get()
-      .then(ids => { if (alive) { setMode('api'); setTeamIds(ids); } })
-      .catch(() => {
+      .then(data => { if (alive) { setMode('api'); setList(data); } })
+      .catch(err => {
         if (!alive) return;
-        setMode('fallback');
-        setTeamIds(favoriteTeamId != null ? [favoriteTeamId] : []);
+        // Only "not deployed yet" falls back to the device store; auth and
+        // server errors surface instead of silently switching storage.
+        if (err.status === 404) {
+          setMode('local');
+          setList(watchlistService.loadLocal(userId, favoriteTeamId));
+          return;
+        }
+        setMode('error');
+        setLoadError(err.status === 401
+          ? 'Your session expired — sign in again to load your watchlist.'
+          : 'Couldn\'t load your watchlist right now. Try again shortly.');
       });
     return () => { alive = false; };
-  }, [favoriteTeamId]);
+  }, [userId, favoriteTeamId]);
 
+  // The server may send players as bare ids; fill in name / team / slug.
+  const missingKey = (list?.players || []).filter(p => !p.name).map(p => p.id).join(',');
+  useEffect(() => {
+    if (!missingKey) return;
+    const ids = missingKey.split(',');
+    let alive = true;
+    Promise.allSettled(ids.map(id => playerStatsService.lookupPlayer({ playerId: id })))
+      .then(res => {
+        if (!alive) return;
+        const found = {};
+        ids.forEach((id, i) => {
+          const v = res[i].status === 'fulfilled' ? res[i].value : null;
+          if (v) found[id] = { name: v.full_name, teamId: v.team_id, mlbId: v.mlb_id ?? null, slug: v.name_slug ?? v.mlb_id };
+        });
+        setList(l => l && { ...l, players: l.players.map(p => (found[p.id] ? { ...p, ...found[p.id] } : p)) });
+      });
+    return () => { alive = false; };
+  }, [missingKey]);
+
+  const teamIds = list?.teamIds ?? null;
   const series = useLast10(teamIds);
 
   const byAbbr = useMemo(() => {
@@ -403,22 +480,70 @@ function WatchlistPanel({ standings, games, flash, expanded, onExpand, onClose }
     return `${opp} · ${g.time}`;
   }, [games]);
 
-  const toggleTeam = useCallback(async (teamId) => {
-    if (mode !== 'api' || saving) return;
-    const next = teamIds.includes(teamId) ? teamIds.filter(id => id !== teamId) : [...teamIds, teamId];
-    setSaving(true);
+  // Optimistic: show the change at once, roll back if the server refuses it.
+  // `changed` is 'teams' or 'players': the server replaces only the type we send.
+  const save = useCallback(async (next, changed) => {
+    if (!list || saving) return;
+    const prev = list;
+    setList(next);
     setSaveError(null);
+    if (mode === 'local') { watchlistService.saveLocal(userId, next); return; }
+    setSaving(true);
     try {
-      setTeamIds(await watchlistService.set(next));
-    } catch {
-      setSaveError('Could not save your watchlist. Try again.');
+      const saved = changed === 'teams'
+        ? await watchlistService.setTeams(next.teamIds)
+        : await watchlistService.setPlayers(next.players.map(p => p.id));
+      // The response is the source of truth; only fill gaps for ids it sent bare.
+      const known = Object.fromEntries(next.players.map(p => [p.id, p]));
+      setList({ ...saved, players: saved.players.map(p => (p.name ? p : (known[p.id] || p))) });
+    } catch (err) {
+      setList(prev);
+      setSaveError(err.status === 422 && err.message
+        ? err.message
+        : err.status === 401
+          ? 'Your session expired — sign in again to save changes.'
+          : 'Could not save your watchlist. Try again.');
     } finally {
       setSaving(false);
     }
-  }, [mode, saving, teamIds]);
+  }, [list, mode, saving, userId]);
+
+  const toggleTeam = useCallback((teamId) => {
+    if (!list) return;
+    const has = list.teamIds.includes(teamId);
+    if (!has && list.teamIds.length >= WATCHLIST_LIMITS.teams) {
+      setSaveError(`You can follow up to ${WATCHLIST_LIMITS.teams} teams.`);
+      return;
+    }
+    save({ ...list, teamIds: has ? list.teamIds.filter(id => id !== teamId) : [...list.teamIds, teamId] }, 'teams');
+  }, [list, save]);
+
+  const addPlayer = useCallback((r) => {
+    if (!list || list.players.some(p => p.id === r.id)) return;
+    if (list.players.length >= WATCHLIST_LIMITS.players) {
+      setSaveError(`You can follow up to ${WATCHLIST_LIMITS.players} players.`);
+      return;
+    }
+    save({ ...list, players: [...list.players, { id: r.id, name: r.full_name, teamId: r.team_id, mlbId: r.mlb_id ?? null, slug: r.name_slug ?? r.mlb_id, active: r.active !== false }] }, 'players');
+  }, [list, save]);
+
+  const removePlayer = useCallback((id) => {
+    if (!list) return;
+    save({ ...list, players: list.players.filter(p => p.id !== id) }, 'players');
+  }, [list, save]);
 
   const watched = (teamIds || []).map(id => getTeamById(id)).filter(Boolean);
+  const players = list?.players || [];
   const firstTeam = watched[0];
+  const canAddPlayers = list?.playersSupported !== false;
+  // The card previews at most 3 rows (teams first, then players); the sheet lists everything.
+  const PREVIEW_ROWS = 3;
+  const previewTeams = watched.slice(0, PREVIEW_ROWS);
+  const previewPlayers = players.slice(0, Math.max(0, PREVIEW_ROWS - previewTeams.length));
+  const hiddenCount = watched.length + players.length - previewTeams.length - previewPlayers.length;
+  const summary = list
+    ? [`${watched.length} team${watched.length === 1 ? '' : 's'}`, players.length ? `${players.length} player${players.length === 1 ? '' : 's'}` : null].filter(Boolean).join(' · ')
+    : '';
 
   return (
     <>
@@ -426,48 +551,28 @@ function WatchlistPanel({ standings, games, flash, expanded, onExpand, onClose }
         id="watchlist"
         title="Watchlist"
         flash={flash}
-        onExpand={editing ? null : onExpand}
-        sub={teamIds ? `${watched.length} team${watched.length === 1 ? '' : 's'}` : ''}
-        action={mode === 'api' && (
-          <button type="button" className="slt-link" onClick={() => setEditing(e => !e)}>{editing ? 'Done' : 'Edit'}</button>
-        )}
+        onExpand={onExpand}
+        sub={summary}
+        action={list && <button type="button" className="slt-link" onClick={() => onExpand('watchlist')}>Manage</button>}
       >
-        {teamIds === null && <Skeleton rows={3} />}
+        {list === null && (loadError ? <Empty>{loadError}</Empty> : <Skeleton rows={3} />)}
 
-        {teamIds !== null && editing && (
-          <div className="slt-chips">
-            {TEAMS.map(t => (
-              <button
-                type="button"
-                key={t.teamId}
-                className={`slt-chip${teamIds.includes(t.teamId) ? ' active' : ''}`}
-                onClick={() => toggleTeam(t.teamId)}
-                disabled={saving}
-              >
-                {t.id}
-              </button>
-            ))}
-            {saveError && <span className="slt-error">{saveError}</span>}
-          </div>
+        {list !== null && watched.length === 0 && players.length === 0 && (
+          <Empty>Nothing on your watchlist yet — hit Manage to follow teams or players.</Empty>
         )}
 
-        {teamIds !== null && !editing && watched.length === 0 && (
-          <Empty>
-            {mode === 'api'
-              ? 'No teams yet — hit Edit to start following teams.'
-              : <>Set a favorite team in <Link to="/account/settings">Account Settings</Link> to pin it here.</>}
-          </Empty>
-        )}
-
-        {teamIds !== null && !editing && watched.map(team => {
+        {list !== null && previewTeams.map(team => {
           const s = byAbbr[team.id];
           const streak = String(s?.streak_code || '');
           const up = streak.startsWith('W');
           return (
-            <div className="slt-wl-row" key={team.teamId}>
-              <div>
-                <div className="slt-wl-team">{team.id}</div>
-                <span className="slt-wl-next">{nextGame(team.teamId)}</span>
+            <div className="slt-wl-row" key={`t-${team.teamId}`}>
+              <div className="slt-team-cell">
+                <TeamLogo mlbId={team.mlbId} size="lg" />
+                <div>
+                  <div className="slt-wl-team">{team.id}</div>
+                  <span className="slt-wl-next">{nextGame(team.teamId)}</span>
+                </div>
               </div>
               <div className="slt-mono">{s ? `${s.wins}-${s.losses}` : '—'}</div>
               <div className={`slt-mono slt-wl-pct ${streak ? (up ? 'pos' : 'neg') : ''}`}>
@@ -478,8 +583,25 @@ function WatchlistPanel({ standings, games, flash, expanded, onExpand, onClose }
           );
         })}
 
-        {mode === 'fallback' && watched.length > 0 && (
-          <p className="slt-footnote">Showing your favorite team · multi-team watchlists coming soon.</p>
+        {list !== null && previewPlayers.map(p => (
+          <div className={`slt-wl-row slt-wl-row--player${p.active === false ? ' slt-wl-inactive' : ''}`} key={`p-${p.id}`}>
+            <div className="slt-team-cell">
+              <PlayerHeadshot player={p} size="lg" />
+              <div>
+                <div className="slt-wl-team">{p.name || '…'}</div>
+                <span className="slt-wl-next">
+                  {p.active === false ? 'Inactive' : p.teamId != null ? `${[abbr(p.teamId), p.position].filter(Boolean).join(' · ')} · ${nextGame(p.teamId)}` : 'Player'}
+                </span>
+              </div>
+            </div>
+          </div>
+        ))}
+
+        {hiddenCount > 0 && (
+          <p className="slt-footnote">+{hiddenCount} more · open the watchlist to see all</p>
+        )}
+        {mode === 'local' && (watched.length > 0 || players.length > 0) && (
+          <p className="slt-footnote">Saved on this device · syncing to your account is coming soon.</p>
         )}
       </Panel>
 
@@ -487,46 +609,139 @@ function WatchlistPanel({ standings, games, flash, expanded, onExpand, onClose }
         open={expanded}
         onClose={onClose}
         title="Watchlist"
-        sub="Record, form, and today's game for every team you follow"
+        sub="Follow the teams and players you bet on — add or remove them here"
         route={firstTeam ? `/team-analytics/${firstTeam.urlName}` : '/team-analytics'}
         routeLabel={firstTeam && watched.length === 1 ? `Open ${firstTeam.name} analytics` : 'Open Team Analytics'}
       >
-        {watched.length === 0 && <Empty>No teams on your watchlist yet.</Empty>}
-        {watched.map(team => {
-          const s = byAbbr[team.id];
-          const l10 = series[team.teamId];
-          const streak = String(s?.streak_code || '');
-          return (
-            <div className="slt-sheet-card" key={team.teamId}>
-              <div className="slt-sheet-card-head">
-                <div>
-                  <div className="slt-sheet-card-title">{team.name}</div>
-                  <div className="slt-wl-next">{nextGame(team.teamId)}</div>
-                </div>
-                <Link to={`/team-analytics/${team.urlName}`} className="slt-link">Team analytics →</Link>
-              </div>
-              <div className="slt-kv-grid">
-                <div><span>Record</span><b className="slt-mono">{s ? `${s.wins}-${s.losses}` : '—'}</b></div>
-                <div><span>Win %</span><b className="slt-mono">{s ? fmtWinPct(s.w_l_pct) : '—'}</b></div>
-                <div><span>GB</span><b className="slt-mono">{s?.games_back == null || Number(s?.games_back) === 0 ? '—' : s.games_back}</b></div>
-                <div><span>Streak</span><b className={`slt-mono ${streak.startsWith('W') ? 'pos' : streak.startsWith('L') ? 'neg' : ''}`}>{streak || '—'}</b></div>
-                <div><span>Last 10</span><b className="slt-mono">{l10 ? `${l10.w}-${l10.l}` : '—'}</b></div>
-              </div>
-              {l10?.games?.length > 0 && (
-                <div className="slt-l10">
-                  <Sparkline points={l10.pts} width={140} height={28} />
-                  <div className="slt-l10-games">
-                    {l10.games.map(g => (
-                      <span key={g.key} className={`slt-l10-game ${g.won ? 'pos' : 'neg'}`} title={`${g.opp} ${g.score}`}>
-                        {g.won ? 'W' : 'L'}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-              )}
+        {list === null && (loadError ? <Empty>{loadError}</Empty> : <Skeleton rows={4} />)}
+        {saveError && <p className="slt-error slt-wl-error">{saveError}</p>}
+        {mode === 'local' && (
+          <p className="slt-footnote slt-wl-note">Your watchlist is saved on this device for now. Account sync turns on once the server update ships.</p>
+        )}
+
+        {list !== null && (
+          <>
+            <SectionLabel>Teams · {watched.length}/{WATCHLIST_LIMITS.teams}</SectionLabel>
+            <div className="slt-chips slt-wl-chips">
+              {TEAMS.map(t => (
+                <button
+                  type="button"
+                  key={t.teamId}
+                  className={`slt-chip${list.teamIds.includes(t.teamId) ? ' active' : ''}`}
+                  onClick={() => toggleTeam(t.teamId)}
+                  disabled={saving}
+                  aria-pressed={list.teamIds.includes(t.teamId)}
+                  title={list.teamIds.includes(t.teamId) ? `Remove ${t.name}` : `Follow ${t.name}`}
+                >
+                  {t.id}
+                </button>
+              ))}
             </div>
-          );
-        })}
+
+            {watched.map(team => {
+              const s = byAbbr[team.id];
+              const l10 = series[team.teamId];
+              const streak = String(s?.streak_code || '');
+              return (
+                <div className="slt-sheet-card" key={team.teamId}>
+                  <div className="slt-sheet-card-head">
+                    <div className="slt-team-cell">
+                      <TeamLogo mlbId={team.mlbId} size="lg" />
+                      <div>
+                        <div className="slt-sheet-card-title">{team.name}</div>
+                        <div className="slt-wl-next">{nextGame(team.teamId)}</div>
+                      </div>
+                    </div>
+                    <span className="slt-wl-actions">
+                      <Link to={`/team-analytics/${team.urlName}`} className="slt-link">Team analytics →</Link>
+                      <button type="button" className="slt-wl-remove" onClick={() => toggleTeam(team.teamId)} disabled={saving} aria-label={`Remove ${team.name}`} title="Remove">✕</button>
+                    </span>
+                  </div>
+                  <div className="slt-kv-grid">
+                    <div><span>Record</span><b className="slt-mono">{s ? `${s.wins}-${s.losses}` : '—'}</b></div>
+                    <div><span>Win %</span><b className="slt-mono">{s ? fmtWinPct(s.w_l_pct) : '—'}</b></div>
+                    <div><span>GB</span><b className="slt-mono">{s?.games_back == null || Number(s?.games_back) === 0 ? '—' : s.games_back}</b></div>
+                    <div><span>Streak</span><b className={`slt-mono ${streak.startsWith('W') ? 'pos' : streak.startsWith('L') ? 'neg' : ''}`}>{streak || '—'}</b></div>
+                    <div><span>Last 10</span><b className="slt-mono">{l10 ? `${l10.w}-${l10.l}` : '—'}</b></div>
+                  </div>
+                  {l10?.games?.length > 0 && (
+                    <div className="slt-l10">
+                      <Sparkline points={l10.pts} width={140} height={28} />
+                      <div className="slt-l10-games">
+                        {l10.games.map(g => (
+                          <span key={g.key} className={`slt-l10-game ${g.won ? 'pos' : 'neg'}`} title={`${g.opp} ${g.score}`}>
+                            {g.won ? 'W' : 'L'}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+
+            <SectionLabel>Players · {players.length}/{WATCHLIST_LIMITS.players}</SectionLabel>
+            {!canAddPlayers ? (
+              <Empty>Saving players needs the updated watchlist server — teams still save.</Empty>
+            ) : (
+              <div className="slt-wl-search">
+                <input
+                  type="search"
+                  value={query}
+                  onChange={e => setQuery(e.target.value)}
+                  placeholder="Search players to follow…"
+                  aria-label="Search players to follow"
+                />
+                {query.trim().length >= 2 && (
+                  <ul className="slt-wl-results">
+                    {searching && results.length === 0 && <li className="slt-faint">Searching…</li>}
+                    {!searching && results.length === 0 && <li className="slt-faint">No players found.</li>}
+                    {results.map(r => {
+                      const added = players.some(p => p.id === r.id);
+                      return (
+                        <li key={r.id}>
+                          <span className="slt-team-cell">
+                            <PlayerHeadshot player={{ mlbId: r.mlb_id, teamId: r.team_id }} size="sm" />
+                            {r.full_name}
+                            {r.team_id != null && <span className="slt-faint">{abbr(r.team_id)}</span>}
+                          </span>
+                          <button type="button" className={`slt-chip${added ? ' active' : ''}`} onClick={() => addPlayer(r)} disabled={added || saving}>
+                            {added ? 'Following' : 'Follow'}
+                          </button>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                )}
+              </div>
+            )}
+
+            {players.length === 0 && canAddPlayers && <p className="slt-footnote">Search above to follow individual players.</p>}
+            {players.map(p => (
+              <div className={`slt-sheet-card${p.active === false ? ' slt-wl-inactive' : ''}`} key={`p-${p.id}`}>
+                <div className="slt-sheet-card-head">
+                  <div className="slt-team-cell">
+                    <PlayerHeadshot player={p} size="lg" />
+                    <div>
+                      <div className="slt-sheet-card-title">{p.name || '…'}</div>
+                      <div className="slt-wl-next">
+                        {[
+                          p.teamId != null ? (getTeamById(p.teamId)?.name || abbr(p.teamId)) : null,
+                          p.position,
+                          p.active === false ? 'Inactive' : (p.teamId != null ? nextGame(p.teamId) : null),
+                        ].filter(Boolean).join(' · ')}
+                      </div>
+                    </div>
+                  </div>
+                  <span className="slt-wl-actions">
+                    {p.slug && <Link to={`/player/${encodeURIComponent(p.slug)}`} className="slt-link">Player profile →</Link>}
+                    <button type="button" className="slt-wl-remove" onClick={() => removePlayer(p.id)} disabled={saving} aria-label={`Remove ${p.name || 'player'}`} title="Remove">✕</button>
+                  </span>
+                </div>
+              </div>
+            ))}
+          </>
+        )}
       </Sheet>
     </>
   );
@@ -541,9 +756,34 @@ const BADGE = {
   lean:      { cls: 'lean',      label: 'Lean' },
 };
 
-function PropRow({ p, detailed }) {
+// Picks carry the player's internal id but not their team; look each one up
+// once (lookupPlayer returns the current team_id) so prop rows can show a logo.
+function usePlayerTeams(picks) {
+  const [teams, setTeams] = useState({});
+  const key = (picks || []).map(p => p.playerId).filter(id => id != null).join(',');
+  useEffect(() => {
+    const ids = [...new Set(key ? key.split(',') : [])];
+    if (!ids.length) return;
+    let alive = true;
+    Promise.allSettled(ids.map(id => playerStatsService.lookupPlayer({ playerId: id })))
+      .then(results => {
+        if (!alive) return;
+        const next = {};
+        ids.forEach((id, i) => {
+          const r = results[i];
+          if (r.status === 'fulfilled' && r.value?.team_id != null) next[id] = r.value.team_id;
+        });
+        setTeams(next);
+      });
+    return () => { alive = false; };
+  }, [key]);
+  return teams;
+}
+
+function PropRow({ p, detailed, teamId }) {
   const b = BADGE[p.consensus?.level];
-  const subject = p.pitcherName || p.subject;
+  const player = p.pitcherName || p.playerName;
+  const subject = player || p.subject;
   const rationale = p.reasoning?.rationale || p.scoutReasoning;
   return (
     <div className={`slt-prop${detailed ? ' slt-prop--detailed' : ''}`}>
@@ -552,7 +792,12 @@ function PropRow({ p, detailed }) {
         {b && <span className={`slt-badge ${b.cls}`}>{p.consensus?.label || b.label}</span>}
       </div>
       <div className="slt-prop-meta">
-        <span>{[p.market || p.statType, subject].filter(Boolean).join(' · ')}</span>
+        <span className="slt-prop-subject">
+          {p.market || p.statType}
+          {(p.market || p.statType) && subject && ' · '}
+          {player && teamId != null && <TeamLogo teamId={teamId} size="sm" />}
+          {subject}
+        </span>
         <span className="slt-mono">{fmtOdds(p.odds) ?? ''}</span>
       </div>
       {detailed && rationale && <p className="slt-prop-why">{rationale}</p>}
@@ -586,6 +831,7 @@ function PropsPanel({ flash, expanded, onExpand, onClose }) {
     });
     return () => { alive = false; };
   }, []);
+  const playerTeams = usePlayerTeams(picks);
 
   const emptyText = locked ? 'Today\'s board hasn\'t locked yet — check back closer to first pitch.' : 'No props cleared the bar today.';
 
@@ -594,7 +840,7 @@ function PropsPanel({ flash, expanded, onExpand, onClose }) {
       <Panel id="props" title="Today's Top Props" flash={flash} onExpand={onExpand} sub={picks?.length ? `${Math.min(4, picks.length)} of ${picks.length}` : null}>
         {picks === null && <Skeleton rows={3} />}
         {picks !== null && picks.length === 0 && <Empty>{emptyText}</Empty>}
-        {picks?.slice(0, 4).map((p, i) => <PropRow key={p.id ?? i} p={p} />)}
+        {picks?.slice(0, 4).map((p, i) => <PropRow key={p.id ?? i} p={p} teamId={playerTeams[p.playerId]} />)}
       </Panel>
 
       <Sheet
@@ -606,7 +852,7 @@ function PropsPanel({ flash, expanded, onExpand, onClose }) {
         routeLabel="Open the War Room"
       >
         {picks !== null && picks.length === 0 && <Empty>{emptyText}</Empty>}
-        {picks?.map((p, i) => <PropRow key={p.id ?? i} p={p} detailed />)}
+        {picks?.map((p, i) => <PropRow key={p.id ?? i} p={p} teamId={playerTeams[p.playerId]} detailed />)}
       </Sheet>
     </>
   );
@@ -617,6 +863,23 @@ function PropsPanel({ flash, expanded, onExpand, onClose }) {
 // year) is the ET day, not the viewer's local one.
 function etToday() {
   return new Date().toLocaleDateString('en-CA', { timeZone: 'America/New_York' });
+}
+
+// Same logo source as the full Trust Ledger page; a missing logo hides itself
+// so the row keeps its alignment.
+function TeamLogo({ mlbId, teamId, size }) {
+  if (!mlbId && teamId != null) mlbId = getTeamById(teamId)?.mlbId;
+  const cls = `slt-team-logo${size ? ` slt-team-logo--${size}` : ''}`;
+  if (!mlbId) return <span className={`${cls} slt-team-logo--empty`} />;
+  return (
+    <img
+      src={`https://www.mlbstatic.com/team-logos/${mlbId}.svg`}
+      alt=""
+      className={cls}
+      loading="lazy"
+      onError={(e) => { e.target.style.visibility = 'hidden'; }}
+    />
+  );
 }
 
 function TrustLedgerPanel({ flash, expanded, onExpand, onClose }) {
@@ -683,7 +946,7 @@ function TrustLedgerPanel({ flash, expanded, onExpand, onClose }) {
           return (
             <div className="slt-tl-row" key={t.team || i}>
               <span className="slt-tl-rank slt-mono">{i + 1}</span>
-              <span className="slt-tl-team">{meta?.id || t.team}</span>
+              <span className="slt-tl-team slt-team-cell"><TeamLogo mlbId={meta?.mlbId} />{meta?.id || t.team}</span>
               <div className="slt-bar"><div className="slt-bar-fill" style={{ width: `${t.trustPercentile ?? 0}%` }} /></div>
               <span className="slt-tl-score slt-mono">{t.trustPercentile == null ? '—' : t.trustPercentile.toFixed(1)}</span>
             </div>
@@ -714,7 +977,7 @@ function TrustLedgerPanel({ flash, expanded, onExpand, onClose }) {
                 return (
                   <tr key={t.team || i}>
                     <td className="slt-mono slt-faint">{i + 1}</td>
-                    <td className="team">{meta?.id || t.team}</td>
+                    <td className="team"><span className="slt-team-cell"><TeamLogo mlbId={meta?.mlbId} />{meta?.id || t.team}</span></td>
                     <td>
                       <span className="slt-trust-cell">
                         <span className="slt-bar"><span className="slt-bar-fill" style={{ width: `${t.trustPercentile ?? 0}%` }} /></span>
@@ -820,6 +1083,7 @@ function PredictionsPanel({ flash, expanded, onExpand, onClose }) {
         id: r.game_pk,
         matchup: `${abbr(r.away_team_id)} @ ${abbr(r.home_team_id)}`,
         pick: abbr(homeSide ? r.home_team_id : r.away_team_id),
+        pickTeamId: homeSide ? r.home_team_id : r.away_team_id,
         prob: (homeSide ? pHome : 1 - pHome) * 100,
         odds: fmtOdds(homeSide ? r.odds?.home_moneyline_game : r.odds?.away_moneyline_game),
         total: r.prediction.predicted_total,
@@ -842,8 +1106,8 @@ function PredictionsPanel({ flash, expanded, onExpand, onClose }) {
         {isPremium && rows !== null && picks.length === 0 && <Empty>{emptyText}</Empty>}
         {picks.slice(0, 6).map(p => (
           <div className="slt-tl-row slt-tl-row--board" key={p.id}>
-            <span className="slt-tl-team">{p.pick} ML</span>
             <span className="slt-faint slt-board-matchup">{p.matchup}</span>
+            <span className="slt-tl-team slt-team-cell"><TeamLogo teamId={p.pickTeamId} size="sm" />{p.pick} ML</span>
             <div className="slt-bar"><div className="slt-bar-fill" style={{ width: `${p.prob}%` }} /></div>
             <span className="slt-tl-score slt-mono">{fmtPct(p.prob, 0)}</span>
           </div>
@@ -864,15 +1128,15 @@ function PredictionsPanel({ flash, expanded, onExpand, onClose }) {
         {!isPremium && <Locked text={lockedText} />}
         {isPremium && picks.length === 0 && <Empty>{emptyText}</Empty>}
         {picks.length > 0 && (
-          <table className="slt-table slt-table--sheet">
+          <table className="slt-table slt-table--sheet slt-table--board">
             <thead>
-              <tr><th>Matchup</th><th>Pick</th><th>Odds</th><th>Win prob</th><th>Proj. total</th><th>Line</th></tr>
+              <tr><th>Matchup</th><th className="pick">Pick</th><th>Odds</th><th>Win prob</th><th>Proj. total</th><th>Line</th></tr>
             </thead>
             <tbody>
               {picks.map(p => (
                 <tr key={p.id}>
-                  <td className="team">{p.matchup}</td>
-                  <td>{p.pick} ML</td>
+                  <td className="team slt-faint">{p.matchup}</td>
+                  <td className="pick"><span className="slt-team-cell"><TeamLogo teamId={p.pickTeamId} size="sm" />{p.pick} ML</span></td>
                   <td className="slt-mono">{p.odds ?? '—'}</td>
                   <td className="slt-mono">{fmtPct(p.prob)}</td>
                   <td className="slt-mono">{p.total != null ? Number(p.total).toFixed(1) : '—'}</td>
@@ -1027,7 +1291,54 @@ function StandingsPanel({ standings, flash, expanded, onExpand, onClose }) {
 }
 
 // ── Live Game ───────────────────────────────────────────────────────────────
-function BoxScore({ game, boxscore }) {
+// "Gerrit Cole" → "G. Cole", the same short form the MLB Schedule uses.
+function shortName(full) {
+  if (!full) return null;
+  const parts = full.trim().split(/\s+/);
+  return parts.length < 2 ? full : `${parts[0].charAt(0).toUpperCase()}. ${parts.slice(1).join(' ')}`;
+}
+
+// Season ERA for the featured game's two starters (regular season of the
+// current year). The schedule only carries the starters' ids and names.
+function useStarterEras(game) {
+  const [eras, setEras] = useState({});
+  const awayId = game?.awaySpId ?? null;
+  const homeId = game?.homeSpId ?? null;
+  useEffect(() => {
+    const ids = [awayId, homeId].filter(id => id != null);
+    if (!ids.length) { setEras({}); return; }
+    let alive = true;
+    const season = etToday().slice(0, 4);
+    Promise.allSettled(ids.map(id => playerStatsService.getPitcherCurrentStats(id, season)))
+      .then(results => {
+        if (!alive) return;
+        const next = {};
+        ids.forEach((id, i) => {
+          const era = results[i].status === 'fulfilled' ? results[i].value?.era : null;
+          if (era != null && !Number.isNaN(Number(era))) next[id] = Number(era);
+        });
+        setEras(next);
+      });
+    return () => { alive = false; };
+  }, [awayId, homeId]);
+  return eras;
+}
+
+// "{logo} NYY  G. Cole (3.12)"
+function TeamWithStarter({ teamId, team, spName, era }) {
+  return (
+    <span className="slt-team-cell">
+      <TeamLogo teamId={teamId} />
+      {team}
+      <span className="slt-sp-tag">
+        {spName ? shortName(spName) : 'TBD'}
+        {spName && era != null && <span className="slt-mono"> ({era.toFixed(2)})</span>}
+      </span>
+    </span>
+  );
+}
+
+function BoxScore({ game, boxscore, eras = {} }) {
   const innings = useMemo(() => {
     const list = boxscore?.innings || [];
     const count = Math.max(9, list.length);
@@ -1046,11 +1357,11 @@ function BoxScore({ game, boxscore }) {
         </thead>
         <tbody>
           {[
-            ['away', game.away, boxscore?.away_runs ?? game.awayRuns, boxscore?.away_hits ?? game.awayHits, boxscore?.away_errors ?? game.awayErrors],
-            ['home', game.home, boxscore?.home_runs ?? game.homeRuns, boxscore?.home_hits ?? game.homeHits, boxscore?.home_errors ?? game.homeErrors],
-          ].map(([side, team, r, h, e]) => (
+            ['away', game.away, game.awayId, game.awaySp, eras[game.awaySpId], boxscore?.away_runs ?? game.awayRuns, boxscore?.away_hits ?? game.awayHits, boxscore?.away_errors ?? game.awayErrors],
+            ['home', game.home, game.homeId, game.homeSp, eras[game.homeSpId], boxscore?.home_runs ?? game.homeRuns, boxscore?.home_hits ?? game.homeHits, boxscore?.home_errors ?? game.homeErrors],
+          ].map(([side, team, teamId, spName, era, r, h, e]) => (
             <tr key={side}>
-              <td className="team">{team}</td>
+              <td className="team"><TeamWithStarter teamId={teamId} team={team} spName={spName} era={era} /></td>
               {innings.map((ing, i) => (
                 <td key={i} className="slt-mono">{ing ? (ing[`${side}_runs`] ?? '-') : '-'}</td>
               ))}
@@ -1089,6 +1400,8 @@ function LiveGamePanel({ games, flash, expanded, onExpand, onClose }) {
     return () => { alive = false; };
   }, [pk, awayRuns, homeRuns]);
 
+  const eras = useStarterEras(featured);
+
   const tag = featured?.state === 'live'
     ? <span className="slt-live-tag">LIVE{featured.status && !/progress|live/i.test(featured.status) ? ` · ${featured.status}` : ''}</span>
     : featured?.state === 'final' ? <span className="slt-final-tag">FINAL</span> : null;
@@ -1108,11 +1421,14 @@ function LiveGamePanel({ games, flash, expanded, onExpand, onClose }) {
         {games !== null && !featured && <Empty>No games on the schedule today.</Empty>}
         {featured?.state === 'pre' && (
           <Empty>
-            {featured.away} @ {featured.home} · first pitch {featured.time}
+            <TeamWithStarter teamId={featured.awayId} team={featured.away} spName={featured.awaySp} era={eras[featured.awaySpId]} />
+            {' @ '}
+            <TeamWithStarter teamId={featured.homeId} team={featured.home} spName={featured.homeSp} era={eras[featured.homeSpId]} />
+            {' · first pitch '}{featured.time}
             {featured.mlAway && featured.mlHome && <> · <span className="slt-mono">{featured.mlAway} / {featured.mlHome}</span></>}
           </Empty>
         )}
-        {featured && featured.state !== 'pre' && <BoxScore game={featured} boxscore={boxscore} />}
+        {featured && featured.state !== 'pre' && <BoxScore game={featured} boxscore={boxscore} eras={eras} />}
       </Panel>
 
       <Sheet
@@ -1126,7 +1442,7 @@ function LiveGamePanel({ games, flash, expanded, onExpand, onClose }) {
         {featured && featured.state !== 'pre' && (
           <>
             <SectionLabel>{featured.away} @ {featured.home}</SectionLabel>
-            <BoxScore game={featured} boxscore={boxscore} />
+            <BoxScore game={featured} boxscore={boxscore} eras={eras} />
           </>
         )}
         {games?.length > 0 && (
@@ -1135,7 +1451,11 @@ function LiveGamePanel({ games, flash, expanded, onExpand, onClose }) {
             <div className="slt-slate">
               {games.map(g => (
                 <Link to={`/mlb-schedule/${g.id}`} className="slt-slate-row" key={g.id}>
-                  <span className="slt-tl-team">{g.away} @ {g.home}</span>
+                  <span className="slt-tl-team slt-matchup">
+                    <span className="slt-team-cell"><TeamLogo teamId={g.awayId} size="sm" />{g.away}</span>
+                    <span className="slt-faint">@</span>
+                    <span className="slt-team-cell"><TeamLogo teamId={g.homeId} size="sm" />{g.home}</span>
+                  </span>
                   <span className="slt-mono">
                     {g.state === 'pre'
                       ? [g.mlAway && g.mlHome ? `${g.mlAway} / ${g.mlHome}` : null, g.total != null ? `O/U ${g.total}` : null].filter(Boolean).join(' · ')
@@ -1165,6 +1485,22 @@ export default function TerminalPage() {
   const [dragId, setDragId] = useState(null);
   const orderRef = useRef(order);
   orderRef.current = order;
+
+  // Every preview card is capped at the Watchlist card's height (laptop and
+  // up, see terminal.css). The Watchlist aligns to the top of its row, so this
+  // reads its natural height rather than a row-stretched one. Floor keeps an
+  // empty watchlist from crushing the other cards.
+  const gridRef = useRef(null);
+  useEffect(() => {
+    const grid = gridRef.current;
+    const wl = grid?.querySelector('[data-panel-id="watchlist"]');
+    if (!grid || !wl || typeof ResizeObserver === 'undefined') return;
+    const ro = new ResizeObserver(() => {
+      grid.style.setProperty('--slt-card-max', `${Math.max(wl.offsetHeight, 240)}px`);
+    });
+    ro.observe(wl);
+    return () => ro.disconnect();
+  }, []);
 
   // Auth can resolve after first render; pick up that user's saved layout.
   useEffect(() => { setOrder(loadOrder(storageKey)); }, [storageKey]);
@@ -1280,7 +1616,7 @@ export default function TerminalPage() {
         </div>
       )}
       <LayoutContext.Provider value={layout}>
-        <div className="slt-grid">
+        <div className="slt-grid" ref={gridRef}>
           {order.map(id => <Fragment key={id}>{panels[id]}</Fragment>)}
         </div>
       </LayoutContext.Provider>

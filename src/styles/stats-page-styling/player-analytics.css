@@ -99,7 +99,7 @@
 .player-analytics-page > .analytics-header,
 .player-analytics-page .analytics-header:not(.season-selector):not(.team-selector) {
   background: linear-gradient(180deg, rgba(25, 118, 210, 0.15) 0%, transparent 100%) !important;
-  padding: 2rem 0;
+  padding: 2rem 0 1.5rem;
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
 
@@ -143,14 +143,14 @@
 }
 
 .player-analytics-page .team-logo-image {
-  width: 60px;
-  height: 60px;
+  width: 52px;
+  height: 52px;
   object-fit: contain;
 }
 
 .player-analytics-page .team-header-inline h1 {
-  font-size: 2rem;
-  font-weight: 700;
+  font-size: 2.25rem;
+  font-weight: 800;
   margin: 0;
   color: #fff;
 }
@@ -171,14 +171,14 @@
    ============================================ */
 .player-analytics-page .team-dropdown,
 .player-analytics-page .season-dropdown {
-  padding: 10px 16px;
-  padding-right: 36px;
-  background: rgba(255, 255, 255, 0.08);
-  border: 1px solid rgba(255, 255, 255, 0.15);
+  padding: 0.5rem 1.25rem;
+  padding-right: 2.25rem;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.12);
   border-radius: 8px;
   color: var(--pa-text-primary);
-  font-size: 14px;
-  font-weight: 500;
+  font-size: 0.9rem;
+  font-weight: 600;
   cursor: pointer;
   appearance: none;
   -webkit-appearance: none;
@@ -224,21 +224,21 @@
    ============================================ */
 .player-analytics-page .timeframe-tabs {
   display: flex;
-  gap: 8px;
+  gap: 0.5rem;
   background: rgba(255, 255, 255, 0.05);
-  padding: 6px;
+  padding: 4px;
   border-radius: 10px;
   width: auto;
 }
 
 .player-analytics-page .timeframe-tabs .tab {
-  padding: 10px 20px;
+  padding: 0.5rem 1.25rem;
   background: transparent;
   border: none;
   border-radius: 8px;
   color: var(--pa-text-secondary);
-  font-size: 14px;
-  font-weight: 500;
+  font-size: 0.9rem;
+  font-weight: 600;
   cursor: pointer;
   transition: all 0.2s ease;
   flex: none;
@@ -258,13 +258,83 @@
    Container - Mirrors Team Analytics
    ============================================ */
 .player-analytics-page .container {
-  max-width: 1400px;
+  max-width: 1200px;
   margin: 0 auto;
   padding: 0 1.5rem;
 }
 
 .player-analytics-page .analytics-content {
-  padding: 2rem 0;
+  padding: 1.5rem 1.5rem 2rem;
+}
+
+/* The content area owns the side gutters (same as Team Analytics), so the
+   batter/pitcher sections inside it don't add a second set. */
+.player-analytics-page .batter-stats-section,
+.player-analytics-page .pitcher-stats-section {
+  padding: 0 0 2rem;
+}
+
+/* Compact leader cards on Player Analytics only — the base .batter-card /
+   .pitcher-card rules are shared with Schedule and the props pages. */
+.player-analytics-page .batter-header h2,
+.player-analytics-page .pitcher-header h2 {
+  font-size: 1.4rem;
+  margin: 0.25rem 0 0.75rem;
+}
+
+.player-analytics-page .batter-leader-grid,
+.player-analytics-page .pitcher-leader-grid {
+  border-radius: 8px;
+  padding: 1.1rem;
+  margin-bottom: 1.25rem;
+}
+
+.player-analytics-page .batter-leader-grid-header,
+.player-analytics-page .pitcher-leader-grid-header {
+  margin-bottom: 1rem;
+  padding-bottom: 0.6rem;
+}
+
+.player-analytics-page .batter-leader-grid-header h3,
+.player-analytics-page .pitcher-leader-grid-header h3 {
+  font-size: 1.05rem;
+}
+
+.player-analytics-page .batter-leader-cards,
+.player-analytics-page .pitcher-leader-cards {
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 0.75rem;
+}
+
+.player-analytics-page .batter-card,
+.player-analytics-page .pitcher-card {
+  border-radius: 8px;
+  padding: 0.75rem;
+}
+
+.player-analytics-page .batter-card-top,
+.player-analytics-page .pitcher-card-top { margin-bottom: 0.5rem; }
+
+.player-analytics-page .batter-category,
+.player-analytics-page .pitcher-category { font-size: 0.68rem; }
+
+.player-analytics-page .batter-card-photo,
+.player-analytics-page .pitcher-card-photo {
+  width: 68px;
+  height: 68px;
+  margin-bottom: 0.35rem;
+}
+
+.player-analytics-page .batter-player,
+.player-analytics-page .pitcher-player { font-size: 0.85rem; }
+
+.player-analytics-page .batter-team,
+.player-analytics-page .pitcher-team { font-size: 0.7rem; }
+
+.player-analytics-page .batter-value,
+.player-analytics-page .pitcher-value {
+  font-size: 1.2rem;
+  margin-top: 0.35rem;
 }
 
 /* ============================================
@@ -438,6 +508,10 @@
 @media (max-width: 480px) {
   .player-analytics-page .container {
     padding: 1rem 1rem;
+  }
+
+  .player-analytics-page .analytics-content {
+    padding: 1rem 0.75rem 2rem;
   }
 
   .player-analytics-page > .analytics-header,

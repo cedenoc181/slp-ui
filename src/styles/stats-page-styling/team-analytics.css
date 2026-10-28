@@ -21,7 +21,7 @@
 .team-analytics-page > .analytics-header,
 .team-analytics-page .analytics-header:not(.season-selector):not(.team-selector) {
   background: linear-gradient(180deg, rgba(25, 118, 210, 0.15) 0%, transparent 100%) !important;
-  padding: 2rem 0;
+  padding: 2rem 0 1.5rem;
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
 
@@ -38,13 +38,13 @@
    ============================================ */
 
 .team-analytics-page .container {
-  max-width: 1400px;
+  max-width: 1200px;
   margin: 0 auto;
   padding: 0 1.5rem;
 }
 
 .team-analytics-page .analytics-content {
-  padding: 2rem 0;
+  padding: 1.5rem 1.5rem 2rem;
 }
 
 /* ============================================
@@ -160,14 +160,14 @@
 }
 
 .team-analytics-page .team-logo-image {
-  width: 70px;
-  height: 70px;
+  width: 52px;
+  height: 52px;
   object-fit: contain;
 }
 
 .team-analytics-page .team-header-inline h1 {
-  font-size: 2.3rem;
-  font-weight: 700;
+  font-size: 2.25rem;
+  font-weight: 800;
   margin: 0;
   color: #fff;
 }
@@ -186,13 +186,13 @@
 /* Team Analytics Dropdown Styles */
 .team-analytics-page .team-dropdown,
 .team-analytics-page .season-dropdown {
-  padding: 10px 16px;
-  padding-right: 36px;
-  border: 1px solid rgba(255, 255, 255, 0.15);
+  padding: 0.5rem 1.25rem;
+  padding-right: 2.25rem;
+  border: 1px solid rgba(255, 255, 255, 0.12);
   border-radius: 8px;
   color: var(--text-primary, #fff);
-  font-size: 14px;
-  font-weight: 500;
+  font-size: 0.9rem;
+  font-weight: 600;
   cursor: pointer;
   appearance: none;
   -webkit-appearance: none;
@@ -243,21 +243,21 @@
 /* Timeframe Tabs */
 .team-analytics-page .timeframe-tabs {
   display: flex;
-  gap: 8px;
+  gap: 0.5rem;
   background: rgba(255, 255, 255, 0.05);
-  padding: 6px;
+  padding: 4px;
   border-radius: 10px;
   width: auto;
 }
 
 .team-analytics-page .timeframe-tabs .tab {
-  padding: 10px 20px;
+  padding: 0.5rem 1.25rem;
   background: transparent;
   border: none;
   border-radius: 8px;
   color: var(--text-secondary, #aaa);
-  font-size: 14px;
-  font-weight: 500;
+  font-size: 0.9rem;
+  font-weight: 600;
   cursor: pointer;
   transition: background-color 0.15s ease, color 0.15s ease;
   flex: none;
@@ -383,6 +383,29 @@
   font-size: 13px;
   color: var(--text-secondary, #aaa);
 }
+
+/* Compact overview cards on Team Analytics only — the base rules above are
+   global and shared with other pages' stat cards. */
+.team-analytics-page .overview-section {
+  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
+}
+
+.team-analytics-page .stat-card {
+  border-radius: 8px;
+  padding: 0.9rem 1rem;
+}
+
+.team-analytics-page .stat-header { margin-bottom: 0.5rem; }
+.team-analytics-page .stat-label { font-size: 11px; }
+
+.team-analytics-page .stat-value {
+  font-size: 1.5rem;
+  margin-bottom: 0.35rem;
+}
+
+.team-analytics-page .stat-detail { font-size: 12px; }
 
 /* ============================================
    Section Cards
@@ -1807,12 +1830,17 @@
     font-size: 12px;
   }
 
-  .overview-section {
+  .overview-section,
+  .team-analytics-page .overview-section {
     grid-template-columns: repeat(2, 1fr);
   }
 
   .stat-value {
     font-size: 1.5rem;
+  }
+
+  .team-analytics-page .stat-value {
+    font-size: 1.3rem;
   }
 
   .splits-section {
@@ -1969,6 +1997,10 @@
     padding-bottom: 2rem;
   }
 
+  .team-analytics-page .analytics-content {
+    padding: 1rem 0.75rem 2rem;
+  }
+
   .team-analytics-page .header-content {
     gap: 0.75rem;
     padding: 0.75rem 0;
@@ -1994,7 +2026,8 @@
     border-radius: 6px;
   }
 
-  .overview-section {
+  .overview-section,
+  .team-analytics-page .overview-section {
     grid-template-columns: 1fr;
   }
 

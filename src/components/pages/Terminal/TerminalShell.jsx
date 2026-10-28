@@ -49,12 +49,12 @@ const PAGES = [
   { id: 'standings',   label: 'MLB Standings',    icon: 'list',   to: '/mlb-standings',             match: ['/mlb-standings'] },
   { id: 'teams',       label: 'Team Analytics',   icon: 'shield', to: '/team-analytics',            match: ['/team-analytics'] },
   { id: 'players',     label: 'Player Analytics', icon: 'user',   to: '/player-analytics',          match: ['/player-analytics', '/player/'] },
-  { id: 'insider',     label: 'Sandlot Insider',  icon: 'doc',    to: '/sandlot-insider',           match: ['/sandlot-insider'] },
   { id: 'settings',    label: 'Account Settings', icon: 'gear',   to: '/account/settings',          match: ['/account', '/upgrade'], bottom: true },
 ];
 
 // Extra destinations reachable from the palette only.
 const MORE_PAGES = [
+  { id: 'insider',   label: 'Sandlot Insider',  to: '/sandlot-insider' },
   { id: 'blogs',     label: 'Strategy Blog',    to: '/blogs' },
   { id: 'datasci',   label: 'Data Science',     to: '/data-science' },
   { id: 'howto',     label: 'How to Use',       to: '/how-to-use' },
@@ -144,6 +144,10 @@ function useSlate() {
           homeId: g.home_team_id,
           away: abbr(g.away_team_id),
           home: abbr(g.home_team_id),
+          awaySpId: g.away_sp_id ?? null,
+          homeSpId: g.home_sp_id ?? null,
+          awaySp: g.away_sp_name || null,
+          homeSp: g.home_sp_name || null,
           awayRuns: g.away_runs_score,
           homeRuns: g.home_runs_score,
           awayHits: g.away_hits,

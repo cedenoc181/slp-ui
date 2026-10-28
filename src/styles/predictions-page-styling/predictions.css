@@ -4,8 +4,9 @@
 
 .predictions-page {
   min-height: 100vh;
-  background: #121212;
-  color: #fff;
+  background: var(--slt-bg, #0a0e14);
+  color: var(--slt-ink, #e8ecf1);
+  font-family: 'Archivo', -apple-system, BlinkMacSystemFont, sans-serif;
   padding-bottom: 4rem;
 }
 
@@ -42,10 +43,13 @@
 .predictions-nav-link {
   flex-shrink: 0;
   padding: 0.45rem 1rem;
-  border-radius: 8px;
-  font-size: 0.82rem;
-  font-weight: 600;
-  color: rgba(255, 255, 255, 0.45);
+  border-radius: 6px;
+  font-family: 'Oswald', sans-serif;
+  font-size: 0.8rem;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--slt-ink-muted, #7c8699);
   text-decoration: none;
   transition: color 0.15s ease, background 0.15s ease;
   white-space: nowrap;
@@ -58,19 +62,19 @@
 
 .predictions-nav-link.active {
   color: #fff;
-  background: rgba(99, 102, 241, 0.18);
-  border: 1px solid rgba(99, 102, 241, 0.3);
+  background: rgba(103, 232, 249, 0.18);
+  border: 1px solid rgba(103, 232, 249, 0.3);
 }
 
 /* Admin tools (Bet Library, Lab) — grouped and set apart on the right of the nav */
 .predictions-nav-link--admin {
-  border: 1px solid rgba(99, 102, 241, 0.25);
-  background: rgba(99, 102, 241, 0.06);
+  border: 1px solid rgba(103, 232, 249, 0.25);
+  background: rgba(103, 232, 249, 0.06);
   color: rgba(255, 255, 255, 0.6);
 }
 .predictions-nav-link--admin.active {
-  background: rgba(99, 102, 241, 0.18);
-  border-color: rgba(99, 102, 241, 0.4);
+  background: rgba(103, 232, 249, 0.18);
+  border-color: rgba(103, 232, 249, 0.4);
   color: #fff;
 }
 /* First admin tab draws a divider before it. On desktop it also pushes the
@@ -123,11 +127,12 @@
 }
 
 .predictions-section-label {
-  font-size: 0.7rem;
-  font-weight: 700;
-  letter-spacing: 0.12em;
+  font-family: 'Oswald', sans-serif;
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.07em;
   text-transform: uppercase;
-  color: rgba(255, 255, 255, 0.35);
+  color: var(--slt-ink-muted, #7c8699);
   margin-bottom: 1.25rem;
 }
 
@@ -140,9 +145,9 @@
 }
 
 .predictions-category-card {
-  background: #1e1e1e;
+  background: var(--slt-surface, #11161f);
   border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 16px;
+  border-radius: 8px;
   padding: 1.75rem;
   cursor: pointer;
   transition: border-color 0.2s ease, background 0.2s ease, transform 0.15s ease;
@@ -167,7 +172,7 @@
 
 .predictions-category-card:hover {
   border-color: var(--card-accent, rgba(255,255,255,0.2));
-  background: #242424;
+  background: var(--slt-surface-2, #161c27);
   transform: translateY(-2px);
 }
 
@@ -197,7 +202,7 @@
 .predictions-card-icon-wrap {
   width: 48px;
   height: 48px;
-  border-radius: 12px;
+  border-radius: 8px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -269,7 +274,7 @@
   letter-spacing: 0.05em;
   text-transform: uppercase;
   white-space: nowrap;
-  border-radius: 16px;
+  border-radius: 8px;
   padding: 0.16rem 0.44rem;
   background: rgba(251, 191, 36, 0.14);
   color: #fbbf24;
@@ -307,7 +312,7 @@
 .predictions-coming-soon-banner {
   background: rgba(100, 181, 246, 0.06);
   border: 1px solid rgba(100, 181, 246, 0.15);
-  border-radius: 12px;
+  border-radius: 8px;
   padding: 1.25rem 1.5rem;
   display: flex;
   align-items: center;
@@ -379,10 +384,10 @@
   display: flex;
   align-items: center;
   gap: 0.9rem;
-  background: rgba(99, 102, 241, 0.07);
-  border: 1px solid rgba(99, 102, 241, 0.2);
-  border-left: 3px solid #6366f1;
-  border-radius: 12px;
+  background: rgba(103, 232, 249, 0.07);
+  border: 1px solid rgba(103, 232, 249, 0.2);
+  border-left: 3px solid #67e8f9;
+  border-radius: 8px;
   padding: 1rem 1.25rem;
   margin-bottom: 1.5rem;
 }
@@ -400,8 +405,8 @@
 .pp-loading-spinner {
   width: 18px;
   height: 18px;
-  border: 2px solid rgba(99, 102, 241, 0.3);
-  border-top-color: #6366f1;
+  border: 2px solid rgba(103, 232, 249, 0.3);
+  border-top-color: #67e8f9;
   border-radius: 50%;
   flex-shrink: 0;
   animation: pp-spin 0.8s linear infinite;

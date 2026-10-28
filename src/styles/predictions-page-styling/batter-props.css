@@ -25,7 +25,7 @@
 .bp-matchup-all {
   background: rgba(255,255,255,0.05);
   border: 1px solid rgba(255,255,255,0.09);
-  border-radius: 10px;
+  border-radius: 8px;
   color: rgba(255,255,255,0.45);
   font-size: 0.65rem;
   font-weight: 800;
@@ -55,7 +55,7 @@
   align-items: center;
   background: rgba(255,255,255,0.04);
   border: 1px solid rgba(255,255,255,0.08);
-  border-radius: 12px;
+  border-radius: 8px;
   padding: 0.55rem 0.85rem;
   cursor: pointer;
   color: inherit;
@@ -282,7 +282,7 @@
 .accent-blue   { --acc: #60a5fa; --acc-bg: rgba(96,165,250,0.12);  --acc-bd: rgba(96,165,250,0.28);  }
 .accent-yellow { --acc: #fbbf24; --acc-bg: rgba(251,191,36,0.12);  --acc-bd: rgba(251,191,36,0.28);  }
 .accent-purple { --acc: #a78bfa; --acc-bg: rgba(167,139,250,0.12); --acc-bd: rgba(167,139,250,0.28); }
-.accent-cyan   { --acc: #22d3ee; --acc-bg: rgba(34,211,238,0.12);  --acc-bd: rgba(34,211,238,0.28);  }
+.accent-cyan   { --acc: #67e8f9; --acc-bg: rgba(103, 232, 249,0.12);  --acc-bd: rgba(103, 232, 249,0.28);  }
 
 /* ── Top picks grid ───────────────────────────────────────── */
 .bp-top-grid {
@@ -295,10 +295,10 @@
 .bp-top-card {
   display: flex;
   flex-direction: column;
-  background: #1e1e1e;
+  background: var(--slt-surface, #11161f);
   border: 1px solid rgba(255,255,255,0.07);
   border-left: 3px solid var(--acc);
-  border-radius: 14px;
+  border-radius: 8px;
   padding: 1rem;
   cursor: pointer;
   text-align: left;
@@ -309,7 +309,7 @@
   box-sizing: border-box;
 }
 
-.bp-top-card:hover { background: #242424; transform: translateY(-1px); }
+.bp-top-card:hover { background: var(--slt-surface-2, #161c27); transform: translateY(-1px); }
 
 .bp-top-card-row {
   display: flex;
@@ -498,10 +498,10 @@
 .bp-batter-card {
   width: 215px;
   flex-shrink: 0;
-  background: #1e1e1e;
+  background: var(--slt-surface, #11161f);
   border: 1px solid rgba(255,255,255,0.07);
   border-top: 2px solid var(--acc);
-  border-radius: 14px;
+  border-radius: 8px;
   overflow: hidden;
   cursor: pointer;
   text-align: left;
@@ -512,7 +512,7 @@
   transition: background 0.15s ease, transform 0.15s ease;
 }
 
-.bp-batter-card:hover { background: #252525; transform: translateY(-2px); }
+.bp-batter-card:hover { background: var(--slt-surface-2, #161c27); transform: translateY(-2px); }
 
 .bp-batter-card-top {
   display: flex;
@@ -638,7 +638,7 @@
 
 /* ── Full modal ───────────────────────────────────────────── */
 .bp-modal {
-  background: #1a1a1a;
+  background: var(--slt-surface, #11161f);
   border: 1px solid rgba(255,255,255,0.09);
   border-radius: 18px;
   display: flex;
@@ -738,7 +738,7 @@
   border: none;
   padding: 0;
   cursor: pointer;
-  border-radius: 9px;
+  border-radius: 8px;
   flex-shrink: 0;
   margin-left: auto;
   transition: transform 0.15s ease, box-shadow 0.15s ease;
@@ -755,7 +755,7 @@
   height: 40px;
   object-fit: contain;
   background: rgba(255,255,255,0.9);
-  border-radius: 9px;
+  border-radius: 8px;
   padding: 4px;
 }
 
@@ -801,7 +801,7 @@
   background: rgba(255,255,255,0.03);
   border: 1px solid rgba(255,255,255,0.07);
   border-top: 2px solid var(--acc);
-  border-radius: 12px;
+  border-radius: 8px;
   padding: 0.85rem;
   cursor: pointer;
   text-align: left;
@@ -907,10 +907,10 @@
   display: flex;
   align-items: center;
   gap: 0.85rem;
-  background: #1e1e1e;
+  background: var(--slt-surface, #11161f);
   border: 1px solid rgba(255,255,255,0.09);
   border-left: 3px solid var(--acc);
-  border-radius: 14px;
+  border-radius: 8px;
   padding: 0.75rem 1rem;
   animation: bp-modal-in 0.22s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
@@ -993,9 +993,9 @@
 
 /* ── Odds panel ──────────────────────────────────────────── */
 .bp-odds-panel {
-  background: #1a1a1a;
+  background: var(--slt-surface, #11161f);
   border: 1px solid rgba(255,255,255,0.08);
-  border-radius: 14px;
+  border-radius: 8px;
   overflow: hidden;
   animation: bp-modal-in 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
@@ -1127,7 +1127,7 @@
   background: rgba(251, 191, 36, 0.06);
   border: 1px solid rgba(251, 191, 36, 0.2);
   border-left: 3px solid #fbbf24;
-  border-radius: 10px;
+  border-radius: 8px;
   padding: 1.25rem 1.4rem;
   margin-bottom: 1.25rem;
 }
@@ -1161,10 +1161,10 @@
 }
 
 .bp-pending-card {
-  background: #1e1e1e;
+  background: var(--slt-surface, #11161f);
   border: 1px solid rgba(255,255,255,0.07);
   border-top: 2px solid rgba(251,191,36,0.35);
-  border-radius: 14px;
+  border-radius: 8px;
   overflow: hidden;
 }
 
@@ -1298,7 +1298,7 @@
   padding: 0.85rem 1rem;
   background: rgba(255,255,255,0.03);
   border: 1px solid rgba(255,255,255,0.07);
-  border-radius: 12px;
+  border-radius: 8px;
 }
 
 .bp-pred-stat {
@@ -1340,7 +1340,7 @@
   padding: 1rem 1.2rem;
   background: rgba(139,92,246,0.06);
   border: 1px solid rgba(139,92,246,0.25);
-  border-radius: 14px;
+  border-radius: 8px;
 }
 
 .bp-scout-panel-header {
@@ -1391,7 +1391,7 @@
   padding: 0.75rem 0.9rem;
   background: rgba(255,255,255,0.03);
   border: 1px solid rgba(255,255,255,0.07);
-  border-radius: 10px;
+  border-radius: 8px;
 }
 
 .bp-scout-prop-top {
