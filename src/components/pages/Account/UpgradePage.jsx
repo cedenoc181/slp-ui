@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../../context/AuthContext';
 import stripeService from '../../../data/services/stripeService';
+import { OFFSEASON, isOffseason, salesReopenLabel } from '../../../data/constants/salesWindow';
 import './upgrade-page.css';
 
 const PRICES = {
@@ -57,6 +58,9 @@ export default function UpgradePage() {
   const { isAuthenticated, isPremium } = useAuth();
   const [loading, setLoading] = useState(null); // null | plan key
   const [error, setError]     = useState('');
+  // Offseason: plans stay visible but can't be bought until Opening Day.
+  const salesClosed = isOffseason();
+  const reopenLabel = salesReopenLabel();
 
   if (isPremium) {
     navigate('/predictions', { replace: true });
@@ -64,6 +68,7 @@ export default function UpgradePage() {
   }
 
   const handleStripe = async (plan) => {
+    if (salesClosed) return;
     if (!isAuthenticated) {
       navigate('/account', { state: { from: { pathname: '/upgrade' } } });
       return;
@@ -84,14 +89,30 @@ export default function UpgradePage() {
 
       {/* Hero */}
       <div className="upgrade-hero">
-        <span className="upgrade-eyebrow">{'// PREMIUM ACCESS'}</span>
+        <span className="upgrade-eyebrow">{salesClosed ? '// OFFSEASON' : '// PREMIUM ACCESS'}</span>
+        {salesClosed ? (
+          <h1 className="upgrade-title">
+            Premium is closed for the offseason.<br />
+            <span className="upgrade-title--accent">Back for {OFFSEASON.nextSeason} Opening Day.</span>
+          </h1>
+        ) : (
         <h1 className="upgrade-title">
           The full predictions suite.<br />
           <span className="upgrade-title--accent">Pick your plan.</span>
         </h1>
+        )}
         <p className="upgrade-sub">
-          Unlock every game, pitcher, and batter prop — plus Scout AI scouting reports and live
-          odds comparison — updated daily throughout the MLB season.
+          {salesClosed ? (
+            <>
+              New memberships open again on <strong>{reopenLabel}</strong>, in time for Opening Day.
+              Current members keep their access and can manage billing from Account Settings.
+            </>
+          ) : (
+            <>
+              Unlock every game, pitcher, and batter prop — plus Scout AI scouting reports and live
+              odds comparison — updated daily throughout the MLB season.
+            </>
+          )}
         </p>
       </div>
 
@@ -139,9 +160,16 @@ export default function UpgradePage() {
                 <button
                   className="upgrade-card__cta"
                   onClick={() => handleStripe(plan.key)}
-                  disabled={!!loading}
+                  disabled={!!loading || salesClosed}
                 >
-                  {loading === plan.key ? (
+                  {salesClosed ? (
+                    <>
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                        <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                      </svg>
+                      Opens {reopenLabel}
+                    </>
+                  ) : loading === plan.key ? (
                     <span className="upgrade-spinner" />
                   ) : (
                     <>

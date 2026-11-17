@@ -7,7 +7,7 @@ import '../../../styles/products-page-styling/products.css';
 // (hero, method strip, feature sections, how-it-works, CTA) using the same pov-* styles.
 
 // ── Section feature row ─────────────────────────────────────────────────────
-function FeatureSection({ accent, tag, tagIcon, title, description, bullets, mockTitle, mockUrl, mock, reverse }) {
+function FeatureSection({ accent, tag, tagIcon, title, description, bullets, mockTitle, mockUrl, mock, image, imageAlt, reverse }) {
   return (
     <div className={`pov-feature-section${reverse ? ' reverse' : ''}`}>
       <div className="pov-feature-copy">
@@ -32,10 +32,14 @@ function FeatureSection({ accent, tag, tagIcon, title, description, bullets, moc
             <span /><span /><span />
             {mockUrl && <em className="pl-mock-url">{mockUrl}</em>}
           </div>
-          <div className="pl-mock">
-            <div className={`pl-mock-title accent-${accent}`}>{mockTitle}</div>
-            {mock}
-          </div>
+          {image ? (
+            <img src={image} alt={imageAlt || mockTitle || title} className="pov-screenshot-img" loading="lazy" />
+          ) : (
+            <div className="pl-mock">
+              <div className={`pl-mock-title accent-${accent}`}>{mockTitle}</div>
+              {mock}
+            </div>
+          )}
         </div>
       </div>
     </div>

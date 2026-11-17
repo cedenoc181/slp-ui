@@ -1,3 +1,4 @@
+import { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import logo from '../assets/images/spa-retro-logo-removebg.png';
@@ -7,6 +8,27 @@ function Header() {
   const navigate = useNavigate();
   const location = useLocation();
   const { isAuthenticated, loading } = useAuth();
+  const [menuOpen, setMenuOpen] = useState(false);
+  const menuRef = useRef(null);
+
+  // Mobile menu (≤819px) closes on navigation, Escape, or a tap outside it.
+  useEffect(() => { setMenuOpen(false); }, [location.pathname]);
+
+  useEffect(() => {
+    if (!menuOpen) return;
+    const onKey = (e) => { if (e.key === 'Escape') setMenuOpen(false); };
+    const onClick = (e) => {
+      if (menuRef.current && !menuRef.current.contains(e.target)) setMenuOpen(false);
+    };
+    document.addEventListener('keydown', onKey);
+    document.addEventListener('mousedown', onClick);
+    document.addEventListener('touchstart', onClick);
+    return () => {
+      document.removeEventListener('keydown', onKey);
+      document.removeEventListener('mousedown', onClick);
+      document.removeEventListener('touchstart', onClick);
+    };
+  }, [menuOpen]);
 
   const handleLogoClick = (e) => {
     e.preventDefault();
@@ -51,6 +73,28 @@ function Header() {
             <path d="M4 21v-2a4 4 0 0 1 4-4h8a4 4 0 0 1 4 4v2" />
           </svg>
         </Link>
+
+        <div className="mobile-menu" ref={menuRef}>
+          <button
+            type="button"
+            className={`mobile-menu__toggle${menuOpen ? ' open' : ''}`}
+            aria-label={menuOpen ? 'Close menu' : 'Open menu'}
+            aria-expanded={menuOpen}
+            aria-controls="mobile-menu-panel"
+            onClick={() => setMenuOpen(o => !o)}
+          >
+            <span /><span /><span />
+          </button>
+
+          {menuOpen && (
+            <nav id="mobile-menu-panel" className="mobile-menu__panel">
+              <Link to="/account" className="mobile-menu__link mobile-menu__link--cta">Log in / Sign up</Link>
+              <Link to="/products" className="mobile-menu__link">Products</Link>
+              <Link to="/features" className="mobile-menu__link">Features</Link>
+              <Link to="/upgrade" className="mobile-menu__link">Pricing</Link>
+            </nav>
+          )}
+        </div>
       </div>
     </header>
   );

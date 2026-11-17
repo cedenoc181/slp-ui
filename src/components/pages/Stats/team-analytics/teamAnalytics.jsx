@@ -120,6 +120,7 @@ function TeamAnalytics() {
 
     // Handlers
     handleLeaderClick,
+    statsSeasonType,
   } = useTeamAnalytics();
 
   // ========== Computed Values ==========
@@ -209,6 +210,7 @@ function TeamAnalytics() {
             chartFilter={chartFilter}
             chartSectionRef={chartSectionRef}
             selectedSeason={selectedSeason}
+            statsSeasonType={statsSeasonType}
           />
         </AuthGate>
 
@@ -232,6 +234,7 @@ function TeamAnalytics() {
             homeGames={homeGames}
             awayGames={awayGames}
             selectedSeason={selectedSeason}
+            statsSeasonType={statsSeasonType}
           />
         </AuthGate>
 
@@ -253,6 +256,7 @@ function TeamAnalytics() {
           setTeamStatsToggle={setTeamStatsToggle}
           selectedTeam={selectedTeam}
           selectedSeason={selectedSeason}
+            statsSeasonType={statsSeasonType}
           handleLeaderClick={handleLeaderClick}
         />
 

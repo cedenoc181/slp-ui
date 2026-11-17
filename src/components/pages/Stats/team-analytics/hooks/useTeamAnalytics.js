@@ -132,6 +132,10 @@ export function useTeamAnalytics() {
   // Available season types for game log (based on which have games)
   const [availableSeasonTypes, setAvailableSeasonTypes] = useState(['R', 'S', 'P']);
 
+  // Season type the page's stats were actually fetched for. Calendar-based,
+  // except a club with no postseason games stays on 'R' in October/November.
+  const [statsSeasonType, setStatsSeasonType] = useState(() => getStatsSeasonType(getInitialSeason()));
+
   // Injury Data
   const [injuriesFullSeason, setInjuriesFullSeason] = useState(null);
   const [injuriesFirstHalf, setInjuriesFirstHalf] = useState(null);
@@ -145,8 +149,18 @@ export function useTeamAnalytics() {
     if (!isTeamSwitch) setLoading(true);
     setError(null);
 
-    const sst = getStatsSeasonType(season);
+    let sst = getStatsSeasonType(season);
     const currentYear = new Date().getFullYear().toString();
+
+    // Postseason months: only clubs that actually played in the postseason get
+    // playoff stats; everyone else keeps their regular-season numbers. Same
+    // check the game log uses (cached), so it costs one small request.
+    if (sst === SEASON_TYPES.POSTSEASON) {
+      const postGames = await gamesService.getTeamGames(teamId, season, SEASON_TYPES.POSTSEASON).catch(() => null);
+      if (signal?.aborted) return;
+      if (!Array.isArray(postGames) || postGames.length === 0) sst = SEASON_TYPES.REGULAR;
+    }
+    setStatsSeasonType(sst);
     const hasLeadersData = d => d && typeof d === 'object' && Object.values(d).some(v => v?.player_name != null);
 
     try {
@@ -542,6 +556,7 @@ export function useTeamAnalytics() {
     battingLeaders,
     pitchingLeaders,
     leadersSeason,
+    statsSeasonType,
     last10Games,
     homeGames,
     awayGames,

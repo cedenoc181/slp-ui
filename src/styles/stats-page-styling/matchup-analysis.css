@@ -1557,3 +1557,27 @@ a > .hero-team-logo:hover {
     margin-bottom: 0.35rem;
   }
 }
+
+/* ── Compact top-nav buttons — same size as the matchup detail page
+   (see the "Compact top-nav buttons" block in matchup-detail.css). Tag-
+   qualified to win over the base .analysis-back-btn / .scout-ai-btn rules. */
+.matchup-detail-top-nav a.analysis-back-btn,
+.analysis-scout-wrap button.scout-ai-btn {
+  font-size: 0.75rem;
+  padding: 0.4rem 0.95rem;
+  gap: 0.35rem;
+  letter-spacing: 0.02em;
+}
+
+.analysis-scout-wrap button.scout-ai-btn .scout-ai-btn__icon {
+  width: 13px;
+  height: 13px;
+}
+
+@media (max-width: 650px) {
+  .matchup-detail-top-nav a.analysis-back-btn,
+  .analysis-scout-wrap button.scout-ai-btn {
+    font-size: 0.68rem;
+    padding: 0.35rem 0.7rem;
+  }
+}

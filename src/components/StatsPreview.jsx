@@ -69,14 +69,12 @@ function StatsPreview() {
     return String(value);
   };
 
-  // Build batting leader display data - Top 4 sorted by OPS with HR, AVG, OPS
+  // Build batting leader display data - top 4 in the API's ranking order, the
+  // same order as the Top 10 MLB Batters list on Player Analytics (no re-sort).
   const getBattingLeaderStats = () => {
     if (!battingLeaders || battingLeaders.length === 0) return [];
 
-    // Sort by OPS (best overall offensive metric) and take top 4
-    return [...battingLeaders]
-      .filter(b => b.ops && b.ops > 0)
-      .sort((a, b) => (b.ops || 0) - (a.ops || 0))
+    return battingLeaders
       .slice(0, 4)
       .map(batter => ({
         player: batter.player_name,
@@ -87,14 +85,12 @@ function StatsPreview() {
       }));
   };
 
-  // Build pitching leader display data - Top 4 sorted by ERA
+  // Build pitching leader display data - top 4 in the API's ranking order, the
+  // same order as the Top 10 MLB Pitchers list on Player Analytics (no re-sort).
   const getPitchingLeaderStats = () => {
     if (!pitchingLeaders || pitchingLeaders.length === 0) return [];
 
-    // Sort by ERA (lower is better) and take top 4
-    return [...pitchingLeaders]
-      .filter(p => p.era && p.era > 0)
-      .sort((a, b) => (a.era || 99) - (b.era || 99))
+    return pitchingLeaders
       .slice(0, 4)
       .map(pitcher => ({
         player: pitcher.player_name,

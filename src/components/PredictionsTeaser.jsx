@@ -3,6 +3,7 @@ import gamePropIcon   from '../assets/icons/game-prop.png';
 import batterPropIcon from '../assets/icons/batter-prop.png';
 import pitcherPropIcon from '../assets/icons/pitcher-prop.png';
 import analysisIcon   from '../assets/icons/analysis.png';
+import { isOffseason } from '../data/constants/salesWindow';
 import '../styles/home-page-styling/predictions-teaser.css';
 
 function PredictionsTeaser() {
@@ -52,7 +53,8 @@ function PredictionsTeaser() {
           </p>
         </div>
 
-        {/* CTA Banner */}
+        {/* CTA Banner — free week promo is muted in the offseason (redemption is closed) */}
+        {!isOffseason() && (
         <div className="waitlist-section">
           <div className="waitlist-content">
             <span className="waitlist-offer-badge">🎁 New Users — Free Week Trial</span>
@@ -86,6 +88,7 @@ function PredictionsTeaser() {
             </div>
           </div>
         </div>
+        )}
 
         {/* Preview Cards */}
         <div className="predictions-preview">

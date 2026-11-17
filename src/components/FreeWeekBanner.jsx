@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { isOffseason } from '../data/constants/salesWindow';
 import '../styles/free-week-banner.css';
 
 const DISMISS_KEY = 'spa_free_week_banner_dismissed_at';
@@ -47,6 +48,7 @@ export default function FreeWeekBanner() {
   }, [isAuthenticated, location.pathname]);
 
   if (isPremium) return null;
+  if (isOffseason()) return null; // promo redemption is closed until Opening Day
   if (dismissed) return null;
   if (!isStatsRoute(location.pathname)) return null;
 

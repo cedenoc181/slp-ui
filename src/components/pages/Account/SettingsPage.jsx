@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../../context/AuthContext';
 import userProfileService from '../../../data/services/userProfileService';
 import stripeService from '../../../data/services/stripeService';
+import { isOffseason, salesReopenLabel } from '../../../data/constants/salesWindow';
 import { TEAMS, SPORTSBOOKS, US_STATES } from '../../../data/constants/apiConstants';
 import AlertInbox from '../../AlertInbox';
 
@@ -121,7 +122,11 @@ function SettingsPage() {
   const [promoInput, setPromoInput] = useState('');
   const [promoError, setPromoError] = useState('');
 
+  // Promo redemption goes through checkout, so it closes with membership sales.
+  const salesClosed = isOffseason();
+
   const handleRedeemPromo = async () => {
+    if (salesClosed) return;
     const code = (promoInput || FREE_WEEK_CODE).trim().toUpperCase();
     if (!code) {
       setPromoError('Please enter a promo code.');
@@ -716,7 +721,7 @@ function SettingsPage() {
                           value={promoInput}
                           onChange={(e) => { setPromoInput(e.target.value); setPromoError(''); }}
                           onKeyDown={(e) => { if (e.key === 'Enter') handleRedeemPromo(); }}
-                          disabled={freeWeekLoading}
+                          disabled={freeWeekLoading || salesClosed}
                           maxLength={40}
                           autoCapitalize="characters"
                           spellCheck={false}
@@ -725,7 +730,7 @@ function SettingsPage() {
                           type="button"
                           className="free-week-card__cta"
                           onClick={handleRedeemPromo}
-                          disabled={freeWeekLoading}
+                          disabled={freeWeekLoading || salesClosed}
                         >
                           {freeWeekLoading ? (
                             <span className="sub-card__spinner" />
@@ -742,7 +747,9 @@ function SettingsPage() {
                       </div>
 
                       <p className="free-week-card__footnote">
-                        You'll be redirected to Stripe to confirm — no charge for the trial week.
+                        {salesClosed
+                          ? `Promo codes can be redeemed again when the season opens on ${salesReopenLabel()}.`
+                          : 'You\'ll be redirected to Stripe to confirm — no charge for the trial week.'}
                       </p>
                       {promoError && <p className="sub-card__error">{promoError}</p>}
                     </div>

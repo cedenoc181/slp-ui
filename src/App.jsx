@@ -6,6 +6,7 @@ import { SHOW_ANALYTICS_LAB } from './data/constants/featureFlags';
 
 import ApiTestPage from './components/ApiTestPage';
 import ProtectedRoute from './components/ProtectedRoute';
+import OffseasonGate from './components/OffseasonGate';
 
 
 // Home page component imports//
@@ -304,12 +305,12 @@ function App() {
 
           {/* Predictions routes */}
           <Route path="/predictions" element={<PredictionsOverview />} />
-          <Route path="/predictions/games" element={<ProtectedRoute require="premium"><GameProps /></ProtectedRoute>} />
-          <Route path="/predictions/pitchers" element={<ProtectedRoute require="premium"><PitcherProps /></ProtectedRoute>} />
-          <Route path="/predictions/batters" element={<ProtectedRoute require="premium"><BatterProps /></ProtectedRoute>} />
+          <Route path="/predictions/games" element={<ProtectedRoute require="premium"><OffseasonGate><GameProps /></OffseasonGate></ProtectedRoute>} />
+          <Route path="/predictions/pitchers" element={<ProtectedRoute require="premium"><OffseasonGate><PitcherProps /></OffseasonGate></ProtectedRoute>} />
+          <Route path="/predictions/batters" element={<ProtectedRoute require="premium"><OffseasonGate><BatterProps /></OffseasonGate></ProtectedRoute>} />
           <Route path="/predictions/bet-library" element={<ProtectedRoute><BetLibrary /></ProtectedRoute>} />
           <Route path="/predictions/lab" element={<ProtectedRoute require="admin-tools"><Lab /></ProtectedRoute>} />
-          <Route path="/predictions/scout-desk" element={<ProtectedRoute require="premium"><ScoutDesk /></ProtectedRoute>} />
+          <Route path="/predictions/scout-desk" element={<ProtectedRoute require="premium"><OffseasonGate><ScoutDesk /></OffseasonGate></ProtectedRoute>} />
           {/* Not premium-gated at the route level: the premium/admin/early-access
               allowlist decision is server-side (403), so any authenticated user can
               land here and TrustLedger itself renders the locked/upsell state on 403. */}

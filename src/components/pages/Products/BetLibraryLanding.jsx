@@ -4,9 +4,11 @@ import profitLossIcon from '../../../assets/icons/profit-and-loss.png';
 import analysisIcon from '../../../assets/icons/analysis.png';
 import strategyIcon from '../../../assets/icons/strategy-blog.png';
 import targetIcon from '../../../assets/icons/target.png';
+import trackerImg from '../../../assets/images/bet-library-tracker.png';
+import detailImg from '../../../assets/images/bet-library-detail.png';
 
-// Illustrative only — a Bet Library preview can't show real data, since the
-// log is created the moment an account signs up.
+// Screenshots and mock rows are illustrative — a visitor's own Bet Library is
+// empty until they sign up and log bets.
 function BetLibraryLanding() {
   const { isAuthenticated } = useAuth();
 
@@ -36,17 +38,12 @@ function BetLibraryLanding() {
             'Flat-unit P&L that updates as your bets settle',
             'American odds converted to payouts automatically',
             'Running balance so you always know where you stand',
+            'Net units, ROI, record, win rate, and pending bets up top',
+            'Filter by taken or watchlist, and by won, lost, push, or pending',
           ],
-          mockTitle: 'Recent bets',
           mockUrl: 'sandlotpicks.com/bet-library',
-          mock: (
-            <>
-              <MockRow left="LAD -1.5" sub="-120" right="+1.8u" tone="pos" />
-              <MockRow left="NYY/BOS o8.5" sub="-105" right="-1.0u" tone="neg" />
-              <MockRow left="HOU ML" sub="+140" right="+1.4u" tone="pos" />
-              <MockRow left="Net" right="+2.2u" tone="pos" />
-            </>
-          ),
+          image: trackerImg,
+          imageAlt: 'Bet Library P&L tracker with net units, ROI, record, win rate and pending cards above a list of taken bets',
         },
         {
           accent: 'blue',
@@ -79,16 +76,12 @@ function BetLibraryLanding() {
             'Free with every account — no card required',
             'Private to you, separate from the Trust Ledger',
             'Every bet in one place instead of scattered across books',
+            'Odds, model probability, EV, and the Scout AI prompt saved at pick time',
+            'Tracked and settled timestamps on every bet',
           ],
-          mockTitle: 'Season summary',
           mockUrl: 'sandlotpicks.com/bet-library',
-          mock: (
-            <>
-              <MockRow left="Record" right="41-32-0" />
-              <MockRow left="Win rate" right="56.2%" tone="pos" />
-              <MockRow left="Units" right="+8.4u" tone="pos" />
-            </>
-          ),
+          image: detailImg,
+          imageAlt: 'An expanded Bet Library entry showing tracked and settled times, the Scout AI prompt, and settle buttons',
         },
       ]}
       howTitle="How the library works"

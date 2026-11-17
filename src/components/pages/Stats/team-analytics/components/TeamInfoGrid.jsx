@@ -3,7 +3,11 @@ import { useNavigate } from 'react-router-dom';
 import { getStreakString, isWinningStreak } from '../utils';
 
 const SEASON_TYPE_LABELS = { S: 'Spring Training', R: 'Regular Season', P: 'Postseason' };
-function getSeasonTypeLabel(selectedSeason) {
+// statsSeasonType (from useTeamAnalytics) is what the stats were actually
+// fetched for — e.g. 'R' for a club that missed the postseason. Falls back to
+// the calendar when it isn't passed.
+function getSeasonTypeLabel(selectedSeason, statsSeasonType) {
+  if (statsSeasonType && SEASON_TYPE_LABELS[statsSeasonType]) return SEASON_TYPE_LABELS[statsSeasonType];
   const currentYear = new Date().getFullYear().toString();
   if (selectedSeason !== currentYear) return 'Regular Season';
   const month = new Date().getMonth() + 1;
@@ -37,10 +41,11 @@ function TeamInfoGrid({
   setTeamStatsToggle,
   selectedTeam,
   selectedSeason,
+  statsSeasonType,
   handleLeaderClick,
 }) {
   const navigate = useNavigate();
-  const seasonLabel = getSeasonTypeLabel(selectedSeason);
+  const seasonLabel = getSeasonTypeLabel(selectedSeason, statsSeasonType);
   const isSpring = isSpringTrainingView(selectedSeason);
   const st = isSpring ? teamSeasonData?.spring_training : null;
 

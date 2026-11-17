@@ -78,14 +78,6 @@ export default function MatchupHero({
 }) {
   const isCompletedEarly = (game.status || '').toLowerCase() === 'completed early';
 
-  const seasonTypeLabel = (() => {
-    const st = (game.season_type || '').toLowerCase();
-    if (st === 's' || st === 'spring') return 'Spring Training';
-    if (st === 'p' || st === 'post' || st === 'postseason') return 'Postseason';
-    if (st === 'r' || st === 'regular') return 'Regular Season';
-    return null;
-  })();
-
   return (
     <div className={`detail-hero${isFinal ? ' hero-final' : isLive ? ' hero-live' : ''}`}>
       {/* <PredictionStrip publicFav={publicFav} scoutFav={scoutFav} /> */}
@@ -95,12 +87,11 @@ export default function MatchupHero({
       )}
       {/* Status strip */}
       <div className="hero-status-strip">
+        {game.date        && <span className="hero-date">{fmtDate(game.date)}</span>}
+        {isScheduled && <span className="hero-badge badge-scheduled">{game.game_time || 'TBD'}</span>}
+        {isLive      && <span className="hero-badge badge-live">● LIVE</span>}
         {isFinal     && <span className="hero-badge badge-final">FINAL</span>}
         {isFinal && isCompletedEarly && <span className="hero-badge-sub">Completed Early</span>}
-        {isLive      && <span className="hero-badge badge-live">● LIVE</span>}
-        {isScheduled && <span className="hero-badge badge-scheduled">{game.game_time || 'TBD'}</span>}
-        {seasonTypeLabel  && <span className="hero-season-type">{seasonTypeLabel}</span>}
-        {game.date        && <span className="hero-date">{fmtDate(game.date)}</span>}
       </div>
 
       {/* Teams row */}

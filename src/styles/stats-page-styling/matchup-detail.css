@@ -799,6 +799,29 @@ a.pitcher-name-lg:hover {
 
 .stat-leader { color: #42a5f5 !important; }
 
+/* .stat-value / .stat-label are also global classes in team-analytics,
+   spring standings and the homepage previews (sizes up to 2rem, margins,
+   monospace). Pin them inside the row so values follow the row's font-size. */
+.matchup-stat-row .stat-value {
+  font-size: inherit;
+  font-family: inherit;
+  font-weight: 700;
+  line-height: inherit;
+  margin: 0;
+  color: #ffffff;
+}
+
+.matchup-stat-row .stat-label {
+  font-size: 0.72rem;
+  font-family: inherit;
+  font-weight: 500;
+  line-height: inherit;
+  margin: 0;
+  color: #a0a0a0;
+  text-transform: none;
+  letter-spacing: normal;
+}
+
 /* ── Recent Form ─────────────────────────────────────────────────────────── */
 .form-section {
   display: flex;
@@ -1488,4 +1511,211 @@ a.pitcher-name-lg:hover {
     content: 'Scouting';
     font-size: 0.68rem;
   }
+}
+
+/* ── Compact hero (matches .analysis-mini-hero on the analysis page) ────────
+   Scoped to .detail-hero: both pages define .hero-team-record / .hero-score
+   globally, and these rules must also beat the older responsive sizes above. */
+.detail-hero {
+  border-radius: 12px;
+  padding: 0.6rem 1.25rem 0.75rem;
+}
+
+.detail-hero .odds-strip {
+  gap: 0.5rem;
+  padding: 0.15rem 0 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.detail-hero .odds-item { padding: 0.15rem 0.5rem; font-size: 0.68rem; }
+
+.detail-hero .hero-matchup {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+}
+
+/* Each team stacks logo → name → record, like .hero-team-block */
+.detail-hero .hero-team {
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 0.2rem;
+  min-width: 70px;
+}
+
+.detail-hero .hero-team.home-team > a,
+.detail-hero .hero-team.home-team > .hero-logo { order: -1; }
+
+.detail-hero .hero-logo {
+  width: 28px;
+  height: 28px;
+  padding: 3px;
+  border-radius: 6px;
+  filter: none;
+  background: rgba(255, 255, 255, 0.22);
+}
+
+.detail-hero a > .hero-logo { transition: opacity 0.15s ease; }
+.detail-hero a > .hero-logo:hover { opacity: 0.75; }
+
+.detail-hero .hero-team-info,
+.detail-hero .hero-team.away-team .hero-team-info,
+.detail-hero .hero-team-info.home-info {
+  align-items: center;
+  text-align: center;
+  gap: 0.15rem;
+}
+
+.detail-hero .hero-team-name {
+  font-size: 0.85rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+}
+
+.detail-hero .hero-team-record {
+  font-size: 0.65rem;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.detail-hero .hero-score { font-size: 1.4rem; font-weight: 700; }
+
+.detail-hero .hero-center { min-width: 0; padding: 0; gap: 0.15rem; }
+.detail-hero .hero-vs,
+.detail-hero .hero-dash {
+  font-size: 1rem;
+  font-weight: 300;
+  letter-spacing: 0;
+  color: rgba(255, 255, 255, 0.35);
+}
+.detail-hero .hero-venue,
+.detail-hero .hero-tv { font-size: 0.62rem; color: rgba(255, 255, 255, 0.45); }
+
+/* Date / time / season type as one small meta line under the teams,
+   like .hero-game-meta */
+.detail-hero { display: flex; flex-direction: column; }
+.detail-hero .hero-status-strip {
+  order: 3;
+  flex-direction: row;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  padding: 0;
+  margin: 0.4rem 0 0;
+  border-bottom: none;
+}
+
+.detail-hero .hero-date { font-size: 0.7rem; color: rgba(255, 255, 255, 0.5); }
+
+.detail-hero .hero-badge {
+  font-size: 0.65rem;
+  letter-spacing: 0.1em;
+  padding: 0.2rem 0.65rem;
+}
+
+/* Scheduled time reads as plain text next to the date ("… 2026 · 8:00 PM ET") */
+.detail-hero .badge-scheduled {
+  font-size: 0.7rem;
+  font-weight: 400;
+  letter-spacing: 0;
+  color: rgba(255, 255, 255, 0.5);
+  background: none;
+  border: none;
+  padding: 0;
+  border-radius: 0;
+}
+.detail-hero .hero-date + .badge-scheduled::before { content: '·'; margin-right: 0.5rem; }
+.detail-hero .hero-season-type { font-size: 0.6rem; padding: 0.15rem 0.55rem; }
+
+/* ── Compact top-nav buttons (Back / Scouting Report / Advanced Analysis) ────
+   Shared with the analysis page; tag-qualified so this wins over the base
+   rules in matchup-analysis.css and scout-ai.css regardless of bundle order. */
+.matchup-detail-top-nav a.back-link,
+.matchup-detail-top-nav a.deep-dive-btn,
+.matchup-detail-top-nav__scout button.scout-ai-btn {
+  font-size: 0.75rem;
+  padding: 0.4rem 0.95rem;
+  gap: 0.35rem;
+  letter-spacing: 0.02em;
+}
+
+.matchup-detail-top-nav a.deep-dive-btn { box-shadow: 0 2px 10px rgba(25, 118, 210, 0.25); }
+
+.matchup-detail-top-nav a.deep-dive-btn svg,
+.matchup-detail-top-nav__scout button.scout-ai-btn .scout-ai-btn__icon {
+  width: 13px;
+  height: 13px;
+}
+
+@media (max-width: 650px) {
+  .matchup-detail-top-nav a.back-link,
+  .matchup-detail-top-nav a.deep-dive-btn,
+  .matchup-detail-top-nav__scout button.scout-ai-btn {
+    font-size: 0.68rem;
+    padding: 0.35rem 0.7rem;
+  }
+}
+
+/* Scouting Report tooltip sits 1px closer to the button than the default */
+.matchup-detail-top-nav__scout button.scout-ai-btn::after  { top: calc(100% + 7px); }
+.matchup-detail-top-nav__scout button.scout-ai-btn::before { top: calc(100% + 1px); }
+
+/* ── Compact detail cards (same scale as the compact hero) ───────────────────
+   Tablet/desktop only: the ≤700px rules above already size cards for phones,
+   some smaller than this. Scoped to .detail-grid so other pages' .card-title
+   etc. are untouched. */
+@media (min-width: 701px) {
+  .detail-grid { gap: 0.75rem; }
+
+  .detail-grid .detail-card {
+    border-radius: 12px;
+    padding: 0.75rem 1rem;
+  }
+
+  .detail-grid .card-title {
+    font-size: 0.66rem;
+    margin: 0 0 0.65rem;
+    padding-bottom: 0.45rem;
+  }
+
+  .detail-grid .card-title-logo { width: 18px; height: 18px; }
+  .detail-grid .card-title-sub { font-size: 0.64rem; }
+
+  /* Pitcher matchup */
+  .detail-grid .pitcher-headshot { width: 60px; height: 68px; }
+  .detail-grid .pitcher-name-lg { font-size: 0.95rem; }
+  .detail-grid .pitcher-wl-record { font-size: 0.75rem; }
+
+  /* Lineups / team stats */
+  .detail-grid .lineup-table { font-size: 0.8rem; }
+  .detail-grid .team-stat-value { font-size: 0.82rem; }
+
+  /* Recent form */
+  .detail-grid .form-record { font-size: 1.1rem; }
+  .detail-grid .form-log-left,
+  .detail-grid .form-log-right { font-size: 0.82rem; }
+
+  /* Head to head */
+  .detail-grid .h2h-team-win-block { min-width: 44px; }
+  .detail-grid .h2h-win-count { font-size: 1.05rem; }
+  .detail-grid .h2h-score { font-size: 0.8rem; }
+}
+
+/* ── Head-to-head summary: smaller text (tablet/desktop) ─────────────────── */
+@media (min-width: 701px) {
+  .h2h-summary-card .h2h-record-section { gap: 1rem; margin-bottom: 0.6rem; }
+  .h2h-summary-card .h2h-team-abbr { font-size: 0.62rem; }
+  .h2h-summary-card .h2h-win-count { font-size: 0.95rem; }
+  .h2h-summary-card .h2h-wins-label { font-size: 0.56rem; }
+  .h2h-summary-card .h2h-games-label { font-size: 0.6rem; }
+
+  .h2h-summary-card .stat-comparison-header { font-size: 0.64rem; margin-bottom: 0.35rem; }
+  .h2h-summary-card .matchup-stat-row { font-size: 0.76rem; padding: 0.35rem 0; }
+  .h2h-summary-card .stat-label { font-size: 0.64rem; }
+
+  .h2h-summary-card .h2h-total-label,
+  .h2h-summary-card .h2h-total-sub { font-size: 0.64rem; }
+  .h2h-summary-card .h2h-total-val { font-size: 0.74rem; }
+  .h2h-summary-card .h2h-totals-sep { font-size: 0.7rem; }
 }

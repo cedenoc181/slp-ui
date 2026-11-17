@@ -4,6 +4,7 @@ import { useAuth } from '../../../context/AuthContext';
 import { buildScoutDesk, getScoutDeskPerformance, buildAutopsy, toPct } from '../../../data/services/scoutDesk';
 import { WarRoom, CONSENSUS_META, isGame, toDrawerPlay, fmtOdds, plCls, fmtUnits } from './ScoutWarRoom';
 import { SHOW_AUDIT_SUMMARY } from '../../../data/constants/featureFlags';
+import { OFFSEASON, isOffseason, salesReopenLabel } from '../../../data/constants/salesWindow';
 import betLibraryService from '../../../data/services/betLibraryService';
 import playerStatsService from '../../../data/services/playerStatsServices';
 import loadingPredictionsIcon from '../../../assets/icons/loading-predictions.png';
@@ -349,7 +350,10 @@ export default function ScoutDesk() {
     // own tracked bets) are independent of whether today's board is released —
     // load them alongside the desk so they render even when picks are pending
     // or the desk fetch fails.
-    Promise.allSettled([buildScoutDesk(), getScoutDeskPerformance(), betLibraryService.list()])
+    // Offseason: no slate to break down, so skip the desk + today's predictions
+    // fetch entirely (only admins get here — OffseasonGate stops everyone else).
+    const deskPromise = isOffseason() ? Promise.resolve(null) : buildScoutDesk();
+    Promise.allSettled([deskPromise, getScoutDeskPerformance(), betLibraryService.list()])
       .then(([deskR, perfR, betsR]) => {
         if (deskR.status === 'fulfilled') { setDesk(deskR.value); setError(null); }
         else { setDesk(null); setError(deskR.reason?.message || 'Failed to load the desk.'); }
@@ -420,7 +424,9 @@ export default function ScoutDesk() {
           )}
         </div>
 
-        {error ? (
+        {isOffseason() ? (
+          <div className="sd-empty"><span className="sd-empty-icon">🗓️</span><p>Predictions live Opening Day {OFFSEASON.nextSeason} — {salesReopenLabel()}.</p></div>
+        ) : error ? (
           <div className="sd-error">⚠ {error}</div>
         ) : busy ? (
           <div className="sd-loading"><span className="pp-loading-spinner" /><span>The desk is breaking down today's slate…</span></div>

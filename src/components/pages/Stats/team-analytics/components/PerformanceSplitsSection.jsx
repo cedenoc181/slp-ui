@@ -69,7 +69,11 @@ function DivisionSplitRow({ label, wins, losses, pct }) {
  * Performance splits section showing vs LHP/RHP and division splits
  */
 const SEASON_TYPE_LABELS = { S: 'Spring Training', R: 'Regular Season', P: 'Postseason' };
-function getLast10SeasonLabel(selectedSeason) {
+// statsSeasonType (from useTeamAnalytics) is what the stats were actually
+// fetched for — e.g. 'R' for a club that missed the postseason. Falls back to
+// the calendar when it isn't passed.
+function getLast10SeasonLabel(selectedSeason, statsSeasonType) {
+  if (statsSeasonType && SEASON_TYPE_LABELS[statsSeasonType]) return SEASON_TYPE_LABELS[statsSeasonType];
   const currentYear = new Date().getFullYear().toString();
   if (selectedSeason !== currentYear) return 'Regular Season';
   const month = new Date().getMonth() + 1;
@@ -93,6 +97,7 @@ function PerformanceSplitsSection({
   homeGames,
   awayGames,
   selectedSeason,
+  statsSeasonType,
 }) {
   // Determine which data to show based on chartFilter
   const getVsData = () => {
@@ -177,7 +182,7 @@ function PerformanceSplitsSection({
     return <><span className="subtitle-bold">📊 Combined</span> performance breakdown</>;
   };
 
-  const seasonLabel = getLast10SeasonLabel(selectedSeason);
+  const seasonLabel = getLast10SeasonLabel(selectedSeason, statsSeasonType);
   const getLast10Subtitle = () => {
     if (chartFilter === 'home') return <><strong>🏠 Home: </strong> last 10 · {seasonLabel}</>;
     if (chartFilter === 'away') return <><strong>✈️ Away: </strong> last 10 · {seasonLabel}</>;

@@ -7,6 +7,7 @@
 
 import React, { useCallback } from 'react';
 import { Link } from 'react-router-dom';
+import usePlayerTeamLogos from '../../shared/hooks/usePlayerTeamLogos';
 import { formatEra, formatWhip, getPlayerStatusInfo } from '../../shared/utils';
 
 function TopPitchersList({
@@ -18,6 +19,8 @@ function TopPitchersList({
   visibleTopPitchers,
   season,
 }) {
+  const teamLogos = usePlayerTeamLogos(visibleTopPitchers);
+
   // Render a single pitcher item
   const renderPitcherItem = useCallback((pitcher, idx) => {
     if (!pitcher) return null;
@@ -33,6 +36,7 @@ function TopPitchersList({
 
     // Get player status info (traded, released, acquired, etc.)
     const statusInfo = getPlayerStatusInfo(pitcher);
+    const logo = playerId != null ? teamLogos[playerId] : null;
 
     return (
       <li
@@ -62,9 +66,20 @@ function TopPitchersList({
           <span>W {wins}</span>
           <span>WHIP {whip}</span>
         </div>
+        <div className="pitcher-top-logo">
+          {logo && (
+            <img
+              src={logo.url}
+              alt={logo.name}
+              title={logo.name}
+              loading="lazy"
+              onError={(e) => { e.target.style.visibility = 'hidden'; }}
+            />
+          )}
+        </div>
       </li>
     );
-  }, [season]);
+  }, [season, teamLogos]);
 
   return (
     <div className="pitcher-top-card">

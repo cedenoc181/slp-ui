@@ -332,7 +332,11 @@ function useLast10(teamIds) {
         const res = results[i];
         const rows = res.status === 'fulfilled' && Array.isArray(res.value) ? res.value : [];
         // Oldest → newest, then a running +1/-1 so the line climbs on wins.
-        const ordered = [...rows].sort((a, b) => String(a.game_date || a.date || '').localeCompare(String(b.game_date || b.date || '')));
+        // Doubleheaders share a date, so break ties on series_game_number
+        // (game 1 before game 2) — otherwise the day's games can flip.
+        const ordered = [...rows].sort((a, b) =>
+          String(a.game_date || a.date || '').localeCompare(String(b.game_date || b.date || ''))
+          || (a.series_game_number ?? 0) - (b.series_game_number ?? 0));
         let run = 0;
         let w = 0;
         let l = 0;

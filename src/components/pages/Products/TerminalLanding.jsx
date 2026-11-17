@@ -1,10 +1,12 @@
 import { useAuth } from '../../../context/AuthContext';
-import ProductOverview, { MockRow } from './ProductOverview';
+import ProductOverview from './ProductOverview';
 import commandIcon from '../../../assets/icons/command-centre.png';
 import standingsIcon from '../../../assets/icons/mlb-standings.png';
 import stadiumIcon from '../../../assets/icons/baseball-stadium.png';
 import aiMlIcon from '../../../assets/icons/ai-ml.png';
-import scheduleIcon from '../../../assets/icons/mlb-schedule.png';
+import dashboardImg from '../../../assets/images/terminal-dashboard.png';
+import panelsImg from '../../../assets/images/terminal-panels.png';
+import watchlistImg from '../../../assets/images/terminal-watchlist.png';
 
 function TerminalLanding() {
   const { isAuthenticated, isPremium } = useAuth();
@@ -35,38 +37,44 @@ function TerminalLanding() {
             'Compact panels designed for a quick read before first pitch',
             'Jump from any panel straight into the full page',
           ],
-          mockTitle: 'Live scores',
           mockUrl: 'sandlotpicks.com/terminal',
-          mock: (
-            <>
-              <MockRow left="NYY 4 · BOS 2" sub="T7" right="LIVE" tone="pos" />
-              <MockRow left="LAD 6 · SF 3" sub="F" right="Final" />
-              <MockRow left="HOU · SEA" sub="10:10 PM" right="Pre" />
-            </>
-          ),
+          image: dashboardImg,
+          imageAlt: 'The Sandlot Picks Terminal dashboard with Trust Ledger, Watchlist, Model Board, Bet Library, Top Props, Sandlot Insider and Standings panels',
         },
         {
           accent: 'green',
           tag: 'Live by Default',
           tagIcon: standingsIcon,
           title: 'Numbers that stay current',
-          description: 'Scores, standings, and ledger grades update through the day, so you never have to refresh or wonder whether a number is stale.',
+          description: 'Scores, standings, and trust scores update through the day, so you never have to refresh or wonder whether a number is stale.',
           bullets: [
             'Standings move as games go final',
-            'Trust Ledger grades post right after the final out',
+            'Trust Ledger scores recalculate as results come in',
             'Your watchlist follows the teams you care about',
           ],
-          mockTitle: 'AL East standings',
           mockUrl: 'sandlotpicks.com/terminal',
-          mock: (
-            <>
-              <MockRow left="NYY" sub="94-62" right="—" />
-              <MockRow left="BAL" sub="90-66" right="4.0 GB" />
-              <MockRow left="BOS" sub="84-72" right="10.0 GB" />
-              <MockRow left="TOR" sub="79-77" right="15.0 GB" />
-            </>
-          ),
+          image: panelsImg,
+          imageAlt: 'Terminal Trust Ledger top-5 panel next to a Watchlist panel with records and recent-form sparklines',
         },
+        {
+          accent: 'yellow',
+          tag: 'Watchlist',
+          tagIcon: stadiumIcon,
+          title: 'Your teams, front and center',
+          description: 'Pick the clubs you bet on and the Watchlist keeps them pinned to your Terminal. Expand it for a full card on every team — record, form, and the last ten games at a glance — without leaving the dashboard.',
+          bullets: [
+            'Add or remove any of the 30 clubs with one tap',
+            'Record, win %, games back, streak, and last-10 for each team',
+            'Last-10 results as W/L chips with a form sparkline',
+            'Today\'s game status on every card',
+            'Jump straight into Team Analytics from any team',
+          ],
+          mockUrl: 'sandlotpicks.com/terminal',
+          image: watchlistImg,
+          imageAlt: 'Expanded Terminal Watchlist with a 30-team picker and cards for the Yankees and Cubs showing record, win %, games back, streak and last-10 form',
+        },
+        /* Muted for now — "Free vs. Premium" card. To restore, uncomment and re-add the
+           MockRow and scheduleIcon imports.
         {
           accent: 'purple',
           tag: 'Free vs. Premium',
@@ -88,6 +96,7 @@ function TerminalLanding() {
             </>
           ),
         },
+        */
       ]}
       howTitle="How to use the terminal"
       steps={[

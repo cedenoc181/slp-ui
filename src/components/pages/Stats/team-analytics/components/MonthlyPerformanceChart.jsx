@@ -9,7 +9,11 @@ import {
 } from '../utils';
 
 const SEASON_TYPE_LABELS = { S: 'Spring Training', R: 'Regular Season', P: 'Postseason' };
-function getSeasonTypeLabel(selectedSeason) {
+// statsSeasonType (from useTeamAnalytics) is what the stats were actually
+// fetched for — e.g. 'R' for a club that missed the postseason. Falls back to
+// the calendar when it isn't passed.
+function getSeasonTypeLabel(selectedSeason, statsSeasonType) {
+  if (statsSeasonType && SEASON_TYPE_LABELS[statsSeasonType]) return SEASON_TYPE_LABELS[statsSeasonType];
   const currentYear = new Date().getFullYear().toString();
   if (selectedSeason !== currentYear) return 'Regular Season';
   const month = new Date().getMonth() + 1;
@@ -26,11 +30,12 @@ function MonthlyPerformanceChart({
   chartFilter,
   chartSectionRef,
   selectedSeason,
+  statsSeasonType,
 }) {
   const getSubtitle = () => {
     if (timeframe === 'first-half') return 'First half performance (Feb - Jun)';
     if (timeframe === 'second-half') return 'Second half performance (Jul - Nov)';
-    return `${getSeasonTypeLabel(selectedSeason)} Performance`;
+    return `${getSeasonTypeLabel(selectedSeason, statsSeasonType)} Performance`;
   };
 
   const filteredMonths = filterMonthlyData(teamMonthlyData, timeframe, chartFilter);

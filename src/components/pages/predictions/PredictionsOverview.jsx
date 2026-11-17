@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../../context/AuthContext';
+import { OFFSEASON, isOffseason, salesReopenLabel } from '../../../data/constants/salesWindow';
 import scoutWarRoomImg from '../../../assets/images/scout-ai-war-room.png';
 import gamePropsImg from '../../../assets/images/game-prop-page.png';
 import pitcherPropsImg from '../../../assets/images/pitcher-prop-page.png';
@@ -120,6 +121,12 @@ export default function PredictionsOverview() {
       <div className="pov-hero">
         <div className="pov-hero-inner">
           <span className="pov-hero-eyebrow">Sandlotpicks Predictions</span>
+          {isPremium && isOffseason() && (
+            <div className="pov-offseason-note">
+              <span className="pov-offseason-note__tag">{'// OFFSEASON'}</span>
+              Predictions available Opening Day of the new season ({OFFSEASON.nextSeason}) — {salesReopenLabel()}
+            </div>
+          )}
           <h1 className="pov-hero-title">
             ML models + AI analysis.<br />
             <span className="pov-hero-title--accent">Every MLB game, every day.</span>

@@ -7,6 +7,7 @@
 
 import React, { useCallback } from 'react';
 import { Link } from 'react-router-dom';
+import usePlayerTeamLogos from '../../shared/hooks/usePlayerTeamLogos';
 import { formatAvg, formatOps, getPlayerStatusInfo } from '../../shared/utils';
 
 function TopBattersList({
@@ -18,6 +19,8 @@ function TopBattersList({
   visibleTopBatters,
   season,
 }) {
+  const teamLogos = usePlayerTeamLogos(visibleTopBatters);
+
   // Render a single batter item
   const renderBatterItem = useCallback((batter, idx) => {
     if (!batter) return null;
@@ -33,6 +36,7 @@ function TopBattersList({
 
     // Get player status info (traded, released, acquired, etc.)
     const statusInfo = getPlayerStatusInfo(batter);
+    const logo = playerId != null ? teamLogos[playerId] : null;
 
     return (
       <li
@@ -62,9 +66,20 @@ function TopBattersList({
           <span>AVG {avg}</span>
           <span>OPS {ops}</span>
         </div>
+        <div className="batter-top-logo">
+          {logo && (
+            <img
+              src={logo.url}
+              alt={logo.name}
+              title={logo.name}
+              loading="lazy"
+              onError={(e) => { e.target.style.visibility = 'hidden'; }}
+            />
+          )}
+        </div>
       </li>
     );
-  }, [season]);
+  }, [season, teamLogos]);
 
   return (
     <div className="batter-top-card">

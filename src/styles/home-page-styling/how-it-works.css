@@ -151,13 +151,13 @@
   height: auto;
   font-size: 0.75rem;
   font-weight: 800;
-  color: #39FF14 !important;
+  color: #f87171 !important;
   background: #0d1117 !important;
   padding: 0.25rem 0.75rem;
   border-radius: 20px;
-  border: 1px solid rgba(57, 255, 20, 0.4) !important;
+  border: 1px solid rgba(239, 68, 68, 0.4) !important;
   letter-spacing: 1px;
-  text-shadow: 0 0 8px rgba(57, 255, 20, 0.5);
+  text-shadow: 0 0 8px rgba(239, 68, 68, 0.5);
   display: block;
   align-items: unset;
   justify-content: unset;
@@ -218,7 +218,7 @@
 }
 
 .how-it-works .step-feature svg {
-  color: #22c55e;
+  color: #f87171;
 }
 
 /* Step connector (mobile only) */
