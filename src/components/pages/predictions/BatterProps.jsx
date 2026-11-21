@@ -626,7 +626,7 @@ function BatterModal({ batter, initialMarketKey, onClose }) {
   }, [onClose, selectedMarket, showScout]);
 
   const goToPlayer  = () => { onClose(); navigate(`/player/${batter.mlbId ?? batter.id}`); window.scrollTo(0, 0); };
-  const goToMatchup = () => { onClose(); navigate(`/mlb-schedule/${batter.gameId ?? batter.gamePk}`); window.scrollTo(0, 0); };
+  const goToMatchup = () => { onClose(); navigate(`/schedule/${batter.gameId ?? batter.gamePk}`); window.scrollTo(0, 0); };
   const goToTeam    = () => {
     const urlName = Object.entries(TEAM_METADATA).find(([abbr]) => abbr === batter.teamAbbr)?.[1]?.urlName;
     if (!urlName) return;
@@ -1035,7 +1035,7 @@ export default function BatterProps() {
                 <span>{activeMatchup.homeAbbr}</span>
                 <button
                   className="bp-matchup-label-link"
-                  onClick={() => { closeModal(); navigate(`/mlb-schedule/${activeMatchup.gameId}`); window.scrollTo(0, 0); }}
+                  onClick={() => { closeModal(); navigate(`/schedule/${activeMatchup.gameId}`); window.scrollTo(0, 0); }}
                 >
                   Matchup Analysis →
                 </button>

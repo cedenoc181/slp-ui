@@ -283,9 +283,87 @@
 
 .slt-dash-bar {
   display: flex;
-  justify-content: flex-end;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.6rem;
   padding: 1rem 16px 0;
 }
+
+.slt-dash-bar .slt-layout-reset { margin-left: auto; }
+
+/* ── League switcher ──────────────────────────────────────── */
+.slt-leagues {
+  display: flex;
+  gap: 2px;
+  padding: 3px;
+  max-width: 100%;
+  overflow-x: auto;
+  scrollbar-width: none;
+  background: var(--slt-surface);
+  border: 1px solid var(--slt-line);
+  border-radius: 8px;
+}
+
+.slt-leagues::-webkit-scrollbar { display: none; }
+
+.slt-league {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  background: none;
+  border: 1px solid transparent;
+  border-radius: 5px;
+  color: var(--slt-ink-muted);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.7rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  padding: 0.4rem 0.7rem;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.slt-league:hover:not(:disabled) { color: var(--slt-ink); }
+
+.slt-league:focus-visible { outline: 2px solid var(--slt-cyan); outline-offset: 1px; }
+
+.slt-league--active {
+  color: var(--slt-cyan);
+  background: var(--slt-surface-2);
+  border-color: rgba(103,232,249,0.28);
+}
+
+.slt-league--soon { color: var(--slt-ink-faint); cursor: default; }
+
+.slt-league-tag {
+  font-size: 0.56rem;
+  letter-spacing: 0.06em;
+  padding: 0.1rem 0.3rem;
+  border: 1px solid var(--slt-line);
+  border-radius: 3px;
+}
+
+/* ── Serie del Caribe preview ─────────────────────────────── */
+.slt-sdc-nations {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.slt-sdc-nations li {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.55rem 0;
+  border-bottom: 1px solid var(--slt-line);
+  font-size: 0.8rem;
+}
+
+.slt-sdc-nations li:last-child { border-bottom: none; }
+
+.slt-sdc-nation { color: var(--slt-ink); font-weight: 600; }
+
+.slt-sdc-nations .slt-faint { text-align: right; }
 
 .slt-dash-bar + .slt-grid { padding-top: 0.75rem; }
 
@@ -1335,4 +1413,43 @@
   .slt-wl-row { grid-template-columns: 1fr auto auto; }
   .slt-wl-row > svg,
   .slt-wl-row > .slt-spark-empty { display: none; }
+}
+
+/* League switcher hover tooltip (league name). Desktop pointers only; the
+   switcher keeps its sideways scroll on touch screens. */
+@media (hover: hover) and (min-width: 641px) {
+  .slt-leagues { overflow: visible; }
+
+  .slt-league[data-tip] { position: relative; }
+
+  .slt-league[data-tip]::after {
+    content: attr(data-tip);
+    position: absolute;
+    top: calc(100% + 8px);
+    left: 0;
+    transform: translateY(-2px);
+    z-index: 60;
+    padding: 0.4rem 0.6rem;
+    background: var(--slt-surface-2);
+    border: 1px solid var(--slt-line);
+    border-radius: 6px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45);
+    color: var(--slt-ink);
+    font-family: 'Archivo', sans-serif;
+    font-size: 0.72rem;
+    font-weight: 500;
+    letter-spacing: 0;
+    text-transform: none;
+    white-space: nowrap;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.12s ease, transform 0.12s ease;
+  }
+
+  .slt-league[data-tip]:hover::after,
+  .slt-league[data-tip]:focus-visible::after {
+    opacity: 1;
+    transform: translateY(0);
+    transition-delay: 0.25s;
+  }
 }

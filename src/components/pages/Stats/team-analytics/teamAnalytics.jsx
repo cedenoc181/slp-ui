@@ -8,6 +8,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../../../../context/AuthContext';
+import { WinterTeamView } from '../../Winter/WinterStatsViews';
 
 // Hook
 import { useTeamAnalytics } from './hooks';
@@ -123,6 +124,9 @@ function TeamAnalytics() {
     statsSeasonType,
   } = useTeamAnalytics();
 
+  // Non-MLB leagues have no data yet; they swap the page body for a preview.
+  const [league, setLeague] = React.useState('mlb');
+
   // ========== Computed Values ==========
   const seasonData = getSeasonData(teamSeasonData, timeframe);
   const currentBattingStats = getBattingStats(battingStats);
@@ -187,9 +191,16 @@ function TeamAnalytics() {
         setTimeframe={setTimeframe}
         handleTeamChange={handleTeamChange}
         setSelectedSeason={setSelectedSeason}
+        league={league}
+        onLeagueChange={setLeague}
       />
 
-      {/* Main Content */}
+      {league === 'sdc' ? (
+        <div className="analytics-content container">
+          <WinterTeamView />
+        </div>
+      ) : (
+      /* Main Content */
       <div className="analytics-content container">
         {/* Season Overview Cards */}
         <TeamOverviewCards
@@ -284,6 +295,7 @@ function TeamAnalytics() {
           availableSeasonTypes={availableSeasonTypes}
         />
       </div>
+      )}
     </div>
   );
 }

@@ -139,7 +139,7 @@ export default function HeadToHeadSection({ game, awayAbbr, homeAbbr, h2h, h2hAw
                   <tr
                     key={gamePk ?? idx}
                     className={gamePk ? 'h2h-log-row-link' : ''}
-                    onClick={gamePk ? () => { navigate(`/mlb-schedule/${gamePk}`); window.scrollTo(0, 0); } : undefined}
+                    onClick={gamePk ? () => { navigate(`/schedule/${gamePk}`); window.scrollTo(0, 0); } : undefined}
                   >
                     <td className="h2h-date">{dateShort}</td>
                     <td className="h2h-location">{siteLabel}</td>

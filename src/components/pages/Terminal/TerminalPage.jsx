@@ -14,6 +14,7 @@ import { listPublished, apiPostToDisplay } from '../../../data/services/contentS
 import articlesData from '../../../data/contentData/article.json';
 import moreArticlesData from '../../../data/contentData/moreArticles.json';
 import { getTeamById, getTeamByDisplayName, TEAMS } from '../../../data/constants/apiConstants';
+import { LEAGUES, leagueTabTip } from '../../../data/constants/leagues';
 import { PANELS, abbr, fmtOdds, useTerminalSlate } from './TerminalShell';
 import '../../../styles/terminal-page-styling/terminal.css';
 
@@ -63,6 +64,22 @@ function moveTo(order, id, index) {
 // Panels read the grip handlers from here instead of threading them through
 // every panel component.
 const LayoutContext = createContext(null);
+
+// ── Leagues ─────────────────────────────────────────────────────────────────
+// The dash bar's league switcher (LEAGUES lives in constants/leagues). The
+// choice is kept per user like the layout, and only selectable ids are restored.
+function leagueKey(user) {
+  return `slt-league:${user?.id ?? 'guest'}`;
+}
+
+function loadLeague(key) {
+  try {
+    const saved = localStorage.getItem(key);
+    return LEAGUES.some(l => l.id === saved && l.status !== 'soon') ? saved : 'mlb';
+  } catch {
+    return 'mlb';
+  }
+}
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
 function fmtUnits(u) {
@@ -1275,7 +1292,7 @@ function StandingsPanel({ standings, flash, expanded, onExpand, onClose }) {
         onClose={onClose}
         title="Standings"
         sub="All six divisions"
-        route="/mlb-standings"
+        route="/standings"
         routeLabel="Open full MLB Standings"
       >
         <div className="slt-div-grid">
@@ -1448,7 +1465,7 @@ function LiveGamePanel({ games, flash, expanded, onExpand, onClose }) {
         onClose={onClose}
         title={<>{heading} {tag}</>}
         sub="Box score plus every game on today's slate"
-        route={featured ? `/mlb-schedule/${featured.id}` : '/mlb-schedule'}
+        route={featured ? `/schedule/${featured.id}` : '/schedule'}
         routeLabel={featured ? `Open ${featured.away} @ ${featured.home} matchup` : 'Open MLB Schedule'}
       >
         {featured && featured.state !== 'pre' && (
@@ -1462,7 +1479,7 @@ function LiveGamePanel({ games, flash, expanded, onExpand, onClose }) {
             <SectionLabel>Today's slate</SectionLabel>
             <div className="slt-slate">
               {games.map(g => (
-                <Link to={`/mlb-schedule/${g.id}`} className="slt-slate-row" key={g.id}>
+                <Link to={`/schedule/${g.id}`} className="slt-slate-row" key={g.id}>
                   <span className="slt-tl-team slt-matchup">
                     <span className="slt-team-cell"><TeamLogo teamId={g.awayId} size="sm" />{g.away}</span>
                     <span className="slt-faint">@</span>
@@ -1484,6 +1501,74 @@ function LiveGamePanel({ games, flash, expanded, onExpand, onClose }) {
   );
 }
 
+// ── League switcher ─────────────────────────────────────────────────────────
+function LeagueSwitcher({ value, onChange }) {
+  return (
+    <div className="slt-leagues" role="group" aria-label="League">
+      {LEAGUES.map(l => {
+        const soon = l.status === 'soon';
+        return (
+          <button
+            key={l.id}
+            type="button"
+            className={`slt-league${value === l.id ? ' slt-league--active' : ''}${soon ? ' slt-league--soon' : ''}`}
+            aria-pressed={value === l.id}
+            disabled={soon}
+            data-tip={leagueTabTip(l, soon)}
+            aria-label={`${l.label}: ${leagueTabTip(l, soon)}`}
+            onClick={() => onChange(l.id)}
+          >
+            {l.label}
+            {soon && <span className="slt-league-tag">Soon</span>}
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
+// Serie del Caribe dashboard, laid out ahead of the /cbpc API. Nothing here
+// fetches; each panel says what it will show once the data is live.
+const SDC_NATIONS = [
+  { league: 'LIDOM', nation: 'Dominican Republic' },
+  { league: 'LVBP',  nation: 'Venezuela' },
+  { league: 'LMP',   nation: 'Mexico' },
+  { league: 'LBPRC', nation: 'Puerto Rico' },
+];
+
+function CaribbeanPreview() {
+  return (
+    <div className="slt-grid">
+      <Panel id="sdc-intro" title="Serie del Caribe" sub="2026-27" full>
+        <Empty>
+          The Caribbean Series dashboard goes live with our winter-league data: nations, the Round Robin
+          table, scores and leaders, kept separate from MLB stats.
+        </Empty>
+      </Panel>
+      <Panel id="sdc-nations" title="Nations" sub="Qualify as champions">
+        <ul className="slt-sdc-nations">
+          {SDC_NATIONS.map(n => (
+            <li key={n.league}>
+              <span className="slt-sdc-nation">{n.nation}</span>
+              <span className="slt-faint">{n.league} champion · To be decided</span>
+            </li>
+          ))}
+        </ul>
+        <p className="slt-footnote">Guest nations are added when the field is announced.</p>
+      </Panel>
+      <Panel id="sdc-standings" title="Round Robin">
+        <Empty>Standings by nation, updated as games go final.</Empty>
+      </Panel>
+      <Panel id="sdc-games" title="Scores & Schedule">
+        <Empty>Every game with start times in ET and local time, then line scores and box scores.</Empty>
+      </Panel>
+      <Panel id="sdc-leaders" title="Leaders">
+        <Empty>Batting and pitching leaders for the Series only.</Empty>
+      </Panel>
+    </div>
+  );
+}
+
 // ── Dashboard ───────────────────────────────────────────────────────────────
 export default function TerminalPage() {
   const location = useLocation();
@@ -1497,6 +1582,8 @@ export default function TerminalPage() {
   const [dragId, setDragId] = useState(null);
   const orderRef = useRef(order);
   orderRef.current = order;
+  const leagueStorageKey = leagueKey(user);
+  const [league, setLeague] = useState(() => loadLeague(leagueStorageKey));
 
   // Every preview card is capped at the Watchlist card's height (laptop and
   // up, see terminal.css). The Watchlist aligns to the top of its row, so this
@@ -1512,10 +1599,17 @@ export default function TerminalPage() {
     });
     ro.observe(wl);
     return () => ro.disconnect();
-  }, []);
+  }, [league]);
 
   // Auth can resolve after first render; pick up that user's saved layout.
   useEffect(() => { setOrder(loadOrder(storageKey)); }, [storageKey]);
+  useEffect(() => { setLeague(loadLeague(leagueStorageKey)); }, [leagueStorageKey]);
+
+  const chooseLeague = useCallback((id) => {
+    setLeague(id);
+    setExpandedId(null);
+    try { localStorage.setItem(leagueStorageKey, id); } catch {}
+  }, [leagueStorageKey]);
 
   // Pointer-driven (not HTML5 drag-and-drop) so it works with touch too. The
   // grid reorders live as the pointer crosses other panels.
@@ -1620,18 +1714,21 @@ export default function TerminalPage() {
 
   return (
     <div className={`slt-ui slt-dash${dragId ? ' slt--dragging' : ''}`}>
-      {isCustomLayout && (
-        <div className="slt-dash-bar">
+      <div className="slt-dash-bar">
+        <LeagueSwitcher value={league} onChange={chooseLeague} />
+        {league === 'mlb' && isCustomLayout && (
           <button className="slt-layout-reset" type="button" onClick={resetLayout} title="Restore the default panel order">
             Reset layout
           </button>
-        </div>
+        )}
+      </div>
+      {league === 'sdc' ? <CaribbeanPreview /> : (
+        <LayoutContext.Provider value={layout}>
+          <div className="slt-grid" ref={gridRef}>
+            {order.map(id => <Fragment key={id}>{panels[id]}</Fragment>)}
+          </div>
+        </LayoutContext.Provider>
       )}
-      <LayoutContext.Provider value={layout}>
-        <div className="slt-grid" ref={gridRef}>
-          {order.map(id => <Fragment key={id}>{panels[id]}</Fragment>)}
-        </div>
-      </LayoutContext.Provider>
     </div>
   );
 }

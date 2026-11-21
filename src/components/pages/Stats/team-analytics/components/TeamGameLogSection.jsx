@@ -107,7 +107,7 @@ const TeamGameLogSection = memo(function TeamGameLogSection({
   // Handle game row click - navigate to matchup detail page
   const handleGameRowClick = useCallback((game) => {
     const gameId = game.id ?? game.game_pk;
-    navigate(`/mlb-schedule/${gameId}`, { state: { game } });
+    navigate(`/schedule/${gameId}`, { state: { game } });
     window.scrollTo(0, 0);
   }, [navigate]);
 

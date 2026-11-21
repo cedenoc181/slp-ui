@@ -63,7 +63,7 @@ function FeaturesPage() {
         'Games behind calculations',
         'Playoff scenarios'
       ],
-      link: '/mlb-standings',
+      link: '/standings',
       access: 'free'
     },
     {
@@ -236,7 +236,7 @@ function FeaturesPage() {
           <h2>Ready to Dive In?</h2>
           <p>Start exploring MLB analytics with our free tools, or create an account to unlock the full suite.</p>
           <div className="cta-buttons">
-            <Link to="/mlb-standings" className="cta-btn primary" onClick={() => window.scrollTo(0, 0)}>
+            <Link to="/standings" className="cta-btn primary" onClick={() => window.scrollTo(0, 0)}>
               View MLB Standings
             </Link>
             <Link to="/glossary" className="cta-btn secondary" onClick={() => window.scrollTo(0, 0)}>

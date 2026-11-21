@@ -1,0 +1,474 @@
+/* ============================================
+   Winter Ball (CBPC) pages
+   ============================================
+   Terminal palette and type; tokens come from stats-terminal-theme.css. */
+
+.wb-page {
+  min-height: 100vh;
+  background: var(--slt-bg);
+  color: var(--slt-ink);
+  font-family: 'Archivo', -apple-system, BlinkMacSystemFont, sans-serif;
+  text-align: left;
+  padding-bottom: 4rem;
+}
+
+.wb-page *, .wb-page *::before, .wb-page *::after { box-sizing: border-box; }
+.wb-page a { color: inherit; text-decoration: none; }
+.wb-page a:hover { color: var(--slt-cyan); }
+.wb-page :is(button, select, input) { font-family: inherit; }
+
+.wb-wrap { max-width: 1200px; margin: 0 auto; padding: 0 16px; }
+
+.wb-faint { color: var(--slt-ink-muted); font-weight: 400; }
+.wb-pos { color: var(--slt-good); }
+.wb-neg { color: var(--slt-warn); }
+
+/* ── Header ───────────────────────────────────────────────── */
+.wb-head { border-bottom: 1px solid var(--slt-line); padding: 1.75rem 0 1rem; }
+
+.wb-head-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.wb-eyebrow {
+  margin: 0 0 0.35rem;
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 0.7rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--slt-cyan);
+}
+
+.wb-title {
+  margin: 0;
+  font-family: 'Oswald', sans-serif;
+  font-weight: 600;
+  font-size: 2rem;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+
+.wb-sub { margin: 0.25rem 0 0; color: var(--slt-ink-muted); font-size: 0.9rem; }
+
+.wb-head-controls {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-top: 1.25rem;
+}
+
+.wb-head-controls .league-tabs { margin-bottom: 0; }
+.wb-page .league-tab { text-decoration: none; }
+.wb-page .league-tab.active:hover { color: var(--slt-cyan); }
+
+.wb-season-select {
+  background: var(--slt-surface);
+  color: var(--slt-ink);
+  border: 1px solid var(--slt-line);
+  border-radius: 8px;
+  padding: 0.45rem 0.75rem;
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.wb-season-select:focus-visible { outline: 2px solid var(--slt-cyan); outline-offset: 1px; }
+
+/* ── Search ───────────────────────────────────────────────── */
+.wb-search { position: relative; width: min(340px, 100%); }
+
+.wb-search-input {
+  width: 100%;
+  background: var(--slt-surface);
+  border: 1px solid var(--slt-line);
+  border-radius: 8px;
+  color: var(--slt-ink);
+  padding: 0.55rem 0.8rem;
+  font-size: 0.85rem;
+}
+
+.wb-search-input:focus { outline: none; border-color: var(--slt-cyan-border); }
+
+.wb-search-results {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  right: 0;
+  z-index: 50;
+  max-height: 420px;
+  overflow-y: auto;
+  background: var(--slt-surface);
+  border: 1px solid var(--slt-line);
+  border-radius: 8px;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.45);
+}
+
+.wb-search-empty { padding: 0.9rem; color: var(--slt-ink-muted); font-size: 0.85rem; }
+
+.wb-search-group-label {
+  padding: 0.55rem 0.8rem 0.3rem;
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 0.66rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--slt-ink-faint);
+}
+
+.wb-search-item {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  grid-template-rows: auto auto;
+  column-gap: 0.6rem;
+  align-items: center;
+  padding: 0.45rem 0.8rem;
+  font-size: 0.84rem;
+}
+
+.wb-search-item:hover, .wb-search-item:focus-visible { background: var(--slt-surface-2); outline: none; }
+.wb-search-item .wb-photo { grid-row: 1 / 3; }
+.wb-search-name { font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.wb-search-team { display: flex; align-items: center; gap: 0.35rem; font-size: 0.76rem; color: var(--slt-ink-muted); }
+
+/* ── Layout pieces ────────────────────────────────────────── */
+.wb-main { padding-top: 1.5rem; }
+
+.wb-section { margin-bottom: 2rem; }
+
+.wb-section-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 0.85rem;
+}
+
+.wb-section-title {
+  margin: 0;
+  font-family: 'Oswald', sans-serif;
+  font-weight: 600;
+  font-size: 0.95rem;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--slt-ink-muted);
+}
+
+.wb-section-aside { font-size: 0.75rem; color: var(--slt-ink-faint); }
+
+.wb-sub-title {
+  margin: 1rem 0 0.5rem;
+  font-family: 'Oswald', sans-serif;
+  font-weight: 500;
+  font-size: 0.82rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.wb-day { margin-bottom: 1rem; }
+.wb-day-label { margin: 0 0 0.5rem; font-size: 0.78rem; font-weight: 600; color: var(--slt-ink-muted); }
+
+.wb-two-col { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem; }
+
+.wb-banner {
+  margin-bottom: 1.5rem;
+  padding: 0.8rem 1rem;
+  border: 1px solid var(--slt-cyan-border);
+  background: var(--slt-cyan-soft);
+  border-radius: 8px;
+  font-size: 0.85rem;
+  line-height: 1.5;
+}
+
+.wb-back { display: inline-block; margin-bottom: 1rem; font-size: 0.8rem; color: var(--slt-ink-muted); }
+.wb-note { margin: 0 0 0.5rem; font-size: 0.75rem; }
+
+/* ── States ───────────────────────────────────────────────── */
+.wb-empty {
+  padding: 1rem;
+  border: 1px dashed var(--slt-line);
+  border-radius: 8px;
+  color: var(--slt-ink-muted);
+  font-size: 0.85rem;
+}
+
+.wb-empty--error { border-color: rgba(248, 113, 113, 0.35); }
+
+.wb-loading { display: grid; gap: 0.5rem; }
+
+.wb-skeleton {
+  height: 2.4rem;
+  border-radius: 6px;
+  background: linear-gradient(90deg, var(--slt-surface) 25%, var(--slt-surface-2) 50%, var(--slt-surface) 75%);
+  background-size: 200% 100%;
+  animation: wb-shimmer 1.4s infinite;
+}
+
+@keyframes wb-shimmer { to { background-position: -200% 0; } }
+
+/* ── Toggles (Terminal chip style) ────────────────────────── */
+.wb-toggle {
+  display: inline-flex;
+  gap: 2px;
+  padding: 3px;
+  background: var(--slt-surface);
+  border: 1px solid var(--slt-line);
+  border-radius: 8px;
+}
+
+.wb-toggle--wrap { flex-wrap: wrap; margin-bottom: 0.75rem; }
+.wb-toggle--block { margin-bottom: 1rem; }
+
+.wb-toggle button {
+  background: none;
+  border: 1px solid transparent;
+  border-radius: 5px;
+  color: var(--slt-ink-muted);
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 0.3rem 0.65rem;
+  cursor: pointer;
+}
+
+.wb-toggle button:hover { color: var(--slt-ink); }
+.wb-toggle button.active { color: var(--slt-cyan); background: var(--slt-cyan-soft); border-color: var(--slt-cyan-border); }
+.wb-toggle button:focus-visible { outline: 2px solid var(--slt-cyan); outline-offset: 1px; }
+
+/* ── Images ───────────────────────────────────────────────── */
+.wb-logo { object-fit: contain; flex-shrink: 0; }
+
+.wb-logo--fallback, .wb-photo--fallback {
+  display: inline-grid;
+  place-items: center;
+  flex-shrink: 0;
+  background: var(--slt-surface-2);
+  border: 1px solid var(--slt-line);
+  color: var(--slt-ink-muted);
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-weight: 700;
+}
+
+.wb-logo--fallback { border-radius: 6px; }
+
+.wb-photo { border-radius: 50%; object-fit: cover; background: var(--slt-surface-2); flex-shrink: 0; }
+.wb-photo--fallback { font-size: 0.7rem; }
+
+/* ── Game cards ───────────────────────────────────────────── */
+.wb-game-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 0.75rem; }
+
+.wb-game {
+  display: block;
+  background: var(--slt-surface);
+  border: 1px solid var(--slt-line);
+  border-radius: 8px;
+  padding: 0.7rem 0.85rem;
+  transition: border-color 0.15s ease;
+}
+
+.wb-page .wb-game:hover { border-color: var(--slt-cyan-border); color: var(--slt-ink); }
+
+.wb-game-meta {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin-bottom: 0.45rem;
+  font-size: 0.7rem;
+  color: var(--slt-ink-faint);
+}
+
+.wb-game-status { font-family: 'JetBrains Mono', ui-monospace, monospace; color: var(--slt-ink-muted); white-space: nowrap; }
+.wb-game-status--muted { color: var(--slt-ink-faint); }
+
+.wb-game-team { display: flex; align-items: center; gap: 0.5rem; padding: 0.2rem 0; font-size: 0.86rem; color: var(--slt-ink-muted); }
+.wb-game-team--won { color: var(--slt-ink); font-weight: 600; }
+.wb-game-team-name { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.wb-game-score { font-family: 'JetBrains Mono', ui-monospace, monospace; font-variant-numeric: tabular-nums; }
+.wb-game-tag { margin-top: 0.35rem; font-size: 0.7rem; color: var(--slt-cyan); }
+
+/* ── Tables ───────────────────────────────────────────────── */
+.wb-table-scroll { overflow-x: auto; border: 1px solid var(--slt-line); border-radius: 8px; background: var(--slt-surface); }
+
+.wb-table { width: 100%; border-collapse: collapse; font-size: 0.82rem; }
+
+.wb-table th {
+  padding: 0.55rem 0.6rem;
+  text-align: right;
+  font-family: 'Oswald', sans-serif;
+  font-weight: 500;
+  font-size: 0.7rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--slt-ink-muted);
+  border-bottom: 1px solid var(--slt-line);
+  white-space: nowrap;
+}
+
+.wb-table td {
+  padding: 0.5rem 0.6rem;
+  text-align: right;
+  border-bottom: 1px solid var(--slt-line);
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.wb-table tr:last-child td { border-bottom: none; }
+.wb-table .wb-th-left, .wb-table .wb-td-left { text-align: left; }
+
+.wb-table .wb-td-team, .wb-table .wb-td-player { text-align: left; font-family: 'Archivo', sans-serif; }
+.wb-td-team a { display: inline-flex; align-items: center; gap: 0.5rem; }
+.wb-row-sub td:first-child { padding-left: 1.4rem; }
+.wb-decision { color: var(--slt-cyan); font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 0.72rem; }
+
+/* ── Leaders ──────────────────────────────────────────────── */
+.wb-leaders { list-style: none; margin: 0; padding: 0; border: 1px solid var(--slt-line); border-radius: 8px; background: var(--slt-surface); }
+
+.wb-leaders li {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  padding: 0.5rem 0.75rem;
+  border-bottom: 1px solid var(--slt-line);
+}
+
+.wb-leaders li:last-child { border-bottom: none; }
+.wb-leader-rank { width: 1.2rem; font-family: 'JetBrains Mono', ui-monospace, monospace; color: var(--slt-ink-faint); font-size: 0.75rem; }
+.wb-leader-name { flex: 1; min-width: 0; display: flex; flex-direction: column; font-size: 0.85rem; font-weight: 600; }
+.wb-leader-name .wb-faint { font-size: 0.74rem; }
+.wb-leader-value { font-family: 'JetBrains Mono', ui-monospace, monospace; color: var(--slt-cyan); }
+
+/* ── Champion, nations ────────────────────────────────────── */
+.wb-champion {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  margin-bottom: 1rem;
+  padding: 0.85rem 1rem;
+  border: 1px solid rgba(255, 215, 0, 0.35);
+  background: rgba(255, 215, 0, 0.06);
+  border-radius: 8px;
+}
+
+.wb-champion span { display: flex; flex-direction: column; font-size: 0.8rem; }
+.wb-champion strong { font-size: 1.05rem; }
+
+.wb-nations { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 0.75rem; }
+
+.wb-nation {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 1rem 0.75rem;
+  text-align: center;
+  background: var(--slt-surface);
+  border: 1px solid var(--slt-line);
+  border-radius: 8px;
+  font-size: 0.8rem;
+}
+
+.wb-page .wb-nation:hover { border-color: var(--slt-cyan-border); color: var(--slt-ink); }
+.wb-nation-name { font-weight: 600; font-size: 0.9rem; }
+
+/* ── Game, team, player heroes ────────────────────────────── */
+.wb-game-hero, .wb-team-hero, .wb-player-hero {
+  margin-bottom: 1.75rem;
+  padding: 1.25rem;
+  background: var(--slt-surface);
+  border: 1px solid var(--slt-line);
+  border-radius: 10px;
+}
+
+.wb-game-hero-meta { display: flex; flex-wrap: wrap; gap: 0.35rem 1rem; font-size: 0.76rem; color: var(--slt-ink-muted); margin-bottom: 1rem; }
+.wb-game-hero-teams { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+
+.wb-hero-team { display: flex; align-items: center; gap: 0.75rem; color: var(--slt-ink-muted); }
+.wb-hero-team--won { color: var(--slt-ink); }
+.wb-hero-team-name { flex: 1; font-family: 'Oswald', sans-serif; font-size: 1.15rem; font-weight: 600; }
+.wb-hero-score { font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 1.8rem; font-weight: 700; }
+.wb-hero-status { margin-top: 0.85rem; font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 0.78rem; color: var(--slt-ink-muted); }
+
+.wb-team-hero, .wb-player-hero { display: flex; align-items: center; flex-wrap: wrap; gap: 1.1rem; }
+.wb-team-name { margin: 0 0 0.25rem; font-family: 'Oswald', sans-serif; font-weight: 600; font-size: 1.6rem; }
+.wb-team-hero p, .wb-player-hero p { margin: 0.15rem 0; font-size: 0.85rem; }
+.wb-team-record { margin-left: auto; display: flex; flex-direction: column; align-items: flex-end; }
+.wb-team-record-wl { font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 1.6rem; font-weight: 700; }
+
+.wb-player-bio { min-width: 0; }
+.wb-player-team { display: flex; align-items: center; flex-wrap: wrap; gap: 0.4rem; }
+.wb-player-team-link { display: inline-flex; align-items: center; gap: 0.4rem; }
+
+.wb-stat-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap: 0.6rem; }
+.wb-stat { display: flex; flex-direction: column; gap: 0.15rem; padding: 0.65rem 0.75rem; background: var(--slt-surface); border: 1px solid var(--slt-line); border-radius: 8px; }
+.wb-stat-value { font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 1.05rem; font-weight: 700; }
+.wb-stat-label { font-size: 0.68rem; letter-spacing: 0.06em; text-transform: uppercase; color: var(--slt-ink-muted); }
+
+/* ── Roster, competitions, play-by-play ───────────────────── */
+.wb-roster { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 1rem 1.5rem; }
+.wb-roster ul { list-style: none; margin: 0; padding: 0; }
+.wb-roster li { display: flex; align-items: center; gap: 0.6rem; padding: 0.35rem 0; border-bottom: 1px solid var(--slt-line); }
+.wb-roster-name { display: flex; flex-direction: column; font-size: 0.85rem; font-weight: 600; min-width: 0; }
+.wb-roster-name .wb-faint { font-size: 0.72rem; }
+
+.wb-competitions { list-style: none; margin: 0; padding: 0; display: grid; gap: 0.4rem; }
+.wb-competitions li { display: flex; align-items: center; flex-wrap: wrap; gap: 0.4rem; font-size: 0.82rem; }
+.wb-competitions li > .wb-faint { width: 4.5rem; font-family: 'JetBrains Mono', ui-monospace, monospace; }
+
+.wb-chip {
+  padding: 0.2rem 0.55rem;
+  border: 1px solid var(--slt-line);
+  border-radius: 999px;
+  font-size: 0.74rem;
+  font-weight: 600;
+}
+
+.wb-chip--active { color: var(--slt-cyan); border-color: var(--slt-cyan-border); background: var(--slt-cyan-soft); }
+
+.wb-pbp-half { margin-bottom: 1rem; }
+.wb-pbp-list { list-style: none; margin: 0; padding: 0; border: 1px solid var(--slt-line); border-radius: 8px; background: var(--slt-surface); }
+
+.wb-pbp-list li {
+  display: grid;
+  grid-template-columns: 9rem minmax(0, 1fr) auto;
+  gap: 0.75rem;
+  padding: 0.45rem 0.75rem;
+  border-bottom: 1px solid var(--slt-line);
+  font-size: 0.82rem;
+}
+
+.wb-pbp-list li:last-child { border-bottom: none; }
+.wb-pbp-event { font-weight: 600; }
+
+@media (max-width: 640px) {
+  .wb-title { font-size: 1.5rem; }
+  .wb-game-hero-teams { grid-template-columns: 1fr; }
+  .wb-team-record { margin-left: 0; align-items: flex-start; }
+  .wb-pbp-list li { grid-template-columns: 1fr; gap: 0.15rem; }
+  .wb-search { width: 100%; }
+}
+
+/* ── Embedded in the MLB stats pages ──────────────────────── */
+.wb-page.wb-embed {
+  min-height: 0;
+  background: transparent;
+  padding: 1.25rem 0 0;
+}
+
+.wb-embed-bar {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
+}
+
+.wb-embed-bar .league-tabs { margin-bottom: 0; }
+.wb-embed-bar .wb-search { margin-left: auto; }
+
+.wb-team-select { min-width: 220px; }
+
+.wb-leader-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1.25rem; }

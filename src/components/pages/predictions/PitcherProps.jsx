@@ -739,7 +739,7 @@ function PitcherModal({ pitcher, onClose, isAdmin = false }) {
     const g = pitcher.game;
     const isComplete = g?.away_team_id && g?.home_team_id && g?.game_pk;
     navigate(
-      `/mlb-schedule/${pitcher.gameId ?? pitcher.gamePk}`,
+      `/schedule/${pitcher.gameId ?? pitcher.gamePk}`,
       { state: isComplete ? { game: g } : null }
     );
     window.scrollTo(0, 0);
@@ -1263,7 +1263,7 @@ export default function PitcherProps() {
                 <span>{activeMatchup.homeAbbr}</span>
                 <button
                   className="pp-matchup-label-link"
-                  onClick={() => { navigate(`/mlb-schedule/${activeMatchup.gameId}`); window.scrollTo(0, 0); }}
+                  onClick={() => { navigate(`/schedule/${activeMatchup.gameId}`); window.scrollTo(0, 0); }}
                 >
                   Matchup Analysis →
                 </button>

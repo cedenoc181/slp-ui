@@ -4,18 +4,18 @@
 
 /* CSS Variables for consistency */
 :root {
-  --standings-bg-primary: #121212;
-  --standings-bg-secondary: #1a1a1a;
-  --standings-bg-card: #1e1e1e;
+  --standings-bg-primary: var(--slt-bg);
+  --standings-bg-secondary: var(--slt-surface);
+  --standings-bg-card: var(--slt-surface);
   --standings-border-color: rgba(255, 255, 255, 0.08);
-  --standings-text-primary: #ffffff;
-  --standings-text-secondary: #a0a0a0;
-  --standings-text-muted: #666666;
-  --standings-primary-color: #1976D2;
-  --standings-primary-hover: #1565C0;
-  --standings-success: #4CAF50;
+  --standings-text-primary: var(--slt-ink);
+  --standings-text-secondary: var(--slt-ink-muted);
+  --standings-text-muted: var(--slt-ink-faint);
+  --standings-primary-color: var(--slt-cyan);
+  --standings-primary-hover: var(--slt-cyan);
+  --standings-success: var(--slt-good);
   --standings-warning: #FF9800;
-  --standings-danger: #F44336;
+  --standings-danger: var(--slt-warn);
 }
 
 /* ============================================
@@ -23,7 +23,7 @@
    ============================================ */
 .mlb-standings-page {
   min-height: 100vh;
-  background-color: #121212;
+  background-color: var(--slt-bg);
   color: var(--standings-text-primary);
   padding-bottom: 4rem;
 }
@@ -32,9 +32,8 @@
    Header Section
    ============================================ */
 .standings-header {
-  background: linear-gradient(180deg, rgba(25, 118, 210, 0.15) 0%, transparent 100%);
-  background-color: #121212;
-  color: white;
+  background: var(--slt-bg);
+  color: var(--slt-ink);
   padding: 2rem 0 1.5rem;
   text-align: center;
   border-bottom: 1px solid var(--standings-border-color);
@@ -44,7 +43,7 @@
   font-size: 2.25rem;
   font-weight: 800;
   margin-bottom: 0.4rem;
-  color: white;
+  color: var(--slt-ink);
   text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
 }
 
@@ -87,10 +86,10 @@
 }
 
 .season-tab.active {
-  background: var(--standings-primary-color);
-  color: white;
-  border-color: var(--standings-primary-color);
-  box-shadow: 0 4px 12px rgba(25, 118, 210, 0.4);
+  background: var(--slt-cyan-soft);
+  color: var(--slt-cyan);
+  border-color: var(--slt-cyan-border);
+  box-shadow: none;
 }
 
 .season-dropdown-wrapper,
@@ -133,26 +132,26 @@
 .season-type-dropdown:focus {
   outline: none;
   border-color: var(--standings-primary-color);
-  box-shadow: 0 0 0 3px rgba(25, 118, 210, 0.2);
+  box-shadow: 0 0 0 3px rgba(103, 232, 249, 0.2);
 }
 
 .season-dropdown option,
 .season-type-dropdown option {
-  background: #1e1e1e;
-  color: white;
+  background: var(--slt-surface);
+  color: var(--slt-ink);
   padding: 0.5rem;
 }
 
 /* Season Type Dropdown - Accent Color */
 .season-type-dropdown {
   min-width: 160px;
-  background-color: rgba(25, 118, 210, 0.15);
-  border-color: rgba(25, 118, 210, 0.3);
+  background-color: rgba(103, 232, 249, 0.15);
+  border-color: rgba(103, 232, 249, 0.3);
 }
 
 .season-type-dropdown:hover {
-  background-color: rgba(25, 118, 210, 0.25);
-  border-color: rgba(25, 118, 210, 0.5);
+  background-color: rgba(103, 232, 249, 0.25);
+  border-color: rgba(103, 232, 249, 0.5);
 }
 
 /* ============================================
@@ -163,9 +162,9 @@
   justify-content: space-between;
   align-items: center;
   padding: 1rem 1.5rem;
-  background: linear-gradient(135deg, rgba(25, 118, 210, 0.15) 0%, rgba(25, 118, 210, 0.05) 100%);
-  border: 1px solid rgba(25, 118, 210, 0.3);
-  color: white;
+  background: linear-gradient(135deg, rgba(103, 232, 249, 0.15) 0%, rgba(103, 232, 249, 0.05) 100%);
+  border: 1px solid rgba(103, 232, 249, 0.3);
+  color: var(--slt-ink);
   border-radius: 12px;
   margin-bottom: 2rem;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
@@ -204,7 +203,7 @@
 
 .playoff-btn {
   background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%) !important;
-  color: #121212 !important;
+  color: var(--slt-bg) !important;
   font-weight: 700;
   cursor: default;
   box-shadow: 0 4px 12px rgba(255, 215, 0, 0.4);
@@ -245,10 +244,10 @@
 }
 
 .league-btn.active {
-  background: var(--standings-primary-color);
-  color: white;
-  border-color: var(--standings-primary-color);
-  box-shadow: 0 4px 12px rgba(25, 118, 210, 0.4);
+  background: var(--slt-cyan-soft);
+  color: var(--slt-cyan);
+  border-color: var(--slt-cyan-border);
+  box-shadow: none;
 }
 
 /* ============================================
@@ -290,7 +289,7 @@
   justify-content: space-between;
   align-items: center;
   padding: 1.25rem 1.5rem;
-  background: linear-gradient(135deg, rgba(25, 118, 210, 0.15) 0%, rgba(25, 118, 210, 0.05) 100%);
+  background: linear-gradient(135deg, rgba(103, 232, 249, 0.15) 0%, rgba(103, 232, 249, 0.05) 100%);
   border-bottom: 1px solid var(--standings-border-color);
 }
 
@@ -305,14 +304,14 @@
 .wildcard-badge,
 .power-badge {
   padding: 0.375rem 0.875rem;
-  background: rgba(25, 118, 210, 0.2);
-  border: 1px solid rgba(25, 118, 210, 0.4);
+  background: rgba(103, 232, 249, 0.2);
+  border: 1px solid rgba(103, 232, 249, 0.4);
   border-radius: 20px;
   font-size: 0.75rem;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.5px;
-  color: #64B5F6;
+  color: var(--slt-cyan);
 }
 
 /* ============================================
@@ -355,11 +354,11 @@
 }
 
 .standings-table tbody tr.division-leader {
-  background-color: rgba(76, 175, 80, 0.08);
+  background-color: rgba(74, 222, 128, 0.08);
 }
 
 .standings-table tbody tr.division-leader:hover {
-  background-color: rgba(76, 175, 80, 0.12);
+  background-color: rgba(74, 222, 128, 0.12);
 }
 
 .standings-table tbody tr.wildcard-position {
@@ -394,8 +393,8 @@
   display: inline-block;
   margin-left: 0.5rem;
   padding: 0.125rem 0.5rem;
-  background: var(--standings-success);
-  color: white;
+  background: rgba(74, 222, 128, 0.15);
+  color: var(--slt-good);
   border-radius: 12px;
   font-size: 0.7rem;
   font-weight: 700;
@@ -433,12 +432,12 @@
 }
 
 .win-streak {
-  background: rgba(76, 175, 80, 0.15);
+  background: rgba(74, 222, 128, 0.15);
   color: var(--standings-success);
 }
 
 .loss-streak {
-  background: rgba(244, 67, 54, 0.15);
+  background: rgba(248, 113, 113, 0.15);
   color: var(--standings-danger);
 }
 
@@ -498,7 +497,7 @@
 .league-power-card .power-badge {
   background: rgba(200, 16, 46, 0.2);
   border-color: rgba(200, 16, 46, 0.4);
-  color: #E57373;
+  color: var(--slt-warn);
 }
 
 .league-power-list {
@@ -526,7 +525,7 @@
 .league-power-rank {
   font-size: 1.5rem;
   font-weight: 800;
-  color: #E57373;
+  color: var(--slt-warn);
   min-width: 35px;
   text-align: center;
 }
@@ -594,7 +593,7 @@
 .power-rankings-card .power-badge {
   background: rgba(200, 16, 46, 0.2);
   border-color: rgba(200, 16, 46, 0.4);
-  color: #E57373;
+  color: var(--slt-warn);
 }
 
 .power-rankings-list {
@@ -649,13 +648,13 @@
 }
 
 .league-badge.AL {
-  background: rgba(25, 118, 210, 0.2);
-  color: #64B5F6;
+  background: rgba(103, 232, 249, 0.2);
+  color: var(--slt-cyan);
 }
 
 .league-badge.NL {
   background: rgba(200, 16, 46, 0.2);
-  color: #E57373;
+  color: var(--slt-warn);
 }
 
 .power-team-record {
@@ -747,7 +746,7 @@
   justify-content: center;
   padding: 2rem 1rem;
   color: var(--standings-danger);
-  background: rgba(244, 67, 54, 0.1);
+  background: rgba(248, 113, 113, 0.1);
   border-radius: 8px;
   margin: 1rem 0;
 }
@@ -965,8 +964,8 @@
   }
 
   .league-toggle:focus-within {
-    border-color: var(--standings-primary-color, #1976D2);
-    box-shadow: 0 0 0 3px rgba(25, 118, 210, 0.2);
+    border-color: var(--standings-primary-color, var(--slt-cyan));
+    box-shadow: 0 0 0 3px rgba(103, 232, 249, 0.2);
   }
 
   .league-btn:focus {

@@ -4,6 +4,9 @@ import scheduleService from '../../../../data/services/scheduleService';
 import gamesService from '../../../../data/services/gamesService';
 import predictionsService from '../../../../data/services/predictionsService';
 import { getTeamById } from '../../../../data/constants/apiConstants';
+import { WINTER_ENABLED } from '../../../../data/constants/leagues';
+import LeagueTabs from '../../../LeagueTabs';
+import { WinterScheduleView } from '../../Winter/WinterStatsViews';
 import '../../../../styles/stats-page-styling/mlb-schedule.css';
 
 /*
@@ -455,6 +458,9 @@ function getPriorSeasonTypes() {
 // ─── Main Component ───────────────────────────────────────────────────────────
 function MLBSchedule() {
   const navigate = useNavigate();
+  // Non-MLB leagues have no data yet; they swap the page body for a preview.
+  const [leagueId, setLeagueId] = useState('mlb');
+  const isMlb = leagueId === 'mlb';
   const [activeTab, setActiveTab] = useState('today');
   const [games, setGames] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -591,7 +597,7 @@ function MLBSchedule() {
 
   const handleMatchupClick = (gameId) => {
     const selectedGame = games.find(g => (g.id ?? g.game_pk) === gameId);
-    navigate(`/mlb-schedule/${gameId}`, { state: { game: selectedGame ?? null } });
+    navigate(`/schedule/${gameId}`, { state: { game: selectedGame ?? null } });
   };
 
   const handleTabChange = (tab) => {
@@ -614,11 +620,16 @@ function MLBSchedule() {
       {/* Header */}
       <div className="schedule-header">
         <div className="container">
-          <h1>MLB Schedule</h1>
-          <p className="header-subtitle">Game matchups, probable starters &amp; results</p>
+          <LeagueTabs value={leagueId} onChange={setLeagueId} enabled={WINTER_ENABLED} />
+          <h1>Schedule</h1>
+          <p className="header-subtitle">
+            {isMlb
+              ? <>Game matchups, probable starters &amp; results</>
+              : 'Caribbean winter leagues: LIDOM, LVBP, LMP, LBPRC and the Serie del Caribe'}
+          </p>
 
           {/* Tab Navigation */}
-          <div className="schedule-tabs">
+          {isMlb && <div className="schedule-tabs">
             {TABS.map(tab => (
               <button
                 key={tab.key}
@@ -628,13 +639,16 @@ function MLBSchedule() {
                 {tab.key === 'today' ? (isTomorrow ? 'Tomorrow' : 'Today') : tab.label}
               </button>
             ))}
-          </div>
+          </div>}
         </div>
       </div>
 
       {/* Content */}
       <div className="schedule-content">
         <div className="container">
+          {!isMlb ? (
+            <WinterScheduleView />
+          ) : (<>
           {loading && (
             <div className="schedule-card-grid">
               {[...Array(6)].map((_, i) => <SkeletonCard key={i} />)}
@@ -693,6 +707,7 @@ function MLBSchedule() {
               )}
             </>
           )}
+          </>)}
         </div>
       </div>
     </div>

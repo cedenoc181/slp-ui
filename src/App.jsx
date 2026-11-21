@@ -70,6 +70,11 @@ import MatchupDetailAnalysis from './components/pages/Stats/mlb-schedule/Matchup
 import TeamAnalytics from './components/pages/Stats/team-analytics/teamAnalytics';
 import PlayerAnalytics from './components/pages/Stats/player-analytics/playerAnalytics';
 import PlayerProfileStats from './components/pages/Stats/player-analytics/playerProfileStats';
+import WinterLayout from './components/pages/Winter/WinterLayout';
+import WinterLeagueHome from './components/pages/Winter/LeagueHome';
+import WinterGamePage from './components/pages/Winter/GamePage';
+import WinterTeamPage from './components/pages/Winter/TeamPage';
+import WinterPlayerPage from './components/pages/Winter/PlayerPage';
 import AnalyticsLab from './components/pages/Stats/chart-explorer/analyticsLab';
 
 // Predictions
@@ -112,6 +117,7 @@ import './styles/stats-page-styling/player-analytics.css';
 import './styles/stats-page-styling/batter-stats.css';
 import './styles/stats-page-styling/player-profile.css';
 import './styles/stats-page-styling/chart-explorer.css';
+import './styles/stats-page-styling/stats-terminal-theme.css';
 
 
 //Insights-page-styles//
@@ -143,6 +149,13 @@ import './styles/admin-page-styling/admin.css';
 // Legal-page-styles//
 import './styles/legal-page-styling/legal.css';
 
+
+// Swaps a renamed path prefix, keeping the rest of the path, query and hash
+// (e.g. /mlb-schedule/745123/analysis?x=1 → /schedule/745123/analysis?x=1).
+function LegacyRedirect({ from, to }) {
+  const { pathname, search, hash } = useLocation();
+  return <Navigate to={`${to}${pathname.slice(from.length)}${search}${hash}`} replace />;
+}
 
 // Signed-in visitors land on the Terminal instead of the marketing homepage.
 function HomeRoute() {
@@ -178,15 +191,19 @@ function HomePage() {
 
 const PAGE_TITLES = [
   { path: '/',                          title: 'Home' },
-  { path: '/mlb-schedule',             title: 'MLB Schedule' },
-  { path: '/mlb-schedule/:gameId',          title: 'Matchup Detail' },
-  { path: '/mlb-schedule/:gameId/analysis', title: 'Advanced Analysis' },
-  { path: '/mlb-standings',            title: 'MLB Standings' },
+  { path: '/schedule',                 title: 'Schedule' },
+  { path: '/schedule/:gameId',              title: 'Matchup Detail' },
+  { path: '/schedule/:gameId/analysis',     title: 'Advanced Analysis' },
+  { path: '/standings',                title: 'Standings' },
   { path: '/team-analytics',           title: 'Team Analytics' },
   { path: '/team-analytics/:teamName', title: 'Team Analytics', param: 'teamName' },
   { path: '/player-analytics',         title: 'Player Analytics' },
   { path: '/analytics-explorer',       title: 'Analytics Lab' },
   { path: '/player/:nameSlug',         title: 'Player Profile', param: 'nameSlug' },
+  { path: '/winter/:league',                   title: 'Winter Ball' },
+  { path: '/winter/:league/games/:gamePk',     title: 'Winter Ball Game' },
+  { path: '/winter/:league/teams/:teamId',     title: 'Winter Ball Team' },
+  { path: '/winter/:league/players/:playerId', title: 'Winter Ball Player' },
   { path: '/sandlot-insider',          title: 'Sandlot Insider' },
   { path: '/sandlot-insider/:slug',    title: 'Sandlot Insider Article' },
   { path: '/blogs',                    title: 'Blogs' },
@@ -293,15 +310,27 @@ function App() {
           <Route path="/verify-email" element={<VerifyEmailPage />} />
 
           {/* Stats routes */}
-          <Route path="/mlb-schedule" element={<MLBSchedule />} />
-          <Route path="/mlb-schedule/:gameId" element={<MatchupDetail />} />
-          <Route path="/mlb-schedule/:gameId/analysis" element={<ProtectedRoute><MatchupDetailAnalysis /></ProtectedRoute>} />
-          <Route path="/mlb-standings" element={<MLBStandings />} />
+          <Route path="/schedule" element={<MLBSchedule />} />
+          <Route path="/schedule/:gameId" element={<MatchupDetail />} />
+          <Route path="/schedule/:gameId/analysis" element={<ProtectedRoute><MatchupDetailAnalysis /></ProtectedRoute>} />
+          <Route path="/standings" element={<MLBStandings />} />
+          {/* Pre-multi-league URLs (bookmarks, articles, search results) */}
+          <Route path="/mlb-schedule/*" element={<LegacyRedirect from="/mlb-schedule" to="/schedule" />} />
+          <Route path="/mlb-standings/*" element={<LegacyRedirect from="/mlb-standings" to="/standings" />} />
           <Route path="/team-analytics" element={<TeamAnalytics />} />
           <Route path="/team-analytics/:teamName" element={<TeamAnalytics />} />
           <Route path="/player-analytics" element={<PlayerAnalytics />} />
           <Route path="/analytics-explorer" element={SHOW_ANALYTICS_LAB ? <ProtectedRoute><AnalyticsLab /></ProtectedRoute> : <Navigate to="/team-analytics" replace />} />
           <Route path="/player/:nameSlug" element={<PlayerProfileStats />} />
+
+          {/* Winter Ball: Caribbean winter leagues (CBPC), separate from MLB */}
+          <Route path="/winter" element={<Navigate to="/winter/lidom" replace />} />
+          <Route path="/winter/:league" element={<WinterLayout />}>
+            <Route index element={<WinterLeagueHome />} />
+            <Route path="games/:gamePk" element={<WinterGamePage />} />
+            <Route path="teams/:teamId" element={<WinterTeamPage />} />
+            <Route path="players/:playerId" element={<WinterPlayerPage />} />
+          </Route>
 
           {/* Predictions routes */}
           <Route path="/predictions" element={<PredictionsOverview />} />

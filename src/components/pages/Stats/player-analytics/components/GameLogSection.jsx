@@ -77,7 +77,7 @@ const GameLogSection = memo(function GameLogSection({
   // a single targeted request instead of searching all season types.
   const handleGameRowClick = useCallback((game) => {
     const gameId = game.game_pk ?? game.id;
-    navigate(`/mlb-schedule/${gameId}`, { state: { season: selectedSeason, seasonType: gameLogSeasonType } });
+    navigate(`/schedule/${gameId}`, { state: { season: selectedSeason, seasonType: gameLogSeasonType } });
     window.scrollTo(0, 0);
   }, [navigate, selectedSeason, gameLogSeasonType]);
 

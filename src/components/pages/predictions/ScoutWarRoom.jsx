@@ -425,7 +425,7 @@ function WarRoom({ play, onClose, onTrack, onPitcher, tracked }) {
   const openGame = () => {
     if (play.gamePk == null) return;
     onClose();
-    navigate(`/mlb-schedule/${play.gamePk}`);
+    navigate(`/schedule/${play.gamePk}`);
     window.scrollTo(0, 0);
   };
 

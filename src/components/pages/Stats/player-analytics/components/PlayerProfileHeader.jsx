@@ -145,7 +145,7 @@ const PlayerProfileHeader = memo(function PlayerProfileHeader({
                 const gameId = startGame.id ?? startGame.game_pk;
                 return (
                   <Link
-                    to={`/mlb-schedule/${gameId}/analysis`}
+                    to={`/schedule/${gameId}/analysis`}
                     className={`pps-start-badge${start.isToday ? ' pps-start-badge--today' : ''}`}
                     onClick={() => window.scrollTo(0, 0)}
                   >

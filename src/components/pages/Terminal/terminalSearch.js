@@ -33,8 +33,8 @@ const MAX_RESULTS = 8;
 const PLAYER_DEBOUNCE_MS = 300;
 
 const PAGE_OPTIONS = [
-  { label: 'MLB Schedule', path: '/mlb-schedule', iconSrc: iconMlbSchedule, keywords: ['schedule', 'games', 'today', 'matchup', 'daily', 'analysis', 'overviews'] },
-  { label: 'MLB Standings', path: '/mlb-standings', iconSrc: iconMlbStandings, keywords: ['standings', 'rankings', 'division', 'wild card', 'leaderboard'] },
+  { label: 'Schedule', path: '/schedule', iconSrc: iconMlbSchedule, keywords: ['schedule', 'games', 'today', 'matchup', 'daily', 'analysis', 'overviews'] },
+  { label: 'Standings', path: '/standings', iconSrc: iconMlbStandings, keywords: ['standings', 'rankings', 'division', 'wild card', 'leaderboard'] },
   { label: 'Team Analytics', path: '/team-analytics', iconSrc: iconTeamAnalytics, keywords: ['team', 'analytics', 'stats', 'statistics'] },
   { label: 'Player Analytics', path: '/player-analytics', iconSrc: iconPlayerAnalytics, keywords: ['player', 'batter', 'pitcher', 'stats', 'analytics'] },
   ...(SHOW_ANALYTICS_LAB ? [{ label: 'Analytics Lab', path: '/analytics-explorer', iconSrc: iconTeamAnalytics, keywords: ['chart', 'explorer', 'analytics', 'lab', 'scatter', 'bar', 'line', 'custom', 'sql', 'query', 'builder', 'visualize'] }] : []),
@@ -105,7 +105,7 @@ function localResults(trimmed, rawGames) {
           iconSrc: iconMlbSchedule,
           label: `${getTeamById(g.away_team_id)?.id || g.away_team_name || 'Away'} vs ${getTeamById(g.home_team_id)?.id || g.home_team_name || 'Home'}`,
           sublabel: matchupTimeLabel(g),
-          to: `/mlb-schedule/${id}`,
+          to: `/schedule/${id}`,
           state: { game: g },
         });
       });

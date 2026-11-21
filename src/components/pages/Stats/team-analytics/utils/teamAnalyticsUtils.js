@@ -376,9 +376,9 @@ export const getMonthData = (month, chartFilter) => {
  * @returns {string} CSS color
  */
 export const getWinPctColor = (pct) => {
-  if (pct >= 60) return '#4CAF50';
+  if (pct >= 60) return '#4ade80';
   if (pct >= 50) return '#FF9800';
-  if (pct > 0) return '#F44336';
+  if (pct > 0) return '#f87171';
   return '#888';
 };
 
@@ -388,7 +388,7 @@ export const getWinPctColor = (pct) => {
  * @returns {string} CSS color
  */
 export const getSplitPctColor = (pct) => {
-  if (pct >= 0.6) return '#4CAF50';
+  if (pct >= 0.6) return '#4ade80';
   if (pct >= 0.5) return '#FF9800';
-  return '#F44336';
+  return '#f87171';
 };

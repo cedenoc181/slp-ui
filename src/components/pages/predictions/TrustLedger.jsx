@@ -4,6 +4,8 @@ import { useAuth } from '../../../context/AuthContext';
 import trustLedgerService from '../../../data/services/trustLedgerService';
 import { getEliminatedMlbIds } from '../../../data/services/postseasonStatus';
 import { TEAM_METADATA } from '../../../data/constants/apiConstants';
+import { getLeague } from '../../../data/constants/leagues';
+import LeagueTabs, { LeaguePreview } from '../../LeagueTabs';
 import batterPropIcon from '../../../assets/icons/batter-prop.png';
 import pitcherPropIcon from '../../../assets/icons/pitcher-prop.png';
 import '../../../styles/predictions-page-styling/predictions.css';
@@ -345,6 +347,8 @@ export default function TrustLedger() {
   const [sortDir, setSortDir] = useState(-1); // -1 desc, 1 asc — matches the reference's default (Trust, descending)
   const [postseason, setPostseason] = useState(false);
   const [bootstrapped, setBootstrapped] = useState(false);
+  // Non-MLB leagues have no data yet; they swap the board for a preview.
+  const [league, setLeague] = useState('mlb');
 
   useEffect(() => { window.scrollTo(0, 0); }, []);
 
@@ -447,6 +451,7 @@ export default function TrustLedger() {
     <div className="predictions-page">
       <div className="predictions-content">
         <div className="tl-wrap">
+          <LeagueTabs value={league} onChange={setLeague} />
           <header className="tl-page-head">
             <div>
               <p className="tl-eyebrow">Sandlot Picks &middot; Scout Desk</p>
@@ -454,10 +459,21 @@ export default function TrustLedger() {
             </div>
             <div className="tl-meta">
               <div><strong>{dateLabel}</strong></div>
-              <div>{season} {postseason ? 'postseason' : 'regular season'} &middot; {clubCount} clubs</div>
+              <div>
+                {league === 'mlb'
+                  ? <>{season} {postseason ? 'postseason' : 'regular season'} &middot; {clubCount} clubs</>
+                  : `${getLeague(league)?.label} · ${getLeague(league)?.seasonLabel}`}
+              </div>
             </div>
           </header>
 
+          {league !== 'mlb' ? (
+            <LeaguePreview eyebrow="Serie del Caribe · 2026-27" title="Trust scores for every nation">
+              The same trust score (70% W-L%, 30% recent form) ranked across the Serie del Caribe field. Starter
+              and bullpen columns stay MLB-only because the winter-league data has no probable pitchers. This
+              board goes live with our winter-league data.
+            </LeaguePreview>
+          ) : (<>
           <p className="tl-dek">
             Every team's <b>trust score</b> &mdash; 70% season W-L%, 30% last-10-game form &mdash; ranked into a
             league-wide percentile, alongside MLB's own offense/pitching rank and today's actual starter (last 5
@@ -542,6 +558,7 @@ export default function TrustLedger() {
               date show trust only.
             </footer>
           )}
+          </>)}
         </div>
       </div>
     </div>

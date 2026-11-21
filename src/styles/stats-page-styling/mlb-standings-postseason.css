@@ -3,21 +3,21 @@
    ============================================ */
 
 :root {
-  --al-color: #1976D2;
+  --al-color: var(--slt-cyan);
   --nl-color: #C8102E;
   --line-color: rgba(255, 255, 255, 0.2);
-  --card-bg: #1e1e1e;
+  --card-bg: var(--slt-surface);
   --card-border: rgba(255, 255, 255, 0.08);
   --shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
-  --text-main: #ffffff;
-  --muted: #a0a0a0;
+  --text-main: var(--slt-ink);
+  --muted: var(--slt-ink-muted);
   --round-step: 40px;
 }
 
 .playoff-bracket-container {
   width: 100%;
   padding: 24px 0px 40px;
-  background-color: #121212;
+  background-color: var(--slt-bg);
   color: var(--text-main);
   overflow-x: auto;
   overflow-y: hidden;
@@ -388,7 +388,7 @@
   min-height: 100px;
   padding: 7px 7px 6px;
   border-width: 1px;
-  background: linear-gradient(135deg, #1e1e1e 0%, #2a2a2a 55%, rgba(255, 215, 0, 0.15) 85%, rgba(255, 215, 0, 0.3) 100%);
+  background: linear-gradient(135deg, var(--slt-surface) 0%, var(--slt-surface-2) 55%, rgba(255, 215, 0, 0.15) 85%, rgba(255, 215, 0, 0.3) 100%);
   border-color: rgba(255, 215, 0, 0.4);
   position: relative;
   z-index: 2;
@@ -508,8 +508,8 @@
   position: absolute;
   top: 8px;
   right: 8px;
-  background: #2a2a2a;
-  color: #fff;
+  background: var(--slt-surface-2);
+  color: var(--slt-ink);
   padding: 8px 10px;
   border-radius: 10px;
   border: 1px solid rgba(255, 255, 255, 0.15);
@@ -600,7 +600,7 @@
   height: 20px;
   border-radius: 999px;
   font-weight: 800;
-  color: #fff;
+  color: var(--slt-ink);
   font-size: 10px;
   letter-spacing: 0.02em;
   flex: none;
@@ -608,7 +608,7 @@
 
 .seed-chip.al {
   background: var(--al-color);
-  box-shadow: 0 4px 12px rgba(25, 118, 210, 0.4);
+  box-shadow: 0 4px 12px rgba(103, 232, 249, 0.4);
 }
 
 .seed-chip.nl {
@@ -711,11 +711,11 @@
 }
 
 .champion-banner.al {
-  border-color: rgba(25, 118, 210, 0.5);
+  border-color: rgba(103, 232, 249, 0.5);
   background: linear-gradient(135deg, 
-    rgba(25, 118, 210, 0.2) 0%, 
+    rgba(103, 232, 249, 0.2) 0%, 
     rgba(255, 215, 0, 0.1) 50%,
-    rgba(25, 118, 210, 0.2) 100%);
+    rgba(103, 232, 249, 0.2) 100%);
 }
 
 .champion-banner.nl {

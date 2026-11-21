@@ -75,7 +75,7 @@ export default function RecentFormCard({
                 <div key={i} className="form-log-row">
                   {a ? (
                     <Link
-                      to={`/mlb-schedule/${a.gameId}`}
+                      to={`/schedule/${a.gameId}`}
                       state={{ game: a.rawGame }}
                       className="form-log-left flog-row-link"
                     >
@@ -92,7 +92,7 @@ export default function RecentFormCard({
 
                   {h ? (
                     <Link
-                      to={`/mlb-schedule/${h.gameId}`}
+                      to={`/schedule/${h.gameId}`}
                       state={{ game: h.rawGame }}
                       className="form-log-right flog-row-link"
                     >

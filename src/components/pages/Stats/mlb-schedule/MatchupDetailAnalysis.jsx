@@ -386,7 +386,7 @@ export default function MatchupDetailComp() {
       <div className="matchup-analysis-page">
         <div className="analysis-container">
           <div className="matchup-detail-top-nav">
-            <Link to={`/mlb-schedule/${gameId}`} className="analysis-back-btn">‹ Back to Matchup Detail</Link>
+            <Link to={`/schedule/${gameId}`} className="analysis-back-btn">‹ Back to Matchup Detail</Link>
           </div>
           <div className="analysis-loading">
             <div className="analysis-loading-spinner" />
@@ -403,7 +403,7 @@ export default function MatchupDetailComp() {
       <div className="matchup-analysis-page">
         <div className="analysis-container">
           <div className="matchup-detail-top-nav">
-            <Link to={`/mlb-schedule/${gameId}`} className="analysis-back-btn">‹ Back to Matchup Detail</Link>
+            <Link to={`/schedule/${gameId}`} className="analysis-back-btn">‹ Back to Matchup Detail</Link>
           </div>
           <p style={{ color: 'rgba(255,255,255,0.5)', marginTop: '3rem', textAlign: 'center' }}>
             {error || 'Could not load this matchup.'}
@@ -451,7 +451,7 @@ export default function MatchupDetailComp() {
       <div className="analysis-container">
 
         <div className="matchup-detail-top-nav">
-          <Link to={`/mlb-schedule/${gameId}`} state={{ game, prediction }} className="analysis-back-btn">
+          <Link to={`/schedule/${gameId}`} state={{ game, prediction }} className="analysis-back-btn">
             ‹ <span className="analysis-nav-full">Back to Matchup Detail</span><span className="analysis-nav-short">Back</span>
           </Link>
           <div className="analysis-scout-wrap">

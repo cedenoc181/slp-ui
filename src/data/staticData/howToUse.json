@@ -51,7 +51,7 @@
                 "Monitor games behind and elimination numbers"
               ],
               "links": [
-                { "text": "MLB Standings", "url": "/mlb-standings" }
+                { "text": "MLB Standings", "url": "/standings" }
               ]
             },
             {

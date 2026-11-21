@@ -20,6 +20,25 @@
   --pa-danger: #F44336;
 }
 
+/* The home page's stats preview reads the :root values above; the Player
+   Analytics page itself uses the Terminal palette. */
+.player-analytics-page {
+  --pa-bg-primary: var(--slt-bg);
+  --pa-bg-secondary: var(--slt-bg);
+  --pa-bg-card: var(--slt-surface);
+  --pa-bg-card-hover: var(--slt-surface-2);
+  --pa-border-color: var(--slt-line);
+  --pa-text-primary: var(--slt-ink);
+  --pa-text-secondary: var(--slt-ink-muted);
+  --pa-text-muted: var(--slt-ink-faint);
+  --pa-primary-color: var(--slt-cyan);
+  --pa-primary-hover: var(--slt-cyan);
+  --pa-accent-gradient: linear-gradient(135deg, var(--slt-cyan) 0%, var(--slt-cyan) 100%);
+  --pa-success: var(--slt-good);
+  --pa-warning: #FF9800;
+  --pa-danger: var(--slt-warn);
+}
+
 /* ============================================
    Page Layout
    ============================================ */
@@ -39,7 +58,7 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(18, 18, 18, 0.95);
+  background: rgba(10, 14, 20, 0.95);
   z-index: 9999;
   display: flex;
   align-items: center;
@@ -60,7 +79,7 @@
   flex-direction: column;
   align-items: center;
   gap: 1.5rem;
-  color: var(--pa-text-primary, #ffffff);
+  color: var(--pa-text-primary);
   font-size: 1.1rem;
   font-weight: 500;
 }
@@ -74,7 +93,7 @@
   width: 48px;
   height: 48px;
   border: 4px solid rgba(255, 255, 255, 0.1);
-  border-top-color: var(--pa-primary-color, #1976D2);
+  border-top-color: var(--pa-primary-color);
   border-radius: 50%;
   animation: pa-spin 0.8s linear infinite;
 }
@@ -87,7 +106,7 @@
 .player-analytics-page,
 .player-analytics-page .analytics-header,
 .player-analytics-page .analytics-content {
-  background-color: #121212 !important;
+  background-color: var(--slt-bg) !important;
   background-image: none !important;
 }
 
@@ -98,9 +117,9 @@
 /* Override header gradient for player analytics - mirrors team analytics exactly */
 .player-analytics-page > .analytics-header,
 .player-analytics-page .analytics-header:not(.season-selector):not(.team-selector) {
-  background: linear-gradient(180deg, rgba(25, 118, 210, 0.15) 0%, transparent 100%) !important;
+  background: var(--slt-bg) !important;
   padding: 2rem 0 1.5rem;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  border-bottom: 1px solid var(--slt-line);
 }
 
 /* Ensure selectors don't inherit header styles */
@@ -152,7 +171,7 @@
   font-size: 2.25rem;
   font-weight: 800;
   margin: 0;
-  color: #fff;
+  color: var(--slt-ink);
 }
 
 .player-analytics-page .selectors-row {
@@ -210,13 +229,13 @@
 .player-analytics-page .season-dropdown:focus {
   outline: none;
   border-color: var(--pa-primary-color);
-  box-shadow: 0 0 0 3px rgba(25, 118, 210, 0.2);
+  box-shadow: 0 0 0 3px rgba(103, 232, 249, 0.2);
 }
 
 .player-analytics-page .team-dropdown option,
 .player-analytics-page .season-dropdown option {
-  background: #1e1e1e;
-  color: #fff;
+  background: var(--slt-surface);
+  color: var(--slt-ink);
 }
 
 /* ============================================
@@ -250,8 +269,8 @@
 }
 
 .player-analytics-page .timeframe-tabs .tab.active {
-  background: var(--pa-primary-color);
-  color: #fff;
+  background: var(--slt-cyan-soft);
+  color: var(--slt-cyan);
 }
 
 /* ============================================
@@ -417,7 +436,7 @@
 }
 
 .player-profile-link:hover {
-  color: var(--pa-primary-color, #1976D2);
+  color: var(--pa-primary-color);
   text-decoration: underline;
 }
 
@@ -619,8 +638,8 @@
   }
 
   .player-analytics-page .timeframe-tabs:focus-within {
-    border-color: var(--pa-primary-color, #1976D2);
-    box-shadow: 0 0 0 3px rgba(25, 118, 210, 0.2);
+    border-color: var(--pa-primary-color);
+    box-shadow: 0 0 0 3px rgba(103, 232, 249, 0.2);
   }
 
   .player-analytics-page .timeframe-tabs .tab:focus {

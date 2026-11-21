@@ -8,8 +8,8 @@ const DISMISS_KEY = 'spa_free_week_banner_dismissed_at';
 const DISMISS_WINDOW_MS = 24 * 60 * 60 * 1000; // 24 hours
 
 const STATS_ROUTES = [
-  '/mlb-schedule',
-  '/mlb-standings',
+  '/schedule',
+  '/standings',
   '/team-analytics',
   '/player-analytics',
   '/player/',

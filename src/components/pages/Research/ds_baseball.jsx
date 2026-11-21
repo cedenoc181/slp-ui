@@ -165,7 +165,7 @@ function DataScienceBaseball() {
                 <span className="stats-option-link">Explore Teams <span className="arrow">→</span></span>
               </div>
             </Link>
-            <Link to="/mlb-standings" className="stats-option-card stats-option-standings" onClick={() => window.scrollTo(0, 0)}>
+            <Link to="/standings" className="stats-option-card stats-option-standings" onClick={() => window.scrollTo(0, 0)}>
               <div className="stats-card-visual">
                 <div className="stats-visual-graphic standings-graphic">
                   <svg viewBox="0 0 100 100" className="stats-svg">

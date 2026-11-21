@@ -5,6 +5,9 @@ import teamsService from '../../../../data/services/teamsService';
 import { TEAM_METADATA, SEASONS, DEFAULT_SEASON, SEASON_RANGE } from '../../../../data/constants/apiConstants';
 import MLBStandingsPostseason from './mlbStandingsPostseason';
 import MLBStandingsSpringTraining from './mlbStandingsSpringTraning';
+import LeagueTabs from '../../../LeagueTabs';
+import { WINTER_ENABLED } from '../../../../data/constants/leagues';
+import { WinterStandingsView } from '../../Winter/WinterStatsViews';
 
 // Derive the correct initial season type + league from the calendar date.
 // Spring Training runs Feb 15 – Feb 28; regular season starts March onwards.
@@ -22,6 +25,10 @@ const initialStandingsState = getInitialStandingsState();
 const WEEK_IN_MS = 7 * 24 * 60 * 60 * 1000; // 7 days in milliseconds
 
 function MLBStandings() {
+  // leagueId is the sport league (MLB, Serie del Caribe…); selectedLeague below
+  // is AL/NL or Cactus/Grapefruit within MLB.
+  const [leagueId, setLeagueId] = useState('mlb');
+  const isMlb = leagueId === 'mlb';
   const [selectedLeague, setSelectedLeague] = useState(initialStandingsState.league);
   const [selectedSeason, setSelectedSeason] = useState(DEFAULT_SEASON);
   const [seasonType, setSeasonType] = useState(initialStandingsState.seasonType);
@@ -323,13 +330,16 @@ function MLBStandings() {
       {/* Header Section */}
       <div className="standings-header">
         <div className="container">
-          <h1>MLB Standings</h1>
+          <LeagueTabs value={leagueId} onChange={setLeagueId} enabled={WINTER_ENABLED} />
+          <h1>Standings</h1>
           <p className="header-subtitle">
-            {seasonType === 'regular' ? 'Regular Season' : 
-             seasonType === 'postseason' ? 'Postseason' : 
-             'Spring Training'} Standings & Rankings
+            {!isMlb ? 'Caribbean winter leagues: LIDOM, LVBP, LMP, LBPRC and the Serie del Caribe' :
+             seasonType === 'regular' ? 'Regular Season Standings & Rankings' :
+             seasonType === 'postseason' ? 'Postseason Standings & Rankings' :
+             'Spring Training Standings & Rankings'}
           </p>
-          
+
+          {isMlb && (<>
           {/* Season Selector */}
           <div className="season-selector">
             <div className="season-tabs">
@@ -404,12 +414,15 @@ function MLBStandings() {
               </button>
             </div>
           )}
+          </>)}
         </div>
       </div>
 
       {/* Main Content - Conditional Rendering Based on Season Type */}
       <div className="standings-content container">
-        {seasonType === 'postseason' ? (
+        {!isMlb ? (
+          <WinterStandingsView />
+        ) : seasonType === 'postseason' ? (
           // Render Playoff Bracket
           <MLBStandingsPostseason selectedSeason={selectedSeason} />
         ) : seasonType === 'spring' ? (

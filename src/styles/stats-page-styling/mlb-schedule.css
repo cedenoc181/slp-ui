@@ -5,8 +5,8 @@
 /* ── Page Layout ─────────────────────────────────────────────────────────── */
 .mlb-schedule-page {
   min-height: 100vh;
-  background-color: #121212;
-  color: #ffffff;
+  background-color: var(--slt-bg);
+  color: var(--slt-ink);
   padding-bottom: 4rem;
 }
 
@@ -18,8 +18,7 @@
 
 /* ── Header ──────────────────────────────────────────────────────────────── */
 .schedule-header {
-  background: linear-gradient(180deg, rgba(25, 118, 210, 0.15) 0%, transparent 100%);
-  background-color: #121212;
+  background: var(--slt-bg);
   padding: 2rem 0 1.5rem;
   border-bottom: 1px solid rgba(255, 255, 255, 0.08);
   text-align: center;
@@ -29,13 +28,13 @@
   font-size: 2.25rem;
   font-weight: 800;
   margin-bottom: 0.4rem;
-  color: #ffffff;
+  color: var(--slt-ink);
   text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
 }
 
 .schedule-header .header-subtitle {
   font-size: 1rem;
-  color: #a0a0a0;
+  color: var(--slt-ink-muted);
   margin-bottom: 1.5rem;
 }
 
@@ -51,7 +50,7 @@
 .schedule-tab {
   background: rgba(255, 255, 255, 0.06);
   border: 1px solid rgba(255, 255, 255, 0.12);
-  color: #a0a0a0;
+  color: var(--slt-ink-muted);
   font-size: 0.9rem;
   font-weight: 600;
   padding: 0.5rem 1.25rem;
@@ -61,15 +60,15 @@
 }
 
 .schedule-tab:hover {
-  background: rgba(25, 118, 210, 0.15);
-  border-color: rgba(25, 118, 210, 0.4);
-  color: #ffffff;
+  background: rgba(103, 232, 249, 0.15);
+  border-color: rgba(103, 232, 249, 0.4);
+  color: var(--slt-ink);
 }
 
 .schedule-tab.active {
-  background: rgba(25, 118, 210, 0.25);
-  border-color: #1976D2;
-  color: #ffffff;
+  background: var(--slt-cyan-soft);
+  border-color: var(--slt-cyan-border);
+  color: var(--slt-cyan);
 }
 
 /* ── Content ─────────────────────────────────────────────────────────────── */
@@ -77,8 +76,8 @@
   padding: 1.5rem 0;
 }
 
-.game-count {
-  color: #a0a0a0;
+.mlb-schedule-page .game-count, .team-analytics-page .game-count, .player-analytics-page .game-count {
+  color: var(--slt-ink-muted);
   font-size: 0.85rem;
   margin-bottom: 0.75rem;
   text-align: right;
@@ -97,7 +96,7 @@
   grid-template-columns: 1fr auto 1fr auto 24px;
   align-items: center;
   gap: 1rem;
-  background: #1e1e1e;
+  background: var(--slt-surface);
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 12px;
   padding: 1rem 1.25rem;
@@ -113,19 +112,19 @@
   inset: 0;
   border-radius: inherit;
   background:
-    linear-gradient(to right,  rgba(200, 200, 200, 0.06) 0%, transparent 22%),
-    linear-gradient(to left,   rgba(200, 200, 200, 0.06) 0%, transparent 22%);
+    linear-gradient(to right,  rgba(232, 236, 241, 0.06) 0%, transparent 22%),
+    linear-gradient(to left,   rgba(232, 236, 241, 0.06) 0%, transparent 22%);
   pointer-events: none;
 }
 
 .matchup-row:hover {
   background: rgba(255, 255, 255, 0.05);
-  border-color: rgba(25, 118, 210, 0.4);
+  border-color: rgba(103, 232, 249, 0.4);
   transform: translateY(-1px);
 }
 
 .matchup-row:focus-visible {
-  outline: 2px solid #1976D2;
+  outline: 2px solid var(--slt-cyan);
   outline-offset: 2px;
 }
 
@@ -160,10 +159,10 @@
   text-align: right;
 }
 
-.matchup-team-name {
+.mlb-schedule-page .matchup-team-name, .team-analytics-page .matchup-team-name, .player-analytics-page .matchup-team-name {
   font-size: 0.95rem;
   font-weight: 600;
-  color: #ffffff;
+  color: var(--slt-ink);
   line-height: 1.2;
 }
 
@@ -173,17 +172,17 @@
   line-height: 1;
 }
 
-.score-win {
-  color: #4caf50;
+.mlb-schedule-page .score-win, .team-analytics-page .score-win, .player-analytics-page .score-win {
+  color: var(--slt-good);
 }
 
-.score-loss {
-  color: #a0a0a0;
+.mlb-schedule-page .score-loss, .team-analytics-page .score-loss, .player-analytics-page .score-loss {
+  color: var(--slt-ink-muted);
 }
 
-.matchup-team-record {
+.mlb-schedule-page .matchup-team-record, .team-analytics-page .matchup-team-record, .player-analytics-page .matchup-team-record {
   font-size: 0.75rem;
-  color: #a0a0a0;
+  color: var(--slt-ink-muted);
 }
 
 /* ── Center Column ───────────────────────────────────────────────────────── */
@@ -199,11 +198,11 @@
 .matchup-status {
   font-size: 0.8rem;
   font-weight: 600;
-  color: #1976D2;
+  color: var(--slt-cyan);
 }
 
 .matchup-status.status-live {
-  color: #f44336;
+  color: var(--slt-warn);
   animation: pulse-live 1.5s ease-in-out infinite;
 }
 
@@ -212,15 +211,15 @@
   50% { opacity: 0.6; }
 }
 
-.matchup-vs {
+.mlb-schedule-page .matchup-vs, .team-analytics-page .matchup-vs, .player-analytics-page .matchup-vs {
   font-size: 1.1rem;
   font-weight: 700;
-  color: #666666;
+  color: var(--slt-ink-faint);
 }
 
 .matchup-venue {
   font-size: 0.72rem;
-  color: #666666;
+  color: var(--slt-ink-faint);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -245,18 +244,18 @@
 }
 
 .pitcher-label {
-  color: #a0a0a0;
+  color: var(--slt-ink-muted);
   font-weight: 600;
   flex-shrink: 0;
 }
 
-.pitcher-name {
-  color: #ffffff;
+.mlb-schedule-page .pitcher-name, .team-analytics-page .pitcher-name, .player-analytics-page .pitcher-name {
+  color: var(--slt-ink);
   font-weight: 500;
 }
 
 .pitcher-sep {
-  color: #666666;
+  color: var(--slt-ink-faint);
   font-size: 0.7rem;
 }
 
@@ -268,35 +267,35 @@
   font-size: 0.75rem;
 }
 
-.odds-item {
+.mlb-schedule-page .odds-item, .team-analytics-page .odds-item, .player-analytics-page .odds-item {
   background: rgba(255, 255, 255, 0.08);
   border: 1px solid rgba(255, 255, 255, 0.12);
   border-radius: 4px;
   padding: 0.1rem 0.35rem;
   font-weight: 600;
-  color: #ffffff;
+  color: var(--slt-ink);
   font-size: 0.72rem;
 }
 
 .odds-divider {
-  color: #666;
+  color: var(--slt-ink-faint);
 }
 
 .odds-total {
-  color: #a0a0a0;
+  color: var(--slt-ink-muted);
   font-size: 0.72rem;
   margin-left: 0.25rem;
 }
 
 /* ── Arrow ───────────────────────────────────────────────────────────────── */
-.matchup-arrow {
+.mlb-schedule-page .matchup-arrow, .team-analytics-page .matchup-arrow, .player-analytics-page .matchup-arrow {
   font-size: 1.2rem;
-  color: #666;
+  color: var(--slt-ink-faint);
   transition: color 0.15s, transform 0.15s;
 }
 
-.matchup-row:hover .matchup-arrow {
-  color: #1976D2;
+.mlb-schedule-page .matchup-row:hover .matchup-arrow, .team-analytics-page .matchup-row:hover .matchup-arrow, .player-analytics-page .matchup-row:hover .matchup-arrow {
+  color: var(--slt-cyan);
   transform: translateX(2px);
 }
 
@@ -316,16 +315,16 @@
   opacity: 0.4;
 }
 
-.empty-title {
+.mlb-schedule-page .empty-title, .team-analytics-page .empty-title, .player-analytics-page .empty-title {
   font-size: 1.25rem;
   font-weight: 700;
-  color: #ffffff;
+  color: var(--slt-ink);
   margin: 0;
 }
 
-.empty-subtitle {
+.mlb-schedule-page .empty-subtitle, .team-analytics-page .empty-subtitle, .player-analytics-page .empty-subtitle {
   font-size: 0.9rem;
-  color: #a0a0a0;
+  color: var(--slt-ink-muted);
   max-width: 420px;
   line-height: 1.6;
   margin: 0;
@@ -336,8 +335,8 @@
   pointer-events: none;
 }
 
-.skeleton {
-  background: linear-gradient(90deg, #2a2a2a 25%, #333 50%, #2a2a2a 75%);
+.mlb-schedule-page .skeleton, .team-analytics-page .skeleton, .player-analytics-page .skeleton {
+  background: linear-gradient(90deg, var(--slt-surface-2) 25%, #1f2633 50%, var(--slt-surface-2) 75%);
   background-size: 200% 100%;
   animation: shimmer 1.4s infinite;
   border-radius: 4px;
@@ -374,7 +373,7 @@
 .date-group-header {
   font-size: 0.8rem;
   font-weight: 700;
-  color: #a0a0a0;
+  color: var(--slt-ink-muted);
   text-transform: uppercase;
   letter-spacing: 0.08em;
   padding: 0.5rem 0.25rem 0.25rem;
@@ -401,10 +400,10 @@
   padding: 1.5rem 0 0.5rem;
 }
 
-.pagination-btn {
+.mlb-schedule-page .pagination-btn, .team-analytics-page .pagination-btn, .player-analytics-page .pagination-btn {
   background: rgba(255, 255, 255, 0.06);
   border: 1px solid rgba(255, 255, 255, 0.15);
-  color: #ffffff;
+  color: var(--slt-ink);
   font-size: 0.875rem;
   font-weight: 600;
   padding: 0.5rem 1.25rem;
@@ -413,9 +412,9 @@
   transition: background 0.15s ease, border-color 0.15s ease;
 }
 
-.pagination-btn:hover:not(:disabled) {
-  background: rgba(25, 118, 210, 0.2);
-  border-color: #1976D2;
+.mlb-schedule-page .pagination-btn:hover:not(:disabled), .team-analytics-page .pagination-btn:hover:not(:disabled), .player-analytics-page .pagination-btn:hover:not(:disabled) {
+  background: rgba(103, 232, 249, 0.2);
+  border-color: var(--slt-cyan);
 }
 
 .pagination-btn:disabled {
@@ -423,9 +422,9 @@
   cursor: default;
 }
 
-.pagination-info {
+.mlb-schedule-page .pagination-info, .team-analytics-page .pagination-info, .player-analytics-page .pagination-info {
   font-size: 0.85rem;
-  color: #a0a0a0;
+  color: var(--slt-ink-muted);
   min-width: 90px;
   text-align: center;
 }
@@ -486,7 +485,7 @@
 }
 
 .game-card-compact {
-  background: #1a1a1a;
+  background: var(--slt-surface);
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 10px;
   padding: 0.875rem;
@@ -498,8 +497,8 @@
 }
 
 .game-card-compact:hover {
-  border-color: rgba(25, 118, 210, 0.4);
-  background: rgba(25, 118, 210, 0.05);
+  border-color: rgba(103, 232, 249, 0.4);
+  background: rgba(103, 232, 249, 0.05);
   transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
 }
@@ -514,11 +513,11 @@
 .compact-time {
   font-size: 0.72rem;
   font-weight: 600;
-  color: #1976D2;
+  color: var(--slt-cyan);
 }
 
 .compact-time.live {
-  color: #f44336;
+  color: var(--slt-warn);
   display: flex;
   align-items: center;
   gap: 0.25rem;
@@ -528,13 +527,13 @@
   content: '';
   width: 5px;
   height: 5px;
-  background: #f44336;
+  background: var(--slt-warn);
   border-radius: 50%;
   animation: card-blink 1s infinite;
 }
 
 .compact-time.final {
-  color: #666;
+  color: var(--slt-ink-faint);
 }
 
 @keyframes card-blink {
@@ -546,19 +545,19 @@
   pointer-events: none;
 }
 
-.skeleton-card .skeleton {
-  background: linear-gradient(90deg, #2a2a2a 25%, #3a3a3a 50%, #2a2a2a 75%);
+.mlb-schedule-page .skeleton-card .skeleton, .team-analytics-page .skeleton-card .skeleton, .player-analytics-page .skeleton-card .skeleton {
+  background: linear-gradient(90deg, var(--slt-surface-2) 25%, #1f2633 50%, var(--slt-surface-2) 75%);
   background-size: 200% 100%;
   animation: shimmer 1.4s infinite;
   border-radius: 4px;
 }
 
-.skeleton-card .skeleton-logo-sm {
+.mlb-schedule-page .skeleton-card .skeleton-logo-sm, .team-analytics-page .skeleton-card .skeleton-logo-sm, .player-analytics-page .skeleton-card .skeleton-logo-sm {
   width: 28px;
   height: 28px;
   border-radius: 50%;
   flex-shrink: 0;
-  background: linear-gradient(90deg, #2a2a2a 25%, #3a3a3a 50%, #2a2a2a 75%);
+  background: linear-gradient(90deg, var(--slt-surface-2) 25%, #1f2633 50%, var(--slt-surface-2) 75%);
   background-size: 200% 100%;
   animation: shimmer 1.4s infinite;
 }
@@ -568,17 +567,17 @@
   border-radius: 4px;
 }
 
-.skeleton-card .skeleton-text-sm {
+.mlb-schedule-page .skeleton-card .skeleton-text-sm, .team-analytics-page .skeleton-card .skeleton-text-sm, .player-analytics-page .skeleton-card .skeleton-text-sm {
   height: 10px;
   border-radius: 3px;
-  background: linear-gradient(90deg, #2a2a2a 25%, #3a3a3a 50%, #2a2a2a 75%);
+  background: linear-gradient(90deg, var(--slt-surface-2) 25%, #1f2633 50%, var(--slt-surface-2) 75%);
   background-size: 200% 100%;
   animation: shimmer 1.4s infinite;
 }
 
 .compact-venue {
   font-size: 0.65rem;
-  color: #555;
+  color: var(--slt-ink-faint);
   max-width: 120px;
   white-space: nowrap;
   overflow: hidden;
@@ -622,7 +621,7 @@
 .compact-team-name {
   font-size: 0.85rem;
   font-weight: 600;
-  color: #fff;
+  color: var(--slt-ink);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -630,7 +629,7 @@
 
 .compact-team-record {
   font-size: 0.65rem;
-  color: #666;
+  color: var(--slt-ink-faint);
 }
 
 /* Center: Score or VS */
@@ -645,7 +644,7 @@
 .compact-vs {
   font-size: 0.7rem;
   font-weight: 700;
-  color: #444;
+  color: var(--slt-ink-faint);
 }
 
 .compact-score {
@@ -657,21 +656,21 @@
 .compact-score-num {
   font-size: 1.1rem;
   font-weight: 800;
-  color: #888;
+  color: var(--slt-ink-muted);
 }
 
 .compact-score-num.winner {
-  color: #4caf50;
+  color: var(--slt-good);
 }
 
 .compact-score-divider {
-  color: #444;
+  color: var(--slt-ink-faint);
   font-size: 0.75rem;
 }
 
 .compact-inning {
   font-size: 0.6rem;
-  color: #888;
+  color: var(--slt-ink-muted);
   margin-top: 0.1rem;
 }
 
@@ -686,14 +685,14 @@
 
 .compact-pitchers {
   font-size: 0.68rem;
-  color: #777;
+  color: var(--slt-ink-muted);
   display: flex;
   align-items: center;
   gap: 0.25rem;
 }
 
 .compact-pitchers span {
-  color: #999;
+  color: var(--slt-ink-muted);
 }
 
 .compact-odds {
@@ -701,21 +700,21 @@
   gap: 0.4rem;
 }
 
-.compact-odds-item {
+.mlb-schedule-page .compact-odds-item, .team-analytics-page .compact-odds-item, .player-analytics-page .compact-odds-item {
   font-size: 0.65rem;
   font-weight: 600;
-  color: #888;
+  color: var(--slt-ink-muted);
   background: rgba(255, 255, 255, 0.04);
   padding: 0.15rem 0.35rem;
   border-radius: 3px;
 }
 
-.compact-odds-item.positive {
-  color: #4caf50;
+.mlb-schedule-page .compact-odds-item.positive, .team-analytics-page .compact-odds-item.positive, .player-analytics-page .compact-odds-item.positive {
+  color: var(--slt-good);
 }
 
-.compact-odds-item.negative {
-  color: #f44336;
+.mlb-schedule-page .compact-odds-item.negative, .team-analytics-page .compact-odds-item.negative, .player-analytics-page .compact-odds-item.negative {
+  color: var(--slt-warn);
 }
 
 /* ── Card Grid Responsive ───────────────────────────────────────────────── */
@@ -752,4 +751,154 @@
   .compact-pitchers {
     display: none;
   }
+}
+
+/* These classes are shared with the predictions and matchup pages. They keep
+   their original colors there; the Terminal palette above is scoped to the
+   Schedule and Analytics pages. */
+.compact-odds-item {
+  font-size: 0.65rem;
+  font-weight: 600;
+  color: #888;
+  background: rgba(255, 255, 255, 0.04);
+  padding: 0.15rem 0.35rem;
+  border-radius: 3px;
+}
+
+.compact-odds-item.negative {
+  color: #f44336;
+}
+
+.compact-odds-item.positive {
+  color: #4caf50;
+}
+
+.empty-subtitle {
+  font-size: 0.9rem;
+  color: #a0a0a0;
+  max-width: 420px;
+  line-height: 1.6;
+  margin: 0;
+}
+
+.empty-title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #ffffff;
+  margin: 0;
+}
+
+.game-count {
+  color: #a0a0a0;
+  font-size: 0.85rem;
+  margin-bottom: 0.75rem;
+  text-align: right;
+}
+
+.matchup-arrow {
+  font-size: 1.2rem;
+  color: #666;
+  transition: color 0.15s, transform 0.15s;
+}
+
+.matchup-row:hover .matchup-arrow {
+  color: #1976D2;
+  transform: translateX(2px);
+}
+
+.matchup-team-name {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #ffffff;
+  line-height: 1.2;
+}
+
+.matchup-team-record {
+  font-size: 0.75rem;
+  color: #a0a0a0;
+}
+
+.matchup-vs {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #666666;
+}
+
+.odds-item {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 4px;
+  padding: 0.1rem 0.35rem;
+  font-weight: 600;
+  color: #ffffff;
+  font-size: 0.72rem;
+}
+
+.pagination-btn {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: #ffffff;
+  font-size: 0.875rem;
+  font-weight: 600;
+  padding: 0.5rem 1.25rem;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+
+.pagination-btn:hover:not(:disabled) {
+  background: rgba(25, 118, 210, 0.2);
+  border-color: #1976D2;
+}
+
+.pagination-info {
+  font-size: 0.85rem;
+  color: #a0a0a0;
+  min-width: 90px;
+  text-align: center;
+}
+
+.pitcher-name {
+  color: #ffffff;
+  font-weight: 500;
+}
+
+.score-loss {
+  color: #a0a0a0;
+}
+
+.score-win {
+  color: #4caf50;
+}
+
+.skeleton {
+  background: linear-gradient(90deg, #2a2a2a 25%, #333 50%, #2a2a2a 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.4s infinite;
+  border-radius: 4px;
+}
+
+.skeleton-card .skeleton {
+  background: linear-gradient(90deg, #2a2a2a 25%, #3a3a3a 50%, #2a2a2a 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.4s infinite;
+  border-radius: 4px;
+}
+
+.skeleton-card .skeleton-logo-sm {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  background: linear-gradient(90deg, #2a2a2a 25%, #3a3a3a 50%, #2a2a2a 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.4s infinite;
+}
+
+.skeleton-card .skeleton-text-sm {
+  height: 10px;
+  border-radius: 3px;
+  background: linear-gradient(90deg, #2a2a2a 25%, #3a3a3a 50%, #2a2a2a 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.4s infinite;
 }

@@ -6,7 +6,7 @@
 .spring-training-container {
   width: 100%;
   padding: 2rem 0;
-  background-color: #121212;
+  background-color: var(--slt-bg);
 }
 
 /* Spring Banner */
@@ -14,8 +14,8 @@
   display: flex;
   align-items: center;
   gap: 2rem;
-  background: linear-gradient(135deg, rgba(76, 175, 80, 0.2) 0%, rgba(76, 175, 80, 0.08) 100%);
-  border: 1px solid rgba(76, 175, 80, 0.3);
+  background: linear-gradient(135deg, rgba(74, 222, 128, 0.2) 0%, rgba(74, 222, 128, 0.08) 100%);
+  border: 1px solid rgba(74, 222, 128, 0.3);
   padding: 2rem;
   border-radius: 16px;
   margin-bottom: 2rem;
@@ -34,7 +34,7 @@
 
 .spring-info h2 {
   font-size: 2rem;
-  color: #ffffff;
+  color: var(--slt-ink);
   margin-bottom: 0.5rem;
   font-weight: 800;
 }
@@ -71,7 +71,7 @@
 
 .stat-value {
   font-size: 2rem;
-  color: #ffffff;
+  color: var(--slt-ink);
   font-weight: 800;
   margin-top: 0.25rem;
 }
@@ -86,7 +86,7 @@
 
 .spring-standings-card,
 .spring-stats-card {
-  background: #1e1e1e;
+  background: var(--slt-surface);
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 16px;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
@@ -98,27 +98,27 @@
   justify-content: space-between;
   align-items: center;
   padding: 1.25rem 1.5rem;
-  background: linear-gradient(135deg, rgba(25, 118, 210, 0.15) 0%, rgba(25, 118, 210, 0.05) 100%);
+  background: linear-gradient(135deg, rgba(103, 232, 249, 0.15) 0%, rgba(103, 232, 249, 0.05) 100%);
   border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-  color: white;
+  color: var(--slt-ink);
 }
 
 .spring-card-header h3 {
   font-size: 1.25rem;
   font-weight: 800;
   margin: 0;
-  color: #ffffff;
+  color: var(--slt-ink);
 }
 
 .spring-badge,
 .stats-badge {
-  background: rgba(25, 118, 210, 0.2);
-  border: 1px solid rgba(25, 118, 210, 0.4);
+  background: rgba(103, 232, 249, 0.2);
+  border: 1px solid rgba(103, 232, 249, 0.4);
   padding: 0.5rem 1rem;
   border-radius: 20px;
   font-size: 0.8rem;
   font-weight: 700;
-  color: #64B5F6;
+  color: var(--slt-cyan);
 }
 
 /* Spring Training Table */
@@ -138,7 +138,7 @@
   padding: 1rem 0.75rem;
   text-align: left;
   font-weight: 700;
-  color: #666666;
+  color: var(--slt-ink-faint);
   text-transform: uppercase;
   font-size: 0.8rem;
   letter-spacing: 0.5px;
@@ -148,7 +148,7 @@
 .spring-standings-table td {
   padding: 1rem 0.75rem;
   border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-  color: #ffffff;
+  color: var(--slt-ink);
 }
 
 .spring-standings-table tr.clickable-row {
@@ -173,7 +173,7 @@
   width: 40px;
   text-align: center;
   font-weight: 700;
-  color: #666666;
+  color: var(--slt-ink-faint);
 }
 
 .spring-standings-table .team-col {
@@ -193,13 +193,13 @@
 
 .team-name {
   font-weight: 700;
-  color: #ffffff;
+  color: var(--slt-ink);
   font-size: 1rem;
 }
 
 .team-location {
   font-size: 0.75rem;
-  color: #666666;
+  color: var(--slt-ink-faint);
   font-weight: 500;
 }
 
@@ -209,32 +209,32 @@
 }
 
 .spring-standings-table .wins {
-  color: #4CAF50;
+  color: var(--slt-good);
   font-weight: 700;
 }
 
 .spring-standings-table .losses {
-  color: #F44336;
+  color: var(--slt-warn);
   font-weight: 700;
 }
 
 .spring-standings-table .pct {
   font-weight: 600;
-  color: #ffffff;
+  color: var(--slt-ink);
 }
 
 .spring-standings-table .gb {
-  color: #a0a0a0;
+  color: var(--slt-ink-muted);
   font-weight: 600;
 }
 
 .diff.positive {
-  color: #4CAF50;
+  color: var(--slt-good);
   font-weight: 700;
 }
 
 .diff.negative {
-  color: #F44336;
+  color: var(--slt-warn);
   font-weight: 700;
 }
 
@@ -259,13 +259,13 @@
 }
 
 .streak.win-streak {
-  background: rgba(76, 175, 80, 0.15);
-  color: #4CAF50;
+  background: rgba(74, 222, 128, 0.15);
+  color: var(--slt-good);
 }
 
 .streak.loss-streak {
-  background: rgba(244, 67, 54, 0.15);
-  color: #F44336;
+  background: rgba(248, 113, 113, 0.15);
+  color: var(--slt-warn);
 }
 
 /* Stats Grid */
@@ -284,7 +284,7 @@
   background: rgba(255, 255, 255, 0.03);
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 12px;
-  border-left: 4px solid #4CAF50;
+  border-left: 4px solid var(--slt-good);
   transition: all 0.2s ease;
 }
 
@@ -305,7 +305,7 @@
 
 .stat-box .stat-label {
   font-size: 0.75rem;
-  color: #666666;
+  color: var(--slt-ink-faint);
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.5px;
@@ -314,7 +314,7 @@
 .stat-number {
   font-size: 1.5rem;
   font-weight: 800;
-  color: #ffffff;
+  color: var(--slt-ink);
 }
 
 /* Top Performers */
@@ -325,7 +325,7 @@
 
 .top-performers h4 {
   font-size: 1.25rem;
-  color: #ffffff;
+  color: var(--slt-ink);
   margin-bottom: 1rem;
   font-weight: 800;
 }
@@ -345,7 +345,7 @@
 .performers-subtitle {
   font-size: 0.95rem;
   font-weight: 700;
-  color: #ffffff;
+  color: var(--slt-ink);
   margin-bottom: 0.5rem;
 }
 
@@ -366,14 +366,14 @@
 
 .performer-category {
   font-size: 0.85rem;
-  color: #a0a0a0;
+  color: var(--slt-ink-muted);
   font-weight: 600;
   flex: 1;
 }
 
 .performer-value {
   font-size: 0.95rem;
-  color: #ffffff;
+  color: var(--slt-ink);
   font-weight: 700;
   flex: 1;
   text-align: center;
@@ -381,7 +381,7 @@
 
 .performer-stat {
   font-size: 1rem;
-  color: #4CAF50;
+  color: var(--slt-good);
   font-weight: 800;
   flex: 0.5;
   text-align: right;
@@ -392,7 +392,7 @@
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 2rem;
-  background: #1e1e1e;
+  background: var(--slt-surface);
   border: 1px solid rgba(255, 255, 255, 0.08);
   padding: 2rem;
   border-radius: 16px;
@@ -401,14 +401,14 @@
 
 .info-section h4 {
   font-size: 1.25rem;
-  color: #ffffff;
+  color: var(--slt-ink);
   margin-bottom: 1rem;
   font-weight: 800;
 }
 
 .info-section p {
   font-size: 1rem;
-  color: #a0a0a0;
+  color: var(--slt-ink-muted);
   line-height: 1.6;
 }
 

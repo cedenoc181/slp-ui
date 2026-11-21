@@ -60,7 +60,7 @@ export default function MatchupDetail() {
       <div className="matchup-detail-page">
         <div className="container">
           <div className="matchup-detail-top-nav">
-            <Link to="/mlb-schedule" className="back-link">‹ Back to Schedule</Link>
+            <Link to="/schedule" className="back-link">‹ Back to Schedule</Link>
           </div>
 
           {/* Hero skeleton */}
@@ -159,7 +159,7 @@ export default function MatchupDetail() {
       <div className="matchup-detail-page">
         <div className="container">
           <div className="matchup-detail-top-nav">
-            <Link to="/mlb-schedule" className="back-link">‹ Back to Schedule</Link>
+            <Link to="/schedule" className="back-link">‹ Back to Schedule</Link>
           </div>
           <div className="schedule-empty">
             <div className="empty-icon">⚾</div>
@@ -245,7 +245,7 @@ export default function MatchupDetail() {
     <div className="matchup-detail-page">
       <div className="container">
         <div className="matchup-detail-top-nav">
-          <Link to="/mlb-schedule" className="back-link">‹ <span className="nav-full">Back to Schedule</span><span className="nav-short">Back</span></Link>
+          <Link to="/schedule" className="back-link">‹ <span className="nav-full">Back to Schedule</span><span className="nav-short">Back</span></Link>
           <div className="matchup-detail-top-nav__center matchup-detail-top-nav__scout">
             <ScoutAiButton
               hasAnalysis={!!scoutAnalysis}
@@ -261,7 +261,7 @@ export default function MatchupDetail() {
           <div className="matchup-detail-top-nav__right">
             {isAuthenticated ? (
               <Link
-                to={`/mlb-schedule/${currentGamePk}/analysis`}
+                to={`/schedule/${currentGamePk}/analysis`}
                 state={{ game, prediction }}
                 className="deep-dive-btn"
               >

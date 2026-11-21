@@ -1,0 +1,62 @@
+/* ============================================
+   Terminal theme for the stats pages
+   ============================================
+   Team Analytics, Player Analytics, Schedule and Standings use the Terminal's palette and type so
+   they read as one product inside the Terminal frame. The tokens match the
+   .slt block in terminal.css; they're declared on :root here so the pages
+   (and anything they portal out, like chart tooltips) get them even when the
+   Terminal stylesheet isn't loaded, e.g. for signed-out visitors. */
+
+@import url('https://fonts.googleapis.com/css2?family=Oswald:wght@500;600;700&family=Archivo:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap');
+
+:root {
+  --slt-bg:        #0a0e14;
+  --slt-surface:   #11161f;
+  --slt-surface-2: #161c27;
+  --slt-line:      rgba(255,255,255,0.08);
+  --slt-ink:       #e8ecf1;
+  --slt-ink-muted: #7c8699;
+  --slt-ink-faint: rgba(255,255,255,0.35);
+  --slt-accent:    #c8102e;
+  --slt-cyan:      #67e8f9;
+  --slt-good:      #4ade80;
+  --slt-warn:      #f87171;
+
+  /* Active tab/toggle fill: the Terminal's tinted-cyan chip */
+  --slt-cyan-soft:   rgba(103,232,249,0.12);
+  --slt-cyan-hover:  rgba(103,232,249,0.2);
+  --slt-cyan-border: rgba(103,232,249,0.4);
+}
+
+/* ── Type ─────────────────────────────────────────────────── */
+:is(.team-analytics-page, .player-analytics-page, .mlb-schedule-page, .mlb-standings-page) {
+  font-family: 'Archivo', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+:is(.team-analytics-page, .player-analytics-page, .mlb-schedule-page, .mlb-standings-page) :is(button, select, input) {
+  font-family: inherit;
+}
+
+:is(.team-analytics-page, .player-analytics-page, .mlb-schedule-page, .mlb-standings-page) :is(h1, h2, h3, h4) {
+  font-family: 'Oswald', sans-serif;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+}
+
+.team-analytics-page .analytics-header h1,
+.player-analytics-page .analytics-header h1,
+.mlb-schedule-page .schedule-header h1,
+.mlb-standings-page .standings-header h1 {
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  text-shadow: none;
+}
+
+/* Numbers in the Terminal are JetBrains Mono with tabular figures. */
+.mlb-standings-page td,
+.mlb-schedule-page :is(.compact-score, .score-win, .score-loss, .compact-odds-item),
+.team-analytics-page :is(td, .stat-value, .team-stat-value, .last-10-value, .standings-value),
+.player-analytics-page :is(td, .split-bar-value, .chart-bar-value, .hot-total-number) {
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-variant-numeric: tabular-nums;
+}

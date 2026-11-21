@@ -908,7 +908,7 @@ function OddsDrawer({ game, onClose, adminOverride = false, earlyProps = [], ear
           <div className="gp-view-toggle-right">
             <button
               className="gp-view-toggle-btn"
-              onClick={() => { onClose(); navigate(`/mlb-schedule/${game.game_pk}`); }}
+              onClick={() => { onClose(); navigate(`/schedule/${game.game_pk}`); }}
             >
               Matchup Detail
             </button>

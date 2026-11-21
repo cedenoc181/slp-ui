@@ -331,7 +331,7 @@ export default function Lab() {
                           <td>
                             <button
                               className="lab-matchup-link"
-                              onClick={() => { navigate(`/mlb-schedule/${row.gamePk}`); window.scrollTo(0, 0); }}
+                              onClick={() => { navigate(`/schedule/${row.gamePk}`); window.scrollTo(0, 0); }}
                               title="Open matchup detail"
                             >
                               {row.teamAbbr} <span className="lab-vs">{row.side === 'away' ? '@' : 'vs'}</span> {row.oppAbbr}

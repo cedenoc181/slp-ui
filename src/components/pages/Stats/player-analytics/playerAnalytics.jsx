@@ -11,6 +11,9 @@ import {
   getTeamById,
   getTeamIdFromAbbr,
 } from '../../../../data/constants/apiConstants';
+import { MLB_TEAM_GROUPS, WINTER_ENABLED } from '../../../../data/constants/leagues';
+import LeagueTabs from '../../../LeagueTabs';
+import { WinterPlayersView } from '../../Winter/WinterStatsViews';
 import '../../../../styles/stats-page-styling/player-analytics.css';
 
 function PlayerAnalytics() {
@@ -69,13 +72,9 @@ function PlayerAnalytics() {
     }
   }, [user?.favoriteTeamId]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Add "All Teams" option to the teams list
-  const teamsWithAll = useMemo(() => {
-    return [
-      { id: 'ALL', name: 'MLB Leaders', mlbId: null, urlName: 'all-teams' },
-      ...TEAMS
-    ];
-  }, []);
+  // Non-MLB leagues have no data yet; they swap the page body for a preview.
+  const [league, setLeague] = useState('mlb');
+  const isMlb = league === 'mlb';
 
   // Sync state FROM URL params when they change externally (e.g., navigation from Team Analytics)
   useEffect(() => {
@@ -196,17 +195,18 @@ function PlayerAnalytics() {
       {/* Header - Mirrored from Team Analytics */}
       <div className="analytics-header">
         <div className="container">
+          <LeagueTabs value={league} onChange={setLeague} enabled={WINTER_ENABLED} />
           <div className="header-content">
             <div className="team-selector-wrapper">
               <div className="team-header-inline">
-                {selectedTeam === 'ALL' && (
+                {isMlb && selectedTeam === 'ALL' && (
                   <img
                     src="/mlb_logo-spa.png"
                     alt="MLB logo"
                     className="team-logo-image"
                   />
                 )}
-                {selectedTeam !== 'ALL' && currentTeam?.mlbId && (
+                {isMlb && selectedTeam !== 'ALL' && currentTeam?.mlbId && (
                   <img
                     src={`https://www.mlbstatic.com/team-logos/${currentTeam.mlbId}.svg`}
                     alt={`${currentTeam.name} logo`}
@@ -218,17 +218,25 @@ function PlayerAnalytics() {
                 )}
                 <h1>Player Analytics</h1>
               </div>
+              {/* Winter leagues pick league and season in the page body. */}
+              {isMlb && (
               <div className="selectors-row">
                 <div className="team-selector">
                   <select
                     value={selectedTeam}
                     onChange={(e) => handleTeamChange(e.target.value)}
                     className="team-dropdown"
+                    aria-label="Team"
                   >
-                    {teamsWithAll.map((team) => (
-                      <option key={team.id} value={team.id}>
-                        {team.name}
-                      </option>
+                    <option value="ALL">MLB Leaders</option>
+                    {MLB_TEAM_GROUPS.map((group) => (
+                      <optgroup key={group.key} label={group.label}>
+                        {group.teams.map((team) => (
+                          <option key={team.id} value={team.id}>
+                            {team.name}
+                          </option>
+                        ))}
+                      </optgroup>
                     ))}
                   </select>
                 </div>
@@ -238,6 +246,7 @@ function PlayerAnalytics() {
                     value={selectedSeason}
                     onChange={(e) => handleSeasonChange(e.target.value)}
                     className="season-dropdown"
+                    aria-label="Season"
                   >
                     {SEASONS.map((season) => (
                       <option key={season} value={season}>
@@ -247,6 +256,7 @@ function PlayerAnalytics() {
                   </select>
                 </div>
               </div>
+              )}
             </div>
 
             <div className="timeframe-tabs">
@@ -271,7 +281,9 @@ function PlayerAnalytics() {
 
       {/* Content */}
       <div className="analytics-content container">
-        {metricType === 'batting' ? (
+        {!isMlb ? (
+          <WinterPlayersView group={metricType} />
+        ) : metricType === 'batting' ? (
           <BatterStats 
             key={`batter-${selectedTeam}-${selectedSeason}`}
             teamId={selectedTeam}

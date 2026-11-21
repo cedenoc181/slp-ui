@@ -31,6 +31,7 @@ const ICONS = {
   bolt:   <polygon points="13 2 4 14 11 14 10 22 20 10 13 10 13 2" />,
   shield: <path d="M12 2l8 3v6c0 5-3.4 9.4-8 11-4.6-1.6-8-6-8-11V5z" />,
   user:   <><circle cx="12" cy="8" r="4" /><path d="M4 21v-1a6 6 0 0 1 6-6h4a6 6 0 0 1 6 6v1" /></>,
+  globe:  <><circle cx="12" cy="12" r="9" /><path d="M3 12h18" /><path d="M12 3a14 14 0 0 1 0 18" /><path d="M12 3a14 14 0 0 0 0 18" /></>,
   cal:    <><rect x="3" y="4" width="18" height="17" rx="2" /><line x1="3" y1="9" x2="21" y2="9" /><line x1="8" y1="2" x2="8" y2="6" /><line x1="16" y1="2" x2="16" y2="6" /></>,
   book:   <><path d="M4 4h6a3 3 0 0 1 3 3v13a2 2 0 0 0-2-2H4z" /><path d="M20 4h-6a3 3 0 0 0-3 3v13a2 2 0 0 1 2-2h7z" /></>,
   gear:   <><circle cx="12" cy="12" r="3" /><path d="M19.4 13a7.9 7.9 0 000-2l2-1.5-2-3.4-2.4 1a8 8 0 00-1.7-1l-.3-2.6h-4l-.3 2.6a8 8 0 00-1.7 1l-2.4-1-2 3.4L6.6 11a7.9 7.9 0 000 2l-2 1.5 2 3.4 2.4-1a8 8 0 001.7 1l.3 2.6h4l.3-2.6a8 8 0 001.7-1l2.4 1 2-3.4z" /></>,
@@ -45,10 +46,11 @@ const PAGES = [
   { id: 'warroom',     label: 'War Room',         icon: 'target', to: '/predictions/scout-desk',    match: ['/predictions/scout-desk'] },
   { id: 'ledger',      label: 'Trust Ledger',     icon: 'bar',    to: '/predictions/trust-ledger',  match: ['/predictions/trust-ledger'] },
   { id: 'library',     label: 'Bet Library',      icon: 'dollar', to: '/predictions/bet-library',   match: ['/predictions/bet-library'] },
-  { id: 'schedule',    label: 'MLB Schedule',     icon: 'cal',    to: '/mlb-schedule',              match: ['/mlb-schedule'] },
-  { id: 'standings',   label: 'MLB Standings',    icon: 'list',   to: '/mlb-standings',             match: ['/mlb-standings'] },
+  { id: 'schedule',    label: 'Schedule',         icon: 'cal',    to: '/schedule',                  match: ['/schedule'] },
+  { id: 'standings',   label: 'Standings',        icon: 'list',   to: '/standings',                 match: ['/standings'] },
   { id: 'teams',       label: 'Team Analytics',   icon: 'shield', to: '/team-analytics',            match: ['/team-analytics'] },
   { id: 'players',     label: 'Player Analytics', icon: 'user',   to: '/player-analytics',          match: ['/player-analytics', '/player/'] },
+  { id: 'winter',      label: 'Winter Ball',      icon: 'globe',  to: '/winter',                    match: ['/winter'] },
   { id: 'settings',    label: 'Account Settings', icon: 'gear',   to: '/account/settings',          match: ['/account', '/upgrade'], bottom: true },
 ];
 
@@ -61,6 +63,11 @@ const MORE_PAGES = [
   { id: 'glossary',  label: 'Glossary',         to: '/glossary' },
   { id: 'faqs',      label: 'FAQs',             to: '/faqs' },
   { id: 'upgrade',   label: 'Pricing & Upgrade', to: '/upgrade' },
+  { id: 'w-lidom',   label: 'Winter Ball · LIDOM',            to: '/winter/lidom' },
+  { id: 'w-lvbp',    label: 'Winter Ball · LVBP',             to: '/winter/lvbp' },
+  { id: 'w-lmp',     label: 'Winter Ball · LMP',              to: '/winter/lmp' },
+  { id: 'w-lbprc',   label: 'Winter Ball · LBPRC',            to: '/winter/lbprc' },
+  { id: 'w-cs',      label: 'Winter Ball · Serie del Caribe', to: '/winter/cs' },
 ];
 
 // Dashboard panels — the palette jumps to them via /terminal + focus state.
@@ -184,7 +191,7 @@ function Ticker({ games }) {
   }
 
   const renderTick = (g, key) => (
-    <Link to={`/mlb-schedule/${g.id}`} className="slt-tick" key={key}>
+    <Link to={`/schedule/${g.id}`} className="slt-tick" key={key}>
       <b>{g.away} @ {g.home}</b>
       {g.state === 'pre' ? (
         <>
