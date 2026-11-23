@@ -3,7 +3,7 @@ import cbpcService from '../../../data/services/cbpcService';
 import { isNationsLeague, isWinterOffseason, seasonLabel } from '../../../data/constants/cbpcConstants';
 import { useWinterSelection, WinterPicker, WinterEmbed } from './WinterEmbed';
 import { CurrentGames, Standings, PostseasonResults, SeriesNations } from './LeagueHome';
-import { TeamView } from './TeamPage';
+import CbpcTeamAnalytics from './CbpcTeamAnalytics';
 import { WinterSearch } from './WinterLayout';
 import WinterLeadersBoard from './WinterLeadersBoard';
 import { useCbpc, Loading, ErrorState, Empty } from './winterUi';
@@ -88,7 +88,7 @@ export function WinterTeamView() {
         {season && <TeamPicker league={league} season={season} value={teamId} onChange={setTeamId} />}
       </WinterPicker>
       {teamId
-        ? <TeamView key={`${league}-${teamId}`} league={league} teamId={teamId} season={season} isCurrentSeason={isCurrentSeason} showBack={false} />
+        ? <CbpcTeamAnalytics key={`${league}-${teamId}`} league={league} teamId={teamId} season={season} isCurrentSeason={isCurrentSeason} />
         : <Loading rows={4} />}
     </WinterEmbed>
   );

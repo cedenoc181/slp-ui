@@ -508,3 +508,19 @@
 .wb-league-tag--nl { color: var(--slt-warn); border-color: rgba(248, 113, 113, 0.35); }
 .wb-two-col--wide { grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr); }
 @media (max-width: 900px) { .wb-two-col--wide { grid-template-columns: 1fr; } }
+
+/* Winter club on the MLB Team Analytics layout: title row above the cards. */
+.cbpc-team-title { display: flex; align-items: center; gap: 1rem; margin: 0.5rem 0 1.5rem; }
+.cbpc-team-name {
+  margin: 0;
+  font-family: 'Oswald', sans-serif;
+  font-weight: 600;
+  font-size: 1.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  color: var(--slt-ink);
+}
+
+/* No injury card for winter clubs, so the roster spans the full width
+   (same as the game log) instead of the MLB page's 2fr/1fr split. */
+.cbpc-team-analytics .roster-injury-section { grid-template-columns: 1fr; }
