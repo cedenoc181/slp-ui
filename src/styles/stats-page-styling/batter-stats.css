@@ -1091,3 +1091,54 @@
 
 }
 
+
+/* Compact Recent Performance card: one row per player (name + total on the
+   left, short game-by-game bars on the right); stacks on narrow screens.
+   Shared by the MLB and winter Hot Bats / Hot Arms cards (.hot-compact). */
+.hot-compact .hot-bats-content,
+.hot-compact .hot-arms-content { min-height: 0; }
+.hot-compact .hot-batters-list,
+.hot-compact .hot-pitchers-list { gap: 0.5rem; }
+.hot-compact .hot-batter-item,
+.hot-compact .hot-pitcher-item {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.25fr);
+  align-items: center;
+  gap: 1rem;
+  padding: 0.55rem 0.9rem;
+}
+.hot-compact .hot-batter-header,
+.hot-compact .hot-pitcher-header { gap: 0.6rem; }
+.hot-compact .hot-batter-rank,
+.hot-compact .hot-pitcher-rank { min-width: 24px; }
+.hot-compact .hot-batter-logo,
+.hot-compact .hot-pitcher-logo { width: 28px; height: 28px; padding: 4px; }
+.hot-compact .hot-total-number { font-size: 1.2rem; }
+.hot-compact .hot-batter-chart,
+.hot-compact .hot-pitcher-chart {
+  border-top: 0;
+  border-left: 1px solid rgba(255, 255, 255, 0.06);
+  padding: 0 0 0 1rem;
+}
+.hot-compact .hot-batter-chart .chart-bars,
+.hot-compact .hot-pitcher-chart .chart-bars { height: 50px; gap: 0.35rem; padding: 0; }
+.hot-compact .hot-batter-chart .chart-bar-container,
+.hot-compact .hot-pitcher-chart .chart-bar-container { gap: 0.2rem; }
+.hot-compact .hot-batter-chart .chart-bar-wrapper,
+.hot-compact .hot-pitcher-chart .chart-bar-wrapper { height: 34px; }
+.hot-compact .hot-batter-chart .chart-bar,
+.hot-compact .hot-pitcher-chart .chart-bar { max-width: 18px; box-shadow: none; }
+.hot-compact .hot-batter-chart .chart-bar-value,
+.hot-compact .hot-pitcher-chart .chart-bar-value { font-size: 0.62rem; margin-bottom: 0.1rem; }
+.hot-compact .hot-batter-chart .chart-bar-date,
+.hot-compact .hot-pitcher-chart .chart-bar-date { font-size: 0.58rem; letter-spacing: 0; color: var(--pa-text-muted); }
+@media (max-width: 760px) {
+  .hot-compact .hot-batter-item,
+  .hot-compact .hot-pitcher-item { grid-template-columns: 1fr; gap: 0.4rem; }
+  .hot-compact .hot-batter-chart,
+  .hot-compact .hot-pitcher-chart {
+    border-left: 0;
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+    padding: 0.4rem 0 0;
+  }
+}

@@ -50,7 +50,6 @@ const PAGES = [
   { id: 'standings',   label: 'Standings',        icon: 'list',   to: '/standings',                 match: ['/standings'] },
   { id: 'teams',       label: 'Team Analytics',   icon: 'shield', to: '/team-analytics',            match: ['/team-analytics'] },
   { id: 'players',     label: 'Player Analytics', icon: 'user',   to: '/player-analytics',          match: ['/player-analytics', '/player/'] },
-  { id: 'winter',      label: 'Winter Ball',      icon: 'globe',  to: '/winter',                    match: ['/winter'] },
   { id: 'settings',    label: 'Account Settings', icon: 'gear',   to: '/account/settings',          match: ['/account', '/upgrade'], bottom: true },
 ];
 

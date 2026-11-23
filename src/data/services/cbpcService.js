@@ -118,12 +118,22 @@ const cbpcService = {
   getStandings: (league, season, seasonType = 'R') =>
     get(`/cbpc/${league}/standings${qs({ season, season_type: seasonType })}`),
   getTeamStats: (league, group, season) => get(`/cbpc/${league}/teams/stats/${group}${qs({ season })}`),
-  getLeaders: (league, group, stat, season, limit = 10) =>
-    get(`/cbpc/${league}/leaders/${group}${qs({ season, stat, limit })}`),
+  // With teamId, the server ranks only that club's players (lines for the club,
+  // club-scaled qualifier; qualifier.relaxed when nobody fully qualifies).
+  getLeaders: (league, group, stat, season, limit = 10, teamId) =>
+    get(`/cbpc/${league}/leaders/${group}${qs({ season, stat, limit, team_id: teamId })}`),
+  // A club's common lineup: 9 regulars (most recent starts), then bench, each
+  // ordered best hitter to worst by the server.
+  getTeamLineup: (league, teamId, { season, seasonType, limit, recentGames } = {}) =>
+    get(`/cbpc/${league}/teams/${teamId}/lineup${qs({ season, season_type: seasonType, limit, recent_games: recentGames })}`),
 
   // Games
   getTodayGames: (league) => get(`/cbpc/${league}/scheduled-games/today`),
-  getUpcomingGames: (league, days = 7) => get(`/cbpc/${league}/scheduled-games/upcoming${qs({ days })}`),
+  // Hot performers: each player's last 7 games (batting) or 5 appearances
+  // (pitching), ranked per category by the server.
+  getHotLeaders: (league, group, { season, seasonType, teamId, limit, asOfDate } = {}) =>
+    get(`/cbpc/${league}/leaders/${group}/hot${qs({ season, season_type: seasonType, team_id: teamId, limit, as_of_date: asOfDate })}`),
+  getUpcomingGames:(league, days = 7) => get(`/cbpc/${league}/scheduled-games/upcoming${qs({ days })}`),
   getPriorGames: (league, days = 3) => get(`/cbpc/${league}/scheduled-games/prior${qs({ days })}`),
   getGamesByDate: (league, date) => get(`/cbpc/${league}/games/date${qs({ date })}`),
   /** Completed games, newest first. */

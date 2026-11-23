@@ -101,7 +101,7 @@ function HotPitchersList({
   }, [metricLabel, isTeamSelected, season]);
 
   return (
-    <div className="hot-arms-card">
+    <div className="hot-arms-card hot-compact">
       <div className="hot-arms-header">
         <div>
           <p className="eyebrow">Recent Performance</p>

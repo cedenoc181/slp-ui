@@ -365,11 +365,12 @@ export function usePitcherStats({ teamId = 'ALL', teamDbId = null, season = DEFA
     const categoryData = hotPitchersData[hotMetric];
     if (!categoryData || !Array.isArray(categoryData)) return [];
 
-    // Sort by total and return top players
+    // The server ranks each category (ER and BB lowest first), so keep its
+    // order and show the top 5.
     return [...categoryData]
       .filter(Boolean)
-      .sort((a, b) => (b.total || 0) - (a.total || 0))
-      .slice(0, 7);
+      .sort((a, b) => (a.rank ?? Infinity) - (b.rank ?? Infinity))
+      .slice(0, 5);
   }, [hotPitchersData]);
 
   return {

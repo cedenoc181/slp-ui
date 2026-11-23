@@ -1,12 +1,12 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import cbpcService from '../../../data/services/cbpcService';
-import { isNationsLeague, isWinterOffseason, seasonLabel } from '../../../data/constants/cbpcConstants';
+import { CBPC_LEAGUES, isNationsLeague, isWinterOffseason, seasonLabel } from '../../../data/constants/cbpcConstants';
 import { useWinterSelection, WinterPicker, WinterEmbed } from './WinterEmbed';
 import { CurrentGames, Standings, PostseasonResults, SeriesNations } from './LeagueHome';
 import CbpcTeamAnalytics from './CbpcTeamAnalytics';
+import CbpcPlayerAnalytics from './CbpcPlayerAnalytics';
 import { WinterSearch } from './WinterLayout';
-import WinterLeadersBoard from './WinterLeadersBoard';
-import { useCbpc, Loading, ErrorState, Empty } from './winterUi';
+import { useCbpc, Loading, Empty } from './winterUi';
 
 /*
   What Schedule, Standings, Team Analytics and Player Analytics show when their
@@ -94,14 +94,41 @@ export function WinterTeamView() {
   );
 }
 
+// The MLB Player Analytics layout for winter leagues, with a league-wide /
+// club filter like the MLB page's team dropdown.
 export function WinterPlayersView({ group }) {
   const sel = useWinterSelection();
+  const { league, season } = sel;
+  const [pick, setPick] = useState({ league: null, id: null });
+  const teamId = pick.league === league ? pick.id : null;
+  const teams = useCbpc(() => (season ? cbpcService.getTeams(league, season) : Promise.resolve([])), [league, season]);
+  const sorted = useMemo(() => [...(teams.data || [])].sort((a, b) => a.team_name.localeCompare(b.team_name)), [teams.data]);
+  const teamName = sorted.find(t => t.id === teamId)?.team_name || '';
   return (
     <WinterEmbed sel={sel}>
       <WinterPicker sel={sel}>
+        <select
+          className="wb-season-select wb-team-select"
+          aria-label="Team"
+          value={teamId ?? ''}
+          onChange={(e) => setPick({ league, id: e.target.value ? Number(e.target.value) : null })}
+        >
+          <option value="">{`${CBPC_LEAGUES[league].short} Leaders`}</option>
+          {sorted.map(t => <option key={t.id} value={t.id}>{t.team_name}</option>)}
+        </select>
         <WinterSearch />
       </WinterPicker>
-      {sel.season ? <WinterLeadersBoard league={sel.league} season={sel.season} group={group} /> : <ErrorState />}
+      {season && (
+        <CbpcPlayerAnalytics
+          key={`${league}-${season}-${group}-${teamId}`}
+          league={league}
+          season={season}
+          group={group}
+          teamId={teamId}
+          teamName={teamName}
+        />
+      )}
     </WinterEmbed>
   );
 }
+

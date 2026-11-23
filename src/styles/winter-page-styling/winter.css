@@ -524,3 +524,15 @@
 /* No injury card for winter clubs, so the roster spans the full width
    (same as the game log) instead of the MLB page's 2fr/1fr split. */
 .cbpc-team-analytics .roster-injury-section { grid-template-columns: 1fr; }
+
+/* Club leader card whose qualifier the server relaxed (nobody fully qualified). */
+.cbpc-relaxed-note {
+  display: block;
+  margin-top: 0.2rem;
+  font-size: 0.62rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--pa-text-muted);
+  cursor: help;
+}
