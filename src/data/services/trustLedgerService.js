@@ -56,5 +56,23 @@ export async function getTrustLedger(date, { postseason, signal } = {}) {
   return trustLedgerFetch(`${ENDPOINT}${q ? `?${q}` : ''}`, { signal });
 }
 
-const trustLedgerService = { getTrustLedger };
+/**
+ * Winter-league board (docs/cbpc_trust_ledger_contract.md in the API repo):
+ * GET /api/v1/predictions/scout-desk/cbpc/{league}/trust-ledger. Same auth
+ * gate as the MLB board. Each league is its own board; rows use the MLB row
+ * keys plus teamId (CBPC id), abbreviation, logoUrl, league,
+ * leagueHittingRank/leaguePitchingRank and todayGame. postseason=true isn't
+ * allowed for 'cs' (422).
+ * @returns {Promise<{ league, season, seasonLabel, postseason, leagueSize, percentileReliable, rows: Array }>}
+ */
+export async function getCbpcTrustLedger(league, { season, date, postseason, signal } = {}) {
+  const params = new URLSearchParams();
+  if (season) params.set('season', season);
+  if (date) params.set('date', date);
+  if (postseason) params.set('postseason', 'true');
+  const q = params.toString();
+  return trustLedgerFetch(`/api/v1/predictions/scout-desk/cbpc/${league}/trust-ledger${q ? `?${q}` : ''}`, { signal });
+}
+
+const trustLedgerService = { getTrustLedger, getCbpcTrustLedger };
 export default trustLedgerService;

@@ -18,6 +18,13 @@
  * below. 401 = auth failure (no local fallback). 422 = { detail } — nothing
  * was saved; err.message carries the detail for the UI.
  *
+ * Caribbean winter leagues (CBPC) share the same watchlist under their own
+ * keys: cbpc_team_ids / cbpc_player_ids (CBPC ids, a separate id space that
+ * overlaps MLB's), with items of entity_type 'cbpc_team' / 'cbpc_player' that
+ * carry their league slug and the /cbpc image URLs. The Terminal shows MLB
+ * entries on its MLB tab and winter entries on its Serie del Caribe tab.
+ * `limits` gives the cap per type; winter entries don't use MLB slots.
+ *
  * For a user who never saved, GET returns their favorite team (added_at null)
  * without saving it, so the client must not seed it again when on the server.
  * The response to every write is the new source of truth; GET is cached
@@ -29,7 +36,8 @@ import { getAccessToken } from './userAuthService';
 
 const ENDPOINT = '/api/v1/users/me/watchlist';
 
-export const WATCHLIST_LIMITS = { teams: 30, players: 50 };
+// Fallbacks; the server's `limits` wins when present.
+export const WATCHLIST_LIMITS = { teams: 30, players: 50, cbpc_teams: 30, cbpc_players: 50 };
 
 async function watchlistFetch(method = 'GET', body = null) {
   const token = getAccessToken();
@@ -58,6 +66,8 @@ function parse(data) {
   const items = Array.isArray(data?.items) ? data.items : [];
   const details = {};
   const teamMeta = {};
+  const winterTeams = {};
+  const winterPlayers = {};
   items.forEach(it => {
     if (it?.entity_type === 'player') {
       details[it.entity_id] = {
@@ -72,10 +82,36 @@ function parse(data) {
       };
     } else if (it?.entity_type === 'team') {
       teamMeta[it.entity_id] = { locked: !!it.locked, addedAt: it.added_at ?? null };
+    } else if (it?.entity_type === 'cbpc_team') {
+      winterTeams[it.entity_id] = {
+        id: it.entity_id,
+        league: it.league ?? null,
+        name: it.name ?? null,
+        abbr: it.abbreviation ?? null,
+        logoUrl: it.logo_url ?? null,
+      };
+    } else if (it?.entity_type === 'cbpc_player') {
+      winterPlayers[it.entity_id] = {
+        id: it.entity_id,
+        name: it.name ?? null,
+        position: it.position ?? null,
+        headshotUrl: it.headshot_url ?? null,
+        teamId: it.team_id ?? null,
+        teamName: it.team_name ?? null,
+        teamAbbr: it.team_abbreviation ?? null,
+        teamLogoUrl: it.team_logo_url ?? null,
+        teamLeague: it.team_league ?? null,
+        active: it.active !== false,
+      };
     }
   });
   const players = (playersSupported ? data.player_ids : []).map(id => details[id] || { id });
-  return { teamIds, players, playersSupported, teamMeta };
+  // A server without the winter keys can't store winter entries yet.
+  const winterSupported = Array.isArray(data?.cbpc_team_ids) && Array.isArray(data?.cbpc_player_ids);
+  const cbpcTeams = (winterSupported ? data.cbpc_team_ids : []).map(id => winterTeams[id] || { id });
+  const cbpcPlayers = (winterSupported ? data.cbpc_player_ids : []).map(id => winterPlayers[id] || { id });
+  const limits = { ...WATCHLIST_LIMITS, ...(data?.limits || {}) };
+  return { teamIds, players, playersSupported, teamMeta, cbpcTeams, cbpcPlayers, winterSupported, limits };
 }
 
 // ── On-device fallback (until the endpoint ships) ───────────────────────────
@@ -111,6 +147,16 @@ const watchlistService = {
   /** Replace the watched players only (teams untouched). */
   async setPlayers(playerIds) {
     return parse(await watchlistFetch('PUT', { player_ids: playerIds }));
+  },
+
+  /** Replace the watched winter-league teams only (CBPC ids). */
+  async setCbpcTeams(teamIds) {
+    return parse(await watchlistFetch('PUT', { cbpc_team_ids: teamIds }));
+  },
+
+  /** Replace the watched winter-league players only (CBPC ids). */
+  async setCbpcPlayers(playerIds) {
+    return parse(await watchlistFetch('PUT', { cbpc_player_ids: playerIds }));
   },
 
   loadLocal,

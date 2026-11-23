@@ -31,6 +31,23 @@ export const DEFAULT_LEAGUE = 'lidom';
 
 export const isNationsLeague = (slug) => !!CBPC_LEAGUES[slug]?.isNations;
 
+// The winter league a viewer last picked on a league-scoped board (Trust
+// Ledger page and Terminal card), so both open on the same league.
+const WINTER_LEAGUE_KEY = 'sp-winter-league';
+
+export function rememberedWinterLeague() {
+  try {
+    const saved = localStorage.getItem(WINTER_LEAGUE_KEY);
+    return CBPC_SLUGS.includes(saved) ? saved : DEFAULT_LEAGUE;
+  } catch {
+    return DEFAULT_LEAGUE;
+  }
+}
+
+export function rememberWinterLeague(slug) {
+  try { localStorage.setItem(WINTER_LEAGUE_KEY, slug); } catch {}
+}
+
 // Season = the year the winter starts: 2025 → "2025-26".
 export function seasonLabel(season) {
   const y = Number(season);

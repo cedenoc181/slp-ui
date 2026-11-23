@@ -343,27 +343,18 @@
   border-radius: 3px;
 }
 
-/* ── Serie del Caribe preview ─────────────────────────────── */
-.slt-sdc-nations {
-  list-style: none;
-  margin: 0;
-  padding: 0;
+/* Winter-league logo that failed to load (some guest nations): abbreviation. */
+.slt-team-logo--abbr {
+  display: inline-grid;
+  place-items: center;
+  border-radius: 6px;
+  background: var(--slt-surface-2);
+  border: 1px solid var(--slt-line);
+  color: var(--slt-ink-muted);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.55rem;
+  font-weight: 700;
 }
-
-.slt-sdc-nations li {
-  display: flex;
-  justify-content: space-between;
-  gap: 0.75rem;
-  padding: 0.55rem 0;
-  border-bottom: 1px solid var(--slt-line);
-  font-size: 0.8rem;
-}
-
-.slt-sdc-nations li:last-child { border-bottom: none; }
-
-.slt-sdc-nation { color: var(--slt-ink); font-weight: 600; }
-
-.slt-sdc-nations .slt-faint { text-align: right; }
 
 .slt-dash-bar + .slt-grid { padding-top: 0.75rem; }
 
@@ -1296,6 +1287,27 @@
   padding: 0.1rem 0.4rem;
 }
 
+/* Standings preview card: a fixed-height table that scrolls, so 8- and
+   10-team winter leagues don't grow the card. ~6 rows fit (an MLB division is
+   5); the header stays pinned while scrolling. The sheet shows every row. */
+.slt-standings-scroll {
+  max-height: 11.75rem;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+  scrollbar-color: var(--slt-line) transparent;
+}
+
+.slt-standings-scroll::-webkit-scrollbar { width: 6px; }
+.slt-standings-scroll::-webkit-scrollbar-thumb { background: var(--slt-line); border-radius: 3px; }
+
+.slt-standings-scroll .slt-table th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background: var(--slt-surface);
+}
+
 .slt-table--sheet { font-size: 0.8rem; }
 .slt-table--sheet td { padding-block: 0.45rem; }
 
@@ -1453,3 +1465,8 @@
     transition-delay: 0.25s;
   }
 }
+
+/* Winter Trust Ledger: season/size note above the card's top 5, and the
+   league picker at the top of its sheet. */
+.slt-tl-note { margin: 0 0 0.5rem; }
+.slt-sheet-tools { display: flex; justify-content: flex-end; margin-bottom: 0.75rem; }

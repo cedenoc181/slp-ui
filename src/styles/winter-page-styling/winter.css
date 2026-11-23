@@ -472,3 +472,39 @@
 .wb-team-select { min-width: 220px; }
 
 .wb-leader-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1.25rem; }
+
+/* Clinch marker (MLB standings preview): x / y / z / w / e. */
+.wb-clinch {
+  margin-left: 0.35rem;
+  padding: 0 0.3rem;
+  border: 1px solid var(--slt-line);
+  border-radius: 4px;
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 0.66rem;
+  color: var(--slt-ink-muted);
+}
+
+/* A second embedded block right under the bar (no extra top padding). */
+.wb-page.wb-embed.wb-embed--flush { padding-top: 0; }
+
+/* ── MLB wild card + power rankings ───────────────────────── */
+/* Teams in a wild card spot get a cyan edge; a line marks the cutoff. */
+.wb-table--wc tr.wb-row-in td:first-child { box-shadow: inset 2px 0 0 var(--slt-cyan); }
+.wb-table--wc tr.wb-row-cut td { border-bottom: 1px dashed var(--slt-cyan-border); }
+
+.wb-move { font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 0.78rem; white-space: nowrap; }
+.wb-move--flat { color: var(--slt-ink-faint); }
+
+.wb-league-tag {
+  padding: 0.05rem 0.35rem;
+  border: 1px solid var(--slt-line);
+  border-radius: 4px;
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 0.68rem;
+  color: var(--slt-ink-muted);
+}
+
+.wb-league-tag--al { color: var(--slt-cyan); border-color: var(--slt-cyan-border); }
+.wb-league-tag--nl { color: var(--slt-warn); border-color: rgba(248, 113, 113, 0.35); }
+.wb-two-col--wide { grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr); }
+@media (max-width: 900px) { .wb-two-col--wide { grid-template-columns: 1fr; } }

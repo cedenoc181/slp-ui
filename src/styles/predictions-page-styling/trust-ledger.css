@@ -475,3 +475,24 @@
   .tl-meta { text-align: left; }
   .tl-page-head { flex-direction: column; }
 }
+
+/* ── Winter-league board ──────────────────────────────────── */
+.tl-season-select {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11.5px;
+  font-weight: 600;
+  color: var(--tl-ink);
+  background: var(--tl-surface);
+  border: 1px solid var(--tl-line);
+  border-radius: 8px;
+  padding: 7px 10px;
+  cursor: pointer;
+}
+
+/* Percentiles within a 5–10 team league are labeled as a small sample. */
+.tl-small-sample {
+  padding: 2px 8px;
+  border: 1px solid var(--tl-line);
+  border-radius: 999px;
+  color: var(--tl-ink-muted);
+}

@@ -1,13 +1,15 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
 import '../../../../styles/stats-page-styling/mlb-standings.css';
 import teamsService from '../../../../data/services/teamsService';
-import { TEAM_METADATA, SEASONS, DEFAULT_SEASON, SEASON_RANGE } from '../../../../data/constants/apiConstants';
+import { SEASONS, DEFAULT_SEASON, SEASON_RANGE } from '../../../../data/constants/apiConstants';
 import MLBStandingsPostseason from './mlbStandingsPostseason';
-import MLBStandingsSpringTraining from './mlbStandingsSpringTraning';
 import LeagueTabs from '../../../LeagueTabs';
 import { WINTER_ENABLED } from '../../../../data/constants/leagues';
 import { WinterStandingsView } from '../../Winter/WinterStatsViews';
+import {
+  DIVISION_TABS, SPRING_TABS, MlbStandingsBar, MlbDivisionTable, MlbSpringStandings,
+  MlbWildCardTable, MlbLeaguePowerList, MlbPowerTable,
+} from './MlbDivisionStandingsView';
 
 // Derive the correct initial season type + league from the calendar date.
 // Spring Training runs Feb 15 – Feb 28; regular season starts March onwards.
@@ -36,7 +38,9 @@ function MLBStandings() {
   const [standingsLoading, setStandingsLoading] = useState(false);
   const [standingsError, setStandingsError] = useState(null);
   const [fallbackSeason, setFallbackSeason] = useState(null); // Set when selected season has no data
-  const navigate = useNavigate();
+  // Regular-season division tab (AL East … NL West). selectedLeague (AL/NL)
+  // follows it so the wild card and power rankings match the tab.
+  const [division, setDivision] = useState('AL East');
 
   // Available seasons - driven by SEASON_RANGE in apiConstants
   const availableSeasons = SEASONS;
@@ -285,18 +289,6 @@ function MLBStandings() {
       });
   }, [standingsData, selectedSeason, selectedLeague, loadPreviousRankings]);
 
-  // Helper function to get URL-friendly team name from abbreviation
-  const getTeamUrlFromAbbr = (teamAbbreviation) => {
-    return TEAM_METADATA[teamAbbreviation]?.urlName || teamAbbreviation.toLowerCase();
-  };
-
-  // Handle team click navigation - includes season as query parameter
-  const handleTeamClick = (e, teamAbbreviation) => {
-    const urlName = getTeamUrlFromAbbr(teamAbbreviation);
-    navigate(`/team-analytics/${urlName}?season=${selectedSeason}`);
-    window.scrollTo(0, 0);
-  };
-
   // Handle season type change
   const handleSeasonTypeChange = (type) => {
     setSeasonType(type);
@@ -310,18 +302,8 @@ function MLBStandings() {
       setSelectedSeason(String(SEASON_RANGE.END)); // Postseason bracket falls back to the prior year itself if needed
     } else {
       setSelectedLeague('AL');
+      setDivision('AL East');
       setSelectedSeason(DEFAULT_SEASON);
-    }
-  };
-
-  // Get league display name based on season type
-  const getLeagueDisplayName = () => {
-    if (seasonType === 'spring') {
-      return selectedLeague === 'Cactus' ? 'Cactus League' : 'Grapefruit League';
-    } else if (seasonType === 'postseason') {
-      return 'Playoff Bracket';
-    } else {
-      return selectedLeague === 'AL' ? 'American League' : 'National League';
     }
   };
 
@@ -339,115 +321,52 @@ function MLBStandings() {
              'Spring Training Standings & Rankings'}
           </p>
 
-          {isMlb && (<>
-          {/* Season Selector */}
-          <div className="season-selector">
-            <div className="season-tabs">
-              {/* Year Dropdown */}
-              <div className="season-dropdown-wrapper">
-                <select
-                  className="season-dropdown"
-                  value={selectedSeason}
-                  onChange={(e) => setSelectedSeason(e.target.value)}
-                >
-                  {availableSeasons.map((season) => (
-                    <option key={season} value={season}>
-                      {season}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              {/* Season Type Dropdown */}
-              <div className="season-type-wrapper">
-                <select
-                  className="season-type-dropdown"
-                  value={seasonType}
-                  onChange={(e) => handleSeasonTypeChange(e.target.value)}
-                >
-                  <option value="regular">Regular Season</option>
-                  <option value="postseason">Postseason</option>
-                  <option value="spring">Spring Training</option>
-                </select>
-              </div>
-            </div>
-          </div>
-
-          {/* Dynamic League Toggle */}
-          {seasonType === 'postseason' ? (
-            // Single Playoff Bracket Button
-            <div className="league-toggle playoff-mode">
-              <button className="league-btn active playoff-btn">
-                🏆 Playoff Bracket
-              </button>
-            </div>
-          ) : seasonType === 'spring' ? (
-            // Spring Training League Toggle
-            <div className="league-toggle spring-mode">
-              <button 
-                className={`league-btn ${selectedLeague === 'Cactus' ? 'active' : ''}`}
-                onClick={() => setSelectedLeague('Cactus')}
-              >
-                🌵 Cactus League
-              </button>
-              <button 
-                className={`league-btn ${selectedLeague === 'Grapefruit' ? 'active' : ''}`}
-                onClick={() => setSelectedLeague('Grapefruit')}
-              >
-                🍊 Grapefruit League
-              </button>
-            </div>
-          ) : (
-            // Regular Season League Toggle
-            <div className="league-toggle">
-              <button 
-                className={`league-btn ${selectedLeague === 'AL' ? 'active' : ''}`}
-                onClick={() => setSelectedLeague('AL')}
-              >
-                American League
-              </button>
-              <button 
-                className={`league-btn ${selectedLeague === 'NL' ? 'active' : ''}`}
-                onClick={() => setSelectedLeague('NL')}
-              >
-                National League
-              </button>
-            </div>
-          )}
-          </>)}
         </div>
       </div>
 
       {/* Main Content - Conditional Rendering Based on Season Type */}
       <div className="standings-content container">
+        {/* Same layout as the winter standings: division (or spring league)
+            tabs, season and season-type pickers. Playoffs keep the bracket. */}
+        {isMlb && (
+          <div className="wb-page wb-embed">
+            <MlbStandingsBar
+              seasonType={seasonType}
+              onSeasonTypeChange={handleSeasonTypeChange}
+              season={selectedSeason}
+              onSeasonChange={setSelectedSeason}
+              seasons={availableSeasons}
+              tabs={seasonType === 'regular' ? DIVISION_TABS : seasonType === 'spring' ? SPRING_TABS : null}
+              tab={seasonType === 'regular' ? division : selectedLeague}
+              onTabChange={(key) => {
+                if (seasonType === 'regular') {
+                  setDivision(key);
+                  setSelectedLeague(key.slice(0, 2));
+                } else {
+                  setSelectedLeague(key);
+                }
+              }}
+            />
+          </div>
+        )}
         {!isMlb ? (
           <WinterStandingsView />
         ) : seasonType === 'postseason' ? (
           // Render Playoff Bracket
           <MLBStandingsPostseason selectedSeason={selectedSeason} />
         ) : seasonType === 'spring' ? (
-          // Render Spring Training
-          <MLBStandingsSpringTraining 
-            selectedSeason={selectedSeason} 
-            selectedLeague={selectedLeague}
-          />
+          <div className="wb-page wb-embed wb-embed--flush">
+            <MlbSpringStandings season={selectedSeason} league={selectedLeague} />
+          </div>
         ) : (
           // Render Regular Season Standings
           <>
             {/* Fallback Notice */}
             {fallbackSeason && (
-              <div style={{ background: '#fff8e1', border: '1px solid #ffe082', borderRadius: '8px', padding: '10px 16px', marginBottom: '12px', fontSize: '14px', color: '#7c5a00' }}>
+              <div className="wb-banner">
                 No data available for the {selectedSeason} season yet. Showing {fallbackSeason} standings.
               </div>
             )}
-
-            {/* Season Display Banner */}
-            <div className="season-banner">
-              <span className="season-year">{fallbackSeason || selectedSeason} Season</span>
-              <span className="season-league">
-                {getLeagueDisplayName()} • Regular Season
-              </span>
-            </div>
 
             {/* Loading State */}
             {standingsLoading && (
@@ -471,320 +390,22 @@ function MLBStandings() {
               </div>
             )}
 
-            {/* Division Standings Grid */}
+            {/* Division table (the selected division tab) */}
             {!standingsLoading && !standingsError && currentLeagueData && (
-            <div className="divisions-grid">
-              {/* East Division */}
-              <div className="division-card">
-                <div className="division-header">
-                  <h3>{selectedLeague} East</h3>
-                  <span className="division-badge">Division</span>
-                </div>
-                <div className="standings-table-container">
-                  <table className="standings-table">
-                    <thead>
-                      <tr>
-                        <th className="rank-col">#</th>
-                        <th className="team-col">Team</th>
-                        <th>W</th>
-                        <th>L</th>
-                        <th>PCT</th>
-                        <th>GB</th>
-                        <th>STRK</th>
-                        <th className="hide-mobile">L10</th>
-                        <th className="hide-mobile">DIFF</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {currentLeagueData.East.map((team) => (
-                        <tr 
-                          key={team.rank} 
-                          className={`${team.rank === 1 ? 'division-leader' : ''} clickable-row`}
-                          onClick={(e) => handleTeamClick(e, team.teamAbbreviation)} onAuxClick={(e) => handleTeamClick(e, team.teamAbbreviation)}
-                        >
-                          <td className="rank-col">{team.rank}</td>
-                          <td className="team-col">
-                            <img 
-                              src={`https://www.mlbstatic.com/team-logos/${team.mlbTeamId}.svg`}
-                              alt={team.team}
-                              className="team-logo-img"
-                              onError={(e) => { e.target.style.display = 'none'; }}
-                            />
-                            {team.team}
-                            {team.clinchIndicator && team.clinchIndicator !== 'false' && (
-                              <span className="clinch-badge">{team.clinchIndicator}</span>
-                            )}
-                          </td>
-                          <td className="wins">{team.wins}</td>
-                          <td className="losses">{team.losses}</td>
-                          <td className="pct">{team.pct.toFixed(3)}</td>
-                          <td className="gb">{team.gb}</td>
-                          <td className={`streak ${team.streak?.startsWith('W') ? 'win-streak' : 'loss-streak'}`}>
-                            {team.streak ?? '-'}
-                          </td>
-                          <td className="hide-mobile">{team.last10}</td>
-                          <td className={`hide-mobile ${team.runDifferential >= 0 ? 'positive-diff' : 'negative-diff'}`}>
-                            {team.runDifferential >= 0 ? '+' : ''}{team.runDifferential}
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
+              <div className="wb-page wb-embed wb-embed--flush">
+                <MlbDivisionTable division={division} rows={standingsData?.[division]} season={fallbackSeason || selectedSeason} />
               </div>
-
-              {/* Central Division */}
-              <div className="division-card">
-                <div className="division-header">
-                  <h3>{selectedLeague} Central</h3>
-                  <span className="division-badge">Division</span>
-                </div>
-                <div className="standings-table-container">
-                  <table className="standings-table">
-                    <thead>
-                      <tr>
-                        <th className="rank-col">#</th>
-                        <th className="team-col">Team</th>
-                        <th>W</th>
-                        <th>L</th>
-                        <th>PCT</th>
-                        <th>GB</th>
-                        <th>STRK</th>
-                        <th className="hide-mobile">L10</th>
-                        <th className="hide-mobile">DIFF</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {currentLeagueData.Central.map((team) => (
-                        <tr 
-                          key={team.rank} 
-                          className={`${team.rank === 1 ? 'division-leader' : ''} clickable-row`}
-                          onClick={(e) => handleTeamClick(e, team.teamAbbreviation)} onAuxClick={(e) => handleTeamClick(e, team.teamAbbreviation)}
-                        >
-                          <td className="rank-col">{team.rank}</td>
-                          <td className="team-col">
-                            <img 
-                              src={`https://www.mlbstatic.com/team-logos/${team.mlbTeamId}.svg`}
-                              alt={team.team}
-                              className="team-logo-img"
-                              onError={(e) => { e.target.style.display = 'none'; }}
-                            />
-                            {team.team}
-                            {team.clinchIndicator && team.clinchIndicator !== 'false' && (
-                              <span className="clinch-badge">{team.clinchIndicator}</span>
-                            )}
-                          </td>
-                          <td className="wins">{team.wins}</td>
-                          <td className="losses">{team.losses}</td>
-                          <td className="pct">{team.pct.toFixed(3)}</td>
-                          <td className="gb">{team.gb}</td>
-                          <td className={`streak ${team.streak?.startsWith('W') ? 'win-streak' : 'loss-streak'}`}>
-                            {team.streak ?? '-'}
-                          </td>
-                          <td className="hide-mobile">{team.last10}</td>
-                          <td className={`hide-mobile ${team.runDifferential >= 0 ? 'positive-diff' : 'negative-diff'}`}>
-                            {team.runDifferential >= 0 ? '+' : ''}{team.runDifferential}
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-
-              {/* West Division */}
-              <div className="division-card">
-                <div className="division-header">
-                  <h3>{selectedLeague} West</h3>
-                  <span className="division-badge">Division</span>
-                </div>
-                <div className="standings-table-container">
-                  <table className="standings-table">
-                    <thead>
-                      <tr>
-                        <th className="rank-col">#</th>
-                        <th className="team-col">Team</th>
-                        <th>W</th>
-                        <th>L</th>
-                        <th>PCT</th>
-                        <th>GB</th>
-                        <th>STRK</th>
-                        <th className="hide-mobile">L10</th>
-                        <th className="hide-mobile">DIFF</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {currentLeagueData.West.map((team) => (
-                        <tr 
-                          key={team.rank} 
-                          className={`${team.rank === 1 ? 'division-leader' : ''} clickable-row`}
-                          onClick={(e) => handleTeamClick(e, team.teamAbbreviation)} onAuxClick={(e) => handleTeamClick(e, team.teamAbbreviation)}
-                        >
-                          <td className="rank-col">{team.rank}</td>
-                          <td className="team-col">
-                            <img 
-                              src={`https://www.mlbstatic.com/team-logos/${team.mlbTeamId}.svg`}
-                              alt={team.team}
-                              className="team-logo-img"
-                              onError={(e) => { e.target.style.display = 'none'; }}
-                            />
-                            {team.team}
-                            {team.clinchIndicator && team.clinchIndicator !== 'false' && (
-                              <span className="clinch-badge">{team.clinchIndicator}</span>
-                            )}
-                          </td>
-                          <td className="wins">{team.wins}</td>
-                          <td className="losses">{team.losses}</td>
-                          <td className="pct">{team.pct.toFixed(3)}</td>
-                          <td className="gb">{team.gb}</td>
-                          <td className={`streak ${team.streak?.startsWith('W') ? 'win-streak' : 'loss-streak'}`}>
-                            {team.streak ?? '-'}
-                          </td>
-                          <td className="hide-mobile">{team.last10}</td>
-                          <td className={`hide-mobile ${team.runDifferential >= 0 ? 'positive-diff' : 'negative-diff'}`}>
-                            {team.runDifferential >= 0 ? '+' : ''}{team.runDifferential}
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-            </div>
             )}
 
-            {/* Wild Card and League Power Rankings Grid */}
+            {/* Wild card + power rankings, styled like the division table */}
             {!standingsLoading && !standingsError && currentLeagueData && (
-            <div className="wildcard-power-grid">
-              {/* Wild Card Standings */}
-              <div className="division-card wildcard-card">
-                <div className="division-header">
-                  <h3>{selectedLeague} Wild Card</h3>
-                  <span className="wildcard-badge">Playoff Race</span>
+              <div className="wb-page wb-embed wb-embed--flush">
+                <div className="wb-two-col wb-two-col--wide">
+                  <MlbWildCardTable league={selectedLeague} rows={currentLeagueData.wildCard} season={fallbackSeason || selectedSeason} />
+                  <MlbLeaguePowerList league={selectedLeague} rows={leaguePowerRankings} season={fallbackSeason || selectedSeason} />
                 </div>
-                <div className="standings-table-container">
-                  <table className="standings-table">
-                    <thead>
-                      <tr>
-                        <th className="rank-col">#</th>
-                        <th className="team-col">Team</th>
-                        <th>W</th>
-                        <th>L</th>
-                        <th>PCT</th>
-                        <th>GB</th>
-                        <th>WCGB</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {currentLeagueData.wildCard.map((team) => (
-                        <tr 
-                          key={team.rank} 
-                          className={`${team.rank <= 3 ? 'wildcard-position' : ''} clickable-row`}
-                          onClick={(e) => handleTeamClick(e, team.teamAbbreviation)} onAuxClick={(e) => handleTeamClick(e, team.teamAbbreviation)}
-                        >
-                          <td className="rank-col">{team.rank}</td>
-                          <td className="team-col">
-                            <img 
-                              src={`https://www.mlbstatic.com/team-logos/${team.mlbTeamId}.svg`}
-                              alt={team.team}
-                              className="team-logo-img"
-                              onError={(e) => { e.target.style.display = 'none'; }}
-                            />
-                            {team.team}
-                            {team.rank <= 3 && <span className="wildcard-clinch">WC</span>}
-                          </td>
-                          <td className="wins">{team.wins}</td>
-                          <td className="losses">{team.losses}</td>
-                          <td className="pct">{team.pct.toFixed(3)}</td>
-                          <td className="gb">{team.gb}</td>
-                          <td className={`wcgb ${team.wcgb.startsWith('+') ? 'positive' : team.wcgb.startsWith('-') ? 'negative' : ''}`}>
-                            {team.wcgb}
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
+                <MlbPowerTable rows={powerRankings} season={fallbackSeason || selectedSeason} />
               </div>
-
-              {/* League Power Rankings */}
-              <div className="division-card league-power-card">
-                <div className="division-header">
-                  <h3>⚡ {selectedLeague} Power Rankings</h3>
-                  <span className="power-badge">Top 5</span>
-                </div>
-                <div className="league-power-list">
-                  {leaguePowerRankings.map((team) => (
-                    <div 
-                      key={team.leagueRank} 
-                      className="league-power-item clickable-power-item"
-                      onClick={(e) => handleTeamClick(e, team.teamAbbreviation)} onAuxClick={(e) => handleTeamClick(e, team.teamAbbreviation)}
-                    >
-                      <div className="league-power-rank">{team.leagueRank}</div>
-                      <div className="league-power-team-info">
-                        <div className="league-power-team-name">
-                          <img 
-                            src={`https://www.mlbstatic.com/team-logos/${team.mlbTeamId}.svg`}
-                            alt={team.team}
-                            className="team-logo-img"
-                            onError={(e) => { e.target.style.display = 'none'; }}
-                          />
-                          {team.team}
-                        </div>
-                        <div className="league-power-team-record">{team.record}</div>
-                      </div>
-                      <div className="league-power-movement">
-                        <span className="league-last-week">Last: #{team.lastWeek}</span>
-                        <span className={`league-trend-arrow ${team.trend === '↑' ? 'up' : team.trend === '↓' ? 'down' : 'same'}`}>
-                          {team.trend}
-                        </span>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-            )}
-
-            {/* Overall Power Rankings */}
-            {!standingsLoading && !standingsError && powerRankings.length > 0 && (
-            <div className="power-rankings-section">
-              <div className="division-card power-rankings-card">
-                <div className="division-header">
-                  <h3>⚡ MLB Power Rankings</h3>
-                  <span className="power-badge">Top 10</span>
-                </div>
-                <div className="power-rankings-list">
-                  {powerRankings.map((team) => (
-                    <div 
-                      key={team.rank} 
-                      className="power-ranking-item clickable-power-item"
-                      onClick={(e) => handleTeamClick(e, team.teamAbbreviation)} onAuxClick={(e) => handleTeamClick(e, team.teamAbbreviation)}
-                    >
-                      <div className="power-rank">{team.rank}</div>
-                      <div className="power-team-info">
-                        <div className="power-team-name">
-                          <img 
-                            src={`https://www.mlbstatic.com/team-logos/${team.mlbTeamId}.svg`}
-                            alt={team.team}
-                            className="team-logo-img"
-                            onError={(e) => { e.target.style.display = 'none'; }}
-                          />
-                          {team.team}
-                          <span className={`league-badge ${team.league}`}>{team.league}</span>
-                        </div>
-                        <div className="power-team-record">{team.record}</div>
-                      </div>
-                      <div className="power-movement">
-                        <span className={`run-diff ${team.runDifferential >= 0 ? 'positive' : 'negative'}`}>
-                          {team.runDifferential >= 0 ? '+' : ''}{team.runDifferential}
-                        </span>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
             )}
           </>
         )}

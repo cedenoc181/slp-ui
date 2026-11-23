@@ -6,7 +6,8 @@ import { TEAMS } from './apiConstants';
 // be picked and show each page's preview card. "Serie del Caribe" is the
 // umbrella for every Caribbean winter league (LIDOM, LVBP, LMP, LBPRC and the
 // Series itself). It stays 'soon' here, and the pages that show winter data
-// (Schedule, Standings, Team/Player Analytics) enable it via LeagueTabs.
+// (Schedule, Standings, Team/Player Analytics, and the Terminal's watchlist)
+// enable it via WINTER_ENABLED.
 // `tip` is the hover tooltip; 'soon' tabs append "coming soon" to it.
 export const WINTER_ENABLED = ['sdc'];
 export const LEAGUES = [

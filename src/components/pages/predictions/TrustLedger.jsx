@@ -4,8 +4,12 @@ import { useAuth } from '../../../context/AuthContext';
 import trustLedgerService from '../../../data/services/trustLedgerService';
 import { getEliminatedMlbIds } from '../../../data/services/postseasonStatus';
 import { TEAM_METADATA } from '../../../data/constants/apiConstants';
-import { getLeague } from '../../../data/constants/leagues';
-import LeagueTabs, { LeaguePreview } from '../../LeagueTabs';
+import { WINTER_ENABLED } from '../../../data/constants/leagues';
+import {
+  CBPC_LEAGUES, CBPC_SLUGS, isNationsLeague, leagueTip, rememberWinterLeague, rememberedWinterLeague, seasonLabel,
+} from '../../../data/constants/cbpcConstants';
+import cbpcService from '../../../data/services/cbpcService';
+import LeagueTabs from '../../LeagueTabs';
 import batterPropIcon from '../../../assets/icons/batter-prop.png';
 import pitcherPropIcon from '../../../assets/icons/pitcher-prop.png';
 import '../../../styles/predictions-page-styling/predictions.css';
@@ -334,6 +338,202 @@ function TrustModeToggle({ postseason, onChange, disabled }) {
   );
 }
 
+// ── Winter-league board (Serie del Caribe tab) ──────────────────────────────
+// One board per winter league; ranks and percentiles are within that league.
+// Winter rows always have null starter/lineup/bullpen/MLB ranks, so those
+// columns are left out rather than shown as dashes.
+function winterTodayText(g) {
+  if (!g) return 'no game today';
+  const opp = `${g.isHome ? 'vs' : '@'} ${g.opponent}`;
+  if (g.status === 'Final' || g.status === 'Completed Early') return `${opp} · final`;
+  if (g.status === 'Scheduled' && g.gameDatetimeUtc) {
+    return `${opp} · ${new Date(g.gameDatetimeUtc).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}`;
+  }
+  return `${opp} · ${g.status === 'In Progress' ? 'in progress' : String(g.status || '').toLowerCase()}`;
+}
+
+function WinterLogo({ src }) {
+  const [failed, setFailed] = useState(false);
+  useEffect(() => setFailed(false), [src]);
+  if (!src || failed) return <span className="tl-team-logo tl-team-logo--empty" />;
+  return <img src={src} alt="" className="tl-team-logo" onError={() => setFailed(true)} />;
+}
+
+const WINTER_COLUMN_COUNT = 7;
+
+function WinterTrustRow({ team, leagueShort, leagueSize, smallSample }) {
+  const [expanded, setExpanded] = useState(false);
+  const hasSplits = !!team.recordSplits;
+  const toggle = () => { if (hasSplits) setExpanded((e) => !e); };
+  const rankText = (r) => (r != null ? `#${r} of ${leagueSize}` : '—');
+  return (
+    <>
+      <tr
+        className={hasSplits ? 'tl-row-expandable' : ''}
+        onClick={hasSplits ? toggle : undefined}
+        role={hasSplits ? 'button' : undefined}
+        tabIndex={hasSplits ? 0 : undefined}
+        aria-expanded={hasSplits ? expanded : undefined}
+        aria-label={hasSplits ? `${expanded ? 'Hide' : 'Show'} record splits for ${team.team}` : undefined}
+        onKeyDown={hasSplits ? (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggle(); } } : undefined}
+      >
+        <td className="tl-td-rank tl-num">{team.trustRank ?? '—'}</td>
+        <td className="tl-td-team">
+          <span className="tl-team-cell">
+            <WinterLogo src={team.logoUrl} />
+            {team.team}
+            {hasSplits && <span className={`tl-row-caret${expanded ? ' tl-row-caret--open' : ''}`} aria-hidden="true">▾</span>}
+          </span>
+        </td>
+        <td>
+          <div className="tl-trust-cell" title={smallSample ? `Percentile within a ${leagueSize}-team league: a small sample` : undefined}>
+            <span className="tl-meter"><span style={{ width: `${team.trustPercentile ?? 0}%` }} /></span>
+            <span className="tl-trust-pct tl-num">{fmtPct(team.trustPercentile)}</span>
+          </div>
+        </td>
+        <td>
+          <span className="tl-rank-badges">
+            <span className="tl-rank-badge" title={`Team OPS rank in ${leagueShort}: ${rankText(team.leagueHittingRank)}`}>
+              <img src={batterPropIcon} alt="" className="tl-rank-badge-icon" />
+              {rankText(team.leagueHittingRank)}
+            </span>
+            <span className="tl-rank-badge" title={`Team ERA rank in ${leagueShort}: ${rankText(team.leaguePitchingRank)}`}>
+              <img src={pitcherPropIcon} alt="" className="tl-rank-badge-icon" />
+              {rankText(team.leaguePitchingRank)}
+            </span>
+          </span>
+        </td>
+        <td className="tl-num tl-muted">{fmtDec(team.winPct)}</td>
+        <td className="tl-num tl-muted">{team.lastTen || '—'}</td>
+        <td><span className="tl-no-game">{winterTodayText(team.todayGame)}</span></td>
+      </tr>
+      {expanded && hasSplits && (
+        <tr className="tl-splits-row">
+          <td colSpan={WINTER_COLUMN_COUNT}><RecordSplitsPanel splits={team.recordSplits} /></td>
+        </tr>
+      )}
+    </>
+  );
+}
+
+function WinterTrustBoard({ onUpgrade }) {
+  const [wLeague, setWLeague] = useState(rememberedWinterLeague);
+  const [season, setSeason] = useState(null); // null = the league's current season
+  const [postseason, setPostseason] = useState(false);
+  const [leagues, setLeagues] = useState([]);
+  const [board, setBoard] = useState(null);
+  const [state, setState] = useState('loading'); // loading | ok | locked | error
+
+  useEffect(() => {
+    let alive = true;
+    cbpcService.getLeagues().then(l => { if (alive) setLeagues(l); }).catch(() => {});
+    return () => { alive = false; };
+  }, []);
+
+  const nations = isNationsLeague(wLeague);
+  useEffect(() => {
+    const controller = new AbortController();
+    setState('loading');
+    trustLedgerService.getCbpcTrustLedger(wLeague, {
+      season: season || undefined,
+      postseason: postseason && !nations,
+      signal: controller.signal,
+    })
+      .then(data => { setBoard(data); setState('ok'); })
+      .catch(err => {
+        if (err.name === 'AbortError') return;
+        setState(err.status === 403 ? 'locked' : 'error');
+      });
+    return () => controller.abort();
+  }, [wLeague, season, postseason, nations]);
+
+  const pickLeague = (slug) => {
+    setWLeague(slug);
+    setSeason(null);
+    if (isNationsLeague(slug)) setPostseason(false);
+    rememberWinterLeague(slug);
+  };
+
+  const info = leagues.find(l => l.slug === wLeague);
+  const leagueShort = CBPC_LEAGUES[wLeague].short;
+  const rows = board?.rows ?? [];
+  const smallSample = board && !board.percentileReliable;
+
+  return (
+    <>
+      <div className="tl-mode-row">
+        <div className="tl-mode-toggle" role="group" aria-label="Winter league">
+          {CBPC_SLUGS.map(slug => (
+            <button
+              key={slug}
+              type="button"
+              className={`tl-mode-btn${wLeague === slug ? ' tl-mode-btn--active' : ''}`}
+              onClick={() => pickLeague(slug)}
+              title={leagueTip(slug)}
+            >
+              {CBPC_LEAGUES[slug].short}
+            </button>
+          ))}
+        </div>
+        {info && (
+          <select
+            className="tl-season-select"
+            aria-label="Season"
+            value={season ?? info.current_season}
+            onChange={(e) => setSeason(Number(e.target.value))}
+          >
+            {[...info.seasons].reverse().map(s => <option key={s} value={s}>{seasonLabel(s)}</option>)}
+          </select>
+        )}
+        {!nations && <TrustModeToggle postseason={postseason} onChange={setPostseason} disabled={state === 'loading' || state === 'locked'} />}
+      </div>
+
+      {state === 'ok' && rows.length > 0 && (
+        <div className="tl-legend-row">
+          <span><span className="tl-dot tl-dot--accent" />trust meter &middot; percentile within {leagueShort}</span>
+          {smallSample && <span className="tl-small-sample">{board.leagueSize}-team league &middot; small sample</span>}
+          <span>league ranks: team OPS &middot; team ERA</span>
+        </div>
+      )}
+
+      {state === 'loading' ? <TrustLedgerSkeleton />
+        : state === 'locked' ? <TrustLedgerLocked onUpgrade={onUpgrade} />
+        : state === 'error' ? <div className="sd-error">⚠ Couldn&apos;t load the {leagueShort} Trust Ledger right now.</div>
+        : rows.length === 0 ? (
+          <div className="sd-empty">
+            <span className="sd-empty-icon">🗓️</span>
+            <p>No standings yet for {leagueShort} {board?.seasonLabel || ''}{postseason ? ' postseason' : ''}.</p>
+          </div>
+        ) : (
+          <div className="tl-table-scroll">
+            <table className="tl-table">
+              <thead>
+                <tr>
+                  <th>#</th><th>Team</th><th>Trust</th><th>League rank</th>
+                  <th>{postseason ? 'Playoff' : 'Season'}</th><th>Last 10</th><th>Today</th>
+                </tr>
+              </thead>
+              <tbody>
+                {rows.map(t => (
+                  <WinterTrustRow key={t.teamId} team={t} leagueShort={leagueShort} leagueSize={board.leagueSize} smallSample={smallSample} />
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+
+      {state === 'ok' && rows.length > 0 && (
+        <footer className="tl-footnote">
+          {board.seasonLabel} {leagueShort}{postseason ? ' postseason' : ''}. Trust score = <code>0.7 &times; {postseason ? 'playoff' : 'season'} W-L%</code> +{' '}
+          <code>0.3 &times; last-10 win rate</code>, percentile-ranked across the {board.leagueSize} teams on this board only; leagues are
+          never ranked against each other. League ranks are team OPS and team ERA within {leagueShort}. Record splits are regular season; the
+          starter split uses the opposing starter recorded after each game. No probable pitchers, lineups or bullpen data exist for these leagues.
+        </footer>
+      )}
+    </>
+  );
+}
+
 // ── Page ──────────────────────────────────────────────────────────────────────
 export default function TrustLedger() {
   const navigate = useNavigate();
@@ -451,7 +651,7 @@ export default function TrustLedger() {
     <div className="predictions-page">
       <div className="predictions-content">
         <div className="tl-wrap">
-          <LeagueTabs value={league} onChange={setLeague} />
+          <LeagueTabs value={league} onChange={setLeague} enabled={WINTER_ENABLED} />
           <header className="tl-page-head">
             <div>
               <p className="tl-eyebrow">Sandlot Picks &middot; Scout Desk</p>
@@ -462,17 +662,13 @@ export default function TrustLedger() {
               <div>
                 {league === 'mlb'
                   ? <>{season} {postseason ? 'postseason' : 'regular season'} &middot; {clubCount} clubs</>
-                  : `${getLeague(league)?.label} · ${getLeague(league)?.seasonLabel}`}
+                  : 'Caribbean winter leagues · one board per league'}
               </div>
             </div>
           </header>
 
           {league !== 'mlb' ? (
-            <LeaguePreview eyebrow="Serie del Caribe · 2026-27" title="Trust scores for every nation">
-              The same trust score (70% W-L%, 30% recent form) ranked across the Serie del Caribe field. Starter
-              and bullpen columns stay MLB-only because the winter-league data has no probable pitchers. This
-              board goes live with our winter-league data.
-            </LeaguePreview>
+            <WinterTrustBoard onUpgrade={() => navigate('/upgrade')} />
           ) : (<>
           <p className="tl-dek">
             Every team's <b>trust score</b> &mdash; 70% season W-L%, 30% last-10-game form &mdash; ranked into a

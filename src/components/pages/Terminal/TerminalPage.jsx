@@ -14,7 +14,9 @@ import { listPublished, apiPostToDisplay } from '../../../data/services/contentS
 import articlesData from '../../../data/contentData/article.json';
 import moreArticlesData from '../../../data/contentData/moreArticles.json';
 import { getTeamById, getTeamByDisplayName, TEAMS } from '../../../data/constants/apiConstants';
-import { LEAGUES, leagueTabTip } from '../../../data/constants/leagues';
+import { LEAGUES, WINTER_ENABLED, leagueTabTip } from '../../../data/constants/leagues';
+import cbpcService from '../../../data/services/cbpcService';
+import { CBPC_LEAGUES, CBPC_SLUGS, isNationsLeague, rememberWinterLeague, rememberedWinterLeague, seasonLabel } from '../../../data/constants/cbpcConstants';
 import { PANELS, abbr, fmtOdds, useTerminalSlate } from './TerminalShell';
 import '../../../styles/terminal-page-styling/terminal.css';
 
@@ -75,7 +77,7 @@ function leagueKey(user) {
 function loadLeague(key) {
   try {
     const saved = localStorage.getItem(key);
-    return LEAGUES.some(l => l.id === saved && l.status !== 'soon') ? saved : 'mlb';
+    return LEAGUES.some(l => l.id === saved && (l.status !== 'soon' || WINTER_ENABLED.includes(l.id))) ? saved : 'mlb';
   } catch {
     return 'mlb';
   }
@@ -318,7 +320,7 @@ function StandingsTable({ rows }) {
               <td className="slt-mono">{t.wins}</td>
               <td className="slt-mono">{t.losses}</td>
               <td className="slt-mono">{fmtWinPct(t.w_l_pct)}</td>
-              <td className="slt-mono">{t.games_back == null || Number(t.games_back) === 0 ? '—' : t.games_back}</td>
+              <td className="slt-mono">{t.games_back == null || t.games_back === '-' || Number(t.games_back) === 0 ? '—' : t.games_back}</td>
               <td className={`slt-mono ${streak.startsWith('W') ? 'pos' : streak.startsWith('L') ? 'neg' : ''}`}>{streak || '—'}</td>
             </tr>
           );
@@ -428,7 +430,384 @@ function usePlayerSearch(query) {
   return { results, searching };
 }
 
-function WatchlistPanel({ standings, games, flash, expanded, onExpand, onClose }) {
+// ── Winter-league watchlist (Serie del Caribe tab) ──────────────────────────
+// Winter teams/players are cbpc_team / cbpc_player entries in the same list.
+// Images come from the URLs the API returns (some guest nations' logos 404,
+// so those fall back to the abbreviation). CBPC ids never reach MLB helpers.
+function WinterLogo({ src, code, size = 'lg' }) {
+  const [failed, setFailed] = useState(false);
+  useEffect(() => setFailed(false), [src]);
+  const cls = `slt-team-logo slt-team-logo--${size}`;
+  if (!src || failed) return <span className={`${cls} slt-team-logo--abbr`}>{code || '?'}</span>;
+  return <img src={src} alt="" className={cls} loading="lazy" onError={() => setFailed(true)} />;
+}
+
+function WinterHeadshot({ src, size = 'lg' }) {
+  if (!src) return <span className={`slt-headshot slt-headshot--${size}`} />;
+  return <img src={src} alt="" className={`slt-headshot slt-headshot--${size}`} loading="lazy" onError={(e) => { e.target.style.visibility = 'hidden'; }} />;
+}
+
+// Record (standings), today's game and a last-10 line for each watched
+// winter team, using each league's current season.
+function useWinterTeamForm(teams) {
+  const key = teams.filter(t => t.league).map(t => `${t.league}:${t.id}`).join(',');
+  const [form, setForm] = useState({});
+  useEffect(() => {
+    if (!key) { setForm({}); return; }
+    let alive = true;
+    const byLeague = {};
+    key.split(',').forEach(k => {
+      const [slug, id] = k.split(':');
+      (byLeague[slug] = byLeague[slug] || []).push(Number(id));
+    });
+    (async () => {
+      const leagues = await cbpcService.getLeagues().catch(() => []);
+      const seasonOf = slug => leagues.find(l => l.slug === slug)?.current_season;
+      const next = {};
+      await Promise.all(Object.entries(byLeague).map(async ([slug, ids]) => {
+        const season = seasonOf(slug);
+        const [standings, today] = await Promise.all([
+          cbpcService.getStandings(slug, season, 'R').catch(() => ({ teams: [] })),
+          cbpcService.getTodayGames(slug).catch(() => []),
+        ]);
+        await Promise.all(ids.map(async id => {
+          const recent = await cbpcService.getTeamGames(slug, id, season).catch(() => []);
+          // Newest first from the API → oldest first, last 10 decided games.
+          let run = 0;
+          const pts = [0];
+          const games = [];
+          recent.slice(0, 10).reverse().forEach(g => {
+            const home = g.home_team_id === id;
+            const mine = home ? g.home_runs_score : g.away_runs_score;
+            const theirs = home ? g.away_runs_score : g.home_runs_score;
+            if (mine == null || theirs == null || mine === theirs) return;
+            const won = mine > theirs;
+            run += won ? 1 : -1;
+            pts.push(run);
+            games.push({ key: g.game_pk, won, score: `${mine}-${theirs}`, opp: `${home ? 'vs' : '@'} ${home ? g.away_team_abbr : g.home_team_abbr}` });
+          });
+          next[id] = {
+            row: (standings.teams || []).find(t => t.team_id === id) || null,
+            game: today.find(g => g.home_team_id === id || g.away_team_id === id) || null,
+            pts,
+            games,
+          };
+        }));
+      }));
+      if (alive) setForm(next);
+    })();
+    return () => { alive = false; };
+  }, [key]);
+  return form;
+}
+
+// Statuses refresh once a day, so in-progress games show no score.
+function winterGameLine(teamId, g) {
+  if (!g) return 'No game today';
+  const home = g.home_team_id === teamId;
+  const opp = `${home ? 'vs' : '@'} ${home ? g.away_team_abbr : g.home_team_abbr}`;
+  if (g.status === 'Final' || g.status === 'Completed Early') return `${opp} · Final ${g.away_runs_score ?? 0}-${g.home_runs_score ?? 0}`;
+  if (g.status === 'Scheduled') {
+    const d = new Date(g.game_datetime_utc || `${g.date}T${g.game_time}:00Z`);
+    return `${opp} · ${d.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}`;
+  }
+  return `${opp} · ${g.status === 'In Progress' ? 'In progress' : g.status}`;
+}
+
+// Player search across every winter league at once (one request per league);
+// the same CBPC player can appear in several leagues, so ids are de-duped.
+function useWinterPlayerSearch(query) {
+  const [results, setResults] = useState([]);
+  const [searching, setSearching] = useState(false);
+  useEffect(() => {
+    const q = query.trim();
+    if (q.length < 2) { setResults([]); setSearching(false); return; }
+    let alive = true;
+    setSearching(true);
+    const t = setTimeout(() => {
+      Promise.allSettled(CBPC_SLUGS.map(slug => cbpcService.searchPlayers(slug, q, 5))).then(settled => {
+        if (!alive) return;
+        const seen = new Map();
+        settled.forEach(s => (s.status === 'fulfilled' ? s.value : []).forEach(p => { if (!seen.has(p.id)) seen.set(p.id, p); }));
+        setResults([...seen.values()].slice(0, 10));
+        setSearching(false);
+      });
+    }, 250);
+    return () => { alive = false; clearTimeout(t); };
+  }, [query]);
+  return { results, searching };
+}
+
+function WinterWatchlist({ list, mode, loadError, saveError, setSaveError, saving, save, limits, flash, expanded, onExpand, onClose }) {
+  const [pickLeague, setPickLeague] = useState('lidom');
+  const [leagueTeams, setLeagueTeams] = useState(null);
+  const [query, setQuery] = useState('');
+  const { results, searching } = useWinterPlayerSearch(query);
+
+  const teams = list?.cbpcTeams ?? [];
+  const players = list?.cbpcPlayers ?? [];
+  const form = useWinterTeamForm(teams);
+  const supported = mode === 'api' && !!list?.winterSupported;
+
+  // Picker: the selected winter league's clubs (or nations) this season.
+  useEffect(() => {
+    if (!expanded) return;
+    let alive = true;
+    setLeagueTeams(null);
+    cbpcService.getTeams(pickLeague)
+      .then(rows => { if (alive) setLeagueTeams([...rows].sort((a, b) => a.team_name.localeCompare(b.team_name))); })
+      .catch(() => { if (alive) setLeagueTeams([]); });
+    return () => { alive = false; };
+  }, [expanded, pickLeague]);
+
+  const toggleTeam = (t) => {
+    if (!list || !supported) return;
+    const has = teams.some(x => x.id === t.id);
+    if (!has && teams.length >= limits.cbpc_teams) {
+      setSaveError(`You can follow up to ${limits.cbpc_teams} winter-league teams.`);
+      return;
+    }
+    const next = has
+      ? teams.filter(x => x.id !== t.id)
+      : [...teams, { id: t.id, league: pickLeague, name: t.team_name, abbr: t.team_abbreviation, logoUrl: t.logo_url }];
+    save({ ...list, cbpcTeams: next }, 'cbpc_teams');
+  };
+  const removeTeam = (id) => save({ ...list, cbpcTeams: teams.filter(x => x.id !== id) }, 'cbpc_teams');
+
+  const addPlayer = (r) => {
+    if (!list || !supported || players.some(p => p.id === r.id)) return;
+    if (players.length >= limits.cbpc_players) {
+      setSaveError(`You can follow up to ${limits.cbpc_players} winter-league players.`);
+      return;
+    }
+    save({
+      ...list,
+      cbpcPlayers: [...players, {
+        id: r.id, name: r.full_name, position: r.position_abbreviation, headshotUrl: r.headshot_url,
+        teamId: r.team_id, teamName: r.team_name, teamAbbr: r.team_abbreviation, teamLogoUrl: r.team_logo_url,
+        teamLeague: r.league ? String(r.league).toLowerCase() : null, active: r.active !== false,
+      }],
+    }, 'cbpc_players');
+  };
+  const removePlayer = (id) => save({ ...list, cbpcPlayers: players.filter(p => p.id !== id) }, 'cbpc_players');
+
+  const PREVIEW_ROWS = 3;
+  const previewTeams = teams.slice(0, PREVIEW_ROWS);
+  const previewPlayers = players.slice(0, Math.max(0, PREVIEW_ROWS - previewTeams.length));
+  const hiddenCount = teams.length + players.length - previewTeams.length - previewPlayers.length;
+  const summary = list
+    ? [`${teams.length} team${teams.length === 1 ? '' : 's'}`, players.length ? `${players.length} player${players.length === 1 ? '' : 's'}` : null].filter(Boolean).join(' · ')
+    : '';
+  const unsupportedMsg = mode === 'local'
+    ? 'Following winter-league teams needs your watchlist synced to your account, which isn\'t available yet.'
+    : 'Following winter-league teams needs the updated watchlist server.';
+  const playerLine = (p) => (p.teamId != null
+    ? [p.teamAbbr || p.teamName, p.position].filter(Boolean).join(' · ')
+    : `${p.position ? `${p.position} · ` : ''}Not on a roster this winter`);
+
+  return (
+    <>
+      <Panel
+        id="watchlist"
+        title="Watchlist · Winter"
+        flash={flash}
+        onExpand={onExpand}
+        sub={summary}
+        action={list && <button type="button" className="slt-link" onClick={() => onExpand('watchlist')}>Manage</button>}
+      >
+        {list === null && (loadError ? <Empty>{loadError}</Empty> : <Skeleton rows={3} />)}
+        {list !== null && !supported && <Empty>{unsupportedMsg}</Empty>}
+        {list !== null && supported && teams.length === 0 && players.length === 0 && (
+          <Empty>No winter-league teams yet — hit Manage to follow LIDOM, LVBP, LMP, LBPRC or Serie del Caribe teams and players.</Empty>
+        )}
+
+        {supported && previewTeams.map(t => {
+          const f = form[t.id];
+          const streak = String(f?.row?.streak_code || '');
+          const up = streak.startsWith('W');
+          return (
+            <div className="slt-wl-row" key={`wt-${t.id}`}>
+              <div className="slt-team-cell">
+                <WinterLogo src={t.logoUrl} code={t.abbr} />
+                <div>
+                  <div className="slt-wl-team">{t.abbr || t.name}</div>
+                  <span className="slt-wl-next">{f ? winterGameLine(t.id, f.game) : '…'}</span>
+                </div>
+              </div>
+              <div className="slt-mono">{f?.row ? `${f.row.wins}-${f.row.losses}` : '—'}</div>
+              <div className={`slt-mono slt-wl-pct ${streak ? (up ? 'pos' : 'neg') : ''}`}>
+                {f?.row ? fmtWinPct(f.row.w_l_pct) : '—'} {streak && (up ? '▲' : '▼')}
+              </div>
+              <Sparkline points={f?.pts} />
+            </div>
+          );
+        })}
+
+        {supported && previewPlayers.map(p => (
+          <div className={`slt-wl-row slt-wl-row--player${p.active === false ? ' slt-wl-inactive' : ''}`} key={`wp-${p.id}`}>
+            <div className="slt-team-cell">
+              <WinterHeadshot src={p.headshotUrl} />
+              <div>
+                <div className="slt-wl-team">{p.name || '…'}</div>
+                <span className="slt-wl-next">{playerLine(p)}</span>
+              </div>
+            </div>
+          </div>
+        ))}
+
+        {supported && hiddenCount > 0 && <p className="slt-footnote">+{hiddenCount} more · open the watchlist to see all</p>}
+      </Panel>
+
+      <Sheet
+        open={expanded}
+        onClose={onClose}
+        title="Watchlist · Winter"
+        sub="Follow winter-league teams and players: LIDOM, LVBP, LMP, LBPRC and the Serie del Caribe"
+        route="/winter"
+        routeLabel="Open Winter Ball"
+      >
+        {list === null && (loadError ? <Empty>{loadError}</Empty> : <Skeleton rows={4} />)}
+        {saveError && <p className="slt-error slt-wl-error">{saveError}</p>}
+        {list !== null && !supported && <Empty>{unsupportedMsg}</Empty>}
+
+        {list !== null && supported && (
+          <>
+            <SectionLabel>Teams · {teams.length}/{limits.cbpc_teams}</SectionLabel>
+            <div className="slt-chips slt-wl-chips" role="group" aria-label="Winter league">
+              {CBPC_SLUGS.map(slug => (
+                <button
+                  type="button"
+                  key={slug}
+                  className={`slt-chip${pickLeague === slug ? ' active' : ''}`}
+                  aria-pressed={pickLeague === slug}
+                  onClick={() => setPickLeague(slug)}
+                >
+                  {CBPC_LEAGUES[slug].short}
+                </button>
+              ))}
+            </div>
+            <div className="slt-chips slt-wl-chips">
+              {leagueTeams === null && <span className="slt-faint">Loading teams…</span>}
+              {leagueTeams?.length === 0 && <span className="slt-faint">No teams for this league yet.</span>}
+              {(leagueTeams || []).map(t => {
+                const on = teams.some(x => x.id === t.id);
+                return (
+                  <button
+                    type="button"
+                    key={t.id}
+                    className={`slt-chip${on ? ' active' : ''}`}
+                    onClick={() => toggleTeam(t)}
+                    disabled={saving}
+                    aria-pressed={on}
+                    title={on ? `Remove ${t.team_name}` : `Follow ${t.team_name}`}
+                  >
+                    {t.team_name}
+                  </button>
+                );
+              })}
+            </div>
+
+            {teams.map(t => {
+              const f = form[t.id];
+              const streak = String(f?.row?.streak_code || '');
+              return (
+                <div className="slt-sheet-card" key={`wt-${t.id}`}>
+                  <div className="slt-sheet-card-head">
+                    <div className="slt-team-cell">
+                      <WinterLogo src={t.logoUrl} code={t.abbr} />
+                      <div>
+                        <div className="slt-sheet-card-title">{t.name}</div>
+                        <div className="slt-wl-next">
+                          {[t.league && CBPC_LEAGUES[t.league]?.short, f ? winterGameLine(t.id, f.game) : null].filter(Boolean).join(' · ')}
+                        </div>
+                      </div>
+                    </div>
+                    <span className="slt-wl-actions">
+                      {t.league && <Link to={`/winter/${t.league}/teams/${t.id}`} className="slt-link">Team page →</Link>}
+                      <button type="button" className="slt-wl-remove" onClick={() => removeTeam(t.id)} disabled={saving} aria-label={`Remove ${t.name}`} title="Remove">✕</button>
+                    </span>
+                  </div>
+                  <div className="slt-kv-grid">
+                    <div><span>Record</span><b className="slt-mono">{f?.row ? `${f.row.wins}-${f.row.losses}` : '—'}</b></div>
+                    <div><span>Win %</span><b className="slt-mono">{f?.row ? fmtWinPct(f.row.w_l_pct) : '—'}</b></div>
+                    <div><span>GB</span><b className="slt-mono">{f?.row?.games_back && f.row.games_back !== '-' ? f.row.games_back : '—'}</b></div>
+                    <div><span>Streak</span><b className={`slt-mono ${streak.startsWith('W') ? 'pos' : streak.startsWith('L') ? 'neg' : ''}`}>{streak || '—'}</b></div>
+                    <div><span>Last 10</span><b className="slt-mono">{f?.row ? `${f.row.last_ten_wins}-${f.row.last_ten_losses}` : '—'}</b></div>
+                  </div>
+                  {f?.games?.length > 0 && (
+                    <div className="slt-l10">
+                      <Sparkline points={f.pts} width={140} height={28} />
+                      <div className="slt-l10-games">
+                        {f.games.map(g => (
+                          <span key={g.key} className={`slt-l10-game ${g.won ? 'pos' : 'neg'}`} title={`${g.opp} ${g.score}`}>{g.won ? 'W' : 'L'}</span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+
+            <SectionLabel>Players · {players.length}/{limits.cbpc_players}</SectionLabel>
+            <div className="slt-wl-search">
+              <input
+                type="search"
+                value={query}
+                onChange={e => setQuery(e.target.value)}
+                placeholder="Search winter-league players to follow…"
+                aria-label="Search winter-league players to follow"
+              />
+              {query.trim().length >= 2 && (
+                <ul className="slt-wl-results">
+                  {searching && results.length === 0 && <li className="slt-faint">Searching…</li>}
+                  {!searching && results.length === 0 && <li className="slt-faint">No players found.</li>}
+                  {results.map(r => {
+                    const added = players.some(p => p.id === r.id);
+                    return (
+                      <li key={r.id}>
+                        <span className="slt-team-cell">
+                          <WinterHeadshot src={r.headshot_url} size="sm" />
+                          {r.full_name}
+                          <span className="slt-faint">{r.team_abbreviation || 'No current club'}</span>
+                        </span>
+                        <button type="button" className={`slt-chip${added ? ' active' : ''}`} onClick={() => addPlayer(r)} disabled={added || saving}>
+                          {added ? 'Following' : 'Follow'}
+                        </button>
+                      </li>
+                    );
+                  })}
+                </ul>
+              )}
+            </div>
+
+            {players.length === 0 && <p className="slt-footnote">Search above to follow individual winter-league players.</p>}
+            {players.map(p => (
+              <div className={`slt-sheet-card${p.active === false ? ' slt-wl-inactive' : ''}`} key={`wp-${p.id}`}>
+                <div className="slt-sheet-card-head">
+                  <div className="slt-team-cell">
+                    <WinterHeadshot src={p.headshotUrl} />
+                    <div>
+                      <div className="slt-sheet-card-title">{p.name || '…'}</div>
+                      <div className="slt-wl-next">{p.teamId != null ? [p.teamName, p.position].filter(Boolean).join(' · ') : playerLine(p)}</div>
+                    </div>
+                  </div>
+                  <span className="slt-wl-actions">
+                    {p.teamLeague && <Link to={`/winter/${p.teamLeague}/players/${p.id}`} className="slt-link">Player page →</Link>}
+                    <button type="button" className="slt-wl-remove" onClick={() => removePlayer(p.id)} disabled={saving} aria-label={`Remove ${p.name || 'player'}`} title="Remove">✕</button>
+                  </span>
+                </div>
+              </div>
+            ))}
+          </>
+        )}
+      </Sheet>
+    </>
+  );
+}
+
+// One watchlist (one server list) for both leagues: the MLB tab shows MLB
+// teams/players, the Serie del Caribe tab shows winter-league ones.
+function WatchlistPanel({ league = 'mlb', standings, games, flash, expanded, onExpand, onClose }) {
   const { user } = useAuth();
   const favoriteTeamId = user?.favoriteTeamId ?? null;
   const userId = user?.id ?? null;
@@ -502,7 +881,8 @@ function WatchlistPanel({ standings, games, flash, expanded, onExpand, onClose }
   }, [games]);
 
   // Optimistic: show the change at once, roll back if the server refuses it.
-  // `changed` is 'teams' or 'players': the server replaces only the type we send.
+  // `changed` is 'teams', 'players', 'cbpc_teams' or 'cbpc_players': the
+  // server replaces only the type we send.
   const save = useCallback(async (next, changed) => {
     if (!list || saving) return;
     const prev = list;
@@ -511,12 +891,21 @@ function WatchlistPanel({ standings, games, flash, expanded, onExpand, onClose }
     if (mode === 'local') { watchlistService.saveLocal(userId, next); return; }
     setSaving(true);
     try {
-      const saved = changed === 'teams'
-        ? await watchlistService.setTeams(next.teamIds)
-        : await watchlistService.setPlayers(next.players.map(p => p.id));
+      const saved = changed === 'teams' ? await watchlistService.setTeams(next.teamIds)
+        : changed === 'players' ? await watchlistService.setPlayers(next.players.map(p => p.id))
+        : changed === 'cbpc_teams' ? await watchlistService.setCbpcTeams(next.cbpcTeams.map(t => t.id))
+        : await watchlistService.setCbpcPlayers(next.cbpcPlayers.map(p => p.id));
       // The response is the source of truth; only fill gaps for ids it sent bare.
-      const known = Object.fromEntries(next.players.map(p => [p.id, p]));
-      setList({ ...saved, players: saved.players.map(p => (p.name ? p : (known[p.id] || p))) });
+      const fill = (savedList, nextList) => {
+        const known = Object.fromEntries((nextList || []).map(x => [x.id, x]));
+        return savedList.map(x => (x.name ? x : (known[x.id] || x)));
+      };
+      setList({
+        ...saved,
+        players: fill(saved.players, next.players),
+        cbpcTeams: fill(saved.cbpcTeams, next.cbpcTeams),
+        cbpcPlayers: fill(saved.cbpcPlayers, next.cbpcPlayers),
+      });
     } catch (err) {
       setList(prev);
       setSaveError(err.status === 422 && err.message
@@ -529,29 +918,41 @@ function WatchlistPanel({ standings, games, flash, expanded, onExpand, onClose }
     }
   }, [list, mode, saving, userId]);
 
+  const limits = list?.limits ?? WATCHLIST_LIMITS;
+
   const toggleTeam = useCallback((teamId) => {
     if (!list) return;
     const has = list.teamIds.includes(teamId);
-    if (!has && list.teamIds.length >= WATCHLIST_LIMITS.teams) {
-      setSaveError(`You can follow up to ${WATCHLIST_LIMITS.teams} teams.`);
+    if (!has && list.teamIds.length >= limits.teams) {
+      setSaveError(`You can follow up to ${limits.teams} teams.`);
       return;
     }
     save({ ...list, teamIds: has ? list.teamIds.filter(id => id !== teamId) : [...list.teamIds, teamId] }, 'teams');
-  }, [list, save]);
+  }, [list, save, limits]);
 
   const addPlayer = useCallback((r) => {
     if (!list || list.players.some(p => p.id === r.id)) return;
-    if (list.players.length >= WATCHLIST_LIMITS.players) {
-      setSaveError(`You can follow up to ${WATCHLIST_LIMITS.players} players.`);
+    if (list.players.length >= limits.players) {
+      setSaveError(`You can follow up to ${limits.players} players.`);
       return;
     }
     save({ ...list, players: [...list.players, { id: r.id, name: r.full_name, teamId: r.team_id, mlbId: r.mlb_id ?? null, slug: r.name_slug ?? r.mlb_id, active: r.active !== false }] }, 'players');
-  }, [list, save]);
+  }, [list, save, limits]);
 
   const removePlayer = useCallback((id) => {
     if (!list) return;
     save({ ...list, players: list.players.filter(p => p.id !== id) }, 'players');
   }, [list, save]);
+
+  if (league === 'sdc') {
+    return (
+      <WinterWatchlist
+        list={list} mode={mode} loadError={loadError} saveError={saveError} setSaveError={setSaveError}
+        saving={saving} save={save} limits={limits}
+        flash={flash} expanded={expanded} onExpand={onExpand} onClose={onClose}
+      />
+    );
+  }
 
   const watched = (teamIds || []).map(id => getTeamById(id)).filter(Boolean);
   const players = list?.players || [];
@@ -642,7 +1043,7 @@ function WatchlistPanel({ standings, games, flash, expanded, onExpand, onClose }
 
         {list !== null && (
           <>
-            <SectionLabel>Teams · {watched.length}/{WATCHLIST_LIMITS.teams}</SectionLabel>
+            <SectionLabel>Teams · {watched.length}/{limits.teams}</SectionLabel>
             <div className="slt-chips slt-wl-chips">
               {TEAMS.map(t => (
                 <button
@@ -701,7 +1102,7 @@ function WatchlistPanel({ standings, games, flash, expanded, onExpand, onClose }
               );
             })}
 
-            <SectionLabel>Players · {players.length}/{WATCHLIST_LIMITS.players}</SectionLabel>
+            <SectionLabel>Players · {players.length}/{limits.players}</SectionLabel>
             {!canAddPlayers ? (
               <Empty>Saving players needs the updated watchlist server — teams still save.</Empty>
             ) : (
@@ -903,7 +1304,130 @@ function TeamLogo({ mlbId, teamId, size }) {
   );
 }
 
-function TrustLedgerPanel({ flash, expanded, onExpand, onClose }) {
+// Winter-league Trust Ledger (Serie del Caribe tab): one league's board at a
+// time, ranked within that league. Like the MLB card, it opens on the
+// postseason board when that league has one (never for the Caribbean Series).
+function WinterTrustLedgerPanel({ flash, expanded, onExpand, onClose }) {
+  const [slug, setSlug] = useState(rememberedWinterLeague);
+  const [board, setBoard] = useState(null);
+  const [status, setStatus] = useState('loading'); // loading | ok | locked | error
+
+  useEffect(() => {
+    const controller = new AbortController();
+    const { signal } = controller;
+    setStatus('loading');
+    const fail = (err) => {
+      if (err.name === 'AbortError') return;
+      setStatus(err.status === 403 ? 'locked' : 'error');
+    };
+    const loadRegular = () => trustLedgerService.getCbpcTrustLedger(slug, { signal })
+      .then(data => { setBoard(data); setStatus('ok'); })
+      .catch(fail);
+    if (isNationsLeague(slug)) { loadRegular(); return () => controller.abort(); }
+    trustLedgerService.getCbpcTrustLedger(slug, { postseason: true, signal })
+      .then(data => {
+        if (data?.rows?.length) { setBoard(data); setStatus('ok'); } else loadRegular();
+      })
+      .catch(err => {
+        if (err.name === 'AbortError') return;
+        if (err.status === 403) { setStatus('locked'); return; }
+        loadRegular();
+      });
+    return () => controller.abort();
+  }, [slug]);
+
+  const pick = (s) => { setSlug(s); rememberWinterLeague(s); };
+  const rows = board?.rows ?? [];
+  const short = CBPC_LEAGUES[slug].short;
+  const sizeNote = board && !board.percentileReliable ? ` · ${board.leagueSize}-team league` : '';
+  const modeLabel = board ? `${board.seasonLabel} ${board.postseason ? 'postseason' : 'regular season'}` : '';
+  const lockedText = 'A trust score for every winter-league club, ranked within its league.';
+  const today = (g) => {
+    if (!g) return <span className="slt-faint">no game</span>;
+    const opp = `${g.isHome ? 'vs' : '@'} ${g.opponent}`;
+    if (g.status === 'Scheduled' && g.gameDatetimeUtc) {
+      return `${opp} · ${new Date(g.gameDatetimeUtc).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}`;
+    }
+    return `${opp} · ${g.status === 'In Progress' ? 'in progress' : String(g.status || '').toLowerCase()}`;
+  };
+  const leaguePicker = (
+    <select className="slt-select" value={slug} onChange={(e) => pick(e.target.value)} aria-label="Winter league">
+      {CBPC_SLUGS.map(s => <option key={s} value={s}>{CBPC_LEAGUES[s].short}</option>)}
+    </select>
+  );
+
+  return (
+    <>
+      <Panel
+        id="ledger"
+        title="Trust Ledger · Winter"
+        flash={flash}
+        onExpand={onExpand}
+        action={leaguePicker}
+      >
+        {status === 'ok' && rows.length > 0 && <p className="slt-footnote slt-tl-note">{modeLabel} · top 5{sizeNote}</p>}
+        {status === 'loading' && <Skeleton rows={5} />}
+        {status === 'error' && <Empty>{short} Trust Ledger unavailable right now.</Empty>}
+        {status === 'locked' && <Locked text={lockedText} />}
+        {status === 'ok' && rows.length === 0 && <Empty>No standings yet for {short} {board?.seasonLabel}.</Empty>}
+        {status === 'ok' && rows.slice(0, 5).map((t, i) => (
+          <div className="slt-tl-row" key={t.teamId ?? i}>
+            <span className="slt-tl-rank slt-mono">{t.trustRank ?? '—'}</span>
+            <span className="slt-tl-team slt-team-cell"><WinterLogo src={t.logoUrl} code={t.abbreviation} size="sm" />{t.abbreviation || t.team}</span>
+            <div className="slt-bar"><div className="slt-bar-fill" style={{ width: `${t.trustPercentile ?? 0}%` }} /></div>
+            <span className="slt-tl-score slt-mono">{t.trustPercentile == null ? '—' : t.trustPercentile.toFixed(1)}</span>
+          </div>
+        ))}
+      </Panel>
+
+      <Sheet
+        open={expanded}
+        onClose={onClose}
+        title={`Trust Ledger · ${short}`}
+        sub={status === 'ok'
+          ? `${modeLabel} · ${board.leagueSize} ${isNationsLeague(slug) ? 'nations' : 'clubs'} ranked by trust within ${short}${board.percentileReliable ? '' : ' (small sample)'}`
+          : 'Winter-league clubs ranked by trust within their league'}
+        route="/predictions/trust-ledger"
+        routeLabel="Open the full Trust Ledger"
+      >
+        <div className="slt-sheet-tools">{leaguePicker}</div>
+        {status === 'loading' && <Skeleton rows={6} />}
+        {status === 'locked' && <Locked text={lockedText} />}
+        {status === 'error' && <Empty>{short} Trust Ledger unavailable right now.</Empty>}
+        {status === 'ok' && rows.length === 0 && <Empty>No standings yet for {short} {board?.seasonLabel}.</Empty>}
+        {status === 'ok' && rows.length > 0 && (
+          <table className="slt-table slt-table--sheet">
+            <thead>
+              <tr><th>#</th><th>Team</th><th>Trust</th><th>{board.postseason ? 'Playoff' : 'Season'}</th><th>L10</th><th>OPS / ERA rank</th><th>Today</th></tr>
+            </thead>
+            <tbody>
+              {rows.map((t, i) => (
+                <tr key={t.teamId ?? i}>
+                  <td className="slt-mono slt-faint">{t.trustRank ?? '—'}</td>
+                  <td className="team"><span className="slt-team-cell"><WinterLogo src={t.logoUrl} code={t.abbreviation} size="sm" />{t.team}</span></td>
+                  <td>
+                    <span className="slt-trust-cell">
+                      <span className="slt-bar"><span className="slt-bar-fill" style={{ width: `${t.trustPercentile ?? 0}%` }} /></span>
+                      <span className="slt-mono">{t.trustPercentile == null ? '—' : t.trustPercentile.toFixed(1)}</span>
+                    </span>
+                  </td>
+                  <td className="slt-mono">{fmtWinPct(t.winPct)}</td>
+                  <td className="slt-mono">{t.lastTen || '—'}</td>
+                  <td className="slt-mono" title={`Within ${short}, out of ${board.leagueSize}`}>
+                    {t.leagueHittingRank != null ? `#${t.leagueHittingRank}` : '—'} / {t.leaguePitchingRank != null ? `#${t.leaguePitchingRank}` : '—'}
+                  </td>
+                  <td className="slt-sp">{today(t.todayGame)}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )}
+      </Sheet>
+    </>
+  );
+}
+
+function TrustLedgerPanel({ league = 'mlb', flash, expanded, onExpand, onClose }) {
   const [teams, setTeams] = useState(null);
   const [status, setStatus] = useState('loading'); // loading | ok | locked | error
   const [postseason, setPostseason] = useState(false);
@@ -950,6 +1474,10 @@ function TrustLedgerPanel({ flash, expanded, onExpand, onClose }) {
       });
     return () => controller.abort();
   }, [date]);
+
+  if (league === 'sdc') {
+    return <WinterTrustLedgerPanel flash={flash} expanded={expanded} onExpand={onExpand} onClose={onClose} />;
+  }
 
   const modeLabel = `${season} ${postseason ? 'postseason' : 'regular season'}`;
 
@@ -1265,9 +1793,95 @@ function BetLibraryPanel({ flash, expanded, onExpand, onClose }) {
 }
 
 // ── Standings ───────────────────────────────────────────────────────────────
-function StandingsPanel({ standings, flash, expanded, onExpand, onClose }) {
+// Winter standings for every league's current season: the regular-season
+// table, plus the Round Robin table once it has games. One load covers both
+// the card and the sheet; responses are cached by cbpcService for 5 minutes.
+function useWinterStandings() {
+  const [data, setData] = useState(null); // slug → { season, regular[], roundRobin[] }
+  useEffect(() => {
+    let alive = true;
+    cbpcService.getLeagues()
+      .then(leagues => Promise.all(CBPC_SLUGS.map(async slug => {
+        const season = leagues.find(l => l.slug === slug)?.current_season;
+        const [regular, rr] = await Promise.all([
+          cbpcService.getStandings(slug, season, 'R').catch(() => ({ teams: [] })),
+          cbpcService.getStandings(slug, season, 'L').catch(() => ({ teams: [] })),
+        ]);
+        return [slug, { season, regular: regular.teams || [], roundRobin: rr.teams || [] }];
+      })))
+      .then(entries => { if (alive) setData(Object.fromEntries(entries)); })
+      .catch(() => { if (alive) setData({}); });
+    return () => { alive = false; };
+  }, []);
+  return data;
+}
+
+function WinterStandingsPanel({ flash, expanded, onExpand, onClose }) {
+  const [slug, setSlug] = useState('lidom');
+  const data = useWinterStandings();
+  const entry = data?.[slug];
+  // During the postseason the Round Robin is the table that matters.
+  const rows = entry?.roundRobin.length ? entry.roundRobin : entry?.regular ?? [];
+
+  return (
+    <>
+      <Panel
+        id="standings"
+        title="Standings · Winter"
+        flash={flash}
+        onExpand={onExpand}
+        sub={entry ? `${entry.roundRobin.length ? 'Round Robin' : 'Regular season'} · ${seasonLabel(entry.season)}` : ''}
+        action={(
+          <select className="slt-select" value={slug} onChange={(e) => setSlug(e.target.value)} aria-label="Winter league">
+            {CBPC_SLUGS.map(s => <option key={s} value={s}>{CBPC_LEAGUES[s].short}</option>)}
+          </select>
+        )}
+      >
+        {data === null && <Skeleton rows={5} />}
+        {data !== null && rows.length === 0 && <Empty>No standings yet for this league.</Empty>}
+        {rows.length > 0 && <div className="slt-standings-scroll"><StandingsTable rows={rows} /></div>}
+      </Panel>
+
+      <Sheet
+        open={expanded}
+        onClose={onClose}
+        title="Standings · Winter"
+        sub="LIDOM, LVBP, LMP, LBPRC and the Serie del Caribe"
+        route={`/winter/${slug}`}
+        routeLabel={`Open ${CBPC_LEAGUES[slug].short}`}
+      >
+        {data === null ? <Skeleton rows={6} /> : (
+          <div className="slt-div-grid">
+            {CBPC_SLUGS.map(s => {
+              const e = data[s];
+              return (
+                <div key={s}>
+                  <SectionLabel>{CBPC_LEAGUES[s].short}{e?.season ? ` · ${seasonLabel(e.season)}` : ''}</SectionLabel>
+                  {e?.roundRobin.length > 0 && (
+                    <>
+                      <p className="slt-footnote">Round Robin</p>
+                      <StandingsTable rows={e.roundRobin} />
+                      <p className="slt-footnote">Regular season</p>
+                    </>
+                  )}
+                  {e?.regular.length ? <StandingsTable rows={e.regular} /> : <Empty>No standings yet</Empty>}
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </Sheet>
+    </>
+  );
+}
+
+function StandingsPanel({ league = 'mlb', standings, flash, expanded, onExpand, onClose }) {
   const [division, setDivision] = useState('AL East');
   const rows = useMemo(() => sortedDivision(standings, division), [standings, division]);
+
+  if (league === 'sdc') {
+    return <WinterStandingsPanel flash={flash} expanded={expanded} onExpand={onExpand} onClose={onClose} />;
+  }
 
   return (
     <>
@@ -1284,7 +1898,7 @@ function StandingsPanel({ standings, flash, expanded, onExpand, onClose }) {
       >
         {standings === null && <Skeleton rows={5} />}
         {standings !== null && rows.length === 0 && <Empty>Standings unavailable right now.</Empty>}
-        {rows.length > 0 && <StandingsTable rows={rows} />}
+        {rows.length > 0 && <div className="slt-standings-scroll"><StandingsTable rows={rows} /></div>}
       </Panel>
 
       <Sheet
@@ -1506,7 +2120,7 @@ function LeagueSwitcher({ value, onChange }) {
   return (
     <div className="slt-leagues" role="group" aria-label="League">
       {LEAGUES.map(l => {
-        const soon = l.status === 'soon';
+        const soon = l.status === 'soon' && !WINTER_ENABLED.includes(l.id);
         return (
           <button
             key={l.id}
@@ -1523,48 +2137,6 @@ function LeagueSwitcher({ value, onChange }) {
           </button>
         );
       })}
-    </div>
-  );
-}
-
-// Serie del Caribe dashboard, laid out ahead of the /cbpc API. Nothing here
-// fetches; each panel says what it will show once the data is live.
-const SDC_NATIONS = [
-  { league: 'LIDOM', nation: 'Dominican Republic' },
-  { league: 'LVBP',  nation: 'Venezuela' },
-  { league: 'LMP',   nation: 'Mexico' },
-  { league: 'LBPRC', nation: 'Puerto Rico' },
-];
-
-function CaribbeanPreview() {
-  return (
-    <div className="slt-grid">
-      <Panel id="sdc-intro" title="Serie del Caribe" sub="2026-27" full>
-        <Empty>
-          The Caribbean Series dashboard goes live with our winter-league data: nations, the Round Robin
-          table, scores and leaders, kept separate from MLB stats.
-        </Empty>
-      </Panel>
-      <Panel id="sdc-nations" title="Nations" sub="Qualify as champions">
-        <ul className="slt-sdc-nations">
-          {SDC_NATIONS.map(n => (
-            <li key={n.league}>
-              <span className="slt-sdc-nation">{n.nation}</span>
-              <span className="slt-faint">{n.league} champion · To be decided</span>
-            </li>
-          ))}
-        </ul>
-        <p className="slt-footnote">Guest nations are added when the field is announced.</p>
-      </Panel>
-      <Panel id="sdc-standings" title="Round Robin">
-        <Empty>Standings by nation, updated as games go final.</Empty>
-      </Panel>
-      <Panel id="sdc-games" title="Scores & Schedule">
-        <Empty>Every game with start times in ET and local time, then line scores and box scores.</Empty>
-      </Panel>
-      <Panel id="sdc-leaders" title="Leaders">
-        <Empty>Batting and pitching leaders for the Series only.</Empty>
-      </Panel>
     </div>
   );
 }
@@ -1702,13 +2274,13 @@ export default function TerminalPage() {
   });
 
   const panels = {
-    watchlist:   <WatchlistPanel standings={standings} games={games} {...panelProps('watchlist')} />,
+    watchlist:   <WatchlistPanel league={league} standings={standings} games={games} {...panelProps('watchlist')} />,
     props:       <PropsPanel {...panelProps('props')} />,
-    ledger:      <TrustLedgerPanel {...panelProps('ledger')} />,
+    ledger:      <TrustLedgerPanel league={league} {...panelProps('ledger')} />,
     insider:     <InsiderPanel {...panelProps('insider')} />,
     predictions: <PredictionsPanel {...panelProps('predictions')} />,
     library:     <BetLibraryPanel {...panelProps('library')} />,
-    standings:   <StandingsPanel standings={standings} {...panelProps('standings')} />,
+    standings:   <StandingsPanel league={league} standings={standings} {...panelProps('standings')} />,
     live:        <LiveGamePanel games={games} {...panelProps('live')} />,
   };
 
@@ -1716,19 +2288,19 @@ export default function TerminalPage() {
     <div className={`slt-ui slt-dash${dragId ? ' slt--dragging' : ''}`}>
       <div className="slt-dash-bar">
         <LeagueSwitcher value={league} onChange={chooseLeague} />
-        {league === 'mlb' && isCustomLayout && (
+        {isCustomLayout && (
           <button className="slt-layout-reset" type="button" onClick={resetLayout} title="Restore the default panel order">
             Reset layout
           </button>
         )}
       </div>
-      {league === 'sdc' ? <CaribbeanPreview /> : (
-        <LayoutContext.Provider value={layout}>
-          <div className="slt-grid" ref={gridRef}>
-            {order.map(id => <Fragment key={id}>{panels[id]}</Fragment>)}
-          </div>
-        </LayoutContext.Provider>
-      )}
+      {/* Both leagues share the grid; panels that follow the league switch
+          their own content (the Watchlist today). */}
+      <LayoutContext.Provider value={layout}>
+        <div className="slt-grid" ref={gridRef}>
+          {order.map(id => <Fragment key={id}>{panels[id]}</Fragment>)}
+        </div>
+      </LayoutContext.Provider>
     </div>
   );
 }
