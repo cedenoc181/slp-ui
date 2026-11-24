@@ -3,6 +3,7 @@ import { Link, useOutletContext, useParams } from 'react-router-dom';
 import cbpcService from '../../../data/services/cbpcService';
 import { GAME_TYPE_LABELS, isNationsLeague, winterPaths } from '../../../data/constants/cbpcConstants';
 import BoxScoreCard from '../Stats/mlb-schedule/components/BoxScoreCard';
+import KalshiAdminPanel from './KalshiAdminPanel';
 import { useCbpc, Loading, ErrorState, Empty, Section, TeamLogo, isFinal, fmtDay, fmtTime, orDash } from './winterUi';
 
 /*
@@ -152,6 +153,9 @@ export default function GamePage() {
           {!final && game.status === 'In Progress' && <span className="wb-faint"> · statuses update once a day</span>}
         </div>
       </div>
+
+      {/* Renders nothing unless the Kalshi flag is on and the viewer is an admin. */}
+      <KalshiAdminPanel league={league} gamePk={game.game_pk} />
 
       {final && game.innings?.length > 0 && (
         <Section title="Line score">

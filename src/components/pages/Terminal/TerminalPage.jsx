@@ -1959,11 +1959,11 @@ function useStarterEras(game) {
   return eras;
 }
 
-// "{logo} NYY  G. Cole (3.12)"
-function TeamWithStarter({ teamId, team, spName, era }) {
+// "{logo} NYY  G. Cole (3.12)". Winter games pass their own logo element.
+function TeamWithStarter({ teamId, team, spName, era, logo }) {
   return (
     <span className="slt-team-cell">
-      <TeamLogo teamId={teamId} />
+      {logo ?? <TeamLogo teamId={teamId} />}
       {team}
       <span className="slt-sp-tag">
         {spName ? shortName(spName) : 'TBD'}
@@ -1973,7 +1973,7 @@ function TeamWithStarter({ teamId, team, spName, era }) {
   );
 }
 
-function BoxScore({ game, boxscore, eras = {} }) {
+function BoxScore({ game, boxscore, eras = {}, logos = {} }) {
   const innings = useMemo(() => {
     const list = boxscore?.innings || [];
     const count = Math.max(9, list.length);
@@ -1996,7 +1996,7 @@ function BoxScore({ game, boxscore, eras = {} }) {
             ['home', game.home, game.homeId, game.homeSp, eras[game.homeSpId], boxscore?.home_runs ?? game.homeRuns, boxscore?.home_hits ?? game.homeHits, boxscore?.home_errors ?? game.homeErrors],
           ].map(([side, team, teamId, spName, era, r, h, e]) => (
             <tr key={side}>
-              <td className="team"><TeamWithStarter teamId={teamId} team={team} spName={spName} era={era} /></td>
+              <td className="team"><TeamWithStarter teamId={teamId} team={team} spName={spName} era={era} logo={logos[side]} /></td>
               {innings.map((ing, i) => (
                 <td key={i} className="slt-mono">{ing ? (ing[`${side}_runs`] ?? '-') : '-'}</td>
               ))}
@@ -2103,6 +2103,208 @@ function LiveGamePanel({ games, flash, expanded, onExpand, onClose }) {
                     {g.state === 'pre'
                       ? [g.mlAway && g.mlHome ? `${g.mlAway} / ${g.mlHome}` : null, g.total != null ? `O/U ${g.total}` : null].filter(Boolean).join(' · ')
                       : `${g.awayRuns ?? 0}–${g.homeRuns ?? 0}`}
+                  </span>
+                  <span className={g.state === 'live' ? 'slt-live-text' : 'slt-faint'}>{gameStatusLabel(g)}</span>
+                </Link>
+              ))}
+            </div>
+          </>
+        )}
+      </Sheet>
+    </>
+  );
+}
+
+// ── Winter live game (Serie del Caribe tab) ─────────────────────────────────
+// Today's games from every winter league, in the MLB slate's shape so the
+// panel reuses BoxScore. Live and final states depend on the server's
+// in-game CBPC refresh; until a game's status moves, it reads as scheduled.
+const WINTER_POLL_MS = 2 * 60 * 1000;
+
+function winterState(status = '') {
+  if (/^(Final|Game Over|Completed Early)/i.test(status)) return 'final';
+  if (/progress|delay|challenge|review/i.test(status)) return 'live';
+  return 'pre';
+}
+
+function winterGame(slug, g) {
+  const start = g.game_datetime_utc ? new Date(g.game_datetime_utc) : new Date(`${g.date}T${g.game_time || '12:00'}:00Z`);
+  return {
+    id: g.game_pk,
+    gamePk: g.game_pk,
+    slug,
+    league: CBPC_LEAGUES[slug].short,
+    state: winterState(g.status),
+    status: g.status,
+    start: start.getTime(),
+    time: start.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' }),
+    day: start.toLocaleDateString([], { weekday: 'short', month: 'short', day: 'numeric' }),
+    away: g.away_team_abbr,
+    home: g.home_team_abbr,
+    awayName: g.away_team_name,
+    homeName: g.home_team_name,
+    awayLogo: g.away_team_logo_url,
+    homeLogo: g.home_team_logo_url,
+    awaySp: g.away_sp_name,
+    homeSp: g.home_sp_name,
+    awayRuns: g.away_runs_score,
+    homeRuns: g.home_runs_score,
+    awayHits: g.away_hits,
+    homeHits: g.home_hits,
+    awayErrors: g.away_errors,
+    homeErrors: g.home_errors,
+    venue: g.venue_name,
+    // Sent once the server tracks games in progress; null until then.
+    inning: g.current_inning ?? null,
+    inningState: g.inning_state ?? null,
+  };
+}
+
+// { today: [...], upcoming: [...], recent: [...] } across the winter leagues,
+// each sorted by first pitch. Today's games re-poll while any is unfinished;
+// upcoming / recent only load when nothing is on today.
+function useWinterSlate() {
+  const [slate, setSlate] = useState(null);
+  const [tick, setTick] = useState(0);
+
+  useEffect(() => {
+    let alive = true;
+    const fresh = tick > 0;
+    const across = (load) => Promise.all(CBPC_SLUGS.map(slug =>
+      load(slug).then(list => (list || []).map(g => winterGame(slug, g))).catch(() => [])))
+      .then(lists => lists.flat().sort((a, b) => a.start - b.start));
+
+    (async () => {
+      const today = await across(slug => cbpcService.getTodayGames(slug, { fresh }));
+      let upcoming = [];
+      let recent = [];
+      if (!today.length) {
+        [upcoming, recent] = await Promise.all([
+          across(slug => cbpcService.getUpcomingGames(slug, 7)),
+          across(slug => cbpcService.getPriorGames(slug, 3)),
+        ]);
+      }
+      if (alive) setSlate({ today, upcoming, recent });
+    })();
+    return () => { alive = false; };
+  }, [tick]);
+
+  const unfinished = slate?.today.some(g => g.state !== 'final');
+  useEffect(() => {
+    if (!unfinished) return undefined;
+    const t = setInterval(() => setTick(n => n + 1), WINTER_POLL_MS);
+    return () => clearInterval(t);
+  }, [unfinished]);
+
+  return slate;
+}
+
+function pickWinterFeatured(slate) {
+  if (!slate) return null;
+  const { today, upcoming, recent } = slate;
+  if (today.length) {
+    const now = Date.now();
+    return today.find(g => g.state === 'live')
+      || [...today].reverse().find(g => g.state === 'final')
+      // A game past first pitch that still says Scheduled has no live data yet;
+      // prefer the next one that hasn't started.
+      || today.find(g => g.state === 'pre' && g.start > now)
+      || today.find(g => g.state === 'pre')
+      || today[0];
+  }
+  return upcoming.find(g => g.state === 'pre') || [...recent].reverse().find(g => g.state === 'final') || null;
+}
+
+function winterLogos(g) {
+  return {
+    away: <WinterLogo src={g.awayLogo} code={g.away} size="md" />,
+    home: <WinterLogo src={g.homeLogo} code={g.home} size="md" />,
+  };
+}
+
+function WinterLiveGamePanel({ flash, expanded, onExpand, onClose }) {
+  const slate = useWinterSlate();
+  const featured = useMemo(() => pickWinterFeatured(slate), [slate]);
+
+  const [boxscore, setBoxscore] = useState(null);
+  const slug = featured?.slug;
+  const pk = featured && featured.state !== 'pre' ? featured.gamePk : null;
+  const awayRuns = featured?.awayRuns;
+  const homeRuns = featured?.homeRuns;
+
+  // Re-fetch whenever the slate poll moves the score.
+  useEffect(() => {
+    if (!pk) { setBoxscore(null); return undefined; }
+    let alive = true;
+    cbpcService.getBoxscore(slug, pk, { fresh: featured?.state === 'live' })
+      .then(bs => { if (alive) setBoxscore(bs?.innings?.length ? bs : null); })
+      .catch(() => { if (alive) setBoxscore(null); });
+    return () => { alive = false; };
+  }, [slug, pk, awayRuns, homeRuns]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const isToday = !!slate?.today.length;
+  const inning = featured?.inningState && featured?.inning ? ` · ${featured.inningState} ${featured.inning}` : '';
+  const tag = featured?.state === 'live'
+    ? <span className="slt-live-tag">LIVE{inning || (featured.status && !/progress/i.test(featured.status) ? ` · ${featured.status}` : '')}</span>
+    : featured?.state === 'final' ? <span className="slt-final-tag">FINAL</span> : null;
+  const heading = featured?.state === 'live' ? 'Live Game' : featured?.state === 'final' ? 'Latest Final' : 'Next Up';
+  const title = <>{heading} · Winter {tag}</>;
+  const sub = featured ? `${featured.league} · ${featured.away} @ ${featured.home}${isToday ? '' : ` · ${featured.day}`}` : null;
+  const list = isToday ? slate.today : (slate?.upcoming || []).filter(g => g.start - (slate.upcoming[0]?.start ?? 0) < 36 * 3600 * 1000);
+
+  return (
+    <>
+      <Panel id="live" full flash={flash} onExpand={onExpand} title={title} sub={sub}>
+        {slate === null && <Skeleton rows={2} />}
+        {slate !== null && !featured && <Empty>No winter games in the next week.</Empty>}
+        {featured?.state === 'pre' && (
+          <div className="slt-pregame">
+            <div className="slt-pregame-teams">
+              <TeamWithStarter team={featured.away} spName={featured.awaySp} logo={winterLogos(featured).away} />
+              <span className="slt-mono slt-pregame-ml" />
+              <TeamWithStarter team={featured.home} spName={featured.homeSp} logo={winterLogos(featured).home} />
+              <span className="slt-mono slt-pregame-ml" />
+            </div>
+            <div className="slt-pregame-meta">
+              <span className="slt-pregame-label">{isToday ? 'First pitch' : featured.day}</span>
+              <span className="slt-pregame-time">{featured.status && !/scheduled|pre-game|warmup/i.test(featured.status) ? featured.status : featured.time}</span>
+              {featured.venue && <span className="slt-faint">{featured.venue}</span>}
+            </div>
+          </div>
+        )}
+        {featured && featured.state !== 'pre' && (
+          <BoxScore game={featured} boxscore={boxscore} logos={winterLogos(featured)} />
+        )}
+      </Panel>
+
+      <Sheet
+        open={expanded}
+        onClose={onClose}
+        title={title}
+        sub="Box score plus every winter game on today's slate"
+        route={featured ? `/winter/${featured.slug}/games/${featured.gamePk}` : '/winter'}
+        routeLabel={featured ? `Open ${featured.away} @ ${featured.home}` : 'Open Winter Ball'}
+      >
+        {featured && featured.state !== 'pre' && (
+          <>
+            <SectionLabel>{featured.league} · {featured.awayName} @ {featured.homeName}</SectionLabel>
+            <BoxScore game={featured} boxscore={boxscore} logos={winterLogos(featured)} />
+          </>
+        )}
+        {list.length > 0 && (
+          <>
+            <SectionLabel>{isToday ? "Today's winter slate" : `Next up · ${list[0].day}`}</SectionLabel>
+            <div className="slt-slate">
+              {list.map(g => (
+                <Link to={`/winter/${g.slug}/games/${g.gamePk}`} className="slt-slate-row" key={g.id}>
+                  <span className="slt-tl-team slt-matchup">
+                    <span className="slt-faint">{g.league}</span>
+                    <span className="slt-team-cell"><WinterLogo src={g.awayLogo} code={g.away} size="sm" />{g.away}</span>
+                    <span className="slt-faint">@</span>
+                    <span className="slt-team-cell"><WinterLogo src={g.homeLogo} code={g.home} size="sm" />{g.home}</span>
+                  </span>
+                  <span className={g.state === 'pre' ? 'slt-faint' : 'slt-mono'}>
+                    {g.state === 'pre' ? (g.venue || '') : `${g.awayRuns ?? 0}–${g.homeRuns ?? 0}`}
                   </span>
                   <span className={g.state === 'live' ? 'slt-live-text' : 'slt-faint'}>{gameStatusLabel(g)}</span>
                 </Link>
@@ -2281,7 +2483,9 @@ export default function TerminalPage() {
     predictions: <PredictionsPanel {...panelProps('predictions')} />,
     library:     <BetLibraryPanel {...panelProps('library')} />,
     standings:   <StandingsPanel league={league} standings={standings} {...panelProps('standings')} />,
-    live:        <LiveGamePanel games={games} {...panelProps('live')} />,
+    live:        league === 'sdc'
+      ? <WinterLiveGamePanel {...panelProps('live')} />
+      : <LiveGamePanel games={games} {...panelProps('live')} />,
   };
 
   return (

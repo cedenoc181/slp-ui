@@ -30,9 +30,10 @@ function qs(params) {
   return parts.length ? `?${parts.join('&')}` : '';
 }
 
-async function get(path) {
+// fresh: skip a cached copy (live polling); the new response is still cached.
+async function get(path, { fresh = false } = {}) {
   const hit = cache.get(path);
-  if (hit && Date.now() < hit.expiresAt) return hit.data;
+  if (!fresh && hit && Date.now() < hit.expiresAt) return hit.data;
   if (inflight.has(path)) return inflight.get(path);
 
   const p = (async () => {
@@ -128,7 +129,7 @@ const cbpcService = {
     get(`/cbpc/${league}/teams/${teamId}/lineup${qs({ season, season_type: seasonType, limit, recent_games: recentGames })}`),
 
   // Games
-  getTodayGames: (league) => get(`/cbpc/${league}/scheduled-games/today`),
+  getTodayGames: (league, opts) => get(`/cbpc/${league}/scheduled-games/today`, opts),
   // Hot performers: each player's last 7 games (batting) or 5 appearances
   // (pitching), ranked per category by the server.
   getHotLeaders: (league, group, { season, seasonType, teamId, limit, asOfDate } = {}) =>
@@ -139,7 +140,10 @@ const cbpcService = {
   /** Completed games, newest first. */
   getTeamGames: (league, teamId, season, seasonType) =>
     get(`/cbpc/${league}/games/team${qs({ team_id: teamId, season, season_type: seasonType })}`),
-  getBoxscore: (league, gamePk) => get(`/cbpc/${league}/games/boxscore${qs({ game_pk: gamePk })}`),
+  getBoxscore: (league, gamePk, opts) => get(`/cbpc/${league}/games/boxscore${qs({ game_pk: gamePk })}`, opts),
+  // Kalshi pregame price per team. Internal reference data: only the
+  // flag-gated admin panel (KalshiAdminPanel) may call this.
+  getCbpcGameKalshi: (league, gamePk, opts) => get(`/cbpc/${league}/games/kalshi${qs({ game_pk: gamePk })}`, opts),
   getPlays: (league, gamePk) => get(`/cbpc/${league}/games/plays${qs({ game_pk: gamePk })}`),
 
   // Players

@@ -22,3 +22,10 @@ export const SHOW_AUDIT_SUMMARY = false;
 // when off) rather than just leaving the URL reachable — the feature isn't
 // ready for anyone to land on, not just unlinked. Flip to true to relaunch it.
 export const SHOW_ANALYTICS_LAB = false;
+
+// Kalshi market prices on winter-league (CBPC) game pages. Kalshi's terms on
+// displaying / redistributing market data haven't been reviewed, so this is
+// OFF by default and, even when ON, renders only for admins (no request is
+// made otherwise). Turn on with REACT_APP_KALSHI_CBPC_PRICES=true at build
+// time. Never show these numbers on public, paid, shared or SEO content.
+export const KALSHI_CBPC_PRICES = process.env.REACT_APP_KALSHI_CBPC_PRICES === 'true';

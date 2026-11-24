@@ -536,3 +536,36 @@
   color: var(--pa-text-muted);
   cursor: help;
 }
+
+/* ── Kalshi market (admin only, behind KALSHI_CBPC_PRICES) ── */
+.wb-kalshi-admin {
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--slt-warn);
+}
+.wb-kalshi { border: 1px dashed var(--slt-line); border-radius: 8px; padding: 1rem; background: var(--slt-surface); }
+.wb-kalshi-note { margin: 0 0 0.85rem; font-size: 0.76rem; color: var(--slt-ink-muted); }
+.wb-kalshi-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1rem; }
+.wb-kalshi-side { display: flex; flex-direction: column; gap: 0.5rem; min-width: 0; }
+.wb-kalshi-side p { margin: 0; font-size: 0.82rem; }
+.wb-kalshi-team { display: flex; align-items: center; gap: 0.5rem; font-weight: 600; }
+.wb-kalshi-nums { display: flex; flex-wrap: wrap; align-items: baseline; gap: 0.35rem 1rem; font-size: 0.8rem; color: var(--slt-ink-muted); }
+.wb-kalshi-nums b { color: var(--slt-ink); font-family: 'JetBrains Mono', ui-monospace, monospace; font-weight: 600; }
+.wb-kalshi-mid { font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 1.35rem; font-weight: 700; color: var(--slt-ink); }
+/* An illiquid mid isn't a real probability: grey every number out. */
+.wb-kalshi-nums--illiquid,
+.wb-kalshi-nums--illiquid b,
+.wb-kalshi-nums--illiquid .wb-kalshi-mid { color: var(--slt-ink-faint); }
+.wb-kalshi-tags { display: flex; flex-wrap: wrap; gap: 0.35rem; }
+.wb-kalshi-tag {
+  font-size: 0.68rem;
+  padding: 0.15rem 0.45rem;
+  border: 1px solid var(--slt-line);
+  border-radius: 4px;
+  color: var(--slt-ink-muted);
+}
+.wb-kalshi-settled { margin: 0.9rem 0 0; font-size: 0.82rem; font-weight: 600; }
+.wb-kalshi-source { margin: 0.75rem 0 0; font-size: 0.7rem; color: var(--slt-ink-faint); }
+@media (max-width: 640px) { .wb-kalshi-grid { grid-template-columns: 1fr; } }
