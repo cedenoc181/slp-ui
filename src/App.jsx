@@ -42,6 +42,7 @@ import VerifyEmailPage from './components/pages/Account/VerifyEmailPage';
 import AdminPage from './components/pages/Admin/AdminPage';
 import ArticleEditor from './components/pages/Admin/ArticleEditor';
 import ModelPerformancePage from './components/pages/Admin/ModelPerformancePage';
+import WinterMoneylinePage from './components/pages/Admin/WinterMoneylinePage';
 import PredictionAuditPage from './components/pages/Admin/PredictionAuditPage';
 import CampaignsPage from './components/pages/Admin/CampaignsPage';
 
@@ -224,6 +225,7 @@ const PAGE_TITLES = [
   { path: '/admin/new',               title: 'Admin – New Article' },
   { path: '/admin/edit/:id',          title: 'Admin – Edit Article' },
   { path: '/admin/prediction-audit',  title: 'Admin – Prediction Audit' },
+  { path: '/admin/winter-moneyline',  title: 'Admin – Winter League Moneyline' },
   { path: '/predictions',             title: 'Predictions' },
   { path: '/predictions/games',       title: 'Game Props' },
   { path: '/predictions/pitchers',    title: 'Pitcher Props' },
@@ -382,6 +384,8 @@ function App() {
           <Route path="/admin/model-performance" element={<ModelPerformancePage />} />
           <Route path="/admin/prediction-audit" element={<PredictionAuditPage />} />
           <Route path="/admin/campaigns" element={<CampaignsPage />} />
+          {/* Admin only: the server also answers 403 to non-admins. */}
+          <Route path="/admin/winter-moneyline" element={<ProtectedRoute require="admin"><WinterMoneylinePage /></ProtectedRoute>} />
 
           {/* Unsubscribe route */}
           <Route path="/unsubscribe" element={<UnsubscribePage />} />

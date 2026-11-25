@@ -1,0 +1,193 @@
+/* ═══════════════════════════════════════════════════════════
+   Winter League Moneyline (admin) — phone first
+   Single column from 360px; bottom tab bar on phones, top tabs
+   from 768px. Palette follows the Model Performance page.
+   ═══════════════════════════════════════════════════════════ */
+
+.wml-page {
+  --wml-bg: #0f172a;
+  --wml-card: rgba(255, 255, 255, 0.04);
+  --wml-line: rgba(255, 255, 255, 0.1);
+  --wml-ink: #e2e8f0;
+  --wml-muted: rgba(226, 232, 240, 0.6);
+  --wml-accent: #2dd4bf;
+  --wml-good: #4ade80;
+  --wml-bad: #f87171;
+  min-height: 100vh;
+  background: linear-gradient(180deg, #0f172a 0%, #111a33 100%);
+  color: var(--wml-ink);
+  text-align: left;
+  /* room for the fixed bottom tab bar + iPhone home indicator */
+  padding: 1rem 0 calc(5rem + env(safe-area-inset-bottom));
+}
+.wml-page *, .wml-page *::before, .wml-page *::after { box-sizing: border-box; }
+.wml-wrap { max-width: 760px; margin: 0 auto; padding: 0 16px; }
+.wml-faint { color: var(--wml-muted); font-weight: 400; }
+.wml-small { font-size: 0.75rem; }
+.wml-good { color: var(--wml-good); }
+.wml-bad { color: var(--wml-bad); }
+
+/* ── Header ── */
+.wml-header { display: flex; align-items: flex-start; gap: 0.75rem; margin-bottom: 1rem; }
+.wml-back {
+  display: inline-grid; place-items: center; flex-shrink: 0;
+  width: 34px; height: 34px; border-radius: 50%;
+  background: var(--wml-card); border: 1px solid var(--wml-line);
+  color: var(--wml-muted); text-decoration: none; font-size: 1.3rem; line-height: 1;
+}
+.wml-title { margin: 0; font-size: 1.25rem; font-weight: 700; color: #fff; letter-spacing: -0.01em; }
+.wml-banner {
+  display: inline-block; margin: 0.35rem 0 0; padding: 0.15rem 0.5rem;
+  font-size: 0.7rem; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase;
+  color: #fbbf24; border: 1px solid rgba(251, 191, 36, 0.4); border-radius: 4px;
+}
+
+/* ── Tabs: bottom bar on phones ── */
+.wml-tabs {
+  position: fixed; left: 0; right: 0; bottom: 0; z-index: 50;
+  display: grid; grid-template-columns: 1fr 1fr;
+  background: rgba(15, 23, 42, 0.97); border-top: 1px solid var(--wml-line);
+  padding-bottom: env(safe-area-inset-bottom);
+  backdrop-filter: blur(8px);
+}
+.wml-tab {
+  display: flex; flex-direction: column; align-items: center; gap: 0.2rem;
+  padding: 0.6rem 0 0.55rem; background: none; border: 0; cursor: pointer;
+  color: var(--wml-muted); font: inherit; font-size: 0.72rem; font-weight: 600;
+}
+.wml-tab.active { color: var(--wml-accent); }
+
+@media (min-width: 768px) {
+  .wml-page { padding: 2rem 0 4rem; }
+  .wml-title { font-size: 1.6rem; }
+  .wml-tabs {
+    position: static; display: flex; gap: 0.25rem; margin-bottom: 1.25rem;
+    background: none; border-top: 0; border-bottom: 1px solid var(--wml-line); backdrop-filter: none; padding: 0;
+  }
+  .wml-tab { flex-direction: row; gap: 0.4rem; padding: 0.6rem 0.9rem; font-size: 0.85rem; border-bottom: 2px solid transparent; margin-bottom: -1px; }
+  .wml-tab.active { border-bottom-color: var(--wml-accent); }
+}
+
+/* ── Controls ── */
+.wml-controls { display: flex; flex-direction: column; gap: 0.6rem; margin-bottom: 0.5rem; }
+.wml-date {
+  width: 100%; max-width: 220px; padding: 0.45rem 0.6rem; border-radius: 8px;
+  background: var(--wml-card); border: 1px solid var(--wml-line); color: var(--wml-ink); font: inherit; color-scheme: dark;
+}
+.wml-chips { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-bottom: 0.5rem; }
+.wml-chip {
+  padding: 0.4rem 0.75rem; border-radius: 999px; cursor: pointer; font: inherit; font-size: 0.8rem; font-weight: 600;
+  background: var(--wml-card); border: 1px solid var(--wml-line); color: var(--wml-muted);
+}
+.wml-chip.active { color: #0f172a; background: var(--wml-accent); border-color: var(--wml-accent); }
+.wml-refresh { display: flex; align-items: center; justify-content: space-between; gap: 0.75rem; margin: 0.25rem 0 0.75rem; font-size: 0.78rem; }
+.wml-btn {
+  display: inline-flex; align-items: center; gap: 0.35rem; padding: 0.4rem 0.75rem; border-radius: 8px; cursor: pointer;
+  background: var(--wml-card); border: 1px solid var(--wml-line); color: var(--wml-ink); font: inherit; font-size: 0.8rem; font-weight: 600;
+}
+.wml-btn:disabled { opacity: 0.5; cursor: default; }
+
+/* ── Cards ── */
+.wml-card {
+  background: var(--wml-card); border: 1px solid var(--wml-line); border-radius: 12px;
+  padding: 0.9rem; margin-bottom: 0.75rem; min-width: 0;
+}
+.wml-card--error { display: flex; flex-direction: column; gap: 0.2rem; border-color: rgba(248, 113, 113, 0.4); color: var(--wml-bad); font-size: 0.85rem; }
+.wml-card--error strong { color: var(--wml-ink); }
+.wml-skeleton { height: 140px; opacity: 0.5; }
+.wml-card-title { margin: 0 0 0.6rem; font-size: 0.95rem; font-weight: 700; }
+.wml-empty { margin: 0 0 1rem; font-size: 0.85rem; }
+
+.wml-league { margin-bottom: 1rem; }
+.wml-league-title { margin: 0.75rem 0 0.5rem; font-size: 0.85rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; }
+.wml-league-title .wml-faint { text-transform: none; letter-spacing: 0; font-size: 0.78rem; }
+
+/* ── Game card ── */
+.wml-game-head { display: flex; justify-content: space-between; align-items: center; font-size: 0.75rem; color: var(--wml-muted); margin-bottom: 0.5rem; }
+.wml-team { display: grid; grid-template-columns: 32px minmax(0, 1fr) auto auto; align-items: center; gap: 0.6rem; padding: 0.4rem 0; }
+.wml-team + .wml-team { border-top: 1px solid var(--wml-line); }
+.wml-team--pick .wml-team-name > span:first-child { color: #fff; font-weight: 700; }
+.wml-team-name { display: flex; flex-direction: column; min-width: 0; font-size: 0.9rem; }
+.wml-team-name > span:first-child { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.wml-team-prob { font-variant-numeric: tabular-nums; font-weight: 700; font-size: 1rem; }
+.wml-team--pick .wml-team-prob { color: var(--wml-accent); }
+.wml-team-score { min-width: 1.5rem; text-align: right; font-weight: 700; font-variant-numeric: tabular-nums; }
+.wml-logo { width: 32px; height: 32px; object-fit: contain; }
+.wml-logo--abbr {
+  display: inline-grid; place-items: center; border-radius: 8px; border: 1px solid var(--wml-line);
+  font-size: 0.6rem; font-weight: 700; color: var(--wml-muted);
+}
+.wml-pick { display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem; margin-top: 0.5rem; font-size: 0.85rem; }
+.wml-tag {
+  display: inline-block; padding: 0.05rem 0.4rem; border-radius: 4px; font-size: 0.68rem; font-weight: 700;
+  border: 1px solid var(--wml-line); color: var(--wml-muted);
+}
+.wml-tag--good { color: var(--wml-accent); border-color: rgba(45, 212, 191, 0.5); }
+.wml-result { display: flex; gap: 1rem; margin-top: 0.5rem; font-size: 0.82rem; }
+.wml-mark { font-weight: 800; margin-left: 0.2rem; }
+.wml-mark--ok { color: var(--wml-good); }
+.wml-mark--bad { color: var(--wml-bad); }
+.wml-mark--na { color: var(--wml-muted); }
+
+.wml-starters { margin-top: 0.6rem; padding-top: 0.5rem; border-top: 1px dashed var(--wml-line); display: flex; flex-direction: column; gap: 0.35rem; }
+.wml-starter { display: grid; grid-template-columns: 2.6rem minmax(0, 1fr); gap: 0.4rem; font-size: 0.8rem; }
+.wml-starter-team { font-weight: 700; color: var(--wml-muted); }
+.wml-starter-body { min-width: 0; overflow-wrap: anywhere; }
+.wml-starter-name { margin: 0 0.3rem; font-weight: 600; }
+.wml-source { display: block; color: var(--wml-accent); text-decoration: none; font-size: 0.75rem; overflow-wrap: anywhere; }
+
+/* Scout AI: collapsed behind its headline */
+.wml-scout { margin-top: 0.6rem; border-top: 1px solid var(--wml-line); padding-top: 0.5rem; }
+.wml-scout summary { cursor: pointer; list-style: none; display: flex; flex-direction: column; gap: 0.15rem; }
+.wml-scout summary::-webkit-details-marker { display: none; }
+.wml-scout summary::after { content: 'Show report ▾'; font-size: 0.72rem; color: var(--wml-accent); }
+.wml-scout[open] summary::after { content: 'Hide report ▴'; }
+.wml-scout-label { font-size: 0.68rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--wml-accent); }
+.wml-scout-headline { font-size: 0.88rem; font-weight: 600; }
+.wml-scout-none { margin: 0.6rem 0 0; font-size: 0.78rem; }
+.wml-scout-body { margin-top: 0.5rem; font-size: 0.84rem; line-height: 1.5; overflow-wrap: anywhere; }
+.wml-scout-pick { margin: 0 0 0.5rem; }
+.wml-scout-sec h4 { margin: 0.6rem 0 0.15rem; font-size: 0.72rem; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; color: var(--wml-muted); }
+.wml-scout-sec p { margin: 0; }
+.wml-bullets { margin: 0; padding-left: 1.1rem; }
+.wml-bullets li { margin: 0.15rem 0; }
+
+/* ── Performance ── */
+.wml-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(84px, 1fr)); gap: 0.4rem; }
+.wml-stat { display: flex; flex-direction: column; gap: 0.1rem; padding: 0.5rem 0.6rem; border-radius: 8px; background: rgba(255, 255, 255, 0.03); min-width: 0; }
+.wml-stat-label { font-size: 0.68rem; font-weight: 600; letter-spacing: 0.03em; color: var(--wml-muted); }
+.wml-stat-value { font-size: 1.05rem; font-weight: 700; font-variant-numeric: tabular-nums; }
+.wml-stat-sub { font-size: 0.72rem; color: var(--wml-muted); overflow-wrap: anywhere; }
+.wml-all .wml-small { margin: 0.6rem 0 0; }
+
+.wml-league-card { padding: 0; }
+.wml-league-card > summary {
+  list-style: none; cursor: pointer; padding: 0.85rem 0.9rem;
+  display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 0.4rem 0.75rem;
+}
+.wml-league-card > summary::-webkit-details-marker { display: none; }
+.wml-league-card > summary::after { content: '▾'; color: var(--wml-muted); margin-left: auto; }
+.wml-league-card[open] > summary::after { content: '▴'; }
+.wml-league-name { font-weight: 700; }
+.wml-league-sum { display: flex; flex-wrap: wrap; align-items: center; gap: 0.35rem 0.75rem; font-size: 0.85rem; font-variant-numeric: tabular-nums; }
+.wml-status { font-weight: 700; font-size: 0.78rem; }
+.wml-league-card > .wml-faint { margin: 0 0.9rem 0.9rem; }
+.wml-league-body { padding: 0 0.9rem 0.9rem; }
+.wml-league-body section { padding-top: 0.75rem; border-top: 1px solid var(--wml-line); margin-top: 0.75rem; }
+.wml-league-body section:first-child { margin-top: 0; }
+.wml-league-body h3 { margin: 0 0 0.5rem; font-size: 0.78rem; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; }
+.wml-league-body h3 .wml-faint { text-transform: none; letter-spacing: 0; font-size: 0.72rem; margin-left: 0.25rem; }
+.wml-league-body p { margin: 0.4rem 0 0; }
+
+.wml-table { width: 100%; border-collapse: collapse; margin-top: 0.5rem; font-size: 0.78rem; font-variant-numeric: tabular-nums; table-layout: fixed; }
+.wml-table th { text-align: right; font-weight: 600; color: var(--wml-muted); padding: 0.3rem 0.25rem; border-bottom: 1px solid var(--wml-line); }
+.wml-table td { text-align: right; padding: 0.3rem 0.25rem; border-bottom: 1px solid rgba(255, 255, 255, 0.05); overflow-wrap: anywhere; }
+.wml-table th:first-child, .wml-table td:first-child { text-align: left; }
+
+.wml-chart-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+.wml-chart { display: flex; align-items: flex-end; gap: 0.35rem; height: 110px; min-width: max-content; padding-top: 0.25rem; }
+.wml-chart-col { display: flex; flex-direction: column; align-items: center; justify-content: flex-end; gap: 0.2rem; width: 30px; height: 100%; }
+.wml-chart-num { font-size: 0.62rem; color: var(--wml-muted); font-variant-numeric: tabular-nums; }
+.wml-chart-bar { position: relative; width: 18px; min-height: 4px; max-height: 70px; flex: 0 0 auto; background: rgba(248, 113, 113, 0.35); border-radius: 3px; overflow: hidden; display: flex; align-items: flex-end; }
+.wml-chart-fill { width: 100%; background: var(--wml-good); }
+.wml-chart-day { font-size: 0.62rem; color: var(--wml-muted); }

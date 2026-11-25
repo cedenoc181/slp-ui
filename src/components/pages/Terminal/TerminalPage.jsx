@@ -807,7 +807,7 @@ function WinterWatchlist({ list, mode, loadError, saveError, setSaveError, savin
 
 // One watchlist (one server list) for both leagues: the MLB tab shows MLB
 // teams/players, the Serie del Caribe tab shows winter-league ones.
-function WatchlistPanel({ league = 'mlb', standings, games, flash, expanded, onExpand, onClose }) {
+function WatchlistPanel({ league = 'mlb', standings, games, onList, flash, expanded, onExpand, onClose }) {
   const { user } = useAuth();
   const favoriteTeamId = user?.favoriteTeamId ?? null;
   const userId = user?.id ?? null;
@@ -860,6 +860,8 @@ function WatchlistPanel({ league = 'mlb', standings, games, flash, expanded, onE
       });
     return () => { alive = false; };
   }, [missingKey]);
+
+  useEffect(() => { onList?.(list); }, [list, onList]);
 
   const teamIds = list?.teamIds ?? null;
   const series = useLast10(teamIds);
@@ -2011,14 +2013,138 @@ function BoxScore({ game, boxscore, eras = {}, logos = {} }) {
   );
 }
 
-function LiveGamePanel({ games, flash, expanded, onExpand, onClose }) {
-  // Featured game: first live one, else the most recent final, else next up.
-  const featured = useMemo(() => {
-    if (!games?.length) return null;
-    return games.find(g => g.state === 'live')
-      || [...games].reverse().find(g => g.state === 'final')
-      || games[0];
-  }, [games]);
+// ── Featured game (both live panels) ────────────────────────────────────────
+// Which game the live card shows:
+//   1. the matchup the user picked for today (kept per league, per day);
+//   2. otherwise a game with a watched team: live first, then the next one up,
+//      then the latest final; teams followed directly beat teams of watched
+//      players;
+//   3. otherwise a random game, live ones first, kept for the day so the card
+//      doesn't jump on every poll (re-rolled once it ends while others play).
+const STATE_RANK = { live: 0, pre: 1, final: 2 };
+const dayKey = () => new Date().toLocaleDateString('en-CA');
+
+function readKey(key) {
+  try { return localStorage.getItem(key); } catch { return null; }
+}
+function writeKey(key, value) {
+  try {
+    if (value == null) localStorage.removeItem(key);
+    else localStorage.setItem(key, value);
+  } catch {}
+}
+
+// watch = { teams: Set, playerTeams: Set } of team ids in the games' id space.
+function watchTier(g, watch) {
+  if (!watch) return 0;
+  if (watch.teams.has(g.homeId) || watch.teams.has(g.awayId)) return 2;
+  if (watch.playerTeams.has(g.homeId) || watch.playerTeams.has(g.awayId)) return 1;
+  return 0;
+}
+
+function stateOrder(g, i, now) {
+  // A winter game past first pitch that still says Scheduled has no live data
+  // yet; it sorts after the ones that haven't started.
+  const stale = g.state === 'pre' && g.start != null && g.start <= now ? 0.5 : 0;
+  // Latest final first; live and upcoming keep schedule order.
+  return [STATE_RANK[g.state] + stale, g.state === 'final' ? -i : i];
+}
+
+function useFeaturedGame(games, watch, scope) {
+  const day = dayKey();
+  const pickKey = `slt-live-pick:${scope}:${day}`;
+  const randomKey = `slt-live-random:${scope}:${day}`;
+  const [pick, setPickState] = useState(() => readKey(pickKey));
+  const randomRef = useRef(readKey(randomKey));
+  useEffect(() => { setPickState(readKey(pickKey)); randomRef.current = readKey(randomKey); }, [pickKey, randomKey]);
+
+  const setPick = useCallback((id) => {
+    const value = id ? String(id) : null;
+    setPickState(value);
+    writeKey(pickKey, value);
+  }, [pickKey]);
+
+  const result = useMemo(() => {
+    const list = games || [];
+    const now = Date.now();
+    const tiers = new Map(list.map(g => [g.id, watchTier(g, watch)]));
+    // Watched games first (for the picker and the sheet), schedule order otherwise.
+    const ordered = list.map((g, i) => [g, i])
+      .sort(([a, i], [b, j]) => (tiers.get(b.id) - tiers.get(a.id)) || (i - j))
+      .map(([g]) => g);
+    if (!list.length) return { featured: null, reason: null, ordered, tiers };
+
+    const picked = pick && list.find(g => String(g.id) === pick);
+    if (picked) return { featured: picked, reason: 'pick', ordered, tiers };
+
+    const watched = list.map((g, i) => [g, i]).filter(([g]) => tiers.get(g.id) > 0);
+    if (watched.length) {
+      watched.sort(([a, i], [b, j]) => {
+        const [sa, oa] = stateOrder(a, i, now);
+        const [sb, ob] = stateOrder(b, j, now);
+        return (sa - sb) || (tiers.get(b.id) - tiers.get(a.id)) || (oa - ob);
+      });
+      return { featured: watched[0][0], reason: 'watch', ordered, tiers };
+    }
+
+    const live = list.filter(g => g.state === 'live');
+    const upcoming = list.filter(g => g.state === 'pre');
+    let chosen = list.find(g => String(g.id) === randomRef.current);
+    if (!chosen || (chosen.state === 'final' && (live.length || upcoming.length))) {
+      const pool = live.length ? live : upcoming.length ? upcoming : list;
+      chosen = pool[Math.floor(Math.random() * pool.length)];
+      randomRef.current = String(chosen.id);
+      writeKey(randomKey, randomRef.current);
+    }
+    return { featured: chosen, reason: 'random', ordered, tiers };
+  }, [games, watch, pick, randomKey]);
+
+  return { ...result, pick: result.reason === 'pick' ? pick : null, setPick };
+}
+
+// The header's matchup picker. "Auto" names the game it's showing.
+function MatchupPicker({ ordered, tiers, featured, reason, pick, setPick, label }) {
+  if (!ordered.length) return null;
+  const star = (g) => (tiers.get(g.id) > 0 ? '★ ' : '');
+  const auto = featured && reason !== 'pick' ? `Auto · ${star(featured)}${label(featured)}` : 'Auto · watchlist first';
+  return (
+    <select
+      className="slt-select slt-matchup-select"
+      value={pick ?? ''}
+      onChange={(e) => setPick(e.target.value || null)}
+      aria-label="Game to show"
+      title="Pick the game this card shows today. Auto puts games with your watchlist teams first."
+    >
+      <option value="">{auto}</option>
+      {ordered.map(g => <option key={g.id} value={String(g.id)}>{star(g)}{label(g)} · {gameStatusLabel(g)}</option>)}
+    </select>
+  );
+}
+
+function useMlbWatch(watchlist) {
+  return useMemo(() => {
+    if (!watchlist) return null;
+    return {
+      teams: new Set(watchlist.teamIds || []),
+      playerTeams: new Set((watchlist.players || []).map(p => p.teamId).filter(id => id != null)),
+    };
+  }, [watchlist]);
+}
+
+function useWinterWatch(watchlist) {
+  return useMemo(() => {
+    if (!watchlist) return null;
+    return {
+      teams: new Set((watchlist.cbpcTeams || []).map(t => t.id)),
+      playerTeams: new Set((watchlist.cbpcPlayers || []).map(p => p.teamId).filter(id => id != null)),
+    };
+  }, [watchlist]);
+}
+
+function LiveGamePanel({ games, watchlist, flash, expanded, onExpand, onClose }) {
+  const watch = useMlbWatch(watchlist);
+  const { featured, reason, ordered, tiers, pick, setPick } = useFeaturedGame(games, watch, 'mlb');
+  const matchupLabel = (g) => `${g.away} @ ${g.home}`;
 
   const [boxscore, setBoxscore] = useState(null);
   const pk = featured?.state !== 'pre' ? featured?.gamePk : null;
@@ -2051,6 +2177,7 @@ function LiveGamePanel({ games, flash, expanded, onExpand, onClose }) {
         onExpand={onExpand}
         title={<>{heading} {tag}</>}
         sub={featured ? `${featured.away} @ ${featured.home}` : null}
+        action={<MatchupPicker ordered={ordered} tiers={tiers} featured={featured} reason={reason} pick={pick} setPick={setPick} label={matchupLabel} />}
       >
         {games === null && <Skeleton rows={2} />}
         {games !== null && !featured && <Empty>No games on the schedule today.</Empty>}
@@ -2090,11 +2217,12 @@ function LiveGamePanel({ games, flash, expanded, onExpand, onClose }) {
         )}
         {games?.length > 0 && (
           <>
-            <SectionLabel>Today's slate</SectionLabel>
+            <SectionLabel>Today's slate{[...tiers.values()].some(t => t > 0) ? ' · ★ watchlist first' : ''}</SectionLabel>
             <div className="slt-slate">
-              {games.map(g => (
+              {ordered.map(g => (
                 <Link to={`/schedule/${g.id}`} className="slt-slate-row" key={g.id}>
                   <span className="slt-tl-team slt-matchup">
+                    {tiers.get(g.id) > 0 && <span className="slt-watch-star" title="Watchlist team">★</span>}
                     <span className="slt-team-cell"><TeamLogo teamId={g.awayId} size="sm" />{g.away}</span>
                     <span className="slt-faint">@</span>
                     <span className="slt-team-cell"><TeamLogo teamId={g.homeId} size="sm" />{g.home}</span>
@@ -2139,6 +2267,8 @@ function winterGame(slug, g) {
     start: start.getTime(),
     time: start.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' }),
     day: start.toLocaleDateString([], { weekday: 'short', month: 'short', day: 'numeric' }),
+    awayId: g.away_team_id, // CBPC ids, matched against watched cbpc_team ids
+    homeId: g.home_team_id,
     away: g.away_team_abbr,
     home: g.home_team_abbr,
     awayName: g.away_team_name,
@@ -2199,20 +2329,16 @@ function useWinterSlate() {
   return slate;
 }
 
-function pickWinterFeatured(slate) {
+// The games the card chooses from: today's; with none today, the next game
+// day's (within 36 h of the first one); with none in the week, the latest final.
+function winterCandidates(slate) {
   if (!slate) return null;
   const { today, upcoming, recent } = slate;
-  if (today.length) {
-    const now = Date.now();
-    return today.find(g => g.state === 'live')
-      || [...today].reverse().find(g => g.state === 'final')
-      // A game past first pitch that still says Scheduled has no live data yet;
-      // prefer the next one that hasn't started.
-      || today.find(g => g.state === 'pre' && g.start > now)
-      || today.find(g => g.state === 'pre')
-      || today[0];
-  }
-  return upcoming.find(g => g.state === 'pre') || [...recent].reverse().find(g => g.state === 'final') || null;
+  if (today.length) return today;
+  const first = upcoming[0]?.start;
+  if (first != null) return upcoming.filter(g => g.start - first < 36 * 3600 * 1000);
+  const last = [...recent].reverse().find(g => g.state === 'final');
+  return last ? [last] : [];
 }
 
 function winterLogos(g) {
@@ -2222,9 +2348,12 @@ function winterLogos(g) {
   };
 }
 
-function WinterLiveGamePanel({ flash, expanded, onExpand, onClose }) {
+function WinterLiveGamePanel({ watchlist, flash, expanded, onExpand, onClose }) {
   const slate = useWinterSlate();
-  const featured = useMemo(() => pickWinterFeatured(slate), [slate]);
+  const candidates = useMemo(() => winterCandidates(slate), [slate]);
+  const watch = useWinterWatch(watchlist);
+  const { featured, reason, ordered, tiers, pick, setPick } = useFeaturedGame(candidates, watch, 'winter');
+  const matchupLabel = (g) => `${g.league} · ${g.away} @ ${g.home}`;
 
   const [boxscore, setBoxscore] = useState(null);
   const slug = featured?.slug;
@@ -2250,11 +2379,19 @@ function WinterLiveGamePanel({ flash, expanded, onExpand, onClose }) {
   const heading = featured?.state === 'live' ? 'Live Game' : featured?.state === 'final' ? 'Latest Final' : 'Next Up';
   const title = <>{heading} · Winter {tag}</>;
   const sub = featured ? `${featured.league} · ${featured.away} @ ${featured.home}${isToday ? '' : ` · ${featured.day}`}` : null;
-  const list = isToday ? slate.today : (slate?.upcoming || []).filter(g => g.start - (slate.upcoming[0]?.start ?? 0) < 36 * 3600 * 1000);
+  const list = featured?.state === 'final' && !isToday ? [] : ordered;
 
   return (
     <>
-      <Panel id="live" full flash={flash} onExpand={onExpand} title={title} sub={sub}>
+      <Panel
+        id="live"
+        full
+        flash={flash}
+        onExpand={onExpand}
+        title={title}
+        sub={sub}
+        action={<MatchupPicker ordered={ordered} tiers={tiers} featured={featured} reason={reason} pick={pick} setPick={setPick} label={(g) => `${matchupLabel(g)}${isToday ? '' : ` · ${g.day}`}`} />}
+      >
         {slate === null && <Skeleton rows={2} />}
         {slate !== null && !featured && <Empty>No winter games in the next week.</Empty>}
         {featured?.state === 'pre' && (
@@ -2293,11 +2430,15 @@ function WinterLiveGamePanel({ flash, expanded, onExpand, onClose }) {
         )}
         {list.length > 0 && (
           <>
-            <SectionLabel>{isToday ? "Today's winter slate" : `Next up · ${list[0].day}`}</SectionLabel>
+            <SectionLabel>
+              {isToday ? "Today's winter slate" : `Next up · ${list[0].day}`}
+              {[...tiers.values()].some(t => t > 0) ? ' · ★ watchlist first' : ''}
+            </SectionLabel>
             <div className="slt-slate">
               {list.map(g => (
                 <Link to={`/winter/${g.slug}/games/${g.gamePk}`} className="slt-slate-row" key={g.id}>
                   <span className="slt-tl-team slt-matchup">
+                    {tiers.get(g.id) > 0 && <span className="slt-watch-star" title="Watchlist team">★</span>}
                     <span className="slt-faint">{g.league}</span>
                     <span className="slt-team-cell"><WinterLogo src={g.awayLogo} code={g.away} size="sm" />{g.away}</span>
                     <span className="slt-faint">@</span>
@@ -2349,6 +2490,9 @@ export default function TerminalPage() {
   const { user } = useAuth();
   const { games } = useTerminalSlate();
   const standings = useStandings();
+  // The Watchlist panel owns loading and saving the list; it reports every
+  // change here so the live card can put watched teams' games first.
+  const [watchlist, setWatchlist] = useState(null);
   const [flashId, setFlashId] = useState(null);
   const [expandedId, setExpandedId] = useState(null);
   const storageKey = layoutKey(user);
@@ -2476,7 +2620,7 @@ export default function TerminalPage() {
   });
 
   const panels = {
-    watchlist:   <WatchlistPanel league={league} standings={standings} games={games} {...panelProps('watchlist')} />,
+    watchlist:   <WatchlistPanel league={league} standings={standings} games={games} onList={setWatchlist} {...panelProps('watchlist')} />,
     props:       <PropsPanel {...panelProps('props')} />,
     ledger:      <TrustLedgerPanel league={league} {...panelProps('ledger')} />,
     insider:     <InsiderPanel {...panelProps('insider')} />,
@@ -2484,8 +2628,8 @@ export default function TerminalPage() {
     library:     <BetLibraryPanel {...panelProps('library')} />,
     standings:   <StandingsPanel league={league} standings={standings} {...panelProps('standings')} />,
     live:        league === 'sdc'
-      ? <WinterLiveGamePanel {...panelProps('live')} />
-      : <LiveGamePanel games={games} {...panelProps('live')} />,
+      ? <WinterLiveGamePanel watchlist={watchlist} {...panelProps('live')} />
+      : <LiveGamePanel games={games} watchlist={watchlist} {...panelProps('live')} />,
   };
 
   return (

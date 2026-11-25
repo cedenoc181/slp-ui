@@ -1267,6 +1267,13 @@ function AdminPage() {
               </svg>
               Prediction Audit
             </Link>
+            <Link to="/admin/winter-moneyline" className="admin-action-btn">
+              <svg className="admin-action-btn__icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <circle cx="12" cy="12" r="9" />
+                <path d="M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18M3 12h18" />
+              </svg>
+              Winter Moneyline
+            </Link>
             <button
               type="button"
               className="admin-action-btn admin-action-btn--accent"

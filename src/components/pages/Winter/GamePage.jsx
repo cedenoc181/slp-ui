@@ -4,73 +4,19 @@ import cbpcService from '../../../data/services/cbpcService';
 import { GAME_TYPE_LABELS, isNationsLeague, winterPaths } from '../../../data/constants/cbpcConstants';
 import BoxScoreCard from '../Stats/mlb-schedule/components/BoxScoreCard';
 import KalshiAdminPanel from './KalshiAdminPanel';
-import { useCbpc, Loading, ErrorState, Empty, Section, TeamLogo, isFinal, fmtDay, fmtTime, orDash } from './winterUi';
+import {
+  useWinterMatchup, gameState, WinterHero, WinterPitchers, WinterLineupCard,
+  WinterTeamStats, WinterRecentForm, WinterHeadToHead,
+} from './WinterMatchup';
+import { useCbpc, Loading, ErrorState, Empty, Section } from './winterUi';
 
 /*
-  Game detail (/winter/:league/games/:gamePk): header, line score (the MLB
-  BoxScoreCard, which reads the same innings[] shape), batting and pitching
-  lines for both teams, and play-by-play. No probable pitchers, odds or team
-  LOB for these leagues, so none are shown.
+  Game detail (/winter/:league/games/:gamePk): the MLB matchup page's layout
+  built from CBPC data (sections in WinterMatchup.jsx): hero with records,
+  line score, probable / starting pitchers, team stats or this game's lines,
+  recent form and this season's head to head, then play-by-play. Live games
+  refresh every 2 minutes. No odds, predictions or Scout AI for these leagues.
 */
-
-function BattingTable({ league, rows }) {
-  if (!rows?.length) return <Empty>No batting lines.</Empty>;
-  return (
-    <div className="wb-table-scroll">
-      <table className="wb-table">
-        <thead>
-          <tr><th className="wb-th-left">Batter</th><th>AB</th><th>R</th><th>H</th><th>2B</th><th>3B</th><th>HR</th><th>RBI</th><th>BB</th><th>SO</th><th>SB</th></tr>
-        </thead>
-        <tbody>
-          {rows.map(p => (
-            <tr key={p.player_id} className={p.is_starter ? '' : 'wb-row-sub'}>
-              <td className="wb-td-player">
-                <Link to={winterPaths.player(league, p.player_id)}>{p.player_name}</Link>
-                <span className="wb-faint"> {p.position}</span>
-              </td>
-              <td>{p.at_bats}</td><td>{p.runs}</td><td>{p.hits}</td><td>{p.doubles}</td><td>{p.triples}</td>
-              <td>{p.home_runs}</td><td>{p.rbis}</td><td>{p.walks}</td><td>{p.strikeouts}</td><td>{p.stolen_bases}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
-  );
-}
-
-function decision(p) {
-  if (p.win) return 'W';
-  if (p.loss) return 'L';
-  if (p.save) return 'SV';
-  if (p.hold) return 'H';
-  if (p.blown_save) return 'BS';
-  return '';
-}
-
-function PitchingTable({ league, rows }) {
-  if (!rows?.length) return <Empty>No pitching lines.</Empty>;
-  return (
-    <div className="wb-table-scroll">
-      <table className="wb-table">
-        <thead>
-          <tr><th className="wb-th-left">Pitcher</th><th>IP</th><th>H</th><th>R</th><th>ER</th><th>BB</th><th>SO</th><th>HR</th><th>PC</th></tr>
-        </thead>
-        <tbody>
-          {[...rows].sort((a, b) => (a.appearance_order ?? 0) - (b.appearance_order ?? 0)).map(p => (
-            <tr key={p.player_id}>
-              <td className="wb-td-player">
-                <Link to={winterPaths.player(league, p.player_id)}>{p.player_name}</Link>
-                {decision(p) && <span className="wb-decision"> {decision(p)}</span>}
-              </td>
-              <td>{p.innings_display}</td><td>{p.hits_allowed}</td><td>{p.runs}</td><td>{p.earned_runs}</td>
-              <td>{p.walks}</td><td>{p.strikeouts}</td><td>{p.home_runs_allowed}</td><td>{orDash(p.pitches_thrown)}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
-  );
-}
 
 function PlayByPlay({ league, gamePk, game }) {
   const { data, loading, error } = useCbpc(() => cbpcService.getPlays(league, gamePk), [league, gamePk]);
@@ -116,76 +62,56 @@ function PlayByPlay({ league, gamePk, game }) {
 export default function GamePage() {
   const { league } = useOutletContext();
   const { gamePk } = useParams();
-  const { data: game, loading, error } = useCbpc(() => cbpcService.getBoxscore(league, gamePk), [league, gamePk]);
-  const [side, setSide] = useState('away');
+  const { game, loading, error, derived } = useWinterMatchup(league, gamePk);
 
   if (loading) return <Loading rows={5} />;
   if (error) return <ErrorState error={error} notFound="This game isn't in this league." />;
 
-  const final = isFinal(game);
+  const state = gameState(game);
+  const final = state === 'final';
+  const pre = state === 'pre';
   const awayWon = final && game.winning_team_id === game.away_team_id;
   const homeWon = final && game.winning_team_id === game.home_team_id;
   const stage = isNationsLeague(league)
     ? game.series_description
     : (game.game_type !== 'R' ? (game.series_description || GAME_TYPE_LABELS[game.game_type]) : 'Regular Season');
-  const sideName = side === 'away' ? game.away_team_name : game.home_team_name;
+  const d = derived || {};
+  const teamStats = (side) => (
+    <WinterTeamStats game={game} side={side} batting={d[`${side}Batting`]} pitching={d[`${side}Pitching`]} />
+  );
+  // Scheduled: season team stats. Live / final: this game's lines, falling
+  // back to team stats until the lines load (they arrive with the box score).
+  const teamCard = (side) => (pre ? teamStats(side) : <WinterLineupCard league={league} game={game} side={side} fallback={teamStats(side)} />);
+  const hasForm = d.awayForm?.length > 0 || d.homeForm?.length > 0;
 
   return (
-    <>
+    <div className="matchup-detail-page wb-matchup">
       <Link to={winterPaths.league(league, game.season)} className="wb-back">‹ Back to league</Link>
-      <div className="wb-game-hero">
-        <div className="wb-game-hero-meta">
-          <span>{stage}</span>
-          <span>{fmtDay(game, { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })} · {fmtTime(game)}</span>
-          {game.venue_name && <span>{game.venue_name}</span>}
-        </div>
-        <div className="wb-game-hero-teams">
-          {[['away', awayWon], ['home', homeWon]].map(([s, won]) => (
-            <Link key={s} to={winterPaths.team(league, game[`${s}_team_id`], game.season)} className={`wb-hero-team${won ? ' wb-hero-team--won' : ''}`}>
-              <TeamLogo src={game[`${s}_team_logo_url`]} abbr={game[`${s}_team_abbr`]} name={game[`${s}_team_name`]} size={56} />
-              <span className="wb-hero-team-name">{game[`${s}_team_name`]}</span>
-              <span className="wb-hero-score">{final ? game[`${s}_runs_score`] : ''}</span>
-            </Link>
-          ))}
-        </div>
-        <div className="wb-hero-status">
-          {final ? 'Final' : game.status === 'Scheduled' ? 'Scheduled' : game.status}
-          {!final && game.status === 'In Progress' && <span className="wb-faint"> · statuses update once a day</span>}
-        </div>
-      </div>
+      <WinterHero league={league} game={game} state={state} awayRecord={d.awayRecord} homeRecord={d.homeRecord} stage={stage} />
 
       {/* Renders nothing unless the Kalshi flag is on and the viewer is an admin. */}
       <KalshiAdminPanel league={league} gamePk={game.game_pk} />
 
-      {final && game.innings?.length > 0 && (
-        <Section title="Line score">
-          <BoxScoreCard game={game} boxscore={game} awayAbbr={game.away_team_abbr} homeAbbr={game.home_team_abbr} awayWon={awayWon} homeWon={homeWon} />
-        </Section>
+      {!pre && game.innings?.length > 0 && (
+        <BoxScoreCard game={game} boxscore={game} awayAbbr={game.away_team_abbr} homeAbbr={game.home_team_abbr} awayWon={awayWon} homeWon={homeWon} />
       )}
 
-      {final ? (
-        <>
-          <Section
-            title="Box score"
-            aside={(
-              <span className="wb-toggle" role="group" aria-label="Team">
-                <button type="button" className={side === 'away' ? 'active' : ''} onClick={() => setSide('away')}>{game.away_team_abbr}</button>
-                <button type="button" className={side === 'home' ? 'active' : ''} onClick={() => setSide('home')}>{game.home_team_abbr}</button>
-              </span>
-            )}
-          >
-            <h3 className="wb-sub-title">{sideName} batting</h3>
-            <BattingTable league={league} rows={game.batting?.[side]} />
-            <h3 className="wb-sub-title">{sideName} pitching</h3>
-            <PitchingTable league={league} rows={game.pitching?.[side]} />
-          </Section>
-          <Section title="Play-by-play">
-            <PlayByPlay league={league} gamePk={gamePk} game={game} />
-          </Section>
-        </>
-      ) : (
-        <Empty>The box score and play-by-play appear once the game is final.</Empty>
+      <div className="detail-grid">
+        {(game.away_sp_name || game.home_sp_name) && (
+          <WinterPitchers league={league} game={game} state={state} awayLine={derived ? d.awaySpLine : undefined} homeLine={derived ? d.homeSpLine : undefined} />
+        )}
+        {teamCard('away')}
+        {hasForm && <WinterRecentForm league={league} game={game} awayForm={d.awayForm} homeForm={d.homeForm} />}
+        {teamCard('home')}
+        {d.h2h && <WinterHeadToHead league={league} game={game} h2h={d.h2h} />}
+      </div>
+      {!derived && <Loading rows={3} />}
+
+      {final && (
+        <Section title="Play-by-play">
+          <PlayByPlay league={league} gamePk={gamePk} game={game} />
+        </Section>
       )}
-    </>
+    </div>
   );
 }

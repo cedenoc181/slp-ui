@@ -343,6 +343,59 @@ function LineupList({ cfg, league, season, lineup }) {
   );
 }
 
+// ── Club rotation (club selected, pitching) ─────────────────────────────────
+// Like the MLB rule: starters with at least 65% of the club leader's starts,
+// topped up to 5 with the next most-used starters (ties by innings), then
+// ordered best to worst by ERA.
+const ROTATION_SHARE = 0.65;
+const ROTATION_MIN = 5;
+
+function clubRotation(staff) {
+  const starters = (staff || [])
+    .filter(p => (p.games_started ?? 0) > 0)
+    .sort((a, b) => (b.games_started - a.games_started) || ((b.outs ?? 0) - (a.outs ?? 0)));
+  if (!starters.length) return [];
+  const cut = starters[0].games_started * ROTATION_SHARE;
+  const regulars = starters.filter(p => p.games_started >= cut);
+  const rotation = regulars.length >= ROTATION_MIN ? regulars : starters.slice(0, ROTATION_MIN);
+  return [...rotation].sort((a, b) => (a.era ?? Infinity) - (b.era ?? Infinity) || ((b.outs ?? 0) - (a.outs ?? 0)));
+}
+
+function RotationList({ cfg, league, season, rotation }) {
+  const p = cfg.prefix;
+  return (
+    <div className={`${p}-top-card`}>
+      <div className={`${p}-top-list-header`}>
+        <h2>{seasonLabel(season)} {CBPC_LEAGUES[league].short}</h2>
+        <p className="eyebrow">Rotation</p>
+      </div>
+      {!rotation ? (
+        <div className={`${p}-empty`}>The rotation isn't available right now.</div>
+      ) : rotation.length === 0 ? (
+        <div className={`${p}-empty`}>No starts yet.</div>
+      ) : (
+        <ol className={`${p}-top-list-items`}>
+          {rotation.map((pl, idx) => (
+            <li key={pl.player_id} className={`${p}-top-list-item`}>
+              <div className={`${p}-top-rank`}>#{idx + 1}</div>
+              <div className={`${p}-top-info`}>
+                <div className={`${p}-top-name`}>
+                  <Link to={winterPaths.player(league, pl.player_id, season)} className="player-profile-link" onClick={() => window.scrollTo(0, 0)}>{pl.player_name}</Link>
+                </div>
+                <span className={`${p}-top-team`}>{pl.games_started} GS · {pl.innings_display} IP</span>
+              </div>
+              <div className={`${p}-top-stats`}>{cfg.topCols(pl).map(t => <span key={t}>{t}</span>)}</div>
+              <div className={`${p}-top-logo`}>
+                {pl.logo_url && <img src={pl.logo_url} alt={pl.team_name} title={pl.team_name} loading="lazy" onError={(e) => { e.target.style.visibility = 'hidden'; }} />}
+              </div>
+            </li>
+          ))}
+        </ol>
+      )}
+    </div>
+  );
+}
+
 // ── Page body ───────────────────────────────────────────────────────────────
 export default function CbpcPlayerAnalytics({ league, season, group, teamId = null, teamName = '' }) {
   const cfg = CONFIG[group];
@@ -355,15 +408,20 @@ export default function CbpcPlayerAnalytics({ league, season, group, teamId = nu
     // club itself (team_id), so ask only for what's shown: the leader, or 15
     // ERA for the pitching top list and split candidates (batting uses the
     // club lineup for both).
+    // A club's pitching view lists its rotation, so it fetches the whole staff
+    // (no innings minimum) instead of the qualified ERA list.
     const clubLineup = teamSelected && group === 'batting';
-    const limitFor = (stat) => (!teamSelected ? 50 : stat === cfg.topStat && !clubLineup ? 15 : 1);
-    const [lists, battingRows, pitchingRows, lineup] = await Promise.all([
+    const clubStaff = teamSelected && group === 'pitching';
+    const limitFor = (stat) => (!teamSelected ? 50 : stat === cfg.topStat && !clubLineup && !clubStaff ? 15 : 1);
+    const [lists, battingRows, pitchingRows, lineup, staff] = await Promise.all([
       Promise.all(statKeys.map(stat =>
         cbpcService.getLeaders(league, group, stat, season, limitFor(stat), teamSelected ? teamId : undefined).catch(() => null))),
       cbpcService.getTeamStats(league, 'batting', season).catch(() => []),
       cbpcService.getTeamStats(league, 'pitching', season).catch(() => []),
       clubLineup ? cbpcService.getTeamLineup(league, teamId, { season, limit: 9, recentGames: 15 }).catch(() => null) : null,
+      clubStaff ? cbpcService.getLeaders(league, 'pitching', 'era', season, 50, teamId, { minIp: 0 }).catch(() => null) : null,
     ]);
+    const rotation = clubStaff ? (staff ? clubRotation(staff.leaders) : null) : undefined;
     const byStat = {};
     const relaxed = {};
     statKeys.forEach((stat, i) => {
@@ -371,21 +429,21 @@ export default function CbpcPlayerAnalytics({ league, season, group, teamId = nu
       relaxed[stat] = !!lists[i]?.qualifier?.relaxed;
     });
 
-    // vs-hand split candidates: a club's 9 regulars, otherwise
-    // the top 15 by the top-list stat (OPS / ERA).
+    // vs-hand split candidates: a club's 9 regulars or its rotation,
+    // otherwise the league top 15 by the top-list stat (OPS / ERA).
     const candidates = lineup
       ? lineup.batters.map(b => ({ ...b, team_name: lineup.team?.team_name, logo_url: lineup.team?.logo_url }))
-      : byStat[cfg.topStat].slice(0, 15);
+      : rotation || byStat[cfg.topStat].slice(0, 15);
     const splitGroup = group === 'batting' ? 'batter' : 'pitcher';
     const splitRows = await Promise.all(candidates.map(c =>
       cbpcService.getPlayerSplits(league, splitGroup, c.player_id, season).then(s => ({ c, s })).catch(() => null)));
-    return { byStat, relaxed, lineup, splitRows: splitRows.filter(Boolean), avgs: leagueAverages(battingRows, pitchingRows) };
+    return { byStat, relaxed, lineup, rotation, splitRows: splitRows.filter(Boolean), avgs: leagueAverages(battingRows, pitchingRows) };
   }, [league, season, group, teamId]);
 
   if (loading) {
     return <div className={`${cfg.prefix}-loading`}><div className="loading-spinner"></div><span>Loading {short} {cfg.noun}...</span></div>;
   }
-  const { byStat, relaxed, lineup, splitRows, avgs } = data || { byStat: {}, relaxed: {}, lineup: null, splitRows: [], avgs: {} };
+  const { byStat, relaxed, lineup, rotation, splitRows, avgs } = data || { byStat: {}, relaxed: {}, lineup: null, rotation: null, splitRows: [], avgs: {} };
   const leaders = Object.fromEntries(cfg.leaders.map(([stat]) => [stat, byStat[stat]?.[0] || null]));
   const top = (byStat[cfg.topStat] || []).slice(0, 10);
 
@@ -450,9 +508,9 @@ export default function CbpcPlayerAnalytics({ league, season, group, teamId = nu
       <HotCard cfg={cfg} league={league} season={season} group={group} teamId={teamId} teamSelected={teamSelected} />
       <div className={`${cfg.prefix}-splits-layout`}>
         <SplitsCard cfg={cfg} league={league} season={season} splits={splits} teamSelected={teamSelected} teamName={teamName} />
-        {teamSelected && group === 'batting'
-          ? <LineupList cfg={cfg} league={league} season={season} lineup={lineup} />
-          : <TopList cfg={cfg} league={league} season={season} rows={top} teamSelected={teamSelected} />}
+        {teamSelected && group === 'batting' && <LineupList cfg={cfg} league={league} season={season} lineup={lineup} />}
+        {teamSelected && group === 'pitching' && <RotationList cfg={cfg} league={league} season={season} rotation={rotation} />}
+        {!teamSelected && <TopList cfg={cfg} league={league} season={season} rows={top} teamSelected={teamSelected} />}
       </div>
     </section>
   );

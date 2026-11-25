@@ -1471,3 +1471,16 @@
    league picker at the top of its sheet. */
 .slt-tl-note { margin: 0 0 0.5rem; }
 .slt-sheet-tools { display: flex; justify-content: flex-end; margin-bottom: 0.75rem; }
+
+/* Live card: matchup picker and the watchlist star on slate rows. */
+.slt-matchup-select { max-width: 17rem; text-overflow: ellipsis; }
+.slt-watch-star { color: var(--slt-cyan); font-size: 0.75rem; line-height: 1; }
+@media (max-width: 640px) { .slt-matchup-select { max-width: 11rem; } }
+
+/* Ticker: winter-league games carry their league tag (no odds). */
+.slt-tick-league {
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  color: var(--slt-cyan);
+}

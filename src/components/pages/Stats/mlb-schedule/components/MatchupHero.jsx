@@ -1,5 +1,21 @@
 import { Link } from 'react-router-dom';
 import { logoUrl, fmtDate } from '../utils';
+import { TEAM_METADATA } from '../../../../../data/constants/apiConstants';
+
+// The hero reads like the winter-league matchup hero: full club names,
+// compact "W-L" records and the stage (round / season type) by the date.
+const fullName = (abbr, fallback) => TEAM_METADATA[abbr]?.name || fallback;
+const compactRecord = (r) => (r ? String(r).replace(/\s*-\s*/g, '-') : r);
+function stageLabel(game) {
+  const type = (game.season_type || '').toLowerCase();
+  if (type.startsWith('p')) {
+    const round = game.postseason_round || 'Postseason';
+    return game.series_game_number ? `${round} · Game ${game.series_game_number}` : round;
+  }
+  if (type.startsWith('s')) return 'Spring Training';
+  if (type.startsWith('r')) return 'Regular Season';
+  return null;
+}
 
 // Format moneyline as "+150" / "-130"
 function fmtML(value) {
@@ -88,6 +104,7 @@ export default function MatchupHero({
       {/* Status strip */}
       <div className="hero-status-strip">
         {game.date        && <span className="hero-date">{fmtDate(game.date)}</span>}
+        {stageLabel(game) && <span className="hero-date">{stageLabel(game)}</span>}
         {isScheduled && <span className="hero-badge badge-scheduled">{game.game_time || 'TBD'}</span>}
         {isLive      && <span className="hero-badge badge-live">● LIVE</span>}
         {isFinal     && <span className="hero-badge badge-final">FINAL</span>}
@@ -104,8 +121,8 @@ export default function MatchupHero({
               : <img src={logoUrl(awayMlbId)} alt={game.away_team_name} className="hero-logo" />
           )}
           <div className="hero-team-info">
-            <span className="hero-team-name">{game.away_team_name}</span>
-            {awaySeasonRecord && <span className="hero-team-record">{awaySeasonRecord}</span>}
+            <span className="hero-team-name">{fullName(awayAbbr, game.away_team_name)}</span>
+            {awaySeasonRecord && <span className="hero-team-record">{compactRecord(awaySeasonRecord)}</span>}
             {isFinal && (
               <span className={`hero-score${awayWon ? ' score-win' : ' score-loss'}`}>
                 {game.away_runs_score}
@@ -127,8 +144,8 @@ export default function MatchupHero({
         {/* Home */}
         <div className="hero-team home-team">
           <div className="hero-team-info home-info">
-            <span className="hero-team-name">{game.home_team_name}</span>
-            {homeSeasonRecord && <span className="hero-team-record">{homeSeasonRecord}</span>}
+            <span className="hero-team-name">{fullName(homeAbbr, game.home_team_name)}</span>
+            {homeSeasonRecord && <span className="hero-team-record">{compactRecord(homeSeasonRecord)}</span>}
             {isFinal && (
               <span className={`hero-score${homeWon ? ' score-win' : ' score-loss'}`}>
                 {game.home_runs_score}

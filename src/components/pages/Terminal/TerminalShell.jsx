@@ -3,6 +3,8 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../../context/AuthContext';
 import scheduleService from '../../../data/services/scheduleService';
 import predictionsService from '../../../data/services/predictionsService';
+import cbpcService from '../../../data/services/cbpcService';
+import { CBPC_LEAGUES, CBPC_SLUGS } from '../../../data/constants/cbpcConstants';
 import { getTeamById } from '../../../data/constants/apiConstants';
 import { sanitizeSearch, useSiteSearch } from './terminalSearch';
 import '../../../styles/terminal-page-styling/terminal.css';
@@ -177,19 +179,89 @@ function useSlate() {
   return useMemo(() => ({ games, error }), [games, error]);
 }
 
+// ── Winter slate for the ticker ─────────────────────────────────────────────
+// Today's games in every winter league (and the Serie del Caribe). Schedule and
+// scores only: winter markets are too thin for odds. Re-polls while a game is
+// unfinished; the server refreshes live CBPC games every 15 minutes.
+const WINTER_TICKER_POLL_MS = 2 * 60_000;
+
+function winterTickState(status = '') {
+  if (/^(Final|Game Over|Completed Early)/i.test(status)) return 'final';
+  if (/progress|delay|challenge|review/i.test(status)) return 'live';
+  return 'pre';
+}
+
+function useWinterTickerGames() {
+  const [games, setGames] = useState(null); // null = loading
+  const [tick, setTick] = useState(0);
+
+  useEffect(() => {
+    let alive = true;
+    Promise.all(CBPC_SLUGS.map(slug => cbpcService.getTodayGames(slug, { fresh: tick > 0 })
+      .then(list => (list || []).map(g => {
+        const start = g.game_datetime_utc ? new Date(g.game_datetime_utc) : null;
+        return {
+          id: `${slug}-${g.game_pk}`,
+          to: `/winter/${slug}/games/${g.game_pk}`,
+          league: CBPC_LEAGUES[slug]?.short || slug.toUpperCase(),
+          away: g.away_team_abbr,
+          home: g.home_team_abbr,
+          awayRuns: g.away_runs_score,
+          homeRuns: g.home_runs_score,
+          state: winterTickState(g.status),
+          status: g.status,
+          inning: g.inning_state && g.current_inning ? `${({ Top: 'T', Bottom: 'B', Middle: 'Mid ', End: 'End ' })[g.inning_state] ?? `${g.inning_state} `}${g.current_inning}` : null,
+          start: start ? start.getTime() : 0,
+          time: start ? start.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' }) : 'TBD',
+        };
+      }))
+      .catch(() => [])))
+      .then(lists => { if (alive) setGames(lists.flat().sort((a, b) => a.start - b.start)); });
+    return () => { alive = false; };
+  }, [tick]);
+
+  const unfinished = games?.some(g => g.state !== 'final');
+  useEffect(() => {
+    if (!unfinished) return undefined;
+    const t = setInterval(() => setTick(n => n + 1), WINTER_TICKER_POLL_MS);
+    return () => clearInterval(t);
+  }, [unfinished]);
+
+  return games;
+}
+
 // ── Ticker ──────────────────────────────────────────────────────────────────
-function Ticker({ games }) {
-  if (!games || games.length === 0) {
+// MLB games (with odds) followed by the winter leagues' games (schedule and
+// scores), whichever are in season.
+function Ticker({ games, winterGames }) {
+  const all = [...(games || []), ...(winterGames || [])];
+  if (all.length === 0) {
+    const loading = games === null && winterGames === null;
     return (
       <div className="slt-ui slt-ticker-wrap">
         <div className="slt-ticker slt-ticker--static">
-          <span className="slt-tick">{games === null ? 'Loading today\'s slate…' : 'No games on the schedule today.'}</span>
+          <span className="slt-tick">{loading ? 'Loading today\'s slate…' : 'No games on the schedule today.'}</span>
         </div>
       </div>
     );
   }
 
-  const renderTick = (g, key) => (
+  const renderTick = (g, key) => (g.league ? (
+    <Link to={g.to} className="slt-tick" key={key}>
+      <span className="slt-tick-league">{g.league}</span>
+      <b>{g.away} @ {g.home}</b>
+      {g.state === 'pre' ? (
+        <span className="slt-faint">{/postpon|cancel|suspend/i.test(g.status || '') ? g.status : g.time}</span>
+      ) : (
+        <>
+          <span className="slt-mono">{g.awayRuns ?? 0}–{g.homeRuns ?? 0}</span>
+          <span className={g.state === 'live' ? 'slt-live-text' : 'slt-faint'}>
+            {g.state === 'live' ? `LIVE${g.inning ? ` · ${g.inning}` : ''}` : 'FINAL'}
+          </span>
+        </>
+      )}
+    </Link>
+  ) : (
     <Link to={`/schedule/${g.id}`} className="slt-tick" key={key}>
       <b>{g.away} @ {g.home}</b>
       {g.state === 'pre' ? (
@@ -205,14 +277,14 @@ function Ticker({ games }) {
         </>
       )}
     </Link>
-  );
+  ));
 
   return (
     <div className="slt-ui slt-ticker-wrap">
       {/* Track is rendered twice so the -50% scroll loops seamlessly. */}
-      <div className="slt-ticker" style={{ animationDuration: `${Math.max(20, games.length * 7)}s` }}>
-        {games.map(g => renderTick(g, `a-${g.id}`))}
-        {games.map(g => renderTick(g, `b-${g.id}`))}
+      <div className="slt-ticker" style={{ animationDuration: `${Math.max(20, all.length * 7)}s` }}>
+        {all.map(g => renderTick(g, `a-${g.id}`))}
+        {all.map(g => renderTick(g, `b-${g.id}`))}
       </div>
     </div>
   );
@@ -326,6 +398,7 @@ export default function TerminalShell({ children }) {
   const location = useLocation();
   const { user, isPremium } = useAuth();
   const slate = useSlate();
+  const winterGames = useWinterTickerGames();
   const [paletteOpen, setPaletteOpen] = useState(false);
 
   const current = activePage(location.pathname);
@@ -415,7 +488,7 @@ export default function TerminalShell({ children }) {
             <Link to="/account/settings" className="slt-avatar" title="Account Settings">{initials(user?.displayName)}</Link>
           </div>
 
-          <Ticker games={slate.games} />
+          <Ticker games={slate.games} winterGames={winterGames} />
         </div>
 
         <div className="slt-shell">

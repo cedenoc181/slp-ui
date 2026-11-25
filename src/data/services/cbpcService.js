@@ -121,8 +121,9 @@ const cbpcService = {
   getTeamStats: (league, group, season) => get(`/cbpc/${league}/teams/stats/${group}${qs({ season })}`),
   // With teamId, the server ranks only that club's players (lines for the club,
   // club-scaled qualifier; qualifier.relaxed when nobody fully qualifies).
-  getLeaders: (league, group, stat, season, limit = 10, teamId) =>
-    get(`/cbpc/${league}/leaders/${group}${qs({ season, stat, limit, team_id: teamId })}`),
+  // minIp / minPa override the qualifier (0 = every pitcher / batter).
+  getLeaders: (league, group, stat, season, limit = 10, teamId, { minIp, minPa } = {}) =>
+    get(`/cbpc/${league}/leaders/${group}${qs({ season, stat, limit, team_id: teamId, min_ip: minIp, min_pa: minPa })}`),
   // A club's common lineup: 9 regulars (most recent starts), then bench, each
   // ordered best hitter to worst by the server.
   getTeamLineup: (league, teamId, { season, seasonType, limit, recentGames } = {}) =>

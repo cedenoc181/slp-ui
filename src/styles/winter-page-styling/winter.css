@@ -507,7 +507,11 @@
 .wb-league-tag--al { color: var(--slt-cyan); border-color: var(--slt-cyan-border); }
 .wb-league-tag--nl { color: var(--slt-warn); border-color: rgba(248, 113, 113, 0.35); }
 .wb-two-col--wide { grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr); }
-@media (max-width: 900px) { .wb-two-col--wide { grid-template-columns: 1fr; } }
+/* minmax(0, …): a plain 1fr column can't shrink below its table's width, so
+   on phones the wild card table pushed both cards off screen instead of
+   scrolling inside .wb-table-scroll like the division table. */
+@media (max-width: 900px) { .wb-two-col--wide { grid-template-columns: minmax(0, 1fr); } }
+.wb-two-col > * { min-width: 0; }
 
 /* Winter club on the MLB Team Analytics layout: title row above the cards. */
 .cbpc-team-title { display: flex; align-items: center; gap: 1rem; margin: 0.5rem 0 1.5rem; }
@@ -569,3 +573,13 @@
 .wb-kalshi-settled { margin: 0.9rem 0 0; font-size: 0.82rem; font-weight: 600; }
 .wb-kalshi-source { margin: 0.75rem 0 0; font-size: 0.7rem; color: var(--slt-ink-faint); }
 @media (max-width: 640px) { .wb-kalshi-grid { grid-template-columns: 1fr; } }
+
+/* ── Matchup page: the MLB matchup layout (matchup-detail.css) inside the
+   winter shell, which already supplies the page background and gutters. ── */
+.matchup-detail-page.wb-matchup { min-height: 0; padding: 0; background: transparent; }
+.wb-matchup .detail-hero { margin-bottom: 1rem; }
+.wb-matchup .hero-team > a { display: inline-flex; }
+.wb-matchup .card-title .wb-logo,
+.wb-matchup .card-title img { margin-right: 0.4rem; vertical-align: middle; }
+.wb-matchup .lineup-sub td { opacity: 0.75; }
+.wb-matchup .wb-section { margin-top: 2rem; }
