@@ -2,6 +2,8 @@ import { useState, useEffect, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../../context/AuthContext';
+import useWinterPredictions from './useWinterPredictions';
+import { doubleheaderLabel, fmtTime as fmtWinterTime } from '../Winter/winterUi';
 import loadingPredictionsIcon from '../../../assets/icons/loading-predictions.png';
 import predictionsService from '../../../data/services/predictionsService';
 import { DEFAULT_PREVIEW_BADGE } from '../../../data/utils/releaseGate';
@@ -1104,6 +1106,286 @@ function SkeletonCard() {
   );
 }
 
+// ─── Winter leagues (admins only) ─────────────────────────────────────────────
+// The CBPC moneyline model's picks (LIDOM, LVBP, LMP, LBPRC) drawn exactly like
+// the live MLB board: same cards, LEAN badge, confidence bar and drawer with
+// the Scout AI report. Source: /cbpc/{league}/admin/predictions/moneyline,
+// which answers 403 to anyone but an admin, so callers render this for admins
+// only. Winter markets have no sportsbook lines; the price shown is Kalshi's
+// ask, and the confidence bar is the model's win probability for its pick.
+
+function winterStatusLabel(g) {
+  const s = (g.status || '').toLowerCase();
+  if (g.result || s === 'final' || s === 'game over' || s === 'completed early') return 'Final';
+  if (s.includes('progress') || s === 'live') return 'Live';
+  return fmtWinterTime({ ...g, game_datetime_utc: g.first_pitch }, { short: true });
+}
+
+// Scout AI's side leads, like the MLB card; the model's pick otherwise.
+const winterPickSide = (g) => g.scout?.pick?.side ?? g.pick?.side ?? null;
+const winterProbPct = (g) => Math.round(((g.pick?.win_prob) ?? 0) * 100);
+const kalshiCents = (k) => (k?.yes_ask != null ? `${Math.round(k.yes_ask * 100)}¢` : null);
+const reportedStarter = (rs) => (rs?.status === 'found' ? rs.reported_name : null);
+
+function WinterLogo({ team, className }) {
+  const [failed, setFailed] = useState(false);
+  if (!team?.logo_url || failed) return null;
+  return <img src={team.logo_url} alt={team.team_name} className={className} onError={() => setFailed(true)} />;
+}
+
+function WinterPickCard({ game, isSelected, onSelect }) {
+  const side = winterPickSide(game);
+  const dh = doubleheaderLabel(game);
+  const label = winterStatusLabel(game);
+  const sideCell = (s) => {
+    const t = game[s];
+    const price = kalshiCents(t.kalshi);
+    const lean = side === s && <span className="gp-pick-badge">LEAN</span>;
+    const parts = [
+      <WinterLogo key="logo" team={t} className="gp-card-logo" />,
+      <span key="abbr" className="gp-card-abbr">{t.team_abbreviation}</span>,
+      price && <span key="price" className="gp-card-odds" title="Kalshi ask">{price}</span>,
+    ];
+    return (
+      <div className={`gp-card-side${s === 'home' ? ' right' : ''}${side === s ? ' is-pick' : ''}`}>
+        {s === 'home' ? <>{lean}{[...parts].reverse()}</> : <>{parts}{lean}</>}
+      </div>
+    );
+  };
+  return (
+    <button className={`gp-card ${isSelected ? 'selected' : ''}`} data-pick={side} onClick={onSelect} aria-pressed={isSelected}>
+      <div className="gp-card-topbar">
+        <span className="gp-card-time">
+          {game.leagueShort} · {label}{dh && !label.startsWith('Game') ? ` · ${dh}` : ''}
+        </span>
+        <span className="gp-card-status-dot" />
+      </div>
+      <div className="gp-card-teams">
+        {sideCell('away')}
+        <div className="gp-card-vs">
+          <span>@</span>
+          <span className="gp-card-pitcher-vs">
+            {fmtPitcher(reportedStarter(game.reported_starters?.away))} vs {fmtPitcher(reportedStarter(game.reported_starters?.home))}
+          </span>
+        </div>
+        {sideCell('home')}
+      </div>
+      <div className="gp-card-footer">
+        <ConfidenceBar pct={winterProbPct(game)} />
+      </div>
+    </button>
+  );
+}
+
+function WinterKalshiTable({ game }) {
+  const rows = ['away', 'home'].map(s => ({ t: game[s], k: game[s].kalshi, edge: game[s].edge_vs_ask }));
+  if (rows.every(r => !r.k)) {
+    return (
+      <div className="gp-odds-unavailable">
+        <span className="gp-odds-unavailable-icon">⏳</span>
+        <p>No market</p>
+        <p className="gp-odds-unavailable-sub">Kalshi has no price for this game{doubleheaderLabel(game) ? ' (doubleheaders have no market)' : ''}.</p>
+      </div>
+    );
+  }
+  const c = (v) => (v == null ? '—' : `${Math.round(v * 100)}¢`);
+  return (
+    <div className="gp-pred-panel">
+      <section className="gp-pred-section">
+        <h4 className="gp-pred-section-title">Kalshi · pregame price</h4>
+        <div className="gp-pred-cards">
+          {rows.map(({ t, k, edge }) => (
+            <PredCard
+              key={t.team_id}
+              type={t.team_abbreviation}
+              pick={k ? `Bid ${c(k.yes_bid)} · Ask ${c(k.yes_ask)}` : 'No market'}
+              meta={k ? [`mid ${c(k.mid)}`, edge != null ? `edge ${edge >= 0 ? '+' : '−'}${Math.abs(edge * 100).toFixed(1)}%` : null, k.liquid ? null : 'illiquid'].filter(Boolean).join(' · ') : null}
+            />
+          ))}
+        </div>
+      </section>
+    </div>
+  );
+}
+
+function WinterPredictionsPanel({ game }) {
+  // The report's picks[]; a report without them still has Scout's own pick.
+  const scoutPicks = game.scout?.analysis?.picks?.length
+    ? game.scout.analysis.picks
+    : game.scout?.pick?.side
+      ? [{ type: 'Moneyline', pick: game[game.scout.pick.side]?.team_name, confidence: game.scout.pick.confidence }]
+      : [];
+  const kind = { official: 'Official', media: 'Media', social: 'Social' };
+  const threshold = game.threshold ?? 0.58;
+  const starter = (s) => {
+    const rs = game.reported_starters?.[s];
+    if (rs?.status === 'found') return { pick: rs.reported_name, meta: [kind[rs.source_kind] || rs.source_kind, rs.matched_to_team_pitchers === false ? 'not on known roster' : null].filter(Boolean).join(' · ') };
+    return { pick: rs?.status === 'not_found' ? 'No starter reported' : 'Not searched yet', meta: null };
+  };
+  return (
+    <div className="gp-pred-panel">
+      <section className="gp-pred-section">
+        <h4 className="gp-pred-section-title">Model Pick</h4>
+        <div className="gp-pred-cards">
+          <PredCard
+            type="Moneyline"
+            pick={game.pick?.team_name ?? '—'}
+            confidence={game.pick?.win_prob}
+            meta={`${winterProbPct(game)}% win probability`}
+            badge={game.pick?.confident ? `${Math.round(threshold * 100)}%+` : null}
+            badgeLevel={game.pick?.confident ? 'strong' : null}
+          />
+        </div>
+      </section>
+      <section className="gp-pred-section">
+        <h4 className="gp-pred-section-title">Scouting Report Picks</h4>
+        {scoutPicks.length ? (
+          <div className="gp-pred-cards">
+            {scoutPicks.map((p, i) => (
+              <PredCard key={i} type={p.type ?? '—'} pick={p.pick ?? '—'} confidence={p.confidence}
+                meta={i === 0 && game.scout?.pick?.agrees_with_model === false ? 'fades the model' : null} />
+            ))}
+          </div>
+        ) : (
+          <p className="gp-odds-unavailable-sub">Report pending · Scout AI writes it within about 4 hours of first pitch.</p>
+        )}
+      </section>
+      <section className="gp-pred-section">
+        <h4 className="gp-pred-section-title">Reported Starters</h4>
+        <div className="gp-pred-cards">
+          {['away', 'home'].map(s => {
+            const st = starter(s);
+            return <PredCard key={s} type={game[s].team_abbreviation} pick={st.pick} meta={st.meta} />;
+          })}
+        </div>
+      </section>
+    </div>
+  );
+}
+
+function WinterDrawer({ game, onClose }) {
+  const navigate = useNavigate();
+  const [view, setView] = useState('predictions');
+  const [showScout, setShowScout] = useState(false);
+  const side = winterPickSide(game);
+  const picked = side ? game[side] : null;
+
+  useEffect(() => {
+    const onKey = (e) => { if (e.key === 'Escape') onClose(); };
+    document.addEventListener('keydown', onKey);
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.removeEventListener('keydown', onKey);
+      document.body.style.overflow = '';
+    };
+  }, [onClose]);
+
+  return createPortal(
+    <div className="gp-drawer-overlay" onClick={onClose} aria-modal="true" role="dialog">
+      <div className="gp-drawer" onClick={e => e.stopPropagation()}>
+        <div className="gp-drawer-header">
+          <div className="gp-drawer-matchup">
+            <WinterLogo team={game.away} className="gp-drawer-logo" />
+            <div className="gp-drawer-teams">
+              <span className="gp-drawer-team-name">{game.away.team_name}</span>
+              <span className="gp-drawer-vs">@ {game.home.team_name}</span>
+            </div>
+            <WinterLogo team={game.home} className="gp-drawer-logo" />
+          </div>
+          <div className="gp-drawer-subrow">
+            <span className="gp-drawer-time">{game.leagueShort} · {winterStatusLabel(game)}</span>
+            {picked && (
+              <div className="gp-drawer-pick-chip">
+                <span className="gp-pick-badge">LEAN</span>
+                <span className="gp-drawer-pick-name">{picked.team_name}</span>
+                <span className="gp-drawer-conf">{winterProbPct(game)}%</span>
+              </div>
+            )}
+          </div>
+          <button className="gp-drawer-close" onClick={onClose} aria-label="Close">✕</button>
+        </div>
+
+        <div className="gp-view-toggle">
+          <ScoutAiButton isToday hasAnalysis={!!game.scout?.analysis} loading={false} onClick={() => setShowScout(true)} />
+          <div className="gp-view-toggle-right">
+            <button className="gp-view-toggle-btn" onClick={() => { onClose(); navigate(`/winter/${game.slug}/games/${game.game_pk}`); }}>
+              Matchup Detail
+            </button>
+            <button className={`gp-view-toggle-btn ${view === 'predictions' ? 'active' : ''}`} onClick={() => setView('predictions')}>Predictions</button>
+            <button className={`gp-view-toggle-btn ${view === 'kalshi' ? 'active' : ''}`} onClick={() => setView('kalshi')}>Kalshi</button>
+          </div>
+        </div>
+
+        <ScoutAiModal
+          isOpen={showScout}
+          onClose={() => setShowScout(false)}
+          analysis={game.scout?.analysis ?? null}
+          error={game.scout?.analysis ? null : 'Report pending: Scout AI writes it within about 4 hours of first pitch.'}
+          loading={false}
+          onRetry={null}
+          generatedAt={game.scout?.generated_at}
+        />
+
+        <div className="gp-drawer-body">
+          {view === 'predictions' ? <WinterPredictionsPanel game={game} /> : <WinterKalshiTable game={game} />}
+        </div>
+      </div>
+    </div>,
+    document.body
+  );
+}
+
+// The winter board on its own (the Predictions overview), drawn like the MLB board.
+export function WinterGameBoard() {
+  const games = useWinterPredictions(true);
+  const [selectedId, setSelectedId] = useState(null);
+
+  const selected = games?.find(g => g.game_pk === selectedId) ?? null;
+  const close = useCallback(() => setSelectedId(null), []);
+
+  if (games === null) {
+    return (
+      <>
+        <div className="gp-loading-banner">
+          <span className="gp-loading-spinner" />
+          <span>Predictions loading</span>
+        </div>
+        <div className="gp-grid">{[...Array(6)].map((_, i) => <SkeletonCard key={i} />)}</div>
+      </>
+    );
+  }
+  if (games.length === 0) {
+    return (
+      <div className="gp-empty">
+        <span className="gp-empty-icon">⚾</span>
+        <p>No winter-league predictions for today.</p>
+      </div>
+    );
+  }
+  return (
+    <>
+      <div className="pp-divider">
+        <span className="pp-divider-line" />
+        <span className="pp-divider-label">
+          {games.length} game{games.length !== 1 ? 's' : ''} · Admin preview · Select a card for the full read
+        </span>
+        <span className="pp-divider-line" />
+      </div>
+      <div className="gp-grid">
+        {games.map(g => (
+          <WinterPickCard key={g.game_pk} game={g} isSelected={selectedId === g.game_pk}
+            onSelect={() => setSelectedId(prev => (prev === g.game_pk ? null : g.game_pk))} />
+        ))}
+      </div>
+      <p className="gp-disclaimer">
+        * Model-generated winter-league predictions, visible to admins only. Prices are Kalshi's pregame asks
+        (often illiquid). Please gamble responsibly.
+      </p>
+      {selected && <WinterDrawer game={selected} onClose={close} />}
+    </>
+  );
+}
+
 // ─── Main Component ───────────────────────────────────────────────────────────
 
 export default function GameProps() {
@@ -1116,6 +1398,11 @@ export default function GameProps() {
   // `lockedAt` + `noEdgeReason` disambiguate an empty picks[]: see earlyState().
   const [earlyMeta, setEarlyMeta]   = useState({ lockedAt: null, noEdgeReason: null });
   const [openPick, setOpenPick]     = useState(null);  // War Room drawer
+  // Admins only: the winter leagues' model picks join the same grid.
+  const winterGames = useWinterPredictions(!!isAdmin);
+  const [winterSelectedId, setWinterSelectedId] = useState(null);
+  const winterSelected = winterGames?.find(g => g.game_pk === winterSelectedId) ?? null;
+  const closeWinter = useCallback(() => setWinterSelectedId(null), []);
 
   useEffect(() => {
     // Best Game Props board — additive sibling to /predictions/today. Empty until
@@ -1249,7 +1536,7 @@ export default function GameProps() {
         )}
 
         {/* Card grid */}
-        {loading || profileLoading ? (
+        {loading || profileLoading || (isAdmin && winterGames === null) ? (
           <>
             <div className="gp-loading-banner">
               <span className="gp-loading-spinner" />
@@ -1259,7 +1546,7 @@ export default function GameProps() {
               {[...Array(8)].map((_, i) => <SkeletonCard key={i} />)}
             </div>
           </>
-        ) : games.length === 0 ? (
+        ) : games.length === 0 && !winterGames?.length ? (
           <div className="gp-empty">
             <span className="gp-empty-icon">⚾</span>
             <p>No games scheduled for today.</p>
@@ -1269,7 +1556,7 @@ export default function GameProps() {
             <div className="pp-divider">
               <span className="pp-divider-line" />
               <span className="pp-divider-label">
-                {games.length} game{games.length !== 1 ? 's' : ''} · Select a card to see full odds
+                {games.length + (winterGames?.length ?? 0)} game{games.length + (winterGames?.length ?? 0) !== 1 ? 's' : ''} · Select a card to see full odds
               </span>
               <span className="pp-divider-line" />
             </div>
@@ -1289,6 +1576,11 @@ export default function GameProps() {
                   />
                 );
               })}
+              {/* Admins: winter-league games (LIDOM, LVBP, LMP, LBPRC) after MLB's. */}
+              {(winterGames ?? []).map(g => (
+                <WinterPickCard key={`w-${g.game_pk}`} game={g} isSelected={winterSelectedId === g.game_pk}
+                  onSelect={() => setWinterSelectedId(prev => (prev === g.game_pk ? null : g.game_pk))} />
+              ))}
             </div>
 
             <p className="gp-disclaimer">
@@ -1312,6 +1604,9 @@ export default function GameProps() {
 
       {/* Shared Scout Desk War Room — opened from a Best Game Props card */}
       {openPick && <WarRoom play={openPick} onClose={() => setOpenPick(null)} />}
+
+      {/* Winter game drawer (admins) */}
+      {winterSelected && <WinterDrawer game={winterSelected} onClose={closeWinter} />}
     </div>
   );
 }

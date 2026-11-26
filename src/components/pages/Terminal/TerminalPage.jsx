@@ -19,6 +19,7 @@ import cbpcService from '../../../data/services/cbpcService';
 import { CBPC_LEAGUES, CBPC_SLUGS, isNationsLeague, rememberWinterLeague, rememberedWinterLeague, seasonLabel } from '../../../data/constants/cbpcConstants';
 import { PANELS, abbr, fmtOdds, useTerminalSlate } from './TerminalShell';
 import { byStart, doubleheaderLabel, fmtTime as fmtWinterTime } from '../Winter/winterUi';
+import useWinterPredictions from '../predictions/useWinterPredictions';
 import '../../../styles/terminal-page-styling/terminal.css';
 
 /*
@@ -1616,8 +1617,12 @@ function InsiderPanel({ flash, expanded, onExpand, onClose }) {
 }
 
 // ── Model Board (premium predictions) ───────────────────────────────────────
+// MLB picks, plus (admins only) the winter leagues' model picks, ranked
+// together by win probability. Winter rows carry a league tag and Kalshi's
+// ask in place of a sportsbook line; they have no projected total.
 function PredictionsPanel({ flash, expanded, onExpand, onClose }) {
-  const { isPremium } = useAuth();
+  const { isPremium, isAdmin } = useAuth();
+  const winterGames = useWinterPredictions(!!isAdmin);
   const [rows, setRows] = useState(null);
   const [error, setError] = useState(false);
 
@@ -1648,9 +1653,26 @@ function PredictionsPanel({ flash, expanded, onExpand, onClose }) {
         line: r.odds?.over_under_line_game ?? null,
       };
     })
-    .sort((a, b) => b.prob - a.prob), [rows]);
+    .concat((winterGames || []).filter(g => g.pick?.side).map(g => {
+      const t = g[g.pick.side];
+      return {
+        id: `w-${g.game_pk}`,
+        league: g.leagueShort,
+        // The card shows the short matchup (league as a tooltip); the sheet the full one.
+        short: `${g.away.team_abbreviation} @ ${g.home.team_abbreviation}${doubleheaderLabel(g) ? ` G${g.game_number}` : ''}`,
+        matchup: `${g.leagueShort} · ${g.away.team_abbreviation} @ ${g.home.team_abbreviation}${doubleheaderLabel(g) ? ` G${g.game_number}` : ''}`,
+        pick: t.team_abbreviation,
+        logo: t.logo_url,
+        prob: g.pick.win_prob * 100,
+        odds: t.kalshi?.yes_ask != null ? `${Math.round(t.kalshi.yes_ask * 100)}¢` : null,
+        total: null,
+        line: null,
+      };
+    }))
+    .sort((a, b) => b.prob - a.prob), [rows, winterGames]);
 
-  const pending = (rows || []).length - picks.length;
+  // MLB games still inside the release gate (winter picks don't count here).
+  const pending = Math.max(0, (rows || []).length - picks.filter(p => !p.league).length);
   const emptyText = error ? 'Predictions unavailable right now.'
     : pending > 0 ? 'Predictions unlock about 2 hours before first pitch.'
     : 'No games with predictions today.';
@@ -1664,8 +1686,8 @@ function PredictionsPanel({ flash, expanded, onExpand, onClose }) {
         {isPremium && rows !== null && picks.length === 0 && <Empty>{emptyText}</Empty>}
         {picks.slice(0, 6).map(p => (
           <div className="slt-tl-row slt-tl-row--board" key={p.id}>
-            <span className="slt-faint slt-board-matchup">{p.matchup}</span>
-            <span className="slt-tl-team slt-team-cell"><TeamLogo teamId={p.pickTeamId} size="sm" />{p.pick} ML</span>
+            <span className="slt-faint slt-board-matchup" title={p.league ? p.matchup : undefined}>{p.short || p.matchup}</span>
+            <span className="slt-tl-team slt-team-cell">{p.league ? <WinterLogo src={p.logo} code={p.pick} size="sm" /> : <TeamLogo teamId={p.pickTeamId} size="sm" />}{p.pick} ML</span>
             <div className="slt-bar"><div className="slt-bar-fill" style={{ width: `${p.prob}%` }} /></div>
             <span className="slt-tl-score slt-mono">{fmtPct(p.prob, 0)}</span>
           </div>
@@ -1694,7 +1716,7 @@ function PredictionsPanel({ flash, expanded, onExpand, onClose }) {
               {picks.map(p => (
                 <tr key={p.id}>
                   <td className="team slt-faint">{p.matchup}</td>
-                  <td className="pick"><span className="slt-team-cell"><TeamLogo teamId={p.pickTeamId} size="sm" />{p.pick} ML</span></td>
+                  <td className="pick"><span className="slt-team-cell">{p.league ? <WinterLogo src={p.logo} code={p.pick} size="sm" /> : <TeamLogo teamId={p.pickTeamId} size="sm" />}{p.pick} ML</span></td>
                   <td className="slt-mono">{p.odds ?? '—'}</td>
                   <td className="slt-mono">{fmtPct(p.prob)}</td>
                   <td className="slt-mono">{p.total != null ? Number(p.total).toFixed(1) : '—'}</td>

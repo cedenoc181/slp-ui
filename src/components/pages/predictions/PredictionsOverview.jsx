@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../../context/AuthContext';
 import { OFFSEASON, isOffseason, salesReopenLabel } from '../../../data/constants/salesWindow';
@@ -12,7 +12,8 @@ import machineIcon from '../../../assets/icons/machine.png';
 import gamePropIcon from '../../../assets/icons/game-prop.png';
 import pitcherPropIcon from '../../../assets/icons/pitcher-prop.png';
 import batterPropIcon from '../../../assets/icons/batter-prop.png';
-import LeagueTabs, { LeaguePreview } from '../../LeagueTabs';
+import { WinterGameBoard } from './GameProps';
+import '../../../styles/predictions-page-styling/game-props.css';
 import '../../../styles/predictions-page-styling/predictions.css';
 import '../../../styles/predictions-page-styling/predictions-overview.css';
 
@@ -92,11 +93,10 @@ function FeatureSection({ id, accent, tag, tagIcon, title, description, bullets,
 export default function PredictionsOverview() {
   const navigate = useNavigate();
   const location = useLocation();
-  const { isAuthenticated, isPremium } = useAuth();
-  // League tabs belong to the in-app /predictions page, not the
+  const { isAuthenticated, isPremium, isAdmin } = useAuth();
+  // The admin winter board belongs to the in-app /predictions page, not the
   // /products/predictions marketing page that shares this component.
-  const showLeagues = location.pathname === '/predictions';
-  const [league, setLeague] = useState('mlb');
+  const showAdmin = isAdmin && location.pathname === '/predictions';
 
   // Non-premium tab clicks (Header "Predictions" dropdown) land here with a hash
   // like #pov-feature-games — scroll to the correlated feature section.
@@ -122,19 +122,16 @@ export default function PredictionsOverview() {
   return (
     <div className="predictions-page pov-page">
 
-      {showLeagues && (
-        <div className="league-tabs-row">
-          <LeagueTabs value={league} onChange={setLeague} />
+      {/* Admins: today's winter-league model picks (LIDOM, LVBP, LMP, LBPRC),
+          drawn like the live MLB Game Props board. No league switch: every
+          league shows together, and only admins see this section. */}
+      {showAdmin && (
+        <div className="predictions-content">
+          <WinterGameBoard />
         </div>
       )}
 
-      {league !== 'mlb' ? (
-        <LeaguePreview eyebrow="Serie del Caribe · 2026-27" title="Predictions cover MLB only">
-          Our winter-league data has no betting odds or probable pitchers, so there are no game, pitcher or
-          batter props for the Serie del Caribe. Scores, standings and stats for the Series are coming to
-          Schedule, Standings and the Analytics pages.
-        </LeaguePreview>
-      ) : (<>
+      <>
       {/* ── Hero ─────────────────────────────────────────────── */}
       <div className="pov-hero">
         <div className="pov-hero-inner">
@@ -365,7 +362,7 @@ export default function PredictionsOverview() {
           </div>
         </div>
       )}
-      </>)}
+      </>
 
     </div>
   );
