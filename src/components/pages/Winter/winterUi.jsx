@@ -28,26 +28,53 @@ export function useCbpc(loader, deps) {
 // ── Formatting ──────────────────────────────────────────────────────────────
 // Game times arrive in UTC (game_datetime_utc, or date + game_time "HH:MM");
 // everything is shown in the viewer's own time zone.
+//
+// TBD start times: when start_time_tbd is true, game_datetime_utc is only a
+// placeholder (game 2 of a doubleheader is listed 5 minutes after game 1;
+// other TBD games at 08:33 UTC). It still sorts correctly but is never shown
+// as a time, and the day comes from the game's date, not the placeholder.
 export function gameDate(game) {
   if (game?.game_datetime_utc) return new Date(game.game_datetime_utc);
   if (game?.date && game?.game_time) return new Date(`${game.date}T${game.game_time}:00Z`);
   return game?.date ? new Date(`${game.date}T12:00:00Z`) : null;
 }
 
-export function fmtTime(game) {
+export const isTimeTbd = (game) => game?.start_time_tbd === true;
+export const isDoubleheader = (game) => game?.double_header === 'Y' || game?.double_header === 'S';
+// "Game 1" / "Game 2" for a doubleheader, else null.
+export const doubleheaderLabel = (game) => (isDoubleheader(game) && game?.game_number ? `Game ${game.game_number}` : null);
+
+// The start time to show: the local time, or the TBD wording.
+// short: no time-zone name ("6:30 PM" rather than "6:30 PM EST").
+export function fmtTime(game, { short = false } = {}) {
+  if (isTimeTbd(game)) {
+    return isDoubleheader(game) && game.game_number === 2 ? 'Game 2 · follows Game 1' : 'Time TBD';
+  }
   const d = gameDate(game);
-  return d ? d.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit', timeZoneName: 'short' }) : '';
+  return d ? d.toLocaleTimeString([], short ? { hour: 'numeric', minute: '2-digit' } : { hour: 'numeric', minute: '2-digit', timeZoneName: 'short' }) : '';
+}
+
+// The day a game is on: from its date when the time is a TBD placeholder.
+function dayDate(game) {
+  if (isTimeTbd(game) && game?.date) return new Date(`${game.date}T12:00:00`);
+  return gameDate(game);
 }
 
 export function fmtDay(game, opts = { weekday: 'short', month: 'short', day: 'numeric' }) {
-  const d = gameDate(game);
+  const d = dayDate(game);
   return d ? d.toLocaleDateString([], opts) : '';
 }
 
 // YYYY-MM-DD in the viewer's time zone, for grouping games by day.
 export function localDayKey(game) {
-  const d = gameDate(game);
+  const d = dayDate(game);
   return d ? d.toLocaleDateString('en-CA') : '';
+}
+
+// Schedule order: start time (the placeholder keeps Game 1 before Game 2),
+// then game number.
+export function byStart(a, b) {
+  return ((gameDate(a)?.getTime() ?? 0) - (gameDate(b)?.getTime() ?? 0)) || ((a.game_number ?? 1) - (b.game_number ?? 1));
 }
 
 export const fmtRate = (v, digits = 3) =>
@@ -142,7 +169,8 @@ export function GameCard({ league, game, showDate = false }) {
   return (
     <Link to={winterPaths.game(league, game.game_pk, game.season)} className="wb-game">
       <div className="wb-game-meta">
-        <span>{showDate ? fmtDay(game) : (tag || '')}</span>
+        {/* "Game 2 · follows Game 1" already names the game in the status. */}
+        <span>{[showDate ? fmtDay(game) : tag, !isFinal(game) && isTimeTbd(game) && game.game_number === 2 ? null : doubleheaderLabel(game)].filter(Boolean).join(' · ')}</span>
         <GameStatus game={game} />
       </div>
       <GameTeam name={game.away_team_name} abbr={game.away_team_abbr} logo={game.away_team_logo_url}

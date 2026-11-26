@@ -5,6 +5,7 @@ import scheduleService from '../../../data/services/scheduleService';
 import predictionsService from '../../../data/services/predictionsService';
 import cbpcService from '../../../data/services/cbpcService';
 import { CBPC_LEAGUES, CBPC_SLUGS } from '../../../data/constants/cbpcConstants';
+import { doubleheaderLabel, fmtTime as fmtWinterTime } from '../Winter/winterUi';
 import { getTeamById } from '../../../data/constants/apiConstants';
 import { sanitizeSearch, useSiteSearch } from './terminalSearch';
 import '../../../styles/terminal-page-styling/terminal.css';
@@ -212,11 +213,14 @@ function useWinterTickerGames() {
           status: g.status,
           inning: g.inning_state && g.current_inning ? `${({ Top: 'T', Bottom: 'B', Middle: 'Mid ', End: 'End ' })[g.inning_state] ?? `${g.inning_state} `}${g.current_inning}` : null,
           start: start ? start.getTime() : 0,
-          time: start ? start.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' }) : 'TBD',
+          gameNumber: g.game_number ?? 1,
+          dh: doubleheaderLabel(g) ? `G${g.game_number}` : null,
+          // TBD starts are placeholders: "Time TBD" / "follows Game 1" (G2 tag shown).
+          time: fmtWinterTime(g, { short: true }).replace(/^Game 2 · /, ''),
         };
       }))
       .catch(() => [])))
-      .then(lists => { if (alive) setGames(lists.flat().sort((a, b) => a.start - b.start)); });
+      .then(lists => { if (alive) setGames(lists.flat().sort((a, b) => (a.start - b.start) || (a.gameNumber - b.gameNumber))); });
     return () => { alive = false; };
   }, [tick]);
 
@@ -250,6 +254,7 @@ function Ticker({ games, winterGames }) {
     <Link to={g.to} className="slt-tick" key={key}>
       <span className="slt-tick-league">{g.league}</span>
       <b>{g.away} @ {g.home}</b>
+      {g.dh && <span className="slt-faint">{g.dh}</span>}
       {g.state === 'pre' ? (
         <span className="slt-faint">{/postpon|cancel|suspend/i.test(g.status || '') ? g.status : g.time}</span>
       ) : (

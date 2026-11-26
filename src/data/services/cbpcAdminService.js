@@ -54,8 +54,9 @@ const cbpcAdminService = {
   getMoneyline: (league, date, opts) =>
     get(`/cbpc/${league}/admin/predictions/moneyline${qs({ date })}`, opts),
   /** Settled-game performance; no dates = the whole season. */
-  getPerformance: (league, { season, startDate, endDate } = {}, opts) =>
-    get(`/cbpc/${league}/admin/predictions/moneyline/performance${qs({ season, start_date: startDate, end_date: endDate })}`, opts),
+  // edge: paper-trade threshold (0, 0.03 default, 0.05, 0.10).
+  getPerformance: (league, { season, startDate, endDate, edge } = {}, opts) =>
+    get(`/cbpc/${league}/admin/predictions/moneyline/performance${qs({ season, start_date: startDate, end_date: endDate, edge })}`, opts),
 };
 
 export default cbpcAdminService;

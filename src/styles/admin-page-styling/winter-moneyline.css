@@ -191,3 +191,18 @@
 .wml-chart-bar { position: relative; width: 18px; min-height: 4px; max-height: 70px; flex: 0 0 auto; background: rgba(248, 113, 113, 0.35); border-radius: 3px; overflow: hidden; display: flex; align-items: flex-end; }
 .wml-chart-fill { width: 100%; background: var(--wml-good); }
 .wml-chart-day { font-size: 0.62rem; color: var(--wml-muted); }
+
+/* Lock icon, Scout confidence dots, disagreement note, responsible gaming. */
+.wml-lock { display: inline-flex; color: var(--wml-muted); }
+.wml-dots { display: inline-flex; gap: 3px; margin-left: 0.45rem; vertical-align: middle; }
+.wml-dot { width: 7px; height: 7px; border-radius: 50%; border: 1px solid var(--wml-accent); }
+.wml-dot.on { background: var(--wml-accent); }
+.wml-note {
+  margin: 0 0 0.5rem; padding: 0.35rem 0.55rem; border-radius: 6px; font-size: 0.8rem;
+  color: #fbbf24; background: rgba(251, 191, 36, 0.08); border: 1px solid rgba(251, 191, 36, 0.3);
+}
+.wml-rg { margin: 0.5rem 0 0; }
+.wml-model { margin: 0.6rem 0 0; }
+.wml-chips--small { align-items: center; gap: 0.35rem; }
+.wml-chips--small .wml-chip { padding: 0.25rem 0.6rem; font-size: 0.72rem; }
+.wml-starter-body .wml-tag { margin-left: 0.35rem; }

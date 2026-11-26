@@ -4,7 +4,7 @@ import cbpcService from '../../../data/services/cbpcService';
 import { isNationsLeague, isWinterOffseason, seasonLabel, winterPaths } from '../../../data/constants/cbpcConstants';
 import {
   useCbpc, Loading, ErrorState, Empty, Section, GameGrid, StandingsTable, LeadersList,
-  TeamLogo, qualifierText, fmtRate, fmtNum, localDayKey, gameDate,
+  TeamLogo, qualifierText, fmtRate, fmtNum, localDayKey, fmtDay, byStart,
 } from './winterUi';
 
 /*
@@ -20,7 +20,7 @@ const STATUS_NOTE = 'Game statuses update once a day.';
 function mergeGames(lists) {
   const byPk = new Map();
   lists.flat().forEach(g => byPk.set(g.game_pk, g));
-  return [...byPk.values()].sort((a, b) => gameDate(b) - gameDate(a));
+  return [...byPk.values()].sort((a, b) => byStart(b, a));
 }
 
 function groupBy(list, key) {
@@ -46,17 +46,18 @@ export function CurrentGames({ league, hideEmpty = false }) {
   const [today, upcoming, prior] = data;
   if (hideEmpty && !today.length && !upcoming.length && !prior.length) return null;
 
-  const upcomingByDay = groupBy(upcoming, localDayKey);
+  // Doubleheaders: same teams, same date, Game 1 then Game 2 (byStart).
+  const upcomingByDay = groupBy([...upcoming].sort(byStart), localDayKey);
   return (
     <>
       <Section title="Today" aside={today.length ? STATUS_NOTE : null}>
-        {today.length ? <GameGrid league={league} games={today} /> : <Empty>No games today.</Empty>}
+        {today.length ? <GameGrid league={league} games={[...today].sort(byStart)} /> : <Empty>No games today.</Empty>}
       </Section>
       <Section title="Upcoming" aside="Next 7 days · your time zone">
         {upcoming.length
           ? upcomingByDay.map(([day, games]) => (
               <div key={day} className="wb-day">
-                <h3 className="wb-day-label">{gameDate(games[0]).toLocaleDateString([], { weekday: 'long', month: 'short', day: 'numeric' })}</h3>
+                <h3 className="wb-day-label">{fmtDay(games[0], { weekday: 'long', month: 'short', day: 'numeric' })}</h3>
                 <GameGrid league={league} games={games} />
               </div>
             ))
@@ -64,7 +65,7 @@ export function CurrentGames({ league, hideEmpty = false }) {
       </Section>
       <Section title="Latest results" aside="Last 3 days">
         {prior.length
-          ? <GameGrid league={league} games={[...prior].sort((a, b) => gameDate(b) - gameDate(a))} showDate />
+          ? <GameGrid league={league} games={[...prior].sort((a, b) => byStart(b, a))} showDate />
           : <Empty>No completed games in the last 3 days.</Empty>}
       </Section>
     </>

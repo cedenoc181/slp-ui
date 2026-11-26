@@ -289,7 +289,6 @@
   padding: 1rem 16px 0;
 }
 
-.slt-dash-bar .slt-layout-reset { margin-left: auto; }
 
 /* ── League switcher ──────────────────────────────────────── */
 .slt-leagues {
@@ -1068,23 +1067,6 @@
   border-color: var(--slt-cyan);
 }
 
-.slt-layout-reset {
-  background: none;
-  border: 1px solid var(--slt-line);
-  border-radius: 6px;
-  color: var(--slt-ink-muted);
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 0.7rem;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  padding: 0.45rem 0.65rem;
-  margin-right: 0.6rem;
-  cursor: pointer;
-  white-space: nowrap;
-}
-
-.slt-layout-reset:hover { color: var(--slt-cyan); border-color: rgba(103,232,249,0.28); }
-
 /* ── Sheet (half-viewport expanded panel) ─────────────────── */
 .slt.slt-sheet-overlay {
   position: fixed;
@@ -1484,3 +1466,9 @@
   letter-spacing: 0.06em;
   color: var(--slt-cyan);
 }
+
+/* Live card header on phones: the title stays on one line and the matchup
+   picker gives up width instead. */
+#slt-panel-live .slt-panel-title { white-space: nowrap; }
+#slt-panel-live .slt-panel-tools { min-width: 0; }
+#slt-panel-live .slt-matchup-select { min-width: 0; flex: 0 1 auto; }

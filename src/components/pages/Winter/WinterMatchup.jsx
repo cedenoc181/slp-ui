@@ -4,7 +4,7 @@ import cbpcService from '../../../data/services/cbpcService';
 import { seasonLabel, winterPaths } from '../../../data/constants/cbpcConstants';
 import TeamStatsCard from '../Stats/mlb-schedule/components/TeamStatsCard';
 import { fmt, headshotUrl } from '../Stats/mlb-schedule/utils';
-import { TeamLogo, fmtDay, fmtTime, gameDate, isFinal } from './winterUi';
+import { TeamLogo, doubleheaderLabel, fmtDay, fmtTime, gameDate, isFinal } from './winterUi';
 
 /*
   The winter-league matchup page's sections: the MLB matchup page's layout
@@ -411,6 +411,10 @@ export function WinterHero({ league, game, state, awayRecord, homeRecord, stage 
       <div className="hero-status-strip">
         <span className="hero-date">{fmtDay(game, { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })}</span>
         {stage && <span className="hero-date">{stage}</span>}
+        {/* Doubleheader: say which game; a TBD Game 2 reads "Game 2 · follows Game 1" in its badge. */}
+        {doubleheaderLabel(game) && !(state === 'pre' && game.start_time_tbd && game.game_number === 2) && (
+          <span className="hero-date">{doubleheaderLabel(game)}</span>
+        )}
         {state === 'pre' && <span className="hero-badge badge-scheduled">{/^(scheduled|pre-game|warmup)$/i.test(game.status) ? fmtTime(game) : game.status}</span>}
         {live && <span className="hero-badge badge-live">● LIVE{inning}</span>}
         {final && <span className="hero-badge badge-final">FINAL</span>}

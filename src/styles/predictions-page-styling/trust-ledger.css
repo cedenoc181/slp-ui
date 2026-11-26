@@ -111,6 +111,8 @@
   margin: 18px 0 28px;
 }
 .tl-dek b { color: var(--tl-ink); font-weight: 600; }
+/* The intro paragraph is desktop-only: on phones it pushes the board down. */
+@media (max-width: 640px) { .tl-dek { display: none; } }
 
 /* ── Mode toggle (Regular Season / Postseason) ───────────────────────────────── */
 .tl-mode-row {
@@ -140,6 +142,15 @@
   padding: 7px 14px;
   cursor: pointer;
   transition: background-color 120ms ease, color 120ms ease;
+}
+/* One line per button: "Serie del Caribe" used to wrap word by word on
+   phones, stacking into a tall column. A row too wide for the screen scrolls
+   sideways inside the pill instead. */
+.tl-mode-toggle { max-width: 100%; overflow-x: auto; scrollbar-width: none; -webkit-overflow-scrolling: touch; }
+.tl-mode-toggle::-webkit-scrollbar { display: none; }
+.tl-mode-btn { white-space: nowrap; flex-shrink: 0; }
+@media (max-width: 600px) {
+  .tl-mode-btn { padding: 6px 9px; font-size: 10.5px; letter-spacing: 0.02em; }
 }
 .tl-mode-btn:hover:not(:disabled) { color: var(--tl-ink); }
 .tl-mode-btn:disabled { cursor: default; opacity: 0.6; }
@@ -495,4 +506,28 @@
   border: 1px solid var(--tl-line);
   border-radius: 999px;
   color: var(--tl-ink-muted);
+}
+
+/* Phones: neither board gets a fixed width (the MLB board's 1260px floor and
+   the cells' min-widths spread the columns with wide gaps), and cells are
+   tighter, so the boards need far less sideways scrolling. The winter board
+   has 7 columns, so it drops the floor at every width. */
+.tl-table.tl-table--winter { min-width: 0; }
+@media (max-width: 640px) {
+  .tl-table { min-width: 0; }
+  .tl-table thead th { padding: 9px 8px; font-size: 10px; letter-spacing: 0.04em; }
+  .tl-table td { padding: 8px 8px; font-size: 12.5px; }
+  .tl-td-rank { width: 22px; padding-right: 2px; }
+  .tl-table td.tl-td-team { font-size: 14px; white-space: normal; }
+  .tl-td-team .tl-team-cell { max-width: 118px; line-height: 1.15; }
+  .tl-team-cell { gap: 6px; }
+  .tl-trust-cell { min-width: 0; gap: 6px; }
+  .tl-meter { width: 48px; }
+  .tl-trust-pct { width: auto; font-size: 12px; }
+  .tl-rank-badge { font-size: 11px; gap: 4px; }
+  .tl-no-game { font-size: 11.5px; }
+  .tl-starter-cell { min-width: 0; }
+  .tl-starter-name { font-size: 12.5px; }
+  .tl-starter-stats { font-size: 11px; gap: 6px; }
+  .tl-bullpen-cell { min-width: 0; gap: 1px 8px; font-size: 11px; }
 }

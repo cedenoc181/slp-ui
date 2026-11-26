@@ -506,7 +506,7 @@ function WinterTrustBoard({ onUpgrade }) {
           </div>
         ) : (
           <div className="tl-table-scroll">
-            <table className="tl-table">
+            <table className="tl-table tl-table--winter">
               <thead>
                 <tr>
                   <th>#</th><th>Team</th><th>Trust</th><th>League rank</th>

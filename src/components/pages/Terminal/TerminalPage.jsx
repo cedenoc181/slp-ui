@@ -18,6 +18,7 @@ import { LEAGUES, WINTER_ENABLED, leagueTabTip } from '../../../data/constants/l
 import cbpcService from '../../../data/services/cbpcService';
 import { CBPC_LEAGUES, CBPC_SLUGS, isNationsLeague, rememberWinterLeague, rememberedWinterLeague, seasonLabel } from '../../../data/constants/cbpcConstants';
 import { PANELS, abbr, fmtOdds, useTerminalSlate } from './TerminalShell';
+import { byStart, doubleheaderLabel, fmtTime as fmtWinterTime } from '../Winter/winterUi';
 import '../../../styles/terminal-page-styling/terminal.css';
 
 /*
@@ -488,7 +489,12 @@ function useWinterTeamForm(teams) {
           });
           next[id] = {
             row: (standings.teams || []).find(t => t.team_id === id) || null,
-            game: today.find(g => g.home_team_id === id || g.away_team_id === id) || null,
+            // A doubleheader gives two games today: show the next unfinished one
+            // (Game 1, then Game 2), or the last one once both are over.
+            game: (() => {
+              const mine = today.filter(g => g.home_team_id === id || g.away_team_id === id).sort(byStart);
+              return mine.find(g => g.status !== 'Final' && g.status !== 'Completed Early') || mine[mine.length - 1] || null;
+            })(),
             pts,
             games,
           };
@@ -505,11 +511,12 @@ function useWinterTeamForm(teams) {
 function winterGameLine(teamId, g) {
   if (!g) return 'No game today';
   const home = g.home_team_id === teamId;
-  const opp = `${home ? 'vs' : '@'} ${home ? g.away_team_abbr : g.home_team_abbr}`;
+  const dh = doubleheaderLabel(g);
+  const opp = `${home ? 'vs' : '@'} ${home ? g.away_team_abbr : g.home_team_abbr}${dh ? ` · ${dh}` : ''}`;
   if (g.status === 'Final' || g.status === 'Completed Early') return `${opp} · Final ${g.away_runs_score ?? 0}-${g.home_runs_score ?? 0}`;
   if (g.status === 'Scheduled') {
-    const d = new Date(g.game_datetime_utc || `${g.date}T${g.game_time}:00Z`);
-    return `${opp} · ${d.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}`;
+    // TBD times read "Time TBD" / "follows Game 1" (the Game 2 label is already there).
+    return `${opp} · ${fmtWinterTime(g, { short: true }).replace(/^Game 2 · /, '')}`;
   }
   return `${opp} · ${g.status === 'In Progress' ? 'In progress' : g.status}`;
 }
@@ -609,7 +616,7 @@ function WinterWatchlist({ list, mode, loadError, saveError, setSaveError, savin
     <>
       <Panel
         id="watchlist"
-        title="Watchlist · Winter"
+        title="Watchlist"
         flash={flash}
         onExpand={onExpand}
         sub={summary}
@@ -661,7 +668,7 @@ function WinterWatchlist({ list, mode, loadError, saveError, setSaveError, savin
       <Sheet
         open={expanded}
         onClose={onClose}
-        title="Watchlist · Winter"
+        title="Watchlist"
         sub="Follow winter-league teams and players: LIDOM, LVBP, LMP, LBPRC and the Serie del Caribe"
         route="/winter"
         routeLabel="Open Winter Ball"
@@ -1362,7 +1369,7 @@ function WinterTrustLedgerPanel({ flash, expanded, onExpand, onClose }) {
     <>
       <Panel
         id="ledger"
-        title="Trust Ledger · Winter"
+        title="Trust Ledger"
         flash={flash}
         onExpand={onExpand}
         action={leaguePicker}
@@ -1829,7 +1836,7 @@ function WinterStandingsPanel({ flash, expanded, onExpand, onClose }) {
     <>
       <Panel
         id="standings"
-        title="Standings · Winter"
+        title="Standings"
         flash={flash}
         onExpand={onExpand}
         sub={entry ? `${entry.roundRobin.length ? 'Round Robin' : 'Regular season'} · ${seasonLabel(entry.season)}` : ''}
@@ -1847,7 +1854,7 @@ function WinterStandingsPanel({ flash, expanded, onExpand, onClose }) {
       <Sheet
         open={expanded}
         onClose={onClose}
-        title="Standings · Winter"
+        title="Standings"
         sub="LIDOM, LVBP, LMP, LBPRC and the Serie del Caribe"
         route={`/winter/${slug}`}
         routeLabel={`Open ${CBPC_LEAGUES[slug].short}`}
@@ -2103,10 +2110,12 @@ function useFeaturedGame(games, watch, scope) {
 }
 
 // The header's matchup picker. "Auto" names the game it's showing.
-function MatchupPicker({ ordered, tiers, featured, reason, pick, setPick, label }) {
+// autoLabel (optional) is a shorter label for the Auto option, which is what
+// the closed picker shows in the header; the list keeps the full labels.
+function MatchupPicker({ ordered, tiers, featured, reason, pick, setPick, label, autoLabel = label }) {
   if (!ordered.length) return null;
   const star = (g) => (tiers.get(g.id) > 0 ? '★ ' : '');
-  const auto = featured && reason !== 'pick' ? `Auto · ${star(featured)}${label(featured)}` : 'Auto · watchlist first';
+  const auto = featured && reason !== 'pick' ? `Auto · ${star(featured)}${autoLabel(featured)}` : 'Auto · watchlist first';
   return (
     <select
       className="slt-select slt-matchup-select"
@@ -2265,8 +2274,12 @@ function winterGame(slug, g) {
     state: winterState(g.status),
     status: g.status,
     start: start.getTime(),
-    time: start.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' }),
-    day: start.toLocaleDateString([], { weekday: 'short', month: 'short', day: 'numeric' }),
+    gameNumber: g.game_number ?? 1,
+    dh: doubleheaderLabel(g), // "Game 1" / "Game 2" or null
+    tbd: g.start_time_tbd === true,
+    // A TBD start is a placeholder time: show "Time TBD" / "Game 2 · follows Game 1".
+    time: fmtWinterTime(g, { short: true }),
+    day: (g.start_time_tbd && g.date ? new Date(`${g.date}T12:00:00`) : start).toLocaleDateString([], { weekday: 'short', month: 'short', day: 'numeric' }),
     awayId: g.away_team_id, // CBPC ids, matched against watched cbpc_team ids
     homeId: g.home_team_id,
     away: g.away_team_abbr,
@@ -2302,7 +2315,7 @@ function useWinterSlate() {
     const fresh = tick > 0;
     const across = (load) => Promise.all(CBPC_SLUGS.map(slug =>
       load(slug).then(list => (list || []).map(g => winterGame(slug, g))).catch(() => [])))
-      .then(lists => lists.flat().sort((a, b) => a.start - b.start));
+      .then(lists => lists.flat().sort((a, b) => (a.start - b.start) || (a.gameNumber - b.gameNumber)));
 
     (async () => {
       const today = await across(slug => cbpcService.getTodayGames(slug, { fresh }));
@@ -2353,7 +2366,7 @@ function WinterLiveGamePanel({ watchlist, flash, expanded, onExpand, onClose }) 
   const candidates = useMemo(() => winterCandidates(slate), [slate]);
   const watch = useWinterWatch(watchlist);
   const { featured, reason, ordered, tiers, pick, setPick } = useFeaturedGame(candidates, watch, 'winter');
-  const matchupLabel = (g) => `${g.league} · ${g.away} @ ${g.home}`;
+  const matchupLabel = (g) => `${g.league} · ${g.away} @ ${g.home}${g.dh ? ` (${g.dh})` : ''}`;
 
   const [boxscore, setBoxscore] = useState(null);
   const slug = featured?.slug;
@@ -2372,12 +2385,17 @@ function WinterLiveGamePanel({ watchlist, flash, expanded, onExpand, onClose }) 
   }, [slug, pk, awayRuns, homeRuns]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const isToday = !!slate?.today.length;
-  const inning = featured?.inningState && featured?.inning ? ` · ${featured.inningState} ${featured.inning}` : '';
+  // Compact inning ("B7", "Mid 5") so the header fits on a phone.
+  const inning = featured?.inningState && featured?.inning
+    ? ` · ${({ Top: 'T', Bottom: 'B', Middle: 'Mid ', End: 'End ' })[featured.inningState] ?? `${featured.inningState} `}${featured.inning}`
+    : '';
   const tag = featured?.state === 'live'
     ? <span className="slt-live-tag">LIVE{inning || (featured.status && !/progress/i.test(featured.status) ? ` · ${featured.status}` : '')}</span>
     : featured?.state === 'final' ? <span className="slt-final-tag">FINAL</span> : null;
   const heading = featured?.state === 'live' ? 'Live Game' : featured?.state === 'final' ? 'Latest Final' : 'Next Up';
-  const title = <>{heading} · Winter {tag}</>;
+  // One word for each state, so the header fits beside the picker on a phone:
+  // the "LIVE · B7" tag alone while live, "Latest Final" once it's over.
+  const title = featured?.state === 'live' ? tag : featured?.state === 'final' ? heading : <>{heading} {tag}</>;
   const sub = featured ? `${featured.league} · ${featured.away} @ ${featured.home}${isToday ? '' : ` · ${featured.day}`}` : null;
   const list = featured?.state === 'final' && !isToday ? [] : ordered;
 
@@ -2390,7 +2408,7 @@ function WinterLiveGamePanel({ watchlist, flash, expanded, onExpand, onClose }) 
         onExpand={onExpand}
         title={title}
         sub={sub}
-        action={<MatchupPicker ordered={ordered} tiers={tiers} featured={featured} reason={reason} pick={pick} setPick={setPick} label={(g) => `${matchupLabel(g)}${isToday ? '' : ` · ${g.day}`}`} />}
+        action={<MatchupPicker ordered={ordered} tiers={tiers} featured={featured} reason={reason} pick={pick} setPick={setPick} label={(g) => `${matchupLabel(g)}${isToday ? '' : ` · ${g.day}`}`} autoLabel={(g) => `${g.away} @ ${g.home}${g.dh ? ` G${g.gameNumber}` : ''}`} />}
       >
         {slate === null && <Skeleton rows={2} />}
         {slate !== null && !featured && <Empty>No winter games in the next week.</Empty>}
@@ -2443,6 +2461,7 @@ function WinterLiveGamePanel({ watchlist, flash, expanded, onExpand, onClose }) 
                     <span className="slt-team-cell"><WinterLogo src={g.awayLogo} code={g.away} size="sm" />{g.away}</span>
                     <span className="slt-faint">@</span>
                     <span className="slt-team-cell"><WinterLogo src={g.homeLogo} code={g.home} size="sm" />{g.home}</span>
+                    {g.dh && <span className="slt-faint">{g.dh}</span>}
                   </span>
                   <span className={g.state === 'pre' ? 'slt-faint' : 'slt-mono'}>
                     {g.state === 'pre' ? (g.venue || '') : `${g.awayRuns ?? 0}–${g.homeRuns ?? 0}`}
@@ -2583,13 +2602,7 @@ export default function TerminalPage() {
     });
   }, [storageKey]);
 
-  const resetLayout = useCallback(() => {
-    setOrder(DEFAULT_ORDER);
-    try { localStorage.removeItem(storageKey); } catch {}
-  }, [storageKey]);
-
   const layout = useMemo(() => ({ dragId, startDrag, onGripKey }), [dragId, startDrag, onGripKey]);
-  const isCustomLayout = order.some((id, i) => id !== DEFAULT_ORDER[i]);
 
   const expand = useCallback((id) => setExpandedId(id), []);
   const collapse = useCallback(() => setExpandedId(null), []);
@@ -2636,11 +2649,6 @@ export default function TerminalPage() {
     <div className={`slt-ui slt-dash${dragId ? ' slt--dragging' : ''}`}>
       <div className="slt-dash-bar">
         <LeagueSwitcher value={league} onChange={chooseLeague} />
-        {isCustomLayout && (
-          <button className="slt-layout-reset" type="button" onClick={resetLayout} title="Restore the default panel order">
-            Reset layout
-          </button>
-        )}
       </div>
       {/* Both leagues share the grid; panels that follow the league switch
           their own content (the Watchlist today). */}

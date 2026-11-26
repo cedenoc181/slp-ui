@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Link, useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import cbpcAdminService, { MONEYLINE_LEAGUES } from '../../../data/services/cbpcAdminService';
 import { CBPC_LEAGUES } from '../../../data/constants/cbpcConstants';
+import { doubleheaderLabel, fmtTime as fmtWinterTime } from '../Winter/winterUi';
 import '../../../styles/admin-page-styling/winter-moneyline.css';
 
 /*
@@ -22,6 +23,9 @@ const TABS = [
   { id: 'today', label: 'Today', icon: <><rect x="3" y="4" width="18" height="17" rx="2" /><path d="M3 9h18M8 2v4M16 2v4" /></> },
   { id: 'performance', label: 'Performance', icon: <><path d="M4 20V10M10 20V4M16 20v-7M22 20H2" /></> },
 ];
+
+// Paper-trade edge threshold: buy a side only when win_prob beats its ask by this much.
+const EDGES = [0, 0.03, 0.05, 0.1];
 
 const RANGES = [
   { id: '7', label: 'Last 7 days', days: 7 },
@@ -44,7 +48,6 @@ const dec = (v, digits = 3) => (v == null ? '—' : Number(v).toFixed(digits));
 const money = (v) => (v == null ? '—' : `${v < 0 ? '−' : ''}$${Math.abs(v).toFixed(2)}`);
 const signedPct = (v) => (v == null ? null : `${v >= 0 ? '+' : '−'}${Math.abs(v * 100).toFixed(1)}%`);
 const rec = (correct, games) => (games ? `${correct}-${games - correct}` : '—');
-const timeOf = (iso) => (iso ? new Date(iso).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' }) : '');
 const shortDay = (iso) => new Date(`${iso}T12:00:00`).toLocaleDateString([], { month: 'short', day: 'numeric' });
 
 // Loads every league in parallel; one failing league never hides the others.
@@ -109,26 +112,39 @@ function Mark({ ok }) {
   return ok ? <span className="wml-mark wml-mark--ok" aria-label="Correct">✓</span> : <span className="wml-mark wml-mark--bad" aria-label="Wrong">✗</span>;
 }
 
+// reported_starters[side]: null = not searched yet; found / not_found otherwise.
+const SOURCE_KIND = { official: 'Official', media: 'Media', social: 'Social' };
+
 function StarterRow({ team, rs }) {
-  const found = rs?.status === 'found';
   return (
     <div className="wml-starter">
       <span className="wml-starter-team">{team.team_abbreviation}</span>
-      {found ? (
+      {rs?.status === 'found' ? (
         <span className="wml-starter-body">
-          <span className={`wml-tag ${rs.source_kind === 'official' ? 'wml-tag--good' : ''}`}>{rs.source_kind === 'official' ? 'Announced' : 'Reported'}</span>
-          <span className="wml-starter-name">{rs.reported_name}</span>
-          {rs.matched_to_team_pitchers === false && <span className="wml-faint"> (not on the club's known staff)</span>}
+          Reported starter: <span className="wml-starter-name">{rs.reported_name}</span>
+          {rs.source_kind && <span className={`wml-tag${rs.source_kind === 'official' ? ' wml-tag--good' : ''}`}>{SOURCE_KIND[rs.source_kind] || rs.source_kind}</span>}
+          {rs.matched_to_team_pitchers === false && <span className="wml-faint"> · not on known roster</span>}
           {rs.source_url && (
             <a className="wml-source" href={rs.source_url} target="_blank" rel="noopener noreferrer">
               {rs.source_title || 'Source'} ↗
             </a>
           )}
         </span>
+      ) : rs?.status === 'not_found' ? (
+        <span className="wml-faint">No starter reported</span>
       ) : (
-        <span className="wml-faint">Not announced yet</span>
+        <span className="wml-faint">Not searched yet</span>
       )}
     </div>
+  );
+}
+
+function ConfidenceDots({ value }) {
+  const n = Math.max(0, Math.min(5, Math.round(value ?? 0)));
+  return (
+    <span className="wml-dots" role="img" aria-label={`Confidence ${n} of 5`} title={`Confidence ${n}/5`}>
+      {[1, 2, 3, 4, 5].map(i => <span key={i} className={`wml-dot${i <= n ? ' on' : ''}`} />)}
+    </span>
   );
 }
 
@@ -139,7 +155,7 @@ function Bullets({ items }) {
 
 function ScoutReport({ scout, game }) {
   const a = scout?.analysis;
-  if (!a) return <p className="wml-faint wml-scout-none">No Scout AI report yet (written within about 4 hours of first pitch).</p>;
+  if (!a) return <p className="wml-faint wml-scout-none">Report pending <span className="wml-small">· written within about 4 hours of first pitch</span></p>;
   const pickTeam = scout.pick?.side ? game[scout.pick.side] : null;
   const sections = [
     ['Matchup', a.matchup], ['Pitching', a.pitching], ['Lineup edge', a.lineupEdge],
@@ -154,18 +170,20 @@ function ScoutReport({ scout, game }) {
       <div className="wml-scout-body">
         {pickTeam && (
           <p className="wml-scout-pick">
-            Pick <strong>{pickTeam.team_abbreviation}</strong>
-            {scout.pick.confidence != null && <> · confidence {scout.pick.confidence}/5</>}
-            {scout.pick.agrees_with_model != null && <> · {scout.pick.agrees_with_model ? 'agrees with the model' : 'fades the model'}</>}
+            Scout's pick <strong>{pickTeam.team_abbreviation}</strong>
+            {scout.pick.confidence != null && <ConfidenceDots value={scout.pick.confidence} />}
+            {scout.pick.agrees_with_model === true && <span className="wml-faint"> · agrees with the model</span>}
           </p>
+        )}
+        {scout.pick?.agrees_with_model === false && (
+          <p className="wml-note">Scout disagrees with the model: it picks the other side.</p>
         )}
         {sections.map(([label, text]) => (text ? (
           <div key={label} className="wml-scout-sec"><h4>{label}</h4><p>{text}</p></div>
         ) : null))}
         {a.keyFactors?.length > 0 && <div className="wml-scout-sec"><h4>Key factors</h4><Bullets items={a.keyFactors} /></div>}
         {a.redFlags?.length > 0 && <div className="wml-scout-sec"><h4>Red flags</h4><Bullets items={a.redFlags} /></div>}
-        {a.responsibleGaming && <p className="wml-faint wml-small">{a.responsibleGaming}</p>}
-        <p className="wml-faint wml-small">
+        <p className="wml-faint wml-small wml-model">
           {[scout.llm_model, scout.prompt_version, scout.generated_at && `written ${new Date(scout.generated_at).toLocaleString([], { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' })}`].filter(Boolean).join(' · ')}
         </p>
       </div>
@@ -173,13 +191,32 @@ function ScoutReport({ scout, game }) {
   );
 }
 
+// Shown under the report whether it's open or not.
+function ResponsibleGaming({ scout }) {
+  const text = scout?.analysis?.responsibleGaming;
+  return text ? <p className="wml-faint wml-small wml-rg">{text}</p> : null;
+}
+
+// first_pitch is null for a TBD start: "Time TBD" / "Game 2 · follows Game 1".
+function startText(game) {
+  const time = fmtWinterTime({ ...game, game_datetime_utc: game.first_pitch }, { short: true });
+  const dh = doubleheaderLabel(game);
+  return dh && !time.startsWith('Game ') ? `${dh} · ${time}` : time;
+}
+
 function GameCard({ game, threshold }) {
   const { pick, result, scout } = game;
   return (
     <article className="wml-card wml-game">
       <header className="wml-game-head">
-        <span>{timeOf(game.first_pitch)}{game.status && !/scheduled/i.test(game.status) ? ` · ${game.status}` : ''}</span>
-        {game.locked && <span className="wml-tag">Locked</span>}
+        <span>{startText(game)}{game.status && !/scheduled/i.test(game.status) ? ` · ${game.status}` : ''}</span>
+        {game.locked && (
+          <span className="wml-lock" title="Locked: the pick can no longer change" aria-label="Locked">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <rect x="4" y="11" width="16" height="10" rx="2" /><path d="M8 11V7a4 4 0 0 1 8 0v4" />
+            </svg>
+          </span>
+        )}
       </header>
 
       {['away', 'home'].map(side => {
@@ -195,7 +232,7 @@ function GameCard({ game, threshold }) {
                 <span className="wml-faint wml-small">
                   Kalshi ask {dec(t.kalshi.yes_ask, 2)}{edge ? ` · edge ${edge}` : ''}{t.kalshi.liquid ? '' : ' · illiquid'}
                 </span>
-              ) : <span className="wml-faint wml-small">No Kalshi price</span>}
+              ) : <span className="wml-faint wml-small">No market</span>}
             </div>
             <span className="wml-team-prob">{pct(t.win_prob)}</span>
             {result && <span className="wml-team-score">{result[`${side}_score`]}</span>}
@@ -223,6 +260,7 @@ function GameCard({ game, threshold }) {
       </div>
 
       <ScoutReport scout={scout} game={game} />
+      <ResponsibleGaming scout={scout} />
     </article>
   );
 }
@@ -258,7 +296,7 @@ function TodayView() {
               {leagueName(slug)} <span className="wml-faint">{games.length} game{games.length === 1 ? '' : 's'}</span>
             </h2>
             {games.length === 0
-              ? <p className="wml-faint wml-empty">No predictions for this day.</p>
+              ? <p className="wml-faint wml-empty">No predictions for this date</p>
               : games.map(g => <GameCard key={g.game_pk} game={g} threshold={r.data.confident_threshold} />)}
           </section>
         );
@@ -442,6 +480,7 @@ function LeagueCard({ slug, data }) {
 
 function PerformanceView() {
   const [range, setRange] = useState('season');
+  const [edge, setEdge] = useState(0.03); // the server's default
   const dates = useMemo(() => {
     const r = RANGES.find(x => x.id === range);
     if (!r?.days) return {};
@@ -449,13 +488,19 @@ function PerformanceView() {
     return { startDate: shiftDate(end, -(r.days - 1)), endDate: end };
   }, [range]);
   const { results, loading, updatedAt, refresh } = useLeagues(
-    (slug, opts) => cbpcAdminService.getPerformance(slug, dates, opts), [dates.startDate, dates.endDate]);
+    (slug, opts) => cbpcAdminService.getPerformance(slug, { ...dates, edge }, opts), [dates.startDate, dates.endDate, edge]);
 
   return (
     <>
       <div className="wml-chips" role="group" aria-label="Date range">
         {RANGES.map(r => (
           <button key={r.id} type="button" className={`wml-chip${range === r.id ? ' active' : ''}`} onClick={() => setRange(r.id)}>{r.label}</button>
+        ))}
+      </div>
+      <div className="wml-chips wml-chips--small" role="group" aria-label="Paper-trade edge">
+        <span className="wml-faint wml-small">Paper-trade edge</span>
+        {EDGES.map(e => (
+          <button key={e} type="button" className={`wml-chip${edge === e ? ' active' : ''}`} onClick={() => setEdge(e)}>{e ? `${Math.round(e * 100)}%` : '0'}</button>
         ))}
       </div>
       <RefreshBar loading={loading} updatedAt={updatedAt} onRefresh={refresh} />
