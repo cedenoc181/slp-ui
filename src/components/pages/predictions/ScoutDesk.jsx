@@ -1,8 +1,9 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../../../context/AuthContext';
 import { buildScoutDesk, getScoutDeskPerformance, buildAutopsy, toPct } from '../../../data/services/scoutDesk';
 import { WarRoom, CONSENSUS_META, isGame, toDrawerPlay, fmtOdds, plCls, fmtUnits } from './ScoutWarRoom';
+import { CbpcBoard } from './CbpcScoutBoard';
 import { SHOW_AUDIT_SUMMARY } from '../../../data/constants/featureFlags';
 import { OFFSEASON, isOffseason, salesReopenLabel } from '../../../data/constants/salesWindow';
 import betLibraryService from '../../../data/services/betLibraryService';
@@ -13,6 +14,7 @@ import aiMlIcon from '../../../assets/icons/ai-ml.png';
 import commandCentreIcon from '../../../assets/icons/command-centre.png';
 import '../../../styles/predictions-page-styling/predictions.css';
 import '../../../styles/predictions-page-styling/scout-desk.css';
+import '../../../styles/predictions-page-styling/cbpc-scout-desk.css';
 
 function trim(s, n) { return !s ? '' : s.length > n ? `${s.slice(0, n - 1).trimEnd()}…` : s; }
 
@@ -336,6 +338,12 @@ export default function ScoutDesk() {
   const [openPlay, setOpenPlay] = useState(null);
   const [trackedIds, setTrackedIds] = useState({});
   const [toast, setToast] = useState(null);
+  // MLB / Winter filter (?league=winter). Winter (the CBPC board) is admins
+  // only; with no choice in the URL it leads during the MLB offseason.
+  const [params, setParams] = useSearchParams();
+  const leagueParam = params.get('league');
+  const winter = !!isAdmin && (leagueParam === 'winter' || (leagueParam == null && isOffseason()));
+  const setLeague = (league) => setParams({ league }, { replace: true });
 
   useEffect(() => { window.scrollTo(0, 0); }, []);
   useEffect(() => {
@@ -412,10 +420,19 @@ export default function ScoutDesk() {
         <div className="sd-desk-head">
           <div>
             <span className="sd-tag"><img src={commandCentreIcon} alt="" className="sd-tag-icon" />Scout AI - War Room</span>
-            <h2 className="sd-desk-title">The best high-conviction props with a proven edge.</h2>
-            <p className="sd-desk-sub">We start from the bet types our model is proven to win — pitcher props and game props (moneyline, totals, run line) — taking the exact lines and sides with the strongest historical hit rate, then read the matchup to settle on the most convincing plays. Every board mixes at least one pitcher prop and one game prop. Open any play for the full breakdown.</p>
+            {winter ? (
+              <>
+                <h2 className="sd-desk-title">The day's best winter-league moneylines.</h2>
+                <p className="sd-desk-sub">LIDOM, LVBP, LMP and LBPRC. The model's strongest edges, argued out by the War Room. Open any play for the full breakdown.</p>
+              </>
+            ) : (
+              <>
+                <h2 className="sd-desk-title">The best high-conviction props with a proven edge.</h2>
+                <p className="sd-desk-sub">We start from the bet types our model is proven to win — pitcher props and game props (moneyline, totals, run line) — taking the exact lines and sides with the strongest historical hit rate, then read the matchup to settle on the most convincing plays. Every board mixes at least one pitcher prop and one game prop. Open any play for the full breakdown.</p>
+              </>
+            )}
           </div>
-          {desk?.mood && (
+          {!winter && desk?.mood && (
             <div className="sd-mood">
               <span className="sd-mood-label">Desk read</span>
               <span className="sd-mood-name">{desk.mood.label}</span>
@@ -424,7 +441,16 @@ export default function ScoutDesk() {
           )}
         </div>
 
-        {isOffseason() ? (
+        {isAdmin && (
+          <div className="sd-league-filter" role="tablist" aria-label="League">
+            <button type="button" role="tab" aria-selected={!winter} className={`sd-league-btn${!winter ? ' active' : ''}`} onClick={() => setLeague('mlb')}>MLB</button>
+            <button type="button" role="tab" aria-selected={winter} className={`sd-league-btn${winter ? ' active' : ''}`} onClick={() => setLeague('winter')}>Winter</button>
+          </div>
+        )}
+
+        {winter ? (
+          <CbpcBoard />
+        ) : isOffseason() ? (
           <div className="sd-empty"><span className="sd-empty-icon">🗓️</span><p>Predictions live Opening Day {OFFSEASON.nextSeason} — {salesReopenLabel()}.</p></div>
         ) : error ? (
           <div className="sd-error">⚠ {error}</div>
@@ -467,7 +493,7 @@ export default function ScoutDesk() {
 
         {/* Track record + autopsy are constant — they don't depend on today's
             board, so they render even while picks are pending or errored. */}
-        {!busy && (
+        {!winter && !busy && (
           <>
             <TrackRecord perf={perf} onOpenPlay={setOpenPlay} />
             <Autopsy data={autopsy} />

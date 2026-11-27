@@ -1,9 +1,9 @@
-/* CBPC Scout Desk (/predictions/scout-desk/cbpc) — admins only.
+/* CBPC Scout Desk: the Winter filter of /predictions/scout-desk — admins only.
    Builds on scout-desk.css (cards, record strip, drawer); only the
    winter-specific pieces live here. */
 
 /* ── Date picker ─────────────────────────────────────────────────────────── */
-.cbpc-date { display: flex; align-items: center; gap: 0.4rem; flex-shrink: 0; }
+.cbpc-date { display: flex; align-items: center; gap: 0.4rem; margin-bottom: 1rem; }
 .cbpc-date-input {
   font: inherit; font-size: 0.8rem; color: #fff; color-scheme: dark;
   background: var(--slt-surface, #11161f); border: 1px solid rgba(255, 255, 255, 0.14);
@@ -103,3 +103,16 @@
   .cbpc-date-input { flex: 1; }
   .cbpc-cut-row { flex-wrap: wrap; }
 }
+
+/* ── MLB / Winter filter (admins) ────────────────────────────────────────── */
+.sd-league-filter {
+  display: inline-flex; gap: 2px; margin-bottom: 1rem; padding: 3px;
+  background: var(--slt-surface, #11161f); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 8px;
+}
+.sd-league-btn {
+  font: inherit; font-size: 0.74rem; font-weight: 700; letter-spacing: 0.02em;
+  color: rgba(255, 255, 255, 0.55); background: none; border: 0; border-radius: 6px;
+  padding: 0.35rem 0.9rem; cursor: pointer;
+}
+.sd-league-btn:hover { color: #fff; }
+.sd-league-btn.active { color: #062a30; background: #67e8f9; }

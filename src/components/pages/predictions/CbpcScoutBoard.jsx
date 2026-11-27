@@ -1,19 +1,16 @@
 import { useCallback, useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { useAuth } from '../../../context/AuthContext';
 import cbpcAdminService from '../../../data/services/cbpcAdminService';
 import { toPct } from '../../../data/services/scoutDesk';
 import { DrawerShell, AnalystPanel, ConvictionDots, fmtOdds, plCls, fmtUnits, teamName } from './ScoutWarRoom';
-import commandCentreIcon from '../../../assets/icons/command-centre.png';
 import profitAndLossIcon from '../../../assets/icons/profit-and-loss.png';
-import '../../../styles/predictions-page-styling/predictions.css';
-import '../../../styles/predictions-page-styling/scout-desk.css';
 import '../../../styles/predictions-page-styling/cbpc-scout-desk.css';
 
 /*
-  CBPC Scout Desk (/predictions/scout-desk/cbpc): admins only. The winter-league
-  version of the MLB Scout Desk War Room: the day's best moneyline plays across
-  LIDOM, LVBP, LMP and LBPRC.
+  CBPC Scout Desk: the Winter filter of the Scout Desk (/predictions/scout-desk
+  ?league=winter), admins only — ScoutDesk renders <CbpcBoard> only for admins.
+  The winter-league version of the MLB War Room: the day's best moneyline plays
+  across LIDOM, LVBP, LMP and LBPRC.
 
   GET /api/v1/predictions/scout-desk/cbpc/board?date=YYYY-MM-DD (admin bearer
   token, 403 for anyone else) → { date, season, record, board }. board is null
@@ -281,20 +278,16 @@ function HonorableMentions({ cut, onOpen }) {
   );
 }
 
-// ── Page ──────────────────────────────────────────────────────────────────────
+// ── Board (the Scout Desk's Winter filter) ──────────────────────────────────
 
-export default function CbpcScoutDesk() {
+export function CbpcBoard() {
   const navigate = useNavigate();
   const location = useLocation();
-  const { isAdmin, loading } = useAuth();
   const [date, setDate] = useState(etToday);
   const [state, setState] = useState({ data: null, error: null, busy: true });
   const [openPlay, setOpenPlay] = useState(null);
 
-  useEffect(() => { window.scrollTo(0, 0); }, []);
-
   useEffect(() => {
-    if (loading || !isAdmin) return undefined;
     let alive = true;
     setState(s => ({ ...s, busy: true, error: null }));
     cbpcAdminService.getScoutDeskBoard(date)
@@ -308,11 +301,9 @@ export default function CbpcScoutDesk() {
         setState({ data: null, error: err?.message || 'Failed to load the board.', busy: false });
       });
     return () => { alive = false; };
-  }, [date, loading, isAdmin]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [date]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const closeDrawer = useCallback(() => setOpenPlay(null), []);
-
-  if (loading || !isAdmin) return null;
 
   const { data, error, busy } = state;
   const board = data?.board ?? null;
@@ -320,60 +311,53 @@ export default function CbpcScoutDesk() {
   const today = etToday();
 
   return (
-    <div className="predictions-page">
-      <div className="predictions-content">
-        <div className="sd-desk-head">
-          <div>
-            <span className="sd-tag"><img src={commandCentreIcon} alt="" className="sd-tag-icon" />CBPC Scout Desk · Admin</span>
-            <h2 className="sd-desk-title">The day's best winter-league moneylines.</h2>
-            <p className="sd-desk-sub">LIDOM, LVBP, LMP and LBPRC. The model's strongest edges, argued out by the War Room. Open any play for the full breakdown.</p>
-          </div>
-          <div className="cbpc-date">
-            <button type="button" className="sd-cal-nav" onClick={() => setDate(d => shiftDate(d, -1))} aria-label="Previous day">‹</button>
-            <input type="date" className="cbpc-date-input" value={date} max={today} onChange={e => e.target.value && setDate(e.target.value)} aria-label="Board date" />
-            <button type="button" className="sd-cal-nav" onClick={() => setDate(d => shiftDate(d, 1))} disabled={date >= today} aria-label="Next day">›</button>
-            {date !== today && <button type="button" className="sd-btn ghost cbpc-today" onClick={() => setDate(today)}>Today</button>}
-          </div>
-        </div>
-
-        <RecordStrip record={data?.record} season={data?.season} />
-
-        {error ? (
-          <div className="sd-error">⚠ {error}</div>
-        ) : busy ? (
-          <div className="sd-loading"><span className="pp-loading-spinner" /><span>Loading the CBPC board…</span></div>
-        ) : !board ? (
-          <div className="sd-empty">
-            <span className="sd-empty-icon">🗓️</span>
-            <p>{date === today
-              ? "Today's CBPC board isn't ready yet. It's built about an hour before the first game."
-              : 'No CBPC board was built for this date.'}</p>
-          </div>
-        ) : (
-          <>
-            {board.warRoom === 'unavailable' && <div className="cbpc-note">War Room offline: deterministic picks</div>}
-            {picks.length > 0 ? (
-              <div className="sd-bp-grid cbpc-grid">
-                {picks.map((p, i) => <PickCard key={p.id || i} play={p} onOpen={setOpenPlay} />)}
-              </div>
-            ) : (
-              <div className="sd-empty">
-                <span className="sd-empty-icon">🗓️</span>
-                <p>{board.warRoom === 'answered' ? 'No edge today: the War Room passed on every game.' : 'No picks on this board.'}</p>
-              </div>
-            )}
-            <HonorableMentions cut={board.cut} onOpen={setOpenPlay} />
-            {(board.llmModel || board.builtAt) && (
-              <div className="cbpc-footer sd-muted">
-                {board.llmModel && <span>Model: {board.llmModel}</span>}
-                {board.builtAt && <span>Built {new Date(board.builtAt).toLocaleString([], { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' })}</span>}
-              </div>
-            )}
-          </>
-        )}
+    <>
+      <div className="cbpc-date">
+        <button type="button" className="sd-cal-nav" onClick={() => setDate(d => shiftDate(d, -1))} aria-label="Previous day">‹</button>
+        <input type="date" className="cbpc-date-input" value={date} max={today} onChange={e => e.target.value && setDate(e.target.value)} aria-label="Board date" />
+        <button type="button" className="sd-cal-nav" onClick={() => setDate(d => shiftDate(d, 1))} disabled={date >= today} aria-label="Next day">›</button>
+        {date !== today && <button type="button" className="sd-btn ghost cbpc-today" onClick={() => setDate(today)}>Today</button>}
       </div>
 
+      <RecordStrip record={data?.record} season={data?.season} />
+
+      {error ? (
+        <div className="sd-error">⚠ {error}</div>
+      ) : busy ? (
+        <div className="sd-loading"><span className="pp-loading-spinner" /><span>Loading the CBPC board…</span></div>
+      ) : !board ? (
+        <div className="sd-empty">
+          <span className="sd-empty-icon">🗓️</span>
+          <p>{date === today
+            ? "Today's CBPC board isn't ready yet. It's built about an hour before the first game."
+            : 'No CBPC board was built for this date.'}</p>
+        </div>
+      ) : (
+        <>
+          {board.warRoom === 'unavailable' && <div className="cbpc-note">War Room offline: deterministic picks</div>}
+          {picks.length > 0 ? (
+            <div className="sd-bp-grid cbpc-grid">
+              {picks.map((p, i) => <PickCard key={p.id || i} play={p} onOpen={setOpenPlay} />)}
+            </div>
+          ) : (
+            <div className="sd-empty">
+              <span className="sd-empty-icon">🗓️</span>
+              <p>{board.warRoom === 'answered' ? 'No edge today: the War Room passed on every game.' : 'No picks on this board.'}</p>
+            </div>
+          )}
+          <HonorableMentions cut={board.cut} onOpen={setOpenPlay} />
+          {(board.llmModel || board.builtAt) && (
+            <div className="cbpc-footer sd-muted">
+              {board.llmModel && <span>Model: {board.llmModel}</span>}
+              {board.builtAt && <span>Built {new Date(board.builtAt).toLocaleString([], { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' })}</span>}
+            </div>
+          )}
+        </>
+      )}
+
       {openPlay && <CbpcWarRoom play={openPlay} onClose={closeDrawer} />}
-    </div>
+    </>
   );
 }
+
+export default CbpcBoard;

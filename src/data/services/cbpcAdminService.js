@@ -5,7 +5,7 @@ import { getAccessToken } from './userAuthService';
   Admin-only winter-league (CBPC) moneyline model routes. Every call sends the
   admin's bearer token; the server answers 403 to anyone else. Only the admin
   Winter Moneyline page (/admin/winter-moneyline) and the CBPC Scout Desk
-  (/predictions/scout-desk/cbpc) may use this.
+  (the Winter filter on /predictions/scout-desk) may use this.
 
   Responses are cached for at most 5 minutes; refresh({ fresh: true }) skips
   the cache. Errors keep their HTTP status (403 → send to login, 404 → no
