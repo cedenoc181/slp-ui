@@ -14,7 +14,7 @@ const LINKS = [
 const PROPS_PATHS = ['/predictions/games', '/predictions/pitchers', '/predictions/batters'];
 
 export default function PredictionsNav({ propsOnly = false }) {
-  const { isAuthenticated, hasAdminToolsAccess, isPremium } = useAuth();
+  const { isAuthenticated, hasAdminToolsAccess, isAdmin, isPremium } = useAuth();
   const links = propsOnly ? LINKS.filter(l => PROPS_PATHS.includes(l.to)) : [...LINKS];
 
   // Set-apart tools on the right: the Bet Library (every signed-in user has
@@ -28,6 +28,10 @@ export default function PredictionsNav({ propsOnly = false }) {
   }
   if (hasAdminToolsAccess) {
     extraLinks.push({ to: '/predictions/lab', label: 'Lab' });
+  }
+  // The winter-league desk is admins only (the server answers 403 to anyone else).
+  if (isAdmin) {
+    extraLinks.push({ to: '/predictions/scout-desk/cbpc', label: 'CBPC Desk' });
   }
   if (isPremium) {
     extraLinks.push({ to: '/predictions/trust-ledger', label: 'Trust Ledger' });

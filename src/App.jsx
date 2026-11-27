@@ -86,6 +86,7 @@ import BatterProps from './components/pages/predictions/BatterProps';
 import BetLibrary from './components/pages/predictions/BetLibrary';
 import Lab from './components/pages/predictions/Lab';
 import ScoutDesk from './components/pages/predictions/ScoutDesk';
+import CbpcScoutDesk from './components/pages/predictions/CbpcScoutDesk';
 import TrustLedger from './components/pages/predictions/TrustLedger';
 import UpgradePage from './components/pages/Account/UpgradePage';
 
@@ -233,6 +234,7 @@ const PAGE_TITLES = [
   { path: '/predictions/bet-library', title: 'Bet Library' },
   { path: '/predictions/lab',          title: 'Lab' },
   { path: '/predictions/scout-desk',   title: 'Scout AI' },
+  { path: '/predictions/scout-desk/cbpc', title: 'CBPC Scout Desk' },
   { path: '/predictions/trust-ledger', title: 'Trust Ledger' },
   { path: '/products',                title: 'Products' },
   { path: '/products/predictions',    title: 'Predictions' },
@@ -342,6 +344,8 @@ function App() {
           <Route path="/predictions/bet-library" element={<ProtectedRoute><BetLibrary /></ProtectedRoute>} />
           <Route path="/predictions/lab" element={<ProtectedRoute require="admin-tools"><Lab /></ProtectedRoute>} />
           <Route path="/predictions/scout-desk" element={<ProtectedRoute require="premium"><OffseasonGate><ScoutDesk /></OffseasonGate></ProtectedRoute>} />
+          {/* Winter leagues run in the MLB offseason, so no OffseasonGate. */}
+          <Route path="/predictions/scout-desk/cbpc" element={<ProtectedRoute require="admin"><CbpcScoutDesk /></ProtectedRoute>} />
           {/* Not premium-gated at the route level: the premium/admin/early-access
               allowlist decision is server-side (403), so any authenticated user can
               land here and TrustLedger itself renders the locked/upsell state on 403. */}

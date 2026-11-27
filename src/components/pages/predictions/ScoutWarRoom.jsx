@@ -384,18 +384,63 @@ function GameMatchupPanel({ gm, park, gamePk }) {
   );
 }
 
-// ── War Room drawer ───────────────────────────────────────────────────────────
+// ── Drawer building blocks ────────────────────────────────────────────────────
+// The overlay + panel shell (Escape / backdrop close, body scroll lock) and the
+// analyst panel, shared by the MLB War Room below and the CBPC Scout Desk.
 
-function WarRoom({ play, onClose, onTrack, onPitcher, tracked }) {
-  const navigate = useNavigate();
-  const { user } = useAuth();
-  const gameFinal = useGameFinal(play.gamePk);
+function DrawerShell({ onClose, children }) {
   useEffect(() => {
     const onKey = (e) => { if (e.key === 'Escape') onClose(); };
     document.addEventListener('keydown', onKey);
     document.body.style.overflow = 'hidden';
     return () => { document.removeEventListener('keydown', onKey); document.body.style.overflow = ''; };
   }, [onClose]);
+  return createPortal(
+    <div className="sd-drawer-overlay" onClick={onClose} role="dialog" aria-modal="true">
+      <div className="sd-drawer" onClick={e => e.stopPropagation()}>
+        <button className="sd-drawer-close" onClick={onClose} aria-label="Close">✕</button>
+        {children}
+      </div>
+    </div>,
+    document.body
+  );
+}
+
+// voteMeta(vote) → { cls, label } lets a caller relabel votes (the CBPC desk
+// shows the team name instead of HOME / AWAY).
+function AnalystPanel({ analysts, voteMeta }) {
+  if (!Array.isArray(analysts) || analysts.length === 0) return null;
+  const metaFor = voteMeta || ((v) => VOTE_META[v] || VOTE_META.pass);
+  return (
+    <div className="sd-room">
+      <div className="sd-room-title">The War Room</div>
+      {analysts.map((a, i) => (
+        <div key={a.key || i} className={`sd-analyst${a.vote ? '' : ' advisory'}`}>
+          <div className="sd-analyst-head">
+            <span className="sd-analyst-icon">
+              {PERSONA_IMG[a.key]
+                ? <img src={PERSONA_IMG[a.key]} alt="" className="sd-analyst-icon-img" />
+                : a.icon}
+            </span>
+            <span className="sd-analyst-name">{a.name}</span>
+            {a.vote
+              ? <span className={`sd-vote ${metaFor(a.vote).cls}`}>{metaFor(a.vote).label}</span>
+              : <span className="sd-vote advisory">ADVISORY</span>}
+            {a.confidence != null && <Dots n={a.confidence} />}
+          </div>
+          <p className="sd-analyst-take">{a.take}</p>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+// ── War Room drawer ───────────────────────────────────────────────────────────
+
+function WarRoom({ play, onClose, onTrack, onPitcher, tracked }) {
+  const navigate = useNavigate();
+  const { user } = useAuth();
+  const gameFinal = useGameFinal(play.gamePk);
 
   // Betslip deep link — user has a preferred book and a fully resolved URL exists
   // for it on this pick. play.deep_links is attached server-side keyed by book:
@@ -429,113 +474,87 @@ function WarRoom({ play, onClose, onTrack, onPitcher, tracked }) {
     window.scrollTo(0, 0);
   };
 
-  return createPortal(
-    <div className="sd-drawer-overlay" onClick={onClose} role="dialog" aria-modal="true">
-      <div className="sd-drawer" onClick={e => e.stopPropagation()}>
-        <button className="sd-drawer-close" onClick={onClose} aria-label="Close">✕</button>
-
-        <div className="sd-drawer-head">
-          <span className={`sd-badge ${cm.cls}`}>{cm.icon} {play.consensus?.label}</span>
-          <h2 className="sd-drawer-sel">{play.selection}</h2>
-          <div className="sd-drawer-meta">
-            {isGame(play)
-              ? (play.subject && (
-                  play.gamePk != null
-                    ? <button type="button" className="sd-subject sd-subject--link" onClick={openGame} title="View the full matchup">{play.subject}</button>
-                    : <span className="sd-subject">{play.subject}</span>
-                ))
-              : (play.pitcherName && <button className="sd-pitcher-link" onClick={() => onPitcher && onPitcher(play)} title="View player profile">{play.pitcherName}</button>)}
-            {play.market && <span className="sd-pill">{play.market}</span>}
-          </div>
-          <div className="sd-drawer-nums">
-            <div><span className="sd-num-lbl">Odds</span><span className={`sd-num ${play.odds > 0 ? 'pos' : 'neg'}`}>{fmtOdds(play.odds)}</span></div>
-            {play.modelProb != null && <div><span className="sd-num-lbl">Model</span><span className="sd-num">{toPct(play.modelProb)}%</span></div>}
-            {play.line != null
-              ? <div><span className="sd-num-lbl">Proj vs line</span><span className="sd-num">{play.projection} / {play.line}</span></div>
-              : play.projection != null && <div><span className="sd-num-lbl">Model proj</span><span className="sd-num">{isGame(play) && /moneyline/i.test(play.market || '') ? `${toPct(play.projection)}%` : play.projection}</span></div>}
-            {play.ev != null && <div><span className="sd-num-lbl">EV</span><span className={`sd-num ${play.ev > 0 ? 'pos' : 'neg'}`}>{play.ev > 0 ? '+' : ''}{play.ev}%</span></div>}
-          </div>
+  return (
+    <DrawerShell onClose={onClose}>
+      <div className="sd-drawer-head">
+        <span className={`sd-badge ${cm.cls}`}>{cm.icon} {play.consensus?.label}</span>
+        <h2 className="sd-drawer-sel">{play.selection}</h2>
+        <div className="sd-drawer-meta">
+          {isGame(play)
+            ? (play.subject && (
+                play.gamePk != null
+                  ? <button type="button" className="sd-subject sd-subject--link" onClick={openGame} title="View the full matchup">{play.subject}</button>
+                  : <span className="sd-subject">{play.subject}</span>
+              ))
+            : (play.pitcherName && <button className="sd-pitcher-link" onClick={() => onPitcher && onPitcher(play)} title="View player profile">{play.pitcherName}</button>)}
+          {play.market && <span className="sd-pill">{play.market}</span>}
         </div>
-
-        {betslipUrl && betslipLabel && (
-          <a className="sd-betslip-btn" href={betslipUrl} target="_blank" rel="noopener noreferrer">
-            Add to {betslipLabel} slip
-          </a>
-        )}
-
-        {/* Stage 1 — why we trust it (the audit) */}
-        {auditLine(play.audit) && (
-          <div className="sd-audit-basis">
-            <span className="sd-audit-basis-lbl">
-              <img src={machineIcon} alt="" className="sd-audit-basis-icon" />
-              Audit basis
-            </span>
-            <p>{auditLine(play.audit)}</p>
-          </div>
-        )}
-
-        {/* Stage 2 — the AI's read */}
-        {play.reasoning?.rationale && (
-          <div className="sd-verdict"><strong>Why this, now:</strong> {play.reasoning.rationale}</div>
-        )}
-        {isGame(play)
-          ? <GameMatchupPanel gm={ctx.gameMatchup} park={ctx.parkFactor} gamePk={play.gamePk} />
-          : <PitcherContext ctx={ctx} pitcherName={play.pitcherName} />}
-
-        {/* The panel */}
-        {analysts.length > 0 && (
-        <div className="sd-room">
-          <div className="sd-room-title">The War Room</div>
-          {analysts.map((a, i) => (
-            <div key={a.key || i} className={`sd-analyst${a.vote ? '' : ' advisory'}`}>
-              <div className="sd-analyst-head">
-                <span className="sd-analyst-icon">
-                  {PERSONA_IMG[a.key]
-                    ? <img src={PERSONA_IMG[a.key]} alt="" className="sd-analyst-icon-img" />
-                    : a.icon}
-                </span>
-                <span className="sd-analyst-name">{a.name}</span>
-                {a.vote
-                  ? <span className={`sd-vote ${(VOTE_META[a.vote] || VOTE_META.pass).cls}`}>{(VOTE_META[a.vote] || VOTE_META.pass).label}</span>
-                  : <span className="sd-vote advisory">ADVISORY</span>}
-                {a.confidence != null && <Dots n={a.confidence} />}
-              </div>
-              <p className="sd-analyst-take">{a.take}</p>
-            </div>
-          ))}
+        <div className="sd-drawer-nums">
+          <div><span className="sd-num-lbl">Odds</span><span className={`sd-num ${play.odds > 0 ? 'pos' : 'neg'}`}>{fmtOdds(play.odds)}</span></div>
+          {play.modelProb != null && <div><span className="sd-num-lbl">Model</span><span className="sd-num">{toPct(play.modelProb)}%</span></div>}
+          {play.line != null
+            ? <div><span className="sd-num-lbl">Proj vs line</span><span className="sd-num">{play.projection} / {play.line}</span></div>
+            : play.projection != null && <div><span className="sd-num-lbl">Model proj</span><span className="sd-num">{isGame(play) && /moneyline/i.test(play.market || '') ? `${toPct(play.projection)}%` : play.projection}</span></div>}
+          {play.ev != null && <div><span className="sd-num-lbl">EV</span><span className={`sd-num ${play.ev > 0 ? 'pos' : 'neg'}`}>{play.ev > 0 ? '+' : ''}{play.ev}%</span></div>}
         </div>
-        )}
-
-        {!hasBreakdown && (
-          <div className="sd-drawer-empty">
-            <p className="sd-muted">The full matchup breakdown isn’t stored for this graded pick yet.</p>
-            {play.gamePk != null && (
-              <button type="button" className="sd-btn ghost" onClick={openGame}>
-                View full game matchup →
-              </button>
-            )}
-          </div>
-        )}
-
-        {settled ? (
-          <div className="sd-drawer-settled">
-            <span className={`sd-day-status ${play.status}`}>{play.status}</span>
-            {play.pnl != null && <span className={`sd-day-pnl ${plCls(play.pnl)}`}>{fmtUnits(play.pnl)}</span>}
-            <span className="sd-muted">Graded desk pick — settled result.</span>
-          </div>
-        ) : onTrack ? (
-          <div className="sd-drawer-actions">
-            <button className="sd-btn primary" disabled={tracked} onClick={() => onTrack(play, 'taken')}>
-              {tracked ? '✓ Tracked' : '+ Track with the desk'}
-            </button>
-            <button className="sd-btn ghost" disabled={tracked} onClick={() => onTrack(play, 'fade')}>
-              Fade the desk
-            </button>
-          </div>
-        ) : null}
       </div>
-    </div>,
-    document.body
+
+      {betslipUrl && betslipLabel && (
+        <a className="sd-betslip-btn" href={betslipUrl} target="_blank" rel="noopener noreferrer">
+          Add to {betslipLabel} slip
+        </a>
+      )}
+
+      {/* Stage 1 — why we trust it (the audit) */}
+      {auditLine(play.audit) && (
+        <div className="sd-audit-basis">
+          <span className="sd-audit-basis-lbl">
+            <img src={machineIcon} alt="" className="sd-audit-basis-icon" />
+            Audit basis
+          </span>
+          <p>{auditLine(play.audit)}</p>
+        </div>
+      )}
+
+      {/* Stage 2 — the AI's read */}
+      {play.reasoning?.rationale && (
+        <div className="sd-verdict"><strong>Why this, now:</strong> {play.reasoning.rationale}</div>
+      )}
+      {isGame(play)
+        ? <GameMatchupPanel gm={ctx.gameMatchup} park={ctx.parkFactor} gamePk={play.gamePk} />
+        : <PitcherContext ctx={ctx} pitcherName={play.pitcherName} />}
+
+      {/* The panel */}
+      <AnalystPanel analysts={analysts} />
+
+      {!hasBreakdown && (
+        <div className="sd-drawer-empty">
+          <p className="sd-muted">The full matchup breakdown isn’t stored for this graded pick yet.</p>
+          {play.gamePk != null && (
+            <button type="button" className="sd-btn ghost" onClick={openGame}>
+              View full game matchup →
+            </button>
+          )}
+        </div>
+      )}
+
+      {settled ? (
+        <div className="sd-drawer-settled">
+          <span className={`sd-day-status ${play.status}`}>{play.status}</span>
+          {play.pnl != null && <span className={`sd-day-pnl ${plCls(play.pnl)}`}>{fmtUnits(play.pnl)}</span>}
+          <span className="sd-muted">Graded desk pick — settled result.</span>
+        </div>
+      ) : onTrack ? (
+        <div className="sd-drawer-actions">
+          <button className="sd-btn primary" disabled={tracked} onClick={() => onTrack(play, 'taken')}>
+            {tracked ? '✓ Tracked' : '+ Track with the desk'}
+          </button>
+          <button className="sd-btn ghost" disabled={tracked} onClick={() => onTrack(play, 'fade')}>
+            Fade the desk
+          </button>
+        </div>
+      ) : null}
+    </DrawerShell>
   );
 }
 
@@ -613,7 +632,11 @@ function BestPropsBoard({ picks, onOpen, title = 'Best Props', subtitle }) {
 
 export {
   WarRoom,
+  DrawerShell,
+  AnalystPanel,
+  ConvictionDots,
   BestPropsBoard,
+  teamName,
   CONSENSUS_META,
   isGame,
   toDrawerPlay,

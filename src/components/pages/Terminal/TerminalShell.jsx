@@ -41,12 +41,14 @@ const ICONS = {
 };
 
 // Feature pages that render inside the shell. `match` lists the path
-// prefixes that light up the rail button (longest match wins).
+// prefixes that light up the rail button (longest match wins). adminOnly
+// pages are left out of the rail and the palette for everyone else.
 const PAGES = [
   { id: 'dashboard',   label: 'Dashboard',        icon: 'home',   to: '/terminal',                  match: ['/terminal'] },
   // Opens the props boards (Game / Pitcher / Batter), not the /predictions overview.
   { id: 'predictions', label: 'Predictions',      icon: 'chart',  to: '/predictions/games',         match: ['/predictions'] },
   { id: 'warroom',     label: 'War Room',         icon: 'target', to: '/predictions/scout-desk',    match: ['/predictions/scout-desk'] },
+  { id: 'cbpcdesk',    label: 'CBPC Scout Desk',  icon: 'globe',  to: '/predictions/scout-desk/cbpc', match: ['/predictions/scout-desk/cbpc'], adminOnly: true },
   { id: 'ledger',      label: 'Trust Ledger',     icon: 'bar',    to: '/predictions/trust-ledger',  match: ['/predictions/trust-ledger'] },
   { id: 'library',     label: 'Bet Library',      icon: 'dollar', to: '/predictions/bet-library',   match: ['/predictions/bet-library'] },
   { id: 'schedule',    label: 'Schedule',         icon: 'cal',    to: '/schedule',                  match: ['/schedule'] },
@@ -297,7 +299,7 @@ function Ticker({ games, winterGames }) {
 
 // ── Command palette ─────────────────────────────────────────────────────────
 const PALETTE_ITEMS = [
-  ...PAGES.map(p => ({ key: `page-${p.id}`, grp: 'Page', label: p.label, to: p.to })),
+  ...PAGES.map(p => ({ key: `page-${p.id}`, grp: 'Page', label: p.label, to: p.to, adminOnly: p.adminOnly })),
   ...MORE_PAGES.map(p => ({ key: `page-${p.id}`, grp: 'Page', label: p.label, to: p.to })),
   ...PANELS.map(p => ({ key: `panel-${p.id}`, grp: 'Panel', label: p.label, panel: p.id })),
 ];
@@ -306,7 +308,7 @@ const PALETTE_ITEMS = [
 // panel. Typed query: site search results (players, matchups, team
 // predictions/analytics, pages, Insider tags) first, then matching
 // Terminal pages/panels.
-function CommandPalette({ open, onClose, onChoose }) {
+function CommandPalette({ open, onClose, onChoose, isAdmin }) {
   const [query, setQuery] = useState('');
   const [selected, setSelected] = useState(0);
   const inputRef = useRef(null);
@@ -323,14 +325,14 @@ function CommandPalette({ open, onClose, onChoose }) {
 
   const items = useMemo(() => {
     const q = query.trim().toLowerCase();
-    const jumps = PALETTE_ITEMS.filter(m => m.label.toLowerCase().includes(q));
+    const jumps = PALETTE_ITEMS.filter(m => (isAdmin || !m.adminOnly) && m.label.toLowerCase().includes(q));
     if (!q) return jumps;
     const seen = new Set(results.map(r => r.to));
     return [
       ...results.map(r => ({ ...r, grp: r.type })),
       ...jumps.filter(m => !m.to || !seen.has(m.to)),
     ];
-  }, [query, results]);
+  }, [query, results, isAdmin]);
 
   // Async player results can shrink/grow the list under the cursor.
   useEffect(() => {
@@ -401,7 +403,7 @@ function CommandPalette({ open, onClose, onChoose }) {
 export default function TerminalShell({ children }) {
   const navigate = useNavigate();
   const location = useLocation();
-  const { user, isPremium } = useAuth();
+  const { user, isPremium, isAdmin } = useAuth();
   const slate = useSlate();
   const winterGames = useWinterTickerGames();
   const [paletteOpen, setPaletteOpen] = useState(false);
@@ -498,7 +500,7 @@ export default function TerminalShell({ children }) {
 
         <div className="slt-shell">
           <nav className="slt-ui slt-rail" aria-label="Terminal">
-            {PAGES.filter(p => !p.bottom).map(railButton)}
+            {PAGES.filter(p => !p.bottom && (isAdmin || !p.adminOnly)).map(railButton)}
             <span className="slt-rail-spacer" />
             {PAGES.filter(p => p.bottom).map(railButton)}
           </nav>
@@ -508,7 +510,7 @@ export default function TerminalShell({ children }) {
           </main>
         </div>
 
-        <CommandPalette open={paletteOpen} onClose={() => setPaletteOpen(false)} onChoose={choose} />
+        <CommandPalette open={paletteOpen} onClose={() => setPaletteOpen(false)} onChoose={choose} isAdmin={!!isAdmin} />
       </div>
     </SlateContext.Provider>
   );

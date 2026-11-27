@@ -4,7 +4,8 @@ import { getAccessToken } from './userAuthService';
 /*
   Admin-only winter-league (CBPC) moneyline model routes. Every call sends the
   admin's bearer token; the server answers 403 to anyone else. Only the admin
-  Winter Moneyline page (/admin/winter-moneyline) may use this.
+  Winter Moneyline page (/admin/winter-moneyline) and the CBPC Scout Desk
+  (/predictions/scout-desk/cbpc) may use this.
 
   Responses are cached for at most 5 minutes; refresh({ fresh: true }) skips
   the cache. Errors keep their HTTP status (403 → send to login, 404 → no
@@ -57,6 +58,13 @@ const cbpcAdminService = {
   // edge: paper-trade threshold (0, 0.03 default, 0.05, 0.10).
   getPerformance: (league, { season, startDate, endDate, edge } = {}, opts) =>
     get(`/cbpc/${league}/admin/predictions/moneyline/performance${qs({ season, start_date: startDate, end_date: endDate, edge })}`, opts),
+  /**
+   * The CBPC Scout Desk: one date's board across every league (date
+   * YYYY-MM-DD, ET; default today) → { date, season, record, board }.
+   * board is null until that day's board is built.
+   */
+  getScoutDeskBoard: (date, opts) =>
+    get(`/api/v1/predictions/scout-desk/cbpc/board${qs({ date })}`, opts),
 };
 
 export default cbpcAdminService;
