@@ -136,7 +136,8 @@ export default function PredictionsOverview() {
       <div className="pov-hero">
         <div className="pov-hero-inner">
           <span className="pov-hero-eyebrow">Sandlotpicks Predictions</span>
-          {isPremium && isOffseason() && (
+          {/* Not for admins: they get the winter-league board instead. */}
+          {isPremium && !isAdmin && isOffseason() && (
             <div className="pov-offseason-note">
               <span className="pov-offseason-note__tag">{'// OFFSEASON'}</span>
               Predictions available Opening Day of the new season ({OFFSEASON.nextSeason}) — {salesReopenLabel()}

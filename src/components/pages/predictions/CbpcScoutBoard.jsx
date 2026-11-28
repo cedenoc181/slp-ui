@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import cbpcAdminService from '../../../data/services/cbpcAdminService';
 import { toPct } from '../../../data/services/scoutDesk';
-import { DrawerShell, AnalystPanel, ConvictionDots, fmtOdds, plCls, fmtUnits, teamName } from './ScoutWarRoom';
+import { DrawerShell, AnalystPanel, ConvictionDots, fmtOdds, plCls, fmtUnits, teamName as mlbTeamName } from './ScoutWarRoom';
 import profitAndLossIcon from '../../../assets/icons/profit-and-loss.png';
 import '../../../styles/predictions-page-styling/cbpc-scout-desk.css';
 
@@ -15,13 +15,19 @@ import '../../../styles/predictions-page-styling/cbpc-scout-desk.css';
   GET /api/v1/predictions/scout-desk/cbpc/board?date=YYYY-MM-DD (admin bearer
   token, 403 for anyone else) → { date, season, record, board }. board is null
   until the day's board is built; otherwise { picks[], shortlist[], cut[],
-  warRoom, llmModel, builtAt }. Picks carry the MLB game-prop pick shape plus
+  warRoom, llmModel, builtAt }. The cut list (honorable mentions) and the
+  model name aren't shown. Picks carry the MLB game-prop pick shape plus
   league, home/away teams, firstPitch and result.
 
   Reuses the MLB War Room drawer shell, analyst panel, conviction dots and card
   styles. The MLB drawer body itself isn't reused: its matchup panel, betslip
   link and game link all read MLB-only data.
 */
+
+// CBPC picks carry the /cbpc team brief (team_name, team_abbreviation); the
+// shared MLB helper only reads name / abbreviation, so read the CBPC keys first.
+const teamName = (t) => (t && typeof t === 'object' ? (t.team_name || mlbTeamName(t)) : mlbTeamName(t));
+const teamAbbr = (t) => (t && typeof t === 'object' ? (t.team_abbreviation || teamName(t)) : mlbTeamName(t));
 
 const etToday = () => new Intl.DateTimeFormat('en-CA', { timeZone: 'America/New_York' }).format(new Date());
 
@@ -123,10 +129,8 @@ function PickCard({ play, onOpen, reason }) {
       </div>
 
       <div className="cbpc-title">
-        <span className="cbpc-logos">
-          <TeamLogo team={picked || play.away} />
-          {opponent && <TeamLogo team={opponent} />}
-        </span>
+        {/* Only the team the pick is on. */}
+        {picked && <span className="cbpc-logos"><TeamLogo team={picked} /></span>}
         <span className="cbpc-title-text">
           <span className="sd-bp-sel">{play.selection}</span>
           {opponent && <span className="sd-bp-subject">vs {teamName(opponent)}</span>}
@@ -219,7 +223,7 @@ function CbpcWarRoom({ play, onClose }) {
 
 // ── Season record strip ───────────────────────────────────────────────────────
 
-function RecordStrip({ record, season }) {
+function RecordStrip({ record, season, children }) {
   if (!record) return null;
   const win = toPct(record.winRate);
   return (
@@ -241,39 +245,112 @@ function RecordStrip({ record, season }) {
           <span className={`sd-rstat-val ${plCls(record.units)}`}>{record.units != null ? fmtUnits(record.units) : '—'}</span>
         </div>
       </div>
+      {children}
     </div>
   );
 }
 
-// ── Honorable mentions ────────────────────────────────────────────────────────
+// ── Daily log (inside the record card, like the MLB Track Record) ──────────
+// There's no history endpoint for the CBPC desk, so the week on screen is read
+// from each day's board (/scout-desk/cbpc/board?date=); a day without a board
+// isn't shown. Results come off each pick (won / lost / void / pending).
 
-function CutPick({ play, onOpen }) {
-  const [open, setOpen] = useState(false);
-  return (
-    <div className="cbpc-cut-item">
-      <button type="button" className="cbpc-cut-row" onClick={() => setOpen(o => !o)} aria-expanded={open}>
-        <span className="cbpc-cut-sel">{play.selection} <span className="sd-muted">({play.league})</span></span>
-        <span className="cbpc-cut-reason">{play.reason}</span>
-        <span className="cbpc-cut-toggle" aria-hidden="true">{open ? '−' : '+'}</span>
-      </button>
-      {open && <PickCard play={play} onOpen={onOpen} reason={null} />}
-    </div>
-  );
+const WEEK = 7;
+const dayDate = (iso) => new Date(`${iso}T12:00:00`);
+const shortDow = (iso) => dayDate(iso).toLocaleDateString('en-US', { weekday: 'short' });
+const monthDay = (iso) => dayDate(iso).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+const longDate = (iso) => dayDate(iso).toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
+
+function daySummary(picks) {
+  let won = 0, lost = 0, pending = 0, units = null;
+  picks.forEach(p => {
+    const r = readResult(p);
+    const st = r?.status || 'pending';
+    if (st === 'won') won += 1;
+    else if (st === 'lost') lost += 1;
+    else if (st !== 'void') pending += 1;
+    if (r?.units != null) units = (units ?? 0) + Number(r.units);
+  });
+  return { won, lost, pending, units };
 }
 
-function HonorableMentions({ cut, onOpen }) {
-  if (!Array.isArray(cut) || cut.length === 0) return null;
+function DailyLog({ onOpen }) {
+  const today = etToday();
+  const [weekEnd, setWeekEnd] = useState(today);
+  const [days, setDays] = useState(null);
+  const [selected, setSelected] = useState(null);
+
+  useEffect(() => {
+    let alive = true;
+    setDays(null);
+    const dates = Array.from({ length: WEEK }, (_, i) => shiftDate(weekEnd, i - (WEEK - 1)));
+    Promise.all(dates.map(d => cbpcAdminService.getScoutDeskBoard(d).then(res => ({ date: d, board: res?.board })).catch(() => ({ date: d, board: null }))))
+      .then(list => {
+        if (!alive) return;
+        const withBoards = list
+          .filter(x => Array.isArray(x.board?.picks))
+          .map(x => ({ date: x.date, picks: x.board.picks, ...daySummary(x.board.picks) }));
+        setDays(withBoards);
+        setSelected(withBoards.length ? withBoards[withBoards.length - 1].date : null);
+      });
+    return () => { alive = false; };
+  }, [weekEnd]);
+
+  const sel = days?.find(d => d.date === selected) || null;
+  const rangeLabel = `${monthDay(shiftDate(weekEnd, -(WEEK - 1)))} – ${monthDay(weekEnd)}`;
+
   return (
-    <div className="cbpc-cut">
-      <div className="sd-board-head"><span className="sd-board-title">Honorable mentions</span></div>
-      {cut.map((c, i) => (Array.isArray(c.analysts)
-        ? <CutPick key={c.id || i} play={c} onOpen={onOpen} />
-        : (
-          <div key={c.id || i} className="cbpc-cut-item cbpc-cut-row cbpc-cut-row--plain">
-            <span className="cbpc-cut-sel">{c.selection} <span className="sd-muted">({c.league})</span></span>
-            <span className="cbpc-cut-reason">— {c.reason}</span>
+    <div className="sd-record-daily">
+      <div className="sd-record-daily-head">
+        <span className="sd-record-daily-title">Daily log</span>
+        <span className="sd-muted">{days ? `${days.length} day${days.length === 1 ? '' : 's'} with a board` : 'Loading…'}</span>
+      </div>
+      <div className="sd-cal">
+        <div className="sd-cal-head">
+          <button className="sd-cal-nav" onClick={() => setWeekEnd(d => shiftDate(d, -WEEK))} aria-label="Earlier week">‹</button>
+          <span className="sd-cal-title">{rangeLabel}</span>
+          <button className="sd-cal-nav" onClick={() => setWeekEnd(d => { const n = shiftDate(d, WEEK); return n > today ? today : n; })} disabled={weekEnd >= today} aria-label="Later week">›</button>
+        </div>
+
+        <div className="sd-week-strip">
+          {(days || []).map(d => {
+            const tint = d.units > 0 ? 'win' : d.units < 0 ? 'loss' : 'even';
+            return (
+              <button key={d.date} className={`sd-week-box sd-cal-cell--${tint}${selected === d.date ? ' sd-cal-cell--sel' : ''}`} onClick={() => setSelected(d.date)}>
+                <span className="sd-week-dow">{shortDow(d.date)}</span>
+                <span className="sd-week-date">{monthDay(d.date)}</span>
+                <span className="sd-cal-rec">{d.won}-{d.lost}{d.pending ? ` · ${d.pending}p` : ''}</span>
+                {d.units != null && <span className={`sd-cal-u ${plCls(d.units)}`}>{fmtUnits(d.units)}</span>}
+              </button>
+            );
+          })}
+          {days && days.length === 0 && <div className="sd-muted sd-cal-nopicks">No CBPC boards this week.</div>}
+        </div>
+
+        {sel && (
+          <div className="sd-cal-detail">
+            <div className="sd-cal-detail-head">
+              <span className="sd-cal-detail-date">{longDate(sel.date)}</span>
+              <span className="sd-muted">{sel.won}-{sel.lost}{sel.pending ? ` · ${sel.pending} pending` : ''}</span>
+              {sel.units != null && <span className={`sd-day-u ${plCls(sel.units)}`}>{fmtUnits(sel.units)}</span>}
+            </div>
+            {sel.picks.length === 0 ? <div className="sd-muted sd-cal-nopicks">No picks on this board.</div> : sel.picks.map((p, j) => {
+              const r = readResult(p);
+              const st = r?.status || 'pending';
+              const score = r?.homeScore != null && r?.awayScore != null ? `${teamAbbr(p.away)} ${r.awayScore} · ${teamAbbr(p.home)} ${r.homeScore}` : null;
+              return (
+                <button key={p.id || j} type="button" className="sd-day-pick sd-day-pick--button" onClick={() => onOpen(p)} title="Open the War Room for this pick">
+                  <span className="sd-day-sel">{p.selection} <span className="sd-muted">({p.league})</span></span>
+                  <span className="sd-muted">{score || firstPitchLabel(p) || '—'}</span>
+                  <span className={`sd-day-status ${st === 'void' ? 'push' : st}`}>{st === 'void' ? 'postponed' : st}</span>
+                  {r?.units != null && <span className={`sd-day-pnl ${plCls(r.units)}`}>{fmtUnits(r.units)}</span>}
+                  <span className="sd-day-matchup" aria-hidden="true">War Room →</span>
+                </button>
+              );
+            })}
           </div>
-        )))}
+        )}
+      </div>
     </div>
   );
 }
@@ -283,7 +360,8 @@ function HonorableMentions({ cut, onOpen }) {
 export function CbpcBoard() {
   const navigate = useNavigate();
   const location = useLocation();
-  const [date, setDate] = useState(etToday);
+  // Always today's board: past days live in the daily log (no date picker).
+  const date = etToday();
   const [state, setState] = useState({ data: null, error: null, busy: true });
   const [openPlay, setOpenPlay] = useState(null);
 
@@ -308,19 +386,9 @@ export function CbpcBoard() {
   const { data, error, busy } = state;
   const board = data?.board ?? null;
   const picks = Array.isArray(board?.picks) ? board.picks : [];
-  const today = etToday();
 
   return (
     <>
-      <div className="cbpc-date">
-        <button type="button" className="sd-cal-nav" onClick={() => setDate(d => shiftDate(d, -1))} aria-label="Previous day">‹</button>
-        <input type="date" className="cbpc-date-input" value={date} max={today} onChange={e => e.target.value && setDate(e.target.value)} aria-label="Board date" />
-        <button type="button" className="sd-cal-nav" onClick={() => setDate(d => shiftDate(d, 1))} disabled={date >= today} aria-label="Next day">›</button>
-        {date !== today && <button type="button" className="sd-btn ghost cbpc-today" onClick={() => setDate(today)}>Today</button>}
-      </div>
-
-      <RecordStrip record={data?.record} season={data?.season} />
-
       {error ? (
         <div className="sd-error">⚠ {error}</div>
       ) : busy ? (
@@ -328,9 +396,7 @@ export function CbpcBoard() {
       ) : !board ? (
         <div className="sd-empty">
           <span className="sd-empty-icon">🗓️</span>
-          <p>{date === today
-            ? "Today's CBPC board isn't ready yet. It's built about an hour before the first game."
-            : 'No CBPC board was built for this date.'}</p>
+          <p>Today's CBPC board isn't ready yet. It's built about an hour before the first game.</p>
         </div>
       ) : (
         <>
@@ -345,15 +411,18 @@ export function CbpcBoard() {
               <p>{board.warRoom === 'answered' ? 'No edge today: the War Room passed on every game.' : 'No picks on this board.'}</p>
             </div>
           )}
-          <HonorableMentions cut={board.cut} onOpen={setOpenPlay} />
-          {(board.llmModel || board.builtAt) && (
+          {board.builtAt && (
             <div className="cbpc-footer sd-muted">
-              {board.llmModel && <span>Model: {board.llmModel}</span>}
-              {board.builtAt && <span>Built {new Date(board.builtAt).toLocaleString([], { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' })}</span>}
+              <span>Built {new Date(board.builtAt).toLocaleString([], { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' })}</span>
             </div>
           )}
         </>
       )}
+
+      {/* Season record under the day's picks, with the daily log inside it. */}
+      <RecordStrip record={data?.record} season={data?.season}>
+        <DailyLog onOpen={setOpenPlay} />
+      </RecordStrip>
 
       {openPlay && <CbpcWarRoom play={openPlay} onClose={closeDrawer} />}
     </>

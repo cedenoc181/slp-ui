@@ -2,16 +2,6 @@
    Builds on scout-desk.css (cards, record strip, drawer); only the
    winter-specific pieces live here. */
 
-/* ── Date picker ─────────────────────────────────────────────────────────── */
-.cbpc-date { display: flex; align-items: center; gap: 0.4rem; margin-bottom: 1rem; }
-.cbpc-date-input {
-  font: inherit; font-size: 0.8rem; color: #fff; color-scheme: dark;
-  background: var(--slt-surface, #11161f); border: 1px solid rgba(255, 255, 255, 0.14);
-  border-radius: 6px; padding: 0.35rem 0.5rem;
-}
-.cbpc-today { padding: 0.35rem 0.7rem; font-size: 0.72rem; }
-
-.cbpc-record { margin-bottom: 1.25rem; }
 
 /* ── Status notes ────────────────────────────────────────────────────────── */
 .cbpc-note {
@@ -84,25 +74,8 @@
 /* ── War Room drawer extras ──────────────────────────────────────────────── */
 .cbpc-scout-reasoning { margin: 0 0 1rem; font-size: 0.78rem; line-height: 1.55; color: rgba(255, 255, 255, 0.7); }
 
-/* ── Honorable mentions ──────────────────────────────────────────────────── */
-.cbpc-cut { margin-top: 0.5rem; }
-.cbpc-cut-item { border-bottom: 1px solid rgba(255, 255, 255, 0.07); }
-.cbpc-cut-item > .cbpc-card { margin: 0 0 0.75rem; }
-.cbpc-cut-row {
-  display: flex; align-items: baseline; gap: 0.5rem; width: 100%;
-  background: none; border: 0; color: inherit; font: inherit; text-align: left;
-  padding: 0.6rem 0; cursor: pointer;
-}
-.cbpc-cut-row--plain { cursor: default; }
-.cbpc-cut-sel { font-size: 0.8rem; font-weight: 700; color: #fff; flex-shrink: 0; }
-.cbpc-cut-reason { font-size: 0.74rem; color: rgba(255, 255, 255, 0.55); flex: 1; min-width: 0; }
-.cbpc-cut-toggle { font-size: 0.9rem; font-weight: 700; color: #67e8f9; flex-shrink: 0; }
-
-@media (max-width: 560px) {
-  .cbpc-date { width: 100%; }
-  .cbpc-date-input { flex: 1; }
-  .cbpc-cut-row { flex-wrap: wrap; }
-}
+/* ── Record card (with the daily log), under the day's picks ───────────── */
+.cbpc-record { margin: 1.25rem 0; }
 
 /* ── MLB / Winter filter (admins) ────────────────────────────────────────── */
 .sd-league-filter {
