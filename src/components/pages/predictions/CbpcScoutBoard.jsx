@@ -115,7 +115,6 @@ function AiAgreement({ ai }) {
 
 function PickCard({ play, onOpen, reason }) {
   const side = pickSide(play);
-  const opponent = side === 'home' ? play.away : side === 'away' ? play.home : null;
   const picked = side ? play[side] : null;
   const consensusCls = CONSENSUS_CLS[play.consensus?.level] || 'pass';
   const time = firstPitchLabel(play);
@@ -131,9 +130,10 @@ function PickCard({ play, onOpen, reason }) {
       <div className="cbpc-title">
         {/* Only the team the pick is on. */}
         {picked && <span className="cbpc-logos"><TeamLogo team={picked} /></span>}
+        {/* The picked team, with the market under it (the opponent is in the War Room). */}
         <span className="cbpc-title-text">
-          <span className="sd-bp-sel">{play.selection}</span>
-          {opponent && <span className="sd-bp-subject">vs {teamName(opponent)}</span>}
+          <span className="sd-bp-sel">{picked ? teamName(picked) : play.selection}</span>
+          <span className="sd-bp-subject">Moneyline</span>
         </span>
       </div>
 
